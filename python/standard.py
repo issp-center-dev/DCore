@@ -61,22 +61,22 @@ print "                nk = ", nk[0]
 print "           Lattice = ", lattice.strip()
 print "          seedname = ", seedname.strip()
 print "             nelec = ", nelec
+
 if lattice.strip() == 'chain':
-    ndim = 1
+    weights_in_file = False
 elif lattice.strip() == 'square':
-    ndim = 2
+    weights_in_file = False
     nk[1] = nk[0]
 elif lattice.strip() == 'cubic':
-    ndim = 3
+    weights_in_file = False
     nk[1] = nk[0]
     nk[2] = nk[0]
 elif lattice.strip() == 'bethe':
-    ndim = 0
+    weights_in_file = True
 else:
     print "Error ! Invalid lattice : ", lattice
     sys.exit()
 nkBZ = nk[0] * nk[1] * nk[2]
-print "         Dimension = ", ndim
 print " Total number of k = ", nkBZ
 #
 # Write General-Hk formated file
@@ -89,23 +89,35 @@ f.write("1 1 0 " + str(norb)+"\n")
 f.write("1\n")
 f.write("1 1 0 " + str(norb) + " 0 0\n")
 f.write("1 " + str(norb) +"\n")
-
+#
+# If Bethe lattice, set k-weight manually to generate semi-circular DOS
+#
 kvec = [0.0, 0.0, 0.0]
+if weights_in_file:
+    for i0 in range(nk[0]):
+        kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk[0])
+        wk = 2.0 * numpy.cos(kvec[0])**2
+        f.write(str(wk) + "\n")
+#
+# Energy band
+#
 for i0 in range(nk[0]):
     kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk[0])
     for i1 in range(nk[1]):
       kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk[1])
       for i2 in range(nk[2]):
            kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk[2])
-           ek = 2*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2]))
+           ek = 2*t*(  numpy.sin(kvec[0])
+                     + numpy.sin(kvec[1])
+                     + numpy.sin(kvec[2]))
            f.write(str(ek) + "\n")  #Real part
-           f.write("0.0" + "\n") #Imaginary part    
+           f.write("0.0\n") #Imaginary part    
 f.close()
 #
 # Convert General-Hk to SumDFT-HDF5 format
 #
 Converter = HkConverter(filename = seedname)
-Converter.convert_dft_input()
+Converter.convert_dft_input(weights_in_file=weights_in_file)
 #
 # Add U-matrix block
 #
