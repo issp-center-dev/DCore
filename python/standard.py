@@ -8,10 +8,10 @@ from pytriqs.operators.util.U_matrix import *
 #
 if len(sys.argv) != 2:
     print "Usage:"
-    print "$ xxxxx"
+    print "$ ipytriqs standard.py input"
     sys.exit()
 #
-# Default value
+# Set Default value
 #
 t= 1.0
 tp = 0.0
@@ -21,7 +21,7 @@ norb = 1
 nk = [8, 1, 1]
 lattice = "chain"
 nelec = 1.0
-hkname = "test"
+seedname = "pydmft"
 #
 # Perse keywords and store
 #
@@ -40,9 +40,11 @@ for line in open(sys.argv[1], 'r'):
     elif itemList[0].strip() == 'nk':
         nk[0] = int(itemList[1])
     elif itemList[0].strip() == 'lattice':
-        lattice = itemList[1]
+        lattice = itemList[1].strip()
     elif itemList[0].strip() == 'nelec':
         nelec = float(itemList[1])
+    elif itemList[0].strip() == 'seedname':
+        seedname = itemList[1].strip()
     else:
         print "Error ! Invalid keyword : ", itemList[0]
         sys.exit()
@@ -57,6 +59,7 @@ print "                 J = ", J
 print "Number of orbitals = ", norb
 print "                nk = ", nk[0]
 print "           Lattice = ", lattice.strip()
+print "          seedname = ", seedname.strip()
 print "             nelec = ", nelec
 if lattice.strip() == 'chain':
     ndim = 1
@@ -78,7 +81,7 @@ print " Total number of k = ", nkBZ
 #
 # Write General-Hk formated file
 #
-f= open(hkname, 'w')
+f= open(seedname, 'w')
 f.write(str(nkBZ)+"\n")
 f.write(str(nelec)+"\n")
 f.write("1\n")
@@ -101,13 +104,13 @@ f.close()
 #
 # Convert General-Hk to SumDFT-HDF5 format
 #
-Converter = HkConverter(filename = hkname)
+Converter = HkConverter(filename = seedname)
 Converter.convert_dft_input()
 #
 # Add U-matrix block
 #
 Umat, Upmat = U_matrix_kanamori(n_orb=norb, U_int=U, J_hund=J)
-f = HDFArchive(hkname+'.h5','a')
+f = HDFArchive(seedname+'.h5','a')
 if not ("pyDMFT" in f):
     f.create_group("pyDMFT")
 f["pyDMFT"]["U_matrix"] = Umat
