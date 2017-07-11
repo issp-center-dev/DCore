@@ -25,7 +25,7 @@ from types import *
 from pytriqs.operators.util.U_matrix import *
 from pytriqs.gf.local import *
 # from hubbard_I import gf_hi_fullu, sigma_atomic_fullu
-from pytriqs.applications.impurity_solvers.hubbard_I.hubbard_I import gf_hi_fullu, sigma_atomic_fullu
+from pytriqs.applications.impurity_solvers.hubbard_I.hubbard_solver import gf_hi_fullu, sigma_atomic_fullu
 import pytriqs.utility.mpi as mpi
 from itertools import izip
 import numpy

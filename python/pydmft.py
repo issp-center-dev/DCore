@@ -46,7 +46,7 @@ h_int = h_int_density(spin_names, orb_names, map_operator_structure=SK.sumk_to_s
 #
 # Setup solver
 #
-from pytriqs.applications.impurity_solvers.hubbard_I import *
+from hubbard_solver_l0 import *
 S = Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau, n_l=n_l)
 #
 # DMFT roop
