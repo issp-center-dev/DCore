@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys
 import numpy
 from pytriqs.applications.dft.converters.hk_converter import *
@@ -7,8 +8,8 @@ from pytriqs.operators.util.U_matrix import *
 # If input file is not specified ... 
 #
 if len(sys.argv) != 2:
-    print "Usage:"
-    print "$ ipytriqs standard.py input"
+    print("Usage:")
+    print("$ ipytriqs standard.py input")
     sys.exit()
 #
 # Set Default value
@@ -17,7 +18,7 @@ t= 1.0
 tp = 0.0
 U = 0.0
 J = 0.0
-norb = 1
+model = "single"
 nk = [8, 1, 1]
 lattice = "chain"
 nelec = 1.0
@@ -35,33 +36,35 @@ for line in open(sys.argv[1], 'r'):
         U = float(itemList[1])
     elif itemList[0].strip() == 'J':
         J = float(itemList[1])
-    elif itemList[0].strip() == 'norb':
-        norb = int(itemList[1])
     elif itemList[0].strip() == 'nk':
         nk[0] = int(itemList[1])
     elif itemList[0].strip() == 'lattice':
         lattice = itemList[1].strip()
+    elif itemList[0].strip() == 'model':
+        model = itemList[1].strip()
     elif itemList[0].strip() == 'nelec':
         nelec = float(itemList[1])
     elif itemList[0].strip() == 'seedname':
         seedname = itemList[1].strip()
     else:
-        print "Error ! Invalid keyword : ", itemList[0]
+        print("Error ! Invalid keyword : ", itemList[0])
         sys.exit()
 #
 # Summary of input parameters
 #
-print "Parameter summary"
-print "                 t = ", t
-print "                t' = ", tp
-print "                 U = ", U
-print "                 J = ", J
-print "Number of orbitals = ", norb
-print "                nk = ", nk[0]
-print "           Lattice = ", lattice.strip()
-print "          seedname = ", seedname.strip()
-print "             nelec = ", nelec
-
+print("Parameter summary")
+print("                 t = {0}".format(t))
+print("                t' = {0}".format(tp))
+print("                 U = {0}".format(U))
+print("                 J = {0}".format(J))
+print("                nk = {0}".format(nk[0]))
+print("           Lattice = {0}".format(lattice.strip()))
+print("             Model = {0}".format(model.strip()))
+print("          seedname = {0}".format(seedname.strip()))
+print("             nelec = {0}".format(nelec))
+#
+# Lattice
+#
 if lattice.strip() == 'chain':
     weights_in_file = False
 elif lattice.strip() == 'square':
@@ -74,44 +77,68 @@ elif lattice.strip() == 'cubic':
 elif lattice.strip() == 'bethe':
     weights_in_file = True
 else:
-    print "Error ! Invalid lattice : ", lattice
+    print("Error ! Invalid lattice : ", lattice)
     sys.exit()
 nkBZ = nk[0] * nk[1] * nk[2]
-print " Total number of k = ", nkBZ
+print(" Total number of k =", str(nkBZ))
+#
+# Model
+#
+if model.strip() == 'single':
+    l = 0
+    norb = 1
+elif model.strip() == 'eg':
+    l = 2
+    norb = 2
+elif model.strip() == 't2g':
+    l = 2
+    norb = 3
+elif model.strip() == 'full-d':
+    l = 2
+    norb = 5
+else:
+    print("Error ! Invalid lattice : {0}".format(model.strip()))
+    sys.exit()
 #
 # Write General-Hk formated file
 #
-f= open(seedname, 'w')
-f.write(str(nkBZ)+"\n")
-f.write(str(nelec)+"\n")
-f.write("1\n")
-f.write("1 1 0 " + str(norb)+"\n")
-f.write("1\n")
-f.write("1 1 0 " + str(norb) + " 0 0\n")
-f.write("1 " + str(norb) +"\n")
-#
-# If Bethe lattice, set k-weight manually to generate semi-circular DOS
-#
-kvec = [0.0, 0.0, 0.0]
-if weights_in_file:
-    for i0 in range(nk[0]):
-        kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk[0])
-        wk = 2.0 * numpy.cos(kvec[0])**2
-        f.write(str(wk) + "\n")
+f = open(seedname, 'w')
+print("{0}".format(nkBZ), file=f)
+print("{0}".format(nelec), file=f)
+print("1", file=f)
+print("1 1 {0} {1}".format(l, norb), file=f)
+print("1", file=f)
+print("1 1 {0} {1} 0 0".format(l, norb), file=f)
+print("1 {0}".format(norb), file=f)
 #
 # Energy band
 #
-for i0 in range(nk[0]):
-    kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk[0])
-    for i1 in range(nk[1]):
-      kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk[1])
-      for i2 in range(nk[2]):
-           kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk[2])
-           ek = 2*t*(  numpy.sin(kvec[0])
-                     + numpy.sin(kvec[1])
-                     + numpy.sin(kvec[2]))
-           f.write(str(ek) + "\n")  #Real part
-           f.write("0.0\n") #Imaginary part    
+if lattice.strip() == 'bethe':
+    #
+    # If Bethe lattice, set k-weight manually to generate semi-circular DOS
+    #
+    for i0 in range(nk[0]):
+        ek = float(2*i0 + 1 - nk[0]) / float(nk[0])
+        wk = numpy.sqrt(1.0 - ek**2)
+        print("{0}".format(wk), file=f)
+    for i0 in range(nk[0]):
+        ek = t * float(2*i0 + 1 - nk[0]) / float(nk[0])
+        print("{0}".format(ek), file=f) #Real part
+        print("0.0", file=f) #Imaginary part
+else:
+    kvec = [0.0, 0.0, 0.0]
+    for i0 in range(nk[0]):
+        kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk[0])
+        for i1 in range(nk[1]):
+            kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk[1])
+            for i2 in range(nk[2]):
+                kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk[2])
+                ek = 2*t*(  numpy.sin(kvec[0])
+                    + numpy.sin(kvec[1])
+                    + numpy.sin(kvec[2]))
+                for iorb in range(norb):
+                    print("{0}".format(ek), file=f) #Real part
+                    print("0.0", file=f) #Imaginary part
 f.close()
 #
 # Convert General-Hk to SumDFT-HDF5 format
@@ -130,5 +157,5 @@ f["pyDMFT"]["Up_matrix"] = Upmat
 #
 # Finish
 #
-print "Done"
-print ""
+print("Done")
+print("")
