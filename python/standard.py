@@ -19,7 +19,7 @@ tp = 0.0
 U = 0.0
 J = 0.0
 model = "single"
-nk = [8, 1, 1]
+nk = 8
 lattice = "chain"
 nelec = 1.0
 seedname = "pydmft"
@@ -37,7 +37,7 @@ for line in open(sys.argv[1], 'r'):
     elif itemList[0].strip() == 'J':
         J = float(itemList[1])
     elif itemList[0].strip() == 'nk':
-        nk[0] = int(itemList[1])
+        nk = int(itemList[1])
     elif itemList[0].strip() == 'lattice':
         lattice = itemList[1].strip()
     elif itemList[0].strip() == 'model':
@@ -57,7 +57,7 @@ print("                 t = {0}".format(t))
 print("                t' = {0}".format(tp))
 print("                 U = {0}".format(U))
 print("                 J = {0}".format(J))
-print("                nk = {0}".format(nk[0]))
+print("                nk = {0}".format(nk))
 print("           Lattice = {0}".format(lattice.strip()))
 print("             Model = {0}".format(model.strip()))
 print("          seedname = {0}".format(seedname.strip()))
@@ -65,21 +65,19 @@ print("             nelec = {0}".format(nelec))
 #
 # Lattice
 #
+weights_in_file = False
 if lattice.strip() == 'chain':
-    weights_in_file = False
+    nkBZ = nk
 elif lattice.strip() == 'square':
-    weights_in_file = False
-    nk[1] = nk[0]
+    nkBZ = nk**2
 elif lattice.strip() == 'cubic':
-    weights_in_file = False
-    nk[1] = nk[0]
-    nk[2] = nk[0]
+    nkBZ = nk**3
 elif lattice.strip() == 'bethe':
+    nkBZ = nk
     weights_in_file = True
 else:
     print("Error ! Invalid lattice : ", lattice)
     sys.exit()
-nkBZ = nk[0] * nk[1] * nk[2]
 print(" Total number of k =", str(nkBZ))
 #
 # Model
@@ -117,28 +115,65 @@ if lattice.strip() == 'bethe':
     #
     # If Bethe lattice, set k-weight manually to generate semi-circular DOS
     #
-    for i0 in range(nk[0]):
-        ek = float(2*i0 + 1 - nk[0]) / float(nk[0])
+    for i0 in range(nk):
+        ek = float(2*i0 + 1 - nk) / float(nk)
         wk = numpy.sqrt(1.0 - ek**2)
         print("{0}".format(wk), file=f)
-    for i0 in range(nk[0]):
-        ek = t * float(2*i0 + 1 - nk[0]) / float(nk[0])
-        print("{0}".format(ek), file=f) #Real part
-        print("0.0", file=f) #Imaginary part
-else:
-    kvec = [0.0, 0.0, 0.0]
-    for i0 in range(nk[0]):
-        kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk[0])
-        for i1 in range(nk[1]):
-            kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk[1])
-            for i2 in range(nk[2]):
-                kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk[2])
-                ek = 2*t*(  numpy.sin(kvec[0])
-                    + numpy.sin(kvec[1])
-                    + numpy.sin(kvec[2]))
-                for iorb in range(norb):
+    for i0 in range(nk):
+        ek = t * float(2*i0 + 1 - nk) / float(nk)
+        for iorb in range(norb):
+            for jorb in range(norb):
+                if iorb == jorb:
                     print("{0}".format(ek), file=f) #Real part
+                else:
+                    print("0.0", file=f) #Real part
+                print("0.0", file=f) #Imaginary part
+elif lattice.strip() == 'chain':
+    kvec = [0.0, 0.0, 0.0]
+    for i0 in range(nk):
+        kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
+        ek = 2.0*t*numpy.cos(kvec[0]) * 2*tp*numpy.cos(2.0*kvec[0])
+        for iorb in range(norb):
+            for jorb in range(norb):
+                if iorb == jorb:
+                    print("{0}".format(ek), file=f) #Real part
+                else:
+                    print("0.0", file=f) #Real part
+                print("0.0", file=f) #Imaginary part
+elif lattice.strip() == 'square':
+    kvec = [0.0, 0.0, 0.0]
+    for i0 in range(nk):
+        kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
+        for i1 in range(nk):
+            kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk)
+            ek = 2.0*t*(numpy.cos(kvec[0]) +  numpy.cos(kvec[1])) \
+               + 2.0*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
+            for iorb in range(norb):
+                for jorb in range(norb):
+                    if iorb == jorb:
+                        print("{0}".format(ek), file=f) #Real part
+                    else:
+                        print("0.0", file=f) #Real part
                     print("0.0", file=f) #Imaginary part
+elif lattice.strip() == 'cubic':
+    kvec = [0.0, 0.0, 0.0]
+    for i0 in range(nk):
+        kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
+        for i1 in range(nk):
+            kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk)
+            for i2 in range(nk):
+                kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk)
+                ek = 2*t*(numpy.cos(kvec[0]) +  numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
+                   + 2*tp*( numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]) \
+                          + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2]) \
+                          + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]) )
+                for iorb in range(norb):
+                    for jorb in range(norb):
+                        if iorb == jorb:
+                            print("{0}".format(ek), file=f) #Real part
+                        else:
+                            print("0.0", file=f) #Real part
+                        print("0.0", file=f) #Imaginary part
 f.close()
 #
 # Convert General-Hk to SumDFT-HDF5 format
@@ -146,14 +181,17 @@ f.close()
 Converter = HkConverter(filename = seedname)
 Converter.convert_dft_input(weights_in_file=weights_in_file)
 #
-# Add U-matrix block
+# Add U-matrix block (Tentative)
+# ####  The format of this block is not fixed  #### 
 #
 Umat, Upmat = U_matrix_kanamori(n_orb=norb, U_int=U, J_hund=J)
 f = HDFArchive(seedname+'.h5','a')
 if not ("pyDMFT" in f):
     f.create_group("pyDMFT")
-f["pyDMFT"]["U_matrix"] = Umat
-f["pyDMFT"]["Up_matrix"] = Upmat
+#f["pyDMFT"]["U_matrix"] = Umat
+#f["pyDMFT"]["Up_matrix"] = Upmat
+f["pyDMFT"]["U_int"] = U
+f["pyDMFT"]["J_hund"] = J
 #
 # Finish
 #
