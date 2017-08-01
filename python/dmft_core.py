@@ -8,7 +8,7 @@ from pytriqs.gf.local import *
 from pytriqs.applications.dft.sumk_dft import *
 
 
-class DMFTSolver:
+class DMFTCoreSolver:
     def __init__(self, seedname, params):
         self._params = copy.deepcopy(params)
 

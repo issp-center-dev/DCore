@@ -1,6 +1,6 @@
 def application_pytriqs_import(name,*args,**kwargs):
-    if name.startswith('@package_name@'):
-        name = name[len('@package_name@')+1:]
+    if name.startswith('pytriqs.applications.pydmft'):
+        name = name[len('pytriqs.applications')+1:]
     return builtin_import(name,*args,**kwargs)
 
 import __builtin__
