@@ -15,8 +15,10 @@ class DMFTCoreSolver:
         # Construct a SumKDFT object
         self._SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
         U_file = HDFArchive(seedname+'.h5','r')
-        Umat = U_file["pyDMFT"]["U_matrix"]
-        Upmat = U_file["pyDMFT"]["Up_matrix"]
+        #Umat = U_file["pyDMFT"]["U_matrix"]
+        #Upmat = U_file["pyDMFT"]["Up_matrix"]
+        self._J_hund = U_file["pyDMFT"]["J_hund"]
+        self._U_int = U_file["pyDMFT"]["U_int"]
 
         # Assume up and down sectors are equivalent. (=paramagnetic)
         self._SK.deg_shells = [[['up','down']]]
@@ -26,6 +28,9 @@ class DMFTCoreSolver:
         spin_names = ["up","down"]
         orb_names = [i for i in range(n_orb)]
 
+        # Construct U matrix for density-density calculations
+        Umat, Upmat = U_matrix_kanamori(n_orb=n_orb, U_int=self._U_int, J_hund=self._J_hund)
+
         # Construct Hamiltonian
         self._h_int = h_int_density(spin_names, orb_names, map_operator_structure=self._SK.sumk_to_solver[0], U=Umat, Uprime=Upmat, H_dump="H.txt")
 
@@ -33,11 +38,11 @@ class DMFTCoreSolver:
         gf_struct = self._SK.gf_struct_solver[0]
 
         # Construct an impurity solver
-        beta = params['system']['beta']
-        n_iw = params['system']['n_iw'] # Number of Matsubara frequencies
-        n_tau = params['system']['n_tau'] # Number of tau points
+        beta = float(params['system']['beta'])
+        n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
+        n_tau = int(params['system']['n_tau']) # Number of tau points
         solver = params['impurity_solver']['name']
-        n_l = params['impurity_solver']['N_l']                            # Number of Legendre polynomials
+        n_l = int(params['impurity_solver']['N_l'])                           # Number of Legendre polynomials
         self._solver_params = {}
         if solver=="TRIQS/cthyb":
             from pytriqs.applications.impurity_solvers.cthyb import Solver
@@ -56,9 +61,11 @@ class DMFTCoreSolver:
         else:
             raise RuntimeError("Unknown solver "+solver)
 
-    def solve(self, max_step, output_file, output_path):
-        beta = self._params['system']['beta']
-        dc_type = self._params['system']['.dc_type']                        # DC type: -1 None, 0 FLL, 1 Held, 2 AMF
+    def solve(self, max_step, output_file, output_group='dmft_output', dry_run=False):
+        beta = float(self._params['system']['beta'])
+        dc_type = int(self._params['system']['dc_type'])                        # DC type: -1 None, 0 FLL, 1 Held, 2 AMF
+        if dc_type != -1:
+            raise RuntimeError("dc_type != -1 is not supported!")
         fix_mu = self._params['system']['fix_mu']
         if fix_mu:
             mu_init = self._params['system']['mu_init']
@@ -74,6 +81,18 @@ class DMFTCoreSolver:
         # Just for convenience
         SK = self._SK
         S = self._S
+
+        # Set up a HDF file for output
+        if mpi.is_master_node():
+            f = HDFArchive(output_file, 'a')
+            if output_group in f:
+                ar = f[output_group]
+                if 'iterations' in ar:
+                    previous_present = True
+                    previous_runs = ar['iterations']
+            else:
+                f.create_group(output_group)
+            del f
 
         for iteration_number in range(1,max_step+1):
             if mpi.is_master_node():
@@ -104,9 +123,9 @@ class DMFTCoreSolver:
                 ar = HDFArchive(output_file, 'a')
                 if (iteration_number>1 or previous_present):
                     mpi.report("Mixing input Delta with factor %s"%delta_mix)
-                    Delta = (delta_mix * delta(S.G0_iw)) + (1.0-delta_mix) * ar[output_path]['Delta_iw']
+                    Delta = (delta_mix * delta(S.G0_iw)) + (1.0-delta_mix) * ar[output_group]['Delta_iw']
                     S.G0_iw << S.G0_iw + delta(S.G0_iw) - Delta
-                ar[output_path]['Delta_iw'] = delta(S.G0_iw)
+                ar[output_group]['Delta_iw'] = delta(S.G0_iw)
                 S.G0_iw << inverse(S.G0_iw)
                 del ar
 
@@ -123,8 +142,8 @@ class DMFTCoreSolver:
                 if mpi.is_master_node():
                     ar = HDFArchive(output_file,'a')
                     mpi.report("Mixing Sigma and G with factor %s"%sigma_mix)
-                    S.Sigma_iw << sigma_mix * S.Sigma_iw + (1.0-sigma_mix) * ar[output_path]['Sigma_iw']
-                    S.G_iw << sigma_mix * S.G_iw + (1.0-sigma_mix) * ar[output_path]['G_iw']
+                    S.Sigma_iw << sigma_mix * S.Sigma_iw + (1.0-sigma_mix) * ar[output_group]['Sigma_iw']
+                    S.G_iw << sigma_mix * S.G_iw + (1.0-sigma_mix) * ar[output_group]['G_iw']
                     del ar
                 S.G_iw << mpi.bcast(S.G_iw)
                 S.Sigma_iw << mpi.bcast(S.Sigma_iw)
@@ -132,12 +151,12 @@ class DMFTCoreSolver:
             # Write the final Sigma and G to the hdf5 archive:
             if mpi.is_master_node():
                 ar = HDFArchive(output_file, 'a')
-                ar[output_path]['iterations'] = iteration_number + previous_runs
-                ar[output_path]['G_iw'] = S.G_iw
-                ar[output_path]['Sigma_iw'] = S.Sigma_iw
-                ar[output_path]['G0-%s'%(iteration_number + previous_runs)] = S.G0_iw
-                ar[output_path]['G-%s'%(iteration_number + previous_runs)] = S.G_iw
-                ar[output_path]['Sigma-%s'%(iteration_number + previous_runs)] = S.Sigma_iw
+                ar[output_group]['iterations'] = iteration_number + previous_runs
+                ar[output_group]['G_iw'] = S.G_iw
+                ar[output_group]['Sigma_iw'] = S.Sigma_iw
+                ar[output_group]['G0-%s'%(iteration_number + previous_runs)] = S.G0_iw
+                ar[output_group]['G-%s'%(iteration_number + previous_runs)] = S.G_iw
+                ar[output_group]['Sigma-%s'%(iteration_number + previous_runs)] = S.Sigma_iw
                 del ar
 
             # Set the new double counting:
