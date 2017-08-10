@@ -34,6 +34,11 @@ class TypedParser(object):
         self.__results[section][option] = dtype(default)
 
     def read(self, in_file):
+        if self.__read:
+            raise RuntimeError("An input file has been already read!")
+
+        self.__read = True
+
         if not os.path.exists(in_file):
             raise RuntimeError("Not found "+in_file)
         self.__config_parser.read(in_file)
