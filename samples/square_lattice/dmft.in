@@ -1,0 +1,8 @@
+[system]
+beta = 5.0
+
+[control]
+max_step = 20
+
+[impurity_solver]
+name = TRIQS/cthyb

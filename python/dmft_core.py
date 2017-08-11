@@ -52,6 +52,9 @@ class DMFTCoreSolver:
             self._solver_params["n_warmup_cycles"] = 5000
             self._solver_params["n_cycles"] = 50000
             self._S = Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau, n_l=n_l)
+        elif solver=="TRIQS/hubbard-I":
+            from pytriqs.applications.pydmft.hubbard_solver_l0 import Solver
+            self._S = Solver(beta=beta, l=l)
         elif solver=="ALPS/cthyb":
             from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
             self._solver_params["max_time"] = 60     # Max simulation time
