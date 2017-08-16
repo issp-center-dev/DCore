@@ -59,11 +59,11 @@ class Solver:
         # construct Greens functions:
         self.a_list = [a for a,al in self.gf_struct]
         glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_points = self.Nmsb) for a,al in self.gf_struct]
-        self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
-        self.G_Old = self.G.copy()
-        self.G0 = self.G.copy()
-        self.Sigma = self.G.copy()
-        self.Sigma_Old = self.G.copy()
+        self.G_iw = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
+        self.G_Old = self.G_iw.copy()
+        self.G0_iw = self.G_iw.copy()
+        self.Sigma_iw = self.G_iw.copy()
+        self.Sigma_Old = self.G_iw.copy()
 
         # prepare self.ealmat
         self.ealmat = numpy.zeros([self.Nlm*self.Nspin,self.Nlm*self.Nspin],numpy.complex_)
@@ -95,12 +95,12 @@ class Solver:
         ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
 
 
-        M = [x for x in self.G.mesh]
+        M = [x for x in self.G_iw.mesh]
         self.zmsb = numpy.array([x for x in M],numpy.complex_)
 
         # for the tails:
         tailtempl={}
-        for sig,g in self.G:
+        for sig,g in self.G_iw:
             tailtempl[sig] = copy.deepcopy(g.tail)
             for i in range(9): tailtempl[sig][i] *= 0.0
 
@@ -108,8 +108,8 @@ class Solver:
 
         mpi.report( "Starting Fortran solver %(name)s"%self.__dict__)
 
-        self.Sigma_Old <<= self.Sigma
-        self.G_Old <<= self.G
+        self.Sigma_Old <<= self.Sigma_iw
+        self.G_Old <<= self.G_iw
 
         # call the fortran solver:
         temp = 1.0/self.beta
@@ -140,19 +140,19 @@ class Solver:
         #glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_points = self.Nmsb, data =M[a], tail =self.tailtempl[a])
         #                   for a,al in self.gf_struct]
         glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_points = self.Nmsb) for a,al in self.gf_struct]
-        self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
+        self.G_iw = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
 
-        self.__copy_Gf(self.G,M,tailtempl)
+        self.__copy_Gf(self.G_iw,M,tailtempl)
 
         # Self energy:
-        self.G0 <<= iOmega_n
+        self.G0_iw <<= iOmega_n
 
         M = [ self.ealmat[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot) ]
-        self.G0 -= M
-        self.Sigma <<= self.G0 - inverse(self.G)
+        self.G0_iw -= M
+        self.Sigma_iw <<= self.G0_iw - inverse(self.G_iw)
 
         # invert G0
-        self.G0.invert()
+        self.G0_iw.invert()
 
         def test_distance(G1,G2, dist) :
             def f(G1,G2) :
@@ -163,7 +163,7 @@ class Solver:
             return reduce(lambda x,y : x and y, [f(g1,g2) for (i1,g1),(i2,g2) in izip(G1,G2)])
 
         mpi.report("\nChecking Sigma for convergence...\nUsing tolerance %s"%Test_Convergence)
-        self.Converged = test_distance(self.Sigma,self.Sigma_Old,Test_Convergence)
+        self.Converged = test_distance(self.Sigma_iw,self.Sigma_Old,Test_Convergence)
 
         if self.Converged :
             mpi.report("Solver HAS CONVERGED")
@@ -184,7 +184,7 @@ class Solver:
             omega[i] = ommin + delta_om * i + 1j * broadening
 
         tailtempl={}
-        for sig,g in self.G:
+        for sig,g in self.G_iw:
             tailtempl[sig] = copy.deepcopy(g.tail)
             for i in range(9): tailtempl[sig][i] *= 0.0
 
@@ -209,19 +209,19 @@ class Solver:
         #glist = lambda : [ GfReFreq(indices = al, window = (ommin, ommax), n_points = N_om, data = M[a], tail = self.tailtempl[a])
         #                   for a,al in self.gf_struct]       # Indices for the upfolded G
         glist = lambda : [ GfReFreq(indices = al, window = (ommin, ommax), n_points = N_om) for a,al in self.gf_struct]
-        self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
+        self.G_iw = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
 
-        self.__copy_Gf(self.G,M,tailtempl)
+        self.__copy_Gf(self.G_iw,M,tailtempl)
 
         # Self energy:
-        self.G0 = self.G.copy()
-        self.Sigma = self.G.copy()
-        self.G0 <<= Omega + 1j*broadening
+        self.G0_iw = self.G_iw.copy()
+        self.Sigma_iw = self.G_iw.copy()
+        self.G0_iw <<= Omega + 1j*broadening
 
         M = [ self.ealmat[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot) ]
-        self.G0 -= M
-        self.Sigma <<= self.G0 - inverse(self.G)
-        self.Sigma.note='ReFreq'          # This is important for the put_Sigma routine!!!
+        self.G0_iw -= M
+        self.Sigma_iw <<= self.G0_iw - inverse(self.G_iw)
+        self.Sigma_iw.note='ReFreq'          # This is important for the put_Sigma routine!!!
 
         #sigmamat = sigma_atomic_fullu(gf=gf,e0f=self.ealmat,zmsb=omega,nlm=self.Nlm,ns=self.Nspin)
 

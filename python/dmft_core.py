@@ -41,10 +41,10 @@ class DMFTCoreSolver:
         beta = float(params['system']['beta'])
         n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
         n_tau = int(params['system']['n_tau']) # Number of tau points
-        solver = params['impurity_solver']['name']
+        self._name = params['impurity_solver']['name']
         n_l = int(params['impurity_solver']['N_l'])                           # Number of Legendre polynomials
         self._solver_params = {}
-        if solver=="TRIQS/cthyb":
+        if self._name=="TRIQS/cthyb":
             from pytriqs.applications.impurity_solvers.cthyb import Solver
             self._solver_params["max_time"] = -1
             self._solver_params["random_seed"] = 123 * mpi.rank + 567
@@ -52,17 +52,17 @@ class DMFTCoreSolver:
             self._solver_params["n_warmup_cycles"] = 5000
             self._solver_params["n_cycles"] = 50000
             self._S = Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau, n_l=n_l)
-        elif solver=="TRIQS/hubbard-I":
-            from pytriqs.applications.pydmft.hubbard_solver_l0 import Solver
+        elif self._name=="TRIQS/hubbard-I":
+            from hubbard_solver_l0 import Solver
             self._S = Solver(beta=beta, l=l)
-        elif solver=="ALPS/cthyb":
+        elif self._name=="ALPS/cthyb":
             from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
             self._solver_params["max_time"] = 60     # Max simulation time
             self._solver_params["perform_post_proc"] = True     # Max simulation time
             self._solver_params["verbosity"] = 1     # Max simulation time
             self._S = Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_l=n_l, n_iw=n_iw, n_tau=n_tau)
         else:
-            raise RuntimeError("Unknown solver "+solver)
+            raise RuntimeError("Unknown solver "+self._name)
 
     def solve(self, max_step, output_file, output_group='dmft_output', dry_run=False):
         beta = float(self._params['system']['beta'])
@@ -135,7 +135,10 @@ class DMFTCoreSolver:
             S.G0_iw << mpi.bcast(S.G0_iw)
 
             # Solve the impurity problem:
-            S.solve(h_int=self._h_int, **self._solver_params)
+            if self._name=="TRIQS/hubbard-I":
+                S.solve(U_int=self._U_int, J_hund=self._J_hund)
+            else:
+                S.solve(h_int=self._h_int, **self._solver_params)
 
             # Solved. Now do post-processing:
             mpi.report("Total charge of impurity problem : %.6f"%S.G_iw.total_density())

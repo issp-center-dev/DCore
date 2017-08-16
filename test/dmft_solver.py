@@ -42,7 +42,7 @@ params['system']['fix_mu'] = False
 
 params['impurity_solver'] = {}
 params['impurity_solver']['N_l'] = 50
-params['impurity_solver']['name'] = 'TRIQS/cthyb'
+params['impurity_solver']['name'] = 'TRIQS/hubbard-I'
 
 params['control'] = {}
 params['control']['sigma_mix'] = 0.5
