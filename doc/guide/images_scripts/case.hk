@@ -1,0 +1,8 @@
+64          ! number of k-points
+1.0         ! Electron density
+2           ! number of total atomic shells
+1 1 2 5     ! iatom, isort, l, dimension
+2 2 1 3     ! iatom, isort, l, dimension
+1           ! number of correlated shells
+1 1 2 5 0 0 ! iatom, isort, l, dimension, SO, irep
+1 5         ! # of ireps, dimension of irep
