@@ -13,10 +13,16 @@ from pytriqs.applications.pydmft.standard import standard
 # Execute standard.py to generate test.h5
 # Then Check the Diff of test.h5 and the reference output (stan_ref.h5))
 #
+f = open('stan.in', 'w')
+print("t = 1.0", file=f)
+print("U = 4.0", file=f)
+print("seedname = stan_test", file=f)
+f.close()
+
 standard('stan.in')
 
-print("\n Check Diff of test.h5 stan_ref.h5\n")
-check = os.system('h5diff test.h5 stan_ref.h5')
+print("\n Check Diff of stan_test.h5 stan_ref.h5\n")
+check = os.system('h5diff stan_test.h5 stan_ref.h5')
 
 if check == 0:
     print("\n Generated file is the same as the refference.\n")

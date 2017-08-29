@@ -14,6 +14,12 @@ from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver
     #import ConfigParser as configparser
 
 # Generate a HDF5 file
+f = open('stan.in', 'w')
+print("t = 1.0", file=f)
+print("U = 4.0", file=f)
+print("seedname = test", file=f)
+f.close()
+
 standard('stan.in')
 
 #parser = configparser.ConfigParser()
