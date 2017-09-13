@@ -32,6 +32,7 @@ endif(${GIT_RESULT} EQUAL 0)
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
 add_subdirectory(python)
+add_subdirectory(shells)
 add_subdirectory(test)
 option(BUILD_DOC "Build documentation" OFF)
 if(${BUILD_DOC})
