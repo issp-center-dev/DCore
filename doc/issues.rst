@@ -3,7 +3,7 @@ Reporting issues
 ================
 
 Please report all problems and bugs directly at the github issue page
-`<https://github.com/TRIQS/dft_tools/issues>`_.  In order to make it easier
+`<https://github.com/ALPSCore/pyDMFT/issues>`_.  In order to make it easier
 for us to solve the issue please follow these guidelines:
 
 #. In all cases specify which version of the application you are using. You can

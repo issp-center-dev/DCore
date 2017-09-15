@@ -1,7 +1,7 @@
 .. _DFTDMFTtutorial:
 
-DFT+DMFT tutorial: Ce with Hubbard-I approximation
-==================================================
+Tutorial with wannier90
+=======================
 
 In this tutorial we will perform DFT+DMFT :program:`Wien2k`
 calculations from scratch, including all steps described in the
@@ -35,10 +35,6 @@ Then we create the :file:`Ce-gamma.indmftpr` file specifying parameters for cons
 
 .. literalinclude:: images_scripts/Ce-gamma.indmftpr
 
-As we learned in the section :ref:`conversion`, the first three lines
-give the number of inequivalent sites, their multiplicity (to be in
-accordance with the *struct* file) and the maximum orbital quantum
-number :math:`l_{max}`. 
 The following four lines describe the treatment of Ce *spdf* orbitals by the :program:`dmftproj` program::
 
    complex
@@ -81,21 +77,11 @@ Now we have all necessary input from :program:`Wien2k` for running DMFT calculat
 DMFT setup: Hubbard-I calculations in TRIQS
 --------------------------------------------
 
-In order to run DFT+DMFT calculations within Hubbard-I we need the corresponding python script, :ref:`Ce-gamma_script`. 
-It is generally similar to the script for the case of DMFT calculations with the CT-QMC solver (see :ref:`singleshot`), 
 however there are also some differences. First difference is that we import the Hubbard-I solver by::
 
    from pytriqs.applications.impurity_solvers.hubbard_I.hubbard_solver import Solver
 
 The Hubbard-I solver is very fast and we do not need to take into account the DFT block structure or use any approximation for the *U*-matrix.
-We load and convert the :program:`dmftproj` output and initialize the
-:class:`SumkDFT <dft.sumk_dft.SumkDFT>` class as described in :ref:`conversion` and
-:ref:`singleshot` and then set up the Hubbard-I solver :: 
- 
-   S = Solver(beta = beta, l = l)
-
-where the solver is initialized with the value of `beta`, and the orbital quantum number `l` (equal to 3 in our case). 
-
 
 The Hubbard-I initialization `Solver` has also optional parameters one may use:
 
@@ -111,10 +97,9 @@ The `Solver.solve(U_int, J_hund)` statement has two necessary parameters, the Hu
   * `Iteration_Number`: the iteration number of the DMFT loop. Used only for printing. By default   `Iteration_Number=1`
   * `Test_Convergence`: convergence criterion. Once the self-energy is converged below `Test_Convergence` the Hubbard-I solver is not called anymore. By default `Test_Convergence=0.0001`.
 
-We need also to introduce some changes in the DMFT loop with respect that used for CT-QMC calculations in :ref:`singleshot`. 
 The hybridization function is neglected in the Hubbard-I approximation, and only non-interacting level 
 positions (:math:`\hat{\epsilon}=-\mu+\langle H^{ff} \rangle - \Sigma_{DC}`) are required.
-Hence, instead of computing `S.G0` as in :ref:`singleshot` we set the level positions::
+::
 
    # set atomic levels:
    eal = SK.eff_atomic_levels()[0]
@@ -126,24 +111,6 @@ Then the double counting is recalculated and the correlation energy is computed 
 
 Finally, we compute the modified charge density and save it as well as correlational correction to the total energy in 
 :file:`Ce-gamma.qdmft` file, which is then read by lapw2 in the case of self-consistent DFT+DMFT calculations.
-
-
-Running single-shot DFT+DMFT calculations
-------------------------------------------
-
-After having prepared the script one may run one-shot DMFT calculations by
-executing :ref:`Ce-gamma_script` with :program:`pytriqs` on a single processor:
-
-   `pytriqs Ce-gamma.py`
-
-or in parallel mode:
-
-   `mpirun -np 64 pytriqs Ce-gamma.py`
-
-where :program:`mpirun` launches these calculations in parallel mode and
-enables MPI. The exact form of this command will, of course, depend on
-mpi-launcher installed in your system, but the form above applies to
-99% of the system setups.
 
 
 Running self-consistent DFT+DMFT calculations
@@ -192,7 +159,7 @@ analytic continuations to get the
 real-frequency self-energy, as it can be calculated directly
 in the Hubbard-I solver.
 
-The corresponding script :ref:`Ce-gamma_DOS_script` contains several new parameters ::
+The corresponding script contains several new parameters ::
 
    ommin=-4.0    # bottom of the energy range for DOS calculations 
    ommax=6.0     # top  of the energy range for DOS calculations
@@ -226,11 +193,10 @@ We may first increase the number of **k**-points in BZ to 10000 by executing :pr
   
    x kgen
 
-and then by executing :ref:`Ce-gamma_DOS_script` with :program:`pytriqs`::
+and then by executing with :program:`pytriqs`::
 
    pytriqs Ce-gamma_DOS.py
 
-In result we get the total DOS for spins `up` and `down` (identical in our paramagnetic case) in :file:`DOScorrup.dat` and :file:`DOScorrdown.dat` files, respectively, as well as projected DOSs written in the corresponding files as described in :ref:`analysis`. 
 In our case, for example, the files :file:`DOScorrup.dat` and :file:`DOScorrup_proj3.dat` contain the total DOS for spin *up* and the corresponding projected DOS for Ce *4f* orbital, respectively. They are plotted below.
 
 .. image:: images_scripts/Ce_DOS.png

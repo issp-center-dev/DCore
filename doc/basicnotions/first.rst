@@ -59,14 +59,3 @@ hybridization-expansion solver. In general, those tutorials will take at least a
 
 Afterwards you can continue with the :ref:`DFTTools user guide <documentation>`.
 
-
-Maximum Entropy (MaxEnt)
-------------------------
-
-Analytic continuation is needed for many :ref:`post-processing tools <analysis>`, e.g. to
-calculate the spectral function, the correlated band structure (:math:`A(k,\omega)`)
-and to perform :ref:`transport calculations <Transport>`.
-You can use the Pade approximation available in the :ref:`TRIQS <triqslibs:welcome>` library, however,
-it turns out to be very unstable for noisy numerical data. Most of the time, the MaxEnt method
-is used to obtain data on the real-frequency axis. At the moment neither :ref:`TRIQS <triqslibs:welcome>` nor
-:program:`DFTTools` provide such routines.

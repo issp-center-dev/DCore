@@ -15,25 +15,35 @@ Basic notions
    basicnotions/dft_dmft
    basicnotions/structure
 
-
-User guide
-----------
+Tutorial
+--------
 
 .. toctree::
    :maxdepth: 2
 
-   guide/full_tutorial
+   tutorial/standard
+   tutorial/wannier90
 
 Reference manual
 ----------------
 
 This is the reference manual for the python routines.
 
-.. toctree::
-   :maxdepth: 2
+Input-file format and usage
 
-   reference/DMFTCoreSolver
-   reference/TypedParser
+   .. toctree::
+      :maxdepth: 2
+   
+      reference/pydmft_pre
+      reference/pydmft
+
+Reference of python module (for developers)
+      
+   .. toctree::
+      :maxdepth: 2
+
+      reference/DMFTCoreSolver
+      reference/TypedParser
    
 FAQs
 ----
