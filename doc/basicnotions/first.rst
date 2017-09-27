@@ -6,7 +6,7 @@ with the :program:`DFTTools` package. This documentation and user guide
 should make it as easy as possible to get started quickly.
 However, it is mutually important to sort out a few prerequisites first.
 
-What is :program:`DFTTools`?
+What is :program:`pyDMFT`?
 ----------------------------
 
 :program:`DFTTools` connects the :ref:`TRIQS <triqslibs:welcome>` library

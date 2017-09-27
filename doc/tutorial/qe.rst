@@ -1,16 +1,18 @@
 .. _DFTDMFTtutorial:
 
-Tutorial with wannier90
-=======================
+Tutorial with QuantumESPRESSO and wannier90
+===========================================
 
-In this tutorial we will perform DFT+DMFT :program:`Wien2k`
-calculations from scratch, including all steps described in the
-previous sections. As example, we take the high-temperature
-:math:`\gamma`-phase of Ce employing the Hubbard-I approximation for
-its localized *4f* shell. 
+Quantum ESPRESSO is a first-principles program package based on
+the plane wave and pseudopotentials.
 
-Wien2k setup
-------------
+wannier90 is a library and post-processing tool for generating wannier orbitals
+from results by many DFT programs.
+
+In this tutorial we will perform DFT+DMFT calculations of XXX.
+
+SCF cakculation of Quantum ESPRESSO
+-----------------------------------
 
 First we create the Wien2k :file:`Ce-gamma.struct` file as described in the `Wien2k manual <http://www.wien2k.at/reg_user/textbooks/usersguide.pdf>`_  
 for the :math:`\gamma`-Ce fcc structure with lattice parameter of 9.75 a.u.
@@ -28,8 +30,12 @@ Hence, the initialization script is executed as follows ::
 and then LDA calculations of non-magnetic :math:`\gamma`-Ce are performed by launching the :program:`Wien2k` :program:`run` script. 
 These self-consistent LDA calculations will typically take a couple of minutes.
 
-Wannier orbitals: dmftproj
---------------------------
+QE to wannier90 interface
+-------------------------
+
+
+Wannier90
+---------
 
 Then we create the :file:`Ce-gamma.indmftpr` file specifying parameters for construction of Wannier orbitals representing *4f* states:
 
@@ -74,8 +80,8 @@ This program produces the following files:
 Now we have all necessary input from :program:`Wien2k` for running DMFT calculations. 
 
 
-DMFT setup: Hubbard-I calculations in TRIQS
---------------------------------------------
+DMFT setup: pydmft_pre
+----------------------
 
 however there are also some differences. First difference is that we import the Hubbard-I solver by::
 
@@ -113,8 +119,8 @@ Finally, we compute the modified charge density and save it as well as correlati
 :file:`Ce-gamma.qdmft` file, which is then read by lapw2 in the case of self-consistent DFT+DMFT calculations.
 
 
-Running self-consistent DFT+DMFT calculations
----------------------------------------------
+Running self-consistent DFT+DMFT : pydmft
+-----------------------------------------
 
 Instead of doing a one-shot run one may also perform fully self-consistent
 DFT+DMFT calculations, as we will do now. We launch these
@@ -149,8 +155,8 @@ One may also check the convergence in total energy::
    :ENE  : ********** TOTAL ENERGY IN Ry =       -17717.56287381
 
 
-Post-processing and data analysis
----------------------------------
+Post-processing and data analysis: pydmft_post
+----------------------------------------------
 
 Within Hubbard-I one may also easily obtain the angle-resolved spectral function (band
 structure) and integrated spectral function (density of states or DOS).  In

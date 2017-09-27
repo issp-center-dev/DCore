@@ -7,7 +7,7 @@
 pyDMFT
 ======
 
-This :ref:`TRIQS-based <triqslibs:welcome>`-based application is aimed
+This :ref:`TRIQS-based <triqslibs:welcome>` application is aimed
 at ab-initio calculations for 
 correlated materials, combining realistic DFT band-structure
 calculations with the dynamical mean-field theory. Together with the
