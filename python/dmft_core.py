@@ -56,7 +56,7 @@ class DMFTCoreSolver:
             if l==0:
                 from hubbard_solver_l0 import Solver
             else:
-                from pytriqs.applications.impurity_solvers.hubbard_I import Solver
+                from hubbard_solver import Solver
             self._S = Solver(beta=beta, l=l)
         elif self._name=="ALPS/cthyb":
             from pytriqs.applications.impurity_solvers.alps_cthyb import Solver

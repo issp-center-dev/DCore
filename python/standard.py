@@ -129,10 +129,12 @@ def standard(filename):
             l[0] = 0
             norb[0] = 1
         elif model.strip() == 'eg':
+            #FIXME: l=2 does not make sense. l=2 assumes norb=5 (full d-shell) in generating Coulomb tensor.
+            #What is the proper way to generate Colomb tensor for eg?
             l[0] = 2
             norb[0] = 2
         elif model.strip() == 't2g':
-            l[0] = 2
+            l[0] = 1
             norb[0] = 3
         elif model.strip() == 'full-d':
             l[0] = 2
