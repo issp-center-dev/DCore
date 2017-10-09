@@ -53,7 +53,10 @@ class DMFTCoreSolver:
             self._solver_params["n_cycles"] = 50000
             self._S = Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau, n_l=n_l)
         elif self._name=="TRIQS/hubbard-I":
-            from hubbard_solver_l0 import Solver
+            if l==0:
+                from hubbard_solver_l0 import Solver
+            else:
+                from pytriqs.applications.impurity_solvers.hubbard_I import Solver
             self._S = Solver(beta=beta, l=l)
         elif self._name=="ALPS/cthyb":
             from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
@@ -87,17 +90,20 @@ class DMFTCoreSolver:
 
         # Set up a HDF file for output
         if mpi.is_master_node():
-            f = HDFArchive(output_file, 'a')
-            if output_group in f:
-                ar = f[output_group]
-                if 'iterations' in ar:
-                    previous_present = True
-                    previous_runs = ar['iterations']
-            else:
-                f.create_group(output_group)
-            del f
+            with HDFArchive(output_file, 'a') as f:
+                if output_group in f:
+                    if self._params['control']['restart']:
+                        ar = f[output_group]
+                        if 'iterations' in ar:
+                            previous_present = True
+                            previous_runs = ar['iterations']
+                    else:
+                        del f[output_group]
+                        f.create_group(output_group)
+                else:
+                    f.create_group(output_group)
 
-        for iteration_number in range(1,max_step+1):
+        for iteration_number in range(previous_runs+1,previous_runs+max_step+1):
             if mpi.is_master_node():
                 print("Iteration = ", iteration_number)
 
@@ -124,7 +130,7 @@ class DMFTCoreSolver:
                 # We can do a mixing of Delta in order to stabilize the DMFT iterations:
                 S.G0_iw << S.Sigma_iw + inverse(S.G_iw)
                 ar = HDFArchive(output_file, 'a')
-                if (iteration_number>1 or previous_present):
+                if (iteration_number>previous_runs+1 or previous_present):
                     mpi.report("Mixing input Delta with factor %s"%delta_mix)
                     Delta = (delta_mix * delta(S.G0_iw)) + (1.0-delta_mix) * ar[output_group]['Delta_iw']
                     S.G0_iw << S.G0_iw + delta(S.G0_iw) - Delta
@@ -132,6 +138,11 @@ class DMFTCoreSolver:
                 S.G0_iw << inverse(S.G0_iw)
                 del ar
 
+            #DEBUG
+            #print(dir(S.G0_iw['up']))
+            #gt = GfImTime(indices = [1, 2, 3], beta = 1.0)
+            #gt << InverseFourier(S.G0_iw['up'])
+            #print(gt.data)
             S.G0_iw << mpi.bcast(S.G0_iw)
 
             # Solve the impurity problem:
