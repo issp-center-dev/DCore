@@ -172,19 +172,19 @@ def standard(filename):
                             print("{0}".format(ek), file=f) #Real part
                         else:
                             print("0.0", file=f) #Real part
-                        print("0.0", file=f) #Imaginary part
+                for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
         elif lattice.strip() == 'chain':
             kvec = [0.0, 0.0, 0.0]
             for i0 in range(nk):
                 kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-                ek = 2.0*t*numpy.cos(kvec[0]) * 2*tp*numpy.cos(2.0*kvec[0])
+                ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
                 for iorb in range(norb[0]):
                     for jorb in range(norb[0]):
                         if iorb == jorb:
                             print("{0}".format(ek), file=f) #Real part
                         else:
                             print("0.0", file=f) #Real part
-                        print("0.0", file=f) #Imaginary part
+                for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
         elif lattice.strip() == 'square':
             kvec = [0.0, 0.0, 0.0]
             for i0 in range(nk):
@@ -199,7 +199,7 @@ def standard(filename):
                                 print("{0}".format(ek), file=f) #Real part
                             else:
                                 print("0.0", file=f) #Real part
-                            print("0.0", file=f) #Imaginary part
+                    for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
         elif lattice.strip() == 'cubic':
             kvec = [0.0, 0.0, 0.0]
             for i0 in range(nk):
@@ -218,7 +218,7 @@ def standard(filename):
                                     print("{0}".format(ek), file=f) #Real part
                                 else:
                                     print("0.0", file=f) #Real part
-                                print("0.0", file=f) #Imaginary part
+                        for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
         f.close()
     #
     # Convert General-Hk to SumDFT-HDF5 format
