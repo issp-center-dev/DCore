@@ -1,20 +1,7 @@
-#!/usr/bin/env python
 from __future__ import print_function
 import sys, os
-from pytriqs.applications.dft.sumk_dft import *
-from pytriqs.applications.pydmft.typed_parser import TypedParser
-from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver
 
-#
-# If input file is not specified ... 
-#
-if len(sys.argv) != 3:
-    print("Usage:")
-    print("$ pydmft input.ini seedname")
-    sys.exit()
-
-ini_file = sys.argv[1]
-seedname = sys.argv[2]
+def plot(filename, seedname):
 
 #
 # Set Default value
@@ -42,4 +29,14 @@ params = parser.as_dict()
 
 solver = DMFTCoreSolver(seedname, params)
 
-solver.solve(max_step=params["control"]["max_step"], output_file=seedname+'.out.h5', output_group='dmft_out')
+
+if __name__ == '__main__':
+
+    #
+    # If input file is not specified ... 
+    #
+    if len(sys.argv) != 3:
+        print("Usage:")
+        print("$ pydmft_post input seedname")
+        sys.exit()
+    plot(sys.argv[1], sys.argv[2])

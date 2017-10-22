@@ -7,10 +7,10 @@ from pytriqs.archive import *
 from pytriqs.utility.h5diff import h5diff
 import pytriqs.utility.mpi as mpi
 
-from pytriqs.applications.pydmft.standard import standard
+from pytriqs.applications.pydmft.pydmft_pre import pydmft_pre
 
 #
-# Execute standard.py to generate test.h5
+# Execute pydmft_pre.py to generate test.h5
 # Then Check the Diff of test.h5 and the reference output (stan_ref.h5))
 #
 f = open('stan.in', 'w')
@@ -19,7 +19,7 @@ print("U = 4.0", file=f)
 print("seedname = stan_test", file=f)
 f.close()
 
-standard('stan.in')
+pydmft_pre('stan.in')
 
 print("\n Check Diff of stan_test.h5 stan_ref.h5\n")
 check = os.system('h5diff stan_test.h5 stan_ref.h5')

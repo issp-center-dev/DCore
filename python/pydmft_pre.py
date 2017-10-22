@@ -7,7 +7,7 @@ from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
 
-def standard(filename):
+def pydmft_pre(filename):
 
     print("Reading {0} ...\n".format(filename))
     #
@@ -165,7 +165,7 @@ def standard(filename):
                 wk = numpy.sqrt(1.0 - ek**2)
                 print("{0}".format(wk), file=f)
             for i0 in range(nk):
-                ek = t * float(2*i0 + 1 - nk) / float(nk)
+                ek = 2.0 * t * float(2*i0 + 1 - nk) / float(nk)
                 for iorb in range(norb[0]):
                     for jorb in range(norb[0]):
                         if iorb == jorb:
@@ -253,6 +253,6 @@ if __name__ == '__main__':
     #
     if len(sys.argv) != 2:
         print("Usage:")
-        print("$ ipytriqs standard.py input")
+        print("$ pydmft_pre input")
         sys.exit()
-    standard(sys.argv[1])
+    pydmft_pre(sys.argv[1])
