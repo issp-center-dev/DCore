@@ -6,7 +6,7 @@ from pytriqs.operators.util import *
 from pytriqs.archive import HDFArchive
 from pytriqs.gf.local import *
 from pytriqs.applications.dft.sumk_dft import *
-from pytriqs.plot.mpl_interface import oplot
+from pytriqs.plot.mpl_interface import oplot, plt
 
 class DMFTCoreSolver:
     def __init__(self, seedname, params):
@@ -184,18 +184,21 @@ class DMFTCoreSolver:
             # Save stuff into the user_data group of hdf5 archive in case of rerun:
             SK.save(['chemical_potential','dc_imp','dc_energ'])
 
-    def plot(self, output_file, output_group='dmft_output'):
+    def plot(self, output_file, output_group='dmft_out'):
+
+        beta = float(self._params['system']['beta'])
 
         # Just for convenience
         SK = self._SK
         S = self._S
 
         # Read from HDF file
-        ar = HDFArchive(output_file, 'i')
+        ar = HDFArchive(output_file, 'r')
         iteration_number = ar[output_group]['iterations']
         S.G_iw = ar[output_group]['G_iw']
         S.Sigma_iw = ar[output_group]['Sigma_iw']
         del ar
 
+        print("Iter {0}".format(iteration_number))
         oplot(S.G_iw, '-o',  x_window  = (0,10))
         plt.show()
