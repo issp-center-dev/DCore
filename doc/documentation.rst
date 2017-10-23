@@ -37,6 +37,7 @@ Input-file format and usage
    
    reference/pydmft_pre
    reference/pydmft
+   reference/pydmft_post
 
 Reference of python module (for developers)
       

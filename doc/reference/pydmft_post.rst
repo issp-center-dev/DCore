@@ -1,14 +1,14 @@
-pydmft
-======
+pydmft_post
+===========
 
-Perform DMFT.
+Plot Green's function, self energy, etc.
 
 Usage
 -----
 
 ::
 
-   $ pydmft input.ini seedname
+   $ pydmft_post input.ini seedname
 
 Input-file format
 -----------------
@@ -52,4 +52,3 @@ max_step  Integer 100     Max number of SCF steps.
 sigma_mix Float   0.5     Mixing parameter for self-energy.
 delta_mix Float   0.5     Mixing parameter for hybridization function.
 ========= ======= ======= ============================================
-
