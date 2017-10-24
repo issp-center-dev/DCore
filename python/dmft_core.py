@@ -147,7 +147,10 @@ class DMFTCoreSolver:
 
             # Solve the impurity problem:
             if self._name=="TRIQS/hubbard-I":
-                S.solve(U_int=self._U_int, J_hund=self._J_hund)
+                # calculate non-interacting atomic level positions:
+                eal = SK.eff_atomic_levels()[0]
+                S.set_atomic_levels( eal = eal )
+                S.solve(U_int=self._U_int, J_hund=self._J_hund, verbosity = 1)
             else:
                 S.solve(h_int=self._h_int, **self._solver_params)
 
@@ -195,11 +198,11 @@ class DMFTCoreSolver:
         # Read from HDF file
         ar = HDFArchive(output_file, 'r')
         iteration_number = ar[output_group]['iterations']
-        S.G_iw << ar[output_group]['G_iw']
+        print("Iter {0}".format(iteration_number))
         S.Sigma_iw << ar[output_group]['Sigma_iw']
+        S.G_iw << ar[output_group]['G_iw']
+        oplot(S.G_iw["up"], '-o', mode='I', x_window  = (0,20), name = "G")
         del ar
 
-        print("Iter {0}".format(iteration_number))
-        #oplot(-S.Sigma_iw["up"], '-o', mode='I', x_window  = (0,2))
-        #plt.show()
-        print("{0}".format(-S.Sigma_iw["up"]))
+        plt.legend(loc = 4)
+        plt.show()
