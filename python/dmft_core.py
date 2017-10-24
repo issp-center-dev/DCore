@@ -195,10 +195,11 @@ class DMFTCoreSolver:
         # Read from HDF file
         ar = HDFArchive(output_file, 'r')
         iteration_number = ar[output_group]['iterations']
-        S.G_iw = ar[output_group]['G_iw']
-        S.Sigma_iw = ar[output_group]['Sigma_iw']
+        S.G_iw << ar[output_group]['G_iw']
+        S.Sigma_iw << ar[output_group]['Sigma_iw']
         del ar
 
         print("Iter {0}".format(iteration_number))
-        oplot(S.G_iw, '-o',  x_window  = (0,10))
-        plt.show()
+        #oplot(-S.Sigma_iw["up"], '-o', mode='I', x_window  = (0,2))
+        #plt.show()
+        print("{0}".format(-S.Sigma_iw["up"]))
