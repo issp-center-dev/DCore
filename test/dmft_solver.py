@@ -13,11 +13,13 @@ from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver
 #except ImportError:
     #import ConfigParser as configparser
 
+seedname = "test1"
+
 # Generate a HDF5 file
 f = open('stan.in', 'w')
 print("t = 1.0", file=f)
 print("U = 4.0", file=f)
-print("seedname = test", file=f)
+print("seedname = "+seedname, file=f)
 f.close()
 
 pydmft_pre('stan.in')
@@ -54,7 +56,7 @@ params['control'] = {}
 params['control']['sigma_mix'] = 0.5
 params['control']['delta_mix'] = 0.5
 
-solver = DMFTCoreSolver('test', params)
+solver = DMFTCoreSolver(seedname, params)
 
 # FIXME: I want to use the Hubbard-I solver for tests!
 solver.solve(max_step=1, output_file='test.out.h5', output_group='dmft_out', dry_run=True)
