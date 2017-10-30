@@ -5,7 +5,7 @@ from pytriqs.archive import *
 from pytriqs.utility.h5diff import h5diff
 import pytriqs.utility.mpi as mpi
 
-from pytriqs.applications.pydmft.standard import standard
+from pytriqs.applications.pydmft.pydmft_pre import pydmft_pre
 from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver
 
 #try:
@@ -20,7 +20,7 @@ print("U = 4.0", file=f)
 print("seedname = test", file=f)
 f.close()
 
-standard('stan.in')
+pydmft_pre('stan.in')
 
 #parser = configparser.ConfigParser()
 #Make case sensitive
