@@ -1,10 +1,18 @@
 
-## `standard.py`
+## `pydmft_pre.py`
+
+### Requirements
+- triqs
+- triqs/dft_tools
+- triqs/hubbard-I
+- triqs/cthyb (optional)
+- ALPSCore (optional)
+- ALPSCore/CT-HYB (optional)
 
 ### Usage
 
 ``` bash
-$ pytriqs standard.py input-file
+$ pydmft_pre input-file
 ```
 
 ### Input file format
