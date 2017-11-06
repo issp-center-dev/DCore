@@ -1,0 +1,9 @@
+U = 16.0
+J = 2.666666666666667
+lattice = wannier90
+seedname = srvo3
+nk = 20
+nelec = 0.5
+ncor = 1
+l-0 = 2
+norb-0 = 3
