@@ -14,6 +14,7 @@ from pytriqs.applications.pydmft.pydmft_pre import pydmft_pre
 # Then Check the Diff of test.h5 and the reference output (stan_ref.h5))
 #
 f = open('stan.in', 'w')
+print("[model]", file=f)
 print("t = 1.0", file=f)
 print("U = 4.0", file=f)
 print("seedname = stan_test", file=f)
