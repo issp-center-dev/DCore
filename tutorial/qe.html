@@ -1,0 +1,541 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial with QuantumESPRESSO and wannier90 &mdash; pyDMFT 1.4.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.4.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="top" title="pyDMFT 1.4.0 documentation" href="../contents.html" />
+    <link rel="up" title="Documentation" href="../documentation.html" />
+    <link rel="next" title="Tutorial with OpenMX" href="openmx.html" />
+    <link rel="prev" title="Tutorial with preset model" href="standard.html" />
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <script src="../_static/cufon-yui.js" type="text/javascript"></script>
+    <script src="../_static/spaceman.cufonfonts.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      Cufon.replace('.triqs', { fontFamily: 'spaceman', hover: true }); 
+    </script>
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+
+  </head>
+  <body role="document">
+<div class="pageheader">
+  <ul>
+    
+    <li><a href="../install.html">Install</a></li>
+    
+    <li><a href="../documentation.html">Documentation</a></li>
+    
+    <li><a href="../issues.html">Issues</a></li>
+    
+    <li><a href="../about.html">About pyDMFT</a></li>
+    
+  </ul>
+  <div>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">pyDMFT</a></h1>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openmx.html" title="Tutorial with OpenMX"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="standard.html" title="Tutorial with preset model"
+             accesskey="P">previous</a> |</li>
+    <li><a href="../index.html">Home</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial with QuantumESPRESSO and wannier90</a><ul>
+<li><a class="reference internal" href="#scf-calculation-of-quantum-espresso">SCF calculation of Quantum ESPRESSO</a></li>
+<li><a class="reference internal" href="#wannierization">Wannierization</a><ul>
+<li><a class="reference internal" href="#generate-bloch-orbitals-for-the-wannier">Generate Bloch orbitals for the Wannier</a></li>
+<li><a class="reference internal" href="#preprocess-for-wannier90">Preprocess for Wannier90</a></li>
+<li><a class="reference internal" href="#qe-to-wannier90-interface">QE to wannier90 interface</a></li>
+<li><a class="reference internal" href="#wannier90">Wannier90</a></li>
+<li><a class="reference internal" href="#optional-check-wannierization">(Optional) Check wannierization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dmft-calculation">DMFT calculation</a><ul>
+<li><a class="reference internal" href="#dmft-setup-pydmft-pre">DMFT setup: pydmft_pre</a></li>
+<li><a class="reference internal" href="#running-self-consistent-dft-dmft-pydmft">Running self-consistent DFT+DMFT : pydmft</a></li>
+<li><a class="reference internal" href="#post-processing-and-data-analysis-pydmft-post">Post-processing and data analysis: pydmft_post</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="standard.html"
+                        title="previous chapter">Tutorial with preset model</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="openmx.html"
+                        title="next chapter">Tutorial with OpenMX</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/qe.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tutorial-with-quantumespresso-and-wannier90">
+<span id="dftdmfttutorial"></span><h1>Tutorial with QuantumESPRESSO and wannier90<a class="headerlink" href="#tutorial-with-quantumespresso-and-wannier90" title="Permalink to this headline">¶</a></h1>
+<p>Quantum ESPRESSO is a first-principles program package based on
+the plane wave and pseudopotentials.</p>
+<p>wannier90 is a library and post-processing tool for generating wannier orbitals
+from results by many DFT programs.</p>
+<p>In this tutorial we will perform DFT+DMFT calculations of SrVO<sub>3</sub>.</p>
+<div class="section" id="scf-calculation-of-quantum-espresso">
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" href="../_downloads/scf.in" download=""><code class="xref download docutils literal"><span class="pre">scf.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;scf&#39;
+      outdir = &#39;./&#39;
+  pseudo_dir = &#39;../pseudo/&#39;
+      prefix = &#39;srvo3&#39;
+/
+&amp;SYSTEM
+       ibrav = 1
+   celldm(1) = 7.29738
+        ntyp = 3
+         nat = 5
+     ecutwfc = 50.0
+     ecutrho = 400.0
+ occupations = &quot;tetrahedra_opt&quot;
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Sr   87.6200000000  Sr.pbe-spn-kjpaw_psl.0.2.3.upf
+  V   50.9415000000  V.pbe-spn-kjpaw_psl.0.2.3.upf
+  O   15.9994000000  O.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Sr   0.00000000000000   0.00000000000000   0.00000000000000
+  V   0.50000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.00000000000000   0.50000000000000
+  O   0.00000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.50000000000000   0.00000000000000
+K_POINTS automatic
+ 8 8 8 0 0 0
+</pre></div>
+</div>
+<p>The pseudopotentials are downloaded from
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/Sr.pbe-spn-kjpaw_psl.0.2.3.upf">Sr.pbe-spn-kjpaw_psl.0.2.3.upf</a>,
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/V.pbe-spn-kjpaw_psl.0.2.3.upf">V.pbe-spn-kjpaw_psl.0.2.3.upf</a>, and
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/O.pbe-n-kjpaw_psl.0.1.upf">O.pbe-n-kjpaw_psl.0.1.upf</a>.</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in scf.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannierization">
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="generate-bloch-orbitals-for-the-wannier">
+<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" href="../_downloads/nscf.in" download=""><code class="xref download docutils literal"><span class="pre">nscf.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;bands&#39;
+      outdir = &#39;./&#39;
+  pseudo_dir = &#39;../pseudo/&#39;
+      prefix = &#39;srvo3&#39;
+/
+&amp;SYSTEM
+       ibrav = 1
+   celldm(1) = 7.29738129774137562
+        ntyp = 3
+         nat = 5
+     ecutwfc = 50.0
+     ecutrho = 400.0
+ occupations = &quot;tetrahedra_opt&quot;
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Sr   87.6200000000  Sr.pbe-spn-kjpaw_psl.0.2.3.upf
+  V   50.9415000000  V.pbe-spn-kjpaw_psl.0.2.3.upf
+  O   15.9994000000  O.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Sr   0.00000000000000   0.00000000000000   0.00000000000000
+  V   0.50000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.00000000000000   0.50000000000000
+  O   0.00000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.50000000000000   0.00000000000000
+K_POINTS crystal
+64
+  0.00000000  0.00000000  0.00000000  1.562500e-02
+  0.00000000  0.00000000  0.25000000  1.562500e-02
+  0.00000000  0.00000000  0.50000000  1.562500e-02
+  0.00000000  0.00000000  0.75000000  1.562500e-02
+  0.00000000  0.25000000  0.00000000  1.562500e-02
+  0.00000000  0.25000000  0.25000000  1.562500e-02
+  0.00000000  0.25000000  0.50000000  1.562500e-02
+  0.00000000  0.25000000  0.75000000  1.562500e-02
+  0.00000000  0.50000000  0.00000000  1.562500e-02
+  0.00000000  0.50000000  0.25000000  1.562500e-02
+  0.00000000  0.50000000  0.50000000  1.562500e-02
+  0.00000000  0.50000000  0.75000000  1.562500e-02
+  0.00000000  0.75000000  0.00000000  1.562500e-02
+  0.00000000  0.75000000  0.25000000  1.562500e-02
+  0.00000000  0.75000000  0.50000000  1.562500e-02
+  0.00000000  0.75000000  0.75000000  1.562500e-02
+  0.25000000  0.00000000  0.00000000  1.562500e-02
+  0.25000000  0.00000000  0.25000000  1.562500e-02
+  0.25000000  0.00000000  0.50000000  1.562500e-02
+  0.25000000  0.00000000  0.75000000  1.562500e-02
+  0.25000000  0.25000000  0.00000000  1.562500e-02
+  0.25000000  0.25000000  0.25000000  1.562500e-02
+  0.25000000  0.25000000  0.50000000  1.562500e-02
+  0.25000000  0.25000000  0.75000000  1.562500e-02
+  0.25000000  0.50000000  0.00000000  1.562500e-02
+  0.25000000  0.50000000  0.25000000  1.562500e-02
+  0.25000000  0.50000000  0.50000000  1.562500e-02
+  0.25000000  0.50000000  0.75000000  1.562500e-02
+  0.25000000  0.75000000  0.00000000  1.562500e-02
+  0.25000000  0.75000000  0.25000000  1.562500e-02
+  0.25000000  0.75000000  0.50000000  1.562500e-02
+  0.25000000  0.75000000  0.75000000  1.562500e-02
+  0.50000000  0.00000000  0.00000000  1.562500e-02
+  0.50000000  0.00000000  0.25000000  1.562500e-02
+  0.50000000  0.00000000  0.50000000  1.562500e-02
+  0.50000000  0.00000000  0.75000000  1.562500e-02
+  0.50000000  0.25000000  0.00000000  1.562500e-02
+  0.50000000  0.25000000  0.25000000  1.562500e-02
+  0.50000000  0.25000000  0.50000000  1.562500e-02
+  0.50000000  0.25000000  0.75000000  1.562500e-02
+  0.50000000  0.50000000  0.00000000  1.562500e-02
+  0.50000000  0.50000000  0.25000000  1.562500e-02
+  0.50000000  0.50000000  0.50000000  1.562500e-02
+  0.50000000  0.50000000  0.75000000  1.562500e-02
+  0.50000000  0.75000000  0.00000000  1.562500e-02
+  0.50000000  0.75000000  0.25000000  1.562500e-02
+  0.50000000  0.75000000  0.50000000  1.562500e-02
+  0.50000000  0.75000000  0.75000000  1.562500e-02
+  0.75000000  0.00000000  0.00000000  1.562500e-02
+  0.75000000  0.00000000  0.25000000  1.562500e-02
+  0.75000000  0.00000000  0.50000000  1.562500e-02
+  0.75000000  0.00000000  0.75000000  1.562500e-02
+  0.75000000  0.25000000  0.00000000  1.562500e-02
+  0.75000000  0.25000000  0.25000000  1.562500e-02
+  0.75000000  0.25000000  0.50000000  1.562500e-02
+  0.75000000  0.25000000  0.75000000  1.562500e-02
+  0.75000000  0.50000000  0.00000000  1.562500e-02
+  0.75000000  0.50000000  0.25000000  1.562500e-02
+  0.75000000  0.50000000  0.50000000  1.562500e-02
+  0.75000000  0.50000000  0.75000000  1.562500e-02
+  0.75000000  0.75000000  0.00000000  1.562500e-02
+  0.75000000  0.75000000  0.25000000  1.562500e-02
+  0.75000000  0.75000000  0.50000000  1.562500e-02
+  0.75000000  0.75000000  0.75000000  1.562500e-02
+</pre></div>
+</div>
+<p>This <em>k</em> grid is generated as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> 4
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">kmesh.pl</span></code> is located in the <cite>utility/</cite> directory of Wannier90.</p>
+<p>Run <code class="docutils literal"><span class="pre">pw.x</span></code> as</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in nscf.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="preprocess-for-wannier90">
+<h3>Preprocess for Wannier90<a class="headerlink" href="#preprocess-for-wannier90" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" href="../_downloads/srvo3.win" download=""><code class="xref download docutils literal"><span class="pre">srvo3.win</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>num_bands         =   25
+num_wann          =   3
+
+dis_win_max =  18.0
+dis_win_min =  11.0
+!dis_froz_max = 13.4
+!dis_froz_min = 11.0
+
+begin projections
+V:dxy;dxz;dyz
+end projections
+
+site_symmetry = .true.
+write_hr = .true.
+bands_plot = .true.
+wannier_plot = .true.
+write_xyz = .true.
+
+wannier_plot_supercell = 1
+
+!exclude_bands=
+
+begin kpoint_path
+G  0.0  0.0  0.0  X  0.5  0.0  0.0
+X  0.5  0.0  0.0  M  0.5  0.5  0.0
+M  0.5  0.5  0.0  G  0.0  0.0  0.0
+G  0.0  0.0  0.0  R  0.5  0.5  0.5
+end kpoint_path
+
+begin unit_cell_cart
+bohr
+7.29738  0.00000  0.00000
+0.00000  7.29738  0.00000
+0.00000  0.00000  7.29738
+end unit_cell_cart
+
+begin atoms_frac
+ Sr   0.00000000000000   0.00000000000000   0.00000000000000
+  V   0.50000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.00000000000000   0.50000000000000
+  O   0.00000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.50000000000000   0.00000000000000
+end atoms_frac
+
+mp_grid           = 4 4 4
+
+begin kpoints
+  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.25000000
+  0.00000000  0.00000000  0.50000000
+  0.00000000  0.00000000  0.75000000
+  0.00000000  0.25000000  0.00000000
+  0.00000000  0.25000000  0.25000000
+  0.00000000  0.25000000  0.50000000
+  0.00000000  0.25000000  0.75000000
+  0.00000000  0.50000000  0.00000000
+  0.00000000  0.50000000  0.25000000
+  0.00000000  0.50000000  0.50000000
+  0.00000000  0.50000000  0.75000000
+  0.00000000  0.75000000  0.00000000
+  0.00000000  0.75000000  0.25000000
+  0.00000000  0.75000000  0.50000000
+  0.00000000  0.75000000  0.75000000
+  0.25000000  0.00000000  0.00000000
+  0.25000000  0.00000000  0.25000000
+  0.25000000  0.00000000  0.50000000
+  0.25000000  0.00000000  0.75000000
+  0.25000000  0.25000000  0.00000000
+  0.25000000  0.25000000  0.25000000
+  0.25000000  0.25000000  0.50000000
+  0.25000000  0.25000000  0.75000000
+  0.25000000  0.50000000  0.00000000
+  0.25000000  0.50000000  0.25000000
+  0.25000000  0.50000000  0.50000000
+  0.25000000  0.50000000  0.75000000
+  0.25000000  0.75000000  0.00000000
+  0.25000000  0.75000000  0.25000000
+  0.25000000  0.75000000  0.50000000
+  0.25000000  0.75000000  0.75000000
+  0.50000000  0.00000000  0.00000000
+  0.50000000  0.00000000  0.25000000
+  0.50000000  0.00000000  0.50000000
+  0.50000000  0.00000000  0.75000000
+  0.50000000  0.25000000  0.00000000
+  0.50000000  0.25000000  0.25000000
+  0.50000000  0.25000000  0.50000000
+  0.50000000  0.25000000  0.75000000
+  0.50000000  0.50000000  0.00000000
+  0.50000000  0.50000000  0.25000000
+  0.50000000  0.50000000  0.50000000
+  0.50000000  0.50000000  0.75000000
+  0.50000000  0.75000000  0.00000000
+  0.50000000  0.75000000  0.25000000
+  0.50000000  0.75000000  0.50000000
+  0.50000000  0.75000000  0.75000000
+  0.75000000  0.00000000  0.00000000
+  0.75000000  0.00000000  0.25000000
+  0.75000000  0.00000000  0.50000000
+  0.75000000  0.00000000  0.75000000
+  0.75000000  0.25000000  0.00000000
+  0.75000000  0.25000000  0.25000000
+  0.75000000  0.25000000  0.50000000
+  0.75000000  0.25000000  0.75000000
+  0.75000000  0.50000000  0.00000000
+  0.75000000  0.50000000  0.25000000
+  0.75000000  0.50000000  0.50000000
+  0.75000000  0.50000000  0.75000000
+  0.75000000  0.75000000  0.00000000
+  0.75000000  0.75000000  0.25000000
+  0.75000000  0.75000000  0.50000000
+  0.75000000  0.75000000  0.75000000
+end kpoints
+</pre></div>
+</div>
+<p>This <em>k</em> grid is generated as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ wannier90 -pp srvo3
+</pre></div>
+</div>
+</div>
+<div class="section" id="qe-to-wannier90-interface">
+<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" href="../_downloads/pw2wan.in" download=""><code class="xref download docutils literal"><span class="pre">pw2wan.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;inputpp 
+   outdir = &#39;./&#39;
+   prefix = &#39;srvo3&#39;
+   seedname = &#39;srvo3&#39;
+   spin_component = &#39;none&#39;
+   write_mmn = .true.
+   write_amn = .true.
+   write_unk = .true.
+   write_dmn = .true.
+   wan_mode = &#39;standalone&#39;
+/
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw2wan.x -in pw2wan.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannier90">
+<h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ wannier90 srvo3
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-check-wannierization">
+<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-gnuplot"><div class="highlight"><pre>plot &quot;bands.out.gnu&quot; u 1:2 w l tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;srvo3_band.dat&quot; u ($1*0.6146):2 every 10 tit &quot;Wannier&quot;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="dmft-calculation">
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dmft-setup-pydmft-pre">
+<h3>DMFT setup: pydmft_pre<a class="headerlink" href="#dmft-setup-pydmft-pre" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" href="../_downloads/model1.in" download=""><code class="xref download docutils literal"><span class="pre">model.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">U</span> <span class="o">=</span> <span class="mf">16.0</span>
+<span class="n">J</span> <span class="o">=</span> <span class="mf">2.666666666666667</span>
+<span class="n">lattice</span> <span class="o">=</span> <span class="n">wannier90</span>
+<span class="n">seedname</span> <span class="o">=</span> <span class="n">srvo3</span>
+<span class="n">nk</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">nelec</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">ncor</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">l</span><span class="o">-</span><span class="mi">0</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">norb</span><span class="o">-</span><span class="mi">0</span> <span class="o">=</span> <span class="mi">3</span>
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre model.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-self-consistent-dft-dmft-pydmft">
+<h3>Running self-consistent DFT+DMFT : pydmft<a class="headerlink" href="#running-self-consistent-dft-dmft-pydmft" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" href="../_downloads/input1.ini" download=""><code class="xref download docutils literal"><span class="pre">input.ini</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">system</span><span class="p">]</span>
+<span class="n">beta</span> <span class="o">=</span> <span class="mf">100.0</span>
+
+<span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">TRIQS</span><span class="o">/</span><span class="n">hubbard</span><span class="o">-</span><span class="n">I</span>
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf input.ini srvo3
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-processing-and-data-analysis-pydmft-post">
+<h3>Post-processing and data analysis: pydmft_post<a class="headerlink" href="#post-processing-and-data-analysis-pydmft-post" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" href="../_downloads/input1.ini" download=""><code class="xref download docutils literal"><span class="pre">input.ini</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">system</span><span class="p">]</span>
+<span class="n">beta</span> <span class="o">=</span> <span class="mf">100.0</span>
+
+<span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">TRIQS</span><span class="o">/</span><span class="n">hubbard</span><span class="o">-</span><span class="n">I</span>
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post input.ini srvo3
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openmx.html" title="Tutorial with OpenMX"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="standard.html" title="Tutorial with preset model"
+             >previous</a> |</li>
+    <li><a href="../index.html">Home</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

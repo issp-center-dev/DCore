@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyDMFT &mdash; pyDMFT 1.4.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/triqs.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.4.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="top" title="pyDMFT 1.4.0 documentation" href="contents.html" />
+    <link rel="next" title="Installation" href="install.html" />
+    <link rel="prev" title="Table of contents" href="contents.html" />
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <script src="_static/cufon-yui.js" type="text/javascript"></script>
+    <script src="_static/spaceman.cufonfonts.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      Cufon.replace('.triqs', { fontFamily: 'spaceman', hover: true }); 
+    </script>
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+      .related { display: none; }
+      
+    </style>
+
+  </head>
+  <body role="document">
+<div class="pageheader">
+  <ul>
+    
+    <li><a href="install.html">Install</a></li>
+    
+    <li><a href="documentation.html">Documentation</a></li>
+    
+    <li><a href="issues.html">Issues</a></li>
+    
+    <li><a href="about.html">About pyDMFT</a></li>
+    
+  </ul>
+  <div>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="#">pyDMFT</a></h1>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="contents.html" title="Table of contents"
+             accesskey="P">previous</a> |</li>
+    <li><a href="#">Home</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-pytriqs.applications.pydmft"><span id="index-0"></span></span><div class="section" id="pydmft">
+<span id="id1"></span><h1>pyDMFT<a class="headerlink" href="#pydmft" title="Permalink to this headline">¶</a></h1>
+<p>This <a class="reference external" href="http://triqs.ipht.cnrs.fr/1.x/index.html#welcome" title="(in TRIQS v1.4)"><span class="xref std std-ref">TRIQS-based</span></a> application is aimed
+at ab-initio calculations for
+correlated materials, combining realistic DFT band-structure
+calculations with the dynamical mean-field theory. Together with the
+necessary tools to perform the DMFT self-consistency loop for
+realistic multi-band problems, the package provides a full-fledged
+charge self-consistent interface to the <a class="reference external" href="http://www.wien2k.at">Wien2K package</a>. In addition, if Wien2k is not available, it
+provides a generic interface for one-shot DFT+DMFT calculations, where
+only the single-particle Hamiltonian in orbital space has to be
+provided.</p>
+<p>Learn how to use this package in the <a class="reference internal" href="documentation.html#documentation"><span>Documentation</span></a>.</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="contents.html" title="Table of contents"
+             >previous</a> |</li>
+    <li><a href="#">Home</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
