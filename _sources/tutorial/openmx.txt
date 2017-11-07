@@ -6,19 +6,22 @@ the numerical localized basis set and pseudopotentials.
 OpenMX itself can generate hopping parameter in the wannier90 format.
 In this tutorial, we demonstrate the calculation of XXX.
 
-SCF computation with OpenMX
----------------------------
+SCF computation and Wnaiier with OpenMX
+---------------------------------------
 
+:download:`scf.dat <openmx/scf.dat>`
 
-Wannier orbital with OpenMX
----------------------------
+.. literalinclude:: openmx/scf.dat
+
+DMFT
+----
 
 Running pydmft_pre
-------------------
+~~~~~~~~~~~~~~~~~~
 
 DMFT loop : pydmft
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Post-processing : pydmft_post
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
