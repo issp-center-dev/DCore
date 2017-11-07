@@ -270,11 +270,3 @@ if __name__ == '__main__':
         sys.exit()
     pydmft_pre(args.path_input_file)
     
-    #
-    # If input file is not specified ...
-    #
-    #if len(sys.argv) != 2:
-    #    print("Usage:")
-    #    print("$ pydmft_pre input")
-    #    sys.exit()
-    #pydmft_pre(sys.argv[1])
