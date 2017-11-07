@@ -19,6 +19,7 @@ seedname = "test1"
 
 # Generate a HDF5 file
 f = open('stan.in', 'w')
+print("[model]", file=f)
 print("t = 1.0", file=f)
 print("U = 4.0", file=f)
 print("seedname = "+seedname, file=f)
