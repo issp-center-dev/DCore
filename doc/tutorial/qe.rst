@@ -86,6 +86,13 @@ Wannier90
                 
    $ wannier90 srvo3 
 
+(Optional) Check wannierization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+
+.. code-block:: gnuplot
+
+   plot "bands.out.gnu" u 1:2 w l tit "Orig", 12.3116 tit "E_F", "srvo3_band.dat" u ($1*0.6146):2 every 10 tit "Wannier"
+   
 DMFT calculation
 ----------------   
    

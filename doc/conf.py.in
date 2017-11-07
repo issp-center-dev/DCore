@@ -22,7 +22,7 @@ copyright = u'2017, The University of Tokyo'
 version = '@PYDMFT_VERSION@'
 release = '@PYDMFT_RELEASE@'
 
-mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
+#mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
 templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
 
 html_theme = 'triqs'
