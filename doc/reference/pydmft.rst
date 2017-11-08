@@ -8,7 +8,7 @@ Usage
 
 ::
 
-   $ pydmft input.ini seedname
+   $ pydmft dmft.ini seedname
 
 Input-file format
 -----------------
@@ -16,7 +16,7 @@ Input-file format
 Example
 ~~~~~~~
 
-.. literalinclude:: ../tutorial/bethe-t2g/input.ini
+.. literalinclude:: ../tutorial/bethe-t2g/dmft.ini
 
 Details
 ~~~~~~~
@@ -38,11 +38,13 @@ fix_mu  Bool    False   Whether or not to use a fixed chemical potential.
 ==== ======= =========== ===================================================
 Name Type    Default     Description
 ==== ======= =========== ===================================================
-N_l  Integer 50          Number of Legendre polynomials.
 name String  TRIQS/cthyb Name of impurity solver. Choosen from "TRIQS/cthyb"
                          "TRIQS/hubbrad-I", and "ALPS/cthyb".
 ==== ======= =========== ===================================================
-  
+
+**... and other parameters (Solver dependent)**
+
+
 * [control] block
 
 ========= ======= ======= ============================================

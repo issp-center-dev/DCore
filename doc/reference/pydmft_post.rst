@@ -8,7 +8,7 @@ Usage
 
 ::
 
-   $ pydmft_post input.ini seedname
+   $ pydmft_post dmft.ini seedname
 
 Input-file format
 -----------------
@@ -16,7 +16,7 @@ Input-file format
 Example
 ~~~~~~~
 
-.. literalinclude:: ../tutorial/bethe-t2g/input.ini
+.. literalinclude:: ../tutorial/bethe-t2g/dmft.ini
 
 Details
 ~~~~~~~
