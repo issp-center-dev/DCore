@@ -4,7 +4,6 @@ import sys
 import os
 import numpy
 import argparse
-from pytriqs.operators.util.U_matrix import U_matrix_kanamori
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
@@ -13,10 +12,10 @@ from pytriqs.applications.dft.converters.hk_converter import HkConverter
 from typed_parser import TypedParser
 
 
-def print_paramter(p, param_name):
+def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
 
-def generate_wannier90_model(params, l, norb, equiv, f):
+def __generate_wannier90_model(params, l, norb, equiv, f):
     nk = params["nk"]
     nk0 = params["nk0"]
     nk1 = params["nk1"]
@@ -42,11 +41,11 @@ def generate_wannier90_model(params, l, norb, equiv, f):
         print("{0} {1} {2} {3} 0 0".format(i,equiv[i],l[i],norb[i]), file=f)
 
 # FIXME: split this LONG function
-def generate_lattice_model(params, l, norb, equiv, f):
-    print_paramter(params, "t")
-    print_paramter(params, "tp")
-    print_paramter(params, "nk")
-    print_paramter(params, "model")
+def __generate_lattice_model(params, l, norb, equiv, f):
+    __print_paramter(params, "t")
+    __print_paramter(params, "tp")
+    __print_paramter(params, "nk")
+    __print_paramter(params, "orbital_model")
     weights_in_file = False
     if params["lattice"] == 'chain':
         nkBZ = params["nk"]
@@ -61,25 +60,26 @@ def generate_lattice_model(params, l, norb, equiv, f):
         print("Error ! Invalid lattice : ", lattice)
         sys.exit()
     print(" Total number of k =", str(nkBZ))
+
     #
     # Model
     #
-    if params["model"] == 'single':
+    if params["orbital_model"] == 'single':
         l[0] = 0
         norb[0] = 1
-    elif params["model"] == 'eg':
+    elif params["orbital_model"] == 'eg':
         #FIXME: l=2 does not make sense. l=2 assumes norb=5 (full d-shell) in generating Coulomb tensor.
         #What is the proper way to generate Colomb tensor for eg?
         l[0] = 2
         norb[0] = 2
-    elif params["model"] == 't2g':
+    elif params["orbital_model"] == 't2g':
         l[0] = 1
         norb[0] = 3
-    elif params["model"] == 'full-d':
+    elif params["orbital_model"] == 'full-d':
         l[0] = 2
         norb[0] = 5
     else:
-        print("Error ! Invalid lattice : ", p_model["model"])
+        print("Error ! Invalid lattice : ", p_model["orbital_model"])
         sys.exit()
     #
     # Write General-Hk formated file
@@ -174,7 +174,7 @@ def pydmft_pre(filename):
     p.add_option("model", "tp", float, 0.0, "some help message")
     p.add_option("model", "U", float, 0.0, "some help message")
     p.add_option("model", "J", float, 0.0, "some help message")
-    p.add_option("model", "model", str, "single", "some help message")
+    p.add_option("model", "orbital_model", str, "single", "some help message")
     p.add_option("model", "nk", int, 8, "some help message")
     p.add_option("model", "nk0", int, 0, "some help message")
     p.add_option("model", "nk1", int, 0, "some help message")
@@ -222,13 +222,13 @@ def pydmft_pre(filename):
     seedname = p_model["seedname"]
     if p_model["lattice"] == 'wannier90':
         with open(seedname+'.inp', 'w') as f:
-            generate_wannier90_model(p_model, l, norb, equiv, f)
+            __generate_wannier90_model(p_model, l, norb, equiv, f)
         # Convert General-Hk to SumDFT-HDF5 format
         Converter = Wannier90Converter(seedname = seedname)
         Converter.convert_dft_input()
     else:
         with open(seedname+'.inp', 'w') as f:
-            weights_in_file = generate_lattice_model(p_model, l, norb, equiv, f)
+            weights_in_file = __generate_lattice_model(p_model, l, norb, equiv, f)
         # Convert General-Hk to SumDFT-HDF5 format
         print("debug seedname", seedname)
         Converter = HkConverter(filename = seedname + ".inp", hdf_filename=seedname+".h5")
