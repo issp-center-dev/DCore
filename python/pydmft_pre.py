@@ -45,7 +45,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
     __print_paramter(params, "t")
     __print_paramter(params, "tp")
     __print_paramter(params, "nk")
-    __print_paramter(params, "model")
+    __print_paramter(params, "orbital_model")
     weights_in_file = False
     if params["lattice"] == 'chain':
         nkBZ = params["nk"]
@@ -64,22 +64,22 @@ def __generate_lattice_model(params, l, norb, equiv, f):
     #
     # Model
     #
-    if params["model"] == 'single':
+    if params["orbital_model"] == 'single':
         l[0] = 0
         norb[0] = 1
-    elif params["model"] == 'eg':
+    elif params["orbital_model"] == 'eg':
         #FIXME: l=2 does not make sense. l=2 assumes norb=5 (full d-shell) in generating Coulomb tensor.
         #What is the proper way to generate Colomb tensor for eg?
         l[0] = 2
         norb[0] = 2
-    elif params["model"] == 't2g':
+    elif params["orbital_model"] == 't2g':
         l[0] = 1
         norb[0] = 3
-    elif params["model"] == 'full-d':
+    elif params["orbital_model"] == 'full-d':
         l[0] = 2
         norb[0] = 5
     else:
-        print("Error ! Invalid lattice : ", p_model["model"])
+        print("Error ! Invalid lattice : ", p_model["orbital_model"])
         sys.exit()
     #
     # Write General-Hk formated file
@@ -174,7 +174,7 @@ def pydmft_pre(filename):
     p.add_option("model", "tp", float, 0.0, "some help message")
     p.add_option("model", "U", float, 0.0, "some help message")
     p.add_option("model", "J", float, 0.0, "some help message")
-    p.add_option("model", "model", str, "single", "some help message")
+    p.add_option("model", "orbital_model", str, "single", "some help message")
     p.add_option("model", "nk", int, 8, "some help message")
     p.add_option("model", "nk0", int, 0, "some help message")
     p.add_option("model", "nk1", int, 0, "some help message")
