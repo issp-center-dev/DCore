@@ -7,8 +7,13 @@ except ImportError:
 
 
 class TypedParser(object):
+    """
+    Parser of an init file. One is able to define options and sections (data types and default values).
+    """
     def __init__(self):
-        # Make case sensitive parser
+        """
+        Initializer
+        """
         self.__config_parser = configparser.ConfigParser()
         self.__config_parser.optionxform = str
 
@@ -22,7 +27,11 @@ class TypedParser(object):
 
     def add_option(self, section, option, dtype, default, string):
         """
-        section, option, type, default value, string
+        :param section: section name
+        :param option: option name
+        :param dtype: data type
+        :param default: default value
+        :param string: short description
         """
         if self.__read:
             raise RuntimeError("Do not add option after an input file has been read!")
@@ -37,12 +46,25 @@ class TypedParser(object):
         self.__results[section][option] = dtype(default)
 
     def allow_undefined_options(self, section):
+        """
+        Allow undefined options for the given section.
+        Otherwise, it throws when an undefined option is encountered during reading an ini file.
+
+        :param section:  section name
+        :return:
+        """
         if type(section) == str and not (section in self.__allow_undefined_options):
             self.__allow_undefined_options.append(section)
         else:
             raise ValueError("section must be a str!")
 
     def read(self, in_file):
+        """
+        Read an init file. This function must not be called more than once.
+
+        :param in_file:
+        :return:
+        """
         if self.__read:
             raise RuntimeError("An input file has been already read!")
 
@@ -69,7 +91,29 @@ class TypedParser(object):
                         raise RuntimeError("Undefined option " + opt + " is not allowed in section " + sect + "!")
 
     def get(self, sect, opt):
+        """
+        Get the value of the given option in the given section
+
+        :param sect: section name
+        :param opt:  option name
+        :return: value
+        """
         return self.__results[sect][opt]
 
     def as_dict(self):
+        """
+        Convert all options and their values into a dict object
+
+        :return: dict object
+        """
         return copy.deepcopy(self.__results)
+
+    def print_options(self):
+        """
+        Print a list of all options and sections
+
+        :return:
+        """
+
+        # To be implemented
+        pass
