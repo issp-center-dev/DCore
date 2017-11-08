@@ -19,22 +19,22 @@ t2g Bethe lattice
 ``pydmft``
 ----------
 
-:download:`input.ini <bethe-t2g/input.ini>`
+:download:`dmft.ini <bethe-t2g/dmft.ini>`
 
-.. literalinclude:: bethe-t2g/input.ini
+.. literalinclude:: bethe-t2g/dmft.ini
                               
 .. code-block :: bash
 
-   $ pydmf input.ini bethe
+   $ pydmf dmft.ini bethe
 
 ``pydmft_post``
 ---------------
 
-:download:`input.ini <bethe-t2g/input.ini>`
+:download:`dmft.ini <bethe-t2g/dmft.ini>`
 
-.. literalinclude:: bethe-t2g/input.ini
+.. literalinclude:: bethe-t2g/dmft.ini
                               
 .. code-block :: bash
 
-   $ pydmf_post input.ini bethe
+   $ pydmf_post dmft.ini bethe
 
