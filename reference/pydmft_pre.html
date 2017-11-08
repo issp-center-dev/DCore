@@ -144,12 +144,13 @@
 <h2>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">t</span> <span class="o">=</span> <span class="mf">2.0</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+<span class="n">t</span> <span class="o">=</span> <span class="mf">2.0</span>
 <span class="n">U</span> <span class="o">=</span> <span class="mf">16.0</span>
 <span class="n">J</span> <span class="o">=</span> <span class="mf">2.666666666666667</span>
 <span class="n">lattice</span> <span class="o">=</span> <span class="n">bethe</span>
 <span class="n">seedname</span> <span class="o">=</span> <span class="n">bethe</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">t2g</span>
+<span class="n">orbital_model</span> <span class="o">=</span> <span class="n">t2g</span>
 <span class="n">nk</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">nelec</span> <span class="o">=</span> <span class="mf">1.5</span>
 </pre></div>
@@ -192,7 +193,7 @@
 <td>0.0</td>
 <td>On-site Hund potential</td>
 </tr>
-<tr class="row-even"><td>model</td>
+<tr class="row-even"><td>orbital_model</td>
 <td>String</td>
 <td>single</td>
 <td>Chosen from &#8220;single&#8221;, &#8220;eg&#8221;, &#8220;t2g&#8221;, &#8220;full-d&#8221;</td>

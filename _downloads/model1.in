@@ -1,8 +1,9 @@
+[model]
 t = 2.0
 U = 16.0
 J = 2.666666666666667
 lattice = bethe
 seedname = bethe
-model = t2g
+orbital_model = t2g
 nk = 10
 nelec = 1.5

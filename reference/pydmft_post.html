@@ -136,7 +136,7 @@
 <p>Plot Green&#8217;s function, self energy, etc.</p>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>$ pydmft_post input.ini seedname
+<div class="highlight-python"><div class="highlight"><pre>$ pydmft_post dmft.ini seedname
 </pre></div>
 </div>
 </div>
@@ -144,11 +144,16 @@
 <h2>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">system</span><span class="p">]</span>
-<span class="n">beta</span> <span class="o">=</span> <span class="mf">100.0</span>
+<div class="highlight-python"><div class="highlight"><pre>[system]
+beta = 100.0
 
-<span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">TRIQS</span><span class="o">/</span><span class="n">hubbard</span><span class="o">-</span><span class="n">I</span>
+[impurity_solver]
+name = TRIQS/cthyb
+max_time{int} = 60
+n_cycles{int} = 5000
+
+[control]
+max_step = 20
 </pre></div>
 </div>
 </div>

@@ -153,7 +153,7 @@ from results by many DFT programs.</p>
 <div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
  calculation = &#39;scf&#39;
       outdir = &#39;./&#39;
-  pseudo_dir = &#39;../pseudo/&#39;
+  pseudo_dir = &#39;./&#39;
       prefix = &#39;srvo3&#39;
 /
 &amp;SYSTEM
@@ -193,11 +193,13 @@ K_POINTS automatic
 <h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="generate-bloch-orbitals-for-the-wannier">
 <h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this headline">¶</a></h3>
+<p>Perform non-scf calculation for generating Bloch orbitals that are used
+in the wannierization.</p>
 <p><a class="reference download internal" href="../_downloads/nscf.in" download=""><code class="xref download docutils literal"><span class="pre">nscf.in</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
  calculation = &#39;bands&#39;
       outdir = &#39;./&#39;
-  pseudo_dir = &#39;../pseudo/&#39;
+  pseudo_dir = &#39;./&#39;
       prefix = &#39;srvo3&#39;
 /
 &amp;SYSTEM
@@ -289,18 +291,20 @@ K_POINTS crystal
   0.75000000  0.75000000  0.75000000  1.562500e-02
 </pre></div>
 </div>
-<p>This <em>k</em> grid is generated as follows:</p>
+<p>This <em>k</em>-grid is generated as follows:</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> 4
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">kmesh.pl</span></code> is located in the <cite>utility/</cite> directory of Wannier90.</p>
-<p>Run <code class="docutils literal"><span class="pre">pw.x</span></code> as</p>
+<p>Then, run <code class="docutils literal"><span class="pre">pw.x</span></code> as</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in nscf.in
 </pre></div>
 </div>
 </div>
 <div class="section" id="preprocess-for-wannier90">
 <h3>Preprocess for Wannier90<a class="headerlink" href="#preprocess-for-wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Pre-process with wannier90 program.
+It is always required before pw2wannier.x runs.</p>
 <p><a class="reference download internal" href="../_downloads/srvo3.win" download=""><code class="xref download docutils literal"><span class="pre">srvo3.win</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>num_bands         =   25
 num_wann          =   3
@@ -420,7 +424,7 @@ end kpoints
 <div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
 </pre></div>
 </div>
-<div class="highlight-bash"><div class="highlight"><pre>$ wannier90 -pp srvo3
+<div class="highlight-bash"><div class="highlight"><pre>$ wannier90.x -pp srvo3
 </pre></div>
 </div>
 </div>
@@ -446,15 +450,118 @@ end kpoints
 </div>
 <div class="section" id="wannier90">
 <h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Execute <code class="docutils literal"><span class="pre">wannier90.x</span></code> for the actual wannierization.
+The input file is the same as that for the preprocessing run.</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ wannier90 srvo3
 </pre></div>
 </div>
 </div>
 <div class="section" id="optional-check-wannierization">
 <h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-gnuplot"><div class="highlight"><pre>plot &quot;bands.out.gnu&quot; u 1:2 w l tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;srvo3_band.dat&quot; u ($1*0.6146):2 every 10 tit &quot;Wannier&quot;
+<p>If we want to check the quarity of the wannierization,
+we plot the original and the wannier-interpolated band structure simalteneously.</p>
+<p>First, we compute the band structure with the following input file:</p>
+<p><a class="reference download internal" href="../_downloads/band.in" download=""><code class="xref download docutils literal"><span class="pre">band.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;bands&#39;
+      outdir = &#39;./&#39;
+  pseudo_dir = &#39;./&#39;
+      prefix = &#39;srvo3&#39;
+/
+&amp;SYSTEM
+       ibrav = 1
+   celldm(1) = 7.29738129774137562
+        ntyp = 3
+         nat = 5
+     ecutwfc = 50.0
+     ecutrho = 400.0
+ occupations = &quot;tetrahedra_opt&quot;
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Sr   87.6200000000  Sr.pbe-spn-kjpaw_psl.0.2.3.upf
+  V   50.9415000000  V.pbe-spn-kjpaw_psl.0.2.3.upf
+  O   15.9994000000  O.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Sr   0.00000000000000   0.00000000000000   0.00000000000000
+  V   0.50000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.00000000000000   0.50000000000000
+  O   0.00000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.50000000000000   0.00000000000000
+K_POINTS crystal
+          50
+        0.0000000000    0.0000000000    0.0000000000    1.0
+        0.0500000000    0.0000000000    0.0000000000    1.0
+        0.1000000000    0.0000000000    0.0000000000    1.0
+        0.1500000000    0.0000000000    0.0000000000    1.0
+        0.2000000000    0.0000000000    0.0000000000    1.0
+        0.2500000000    0.0000000000    0.0000000000    1.0
+        0.3000000000    0.0000000000    0.0000000000    1.0
+        0.3500000000    0.0000000000    0.0000000000    1.0
+        0.4000000000    0.0000000000    0.0000000000    1.0
+        0.4500000000    0.0000000000    0.0000000000    1.0
+        0.5000000000    0.0000000000    0.0000000000    1.0
+        0.5000000000    0.0500000000    0.0000000000    1.0
+        0.5000000000    0.1000000000    0.0000000000    1.0
+        0.5000000000    0.1500000000    0.0000000000    1.0
+        0.5000000000    0.2000000000    0.0000000000    1.0
+        0.5000000000    0.2500000000    0.0000000000    1.0
+        0.5000000000    0.3000000000    0.0000000000    1.0
+        0.5000000000    0.3500000000    0.0000000000    1.0
+        0.5000000000    0.4000000000    0.0000000000    1.0
+        0.5000000000    0.4500000000    0.0000000000    1.0
+        0.5000000000    0.5000000000    0.0000000000    1.0
+        0.4615384615    0.4615384615    0.0000000000    1.0
+        0.4230769231    0.4230769231    0.0000000000    1.0
+        0.3846153846    0.3846153846    0.0000000000    1.0
+        0.3461538462    0.3461538462    0.0000000000    1.0
+        0.3076923077    0.3076923077    0.0000000000    1.0
+        0.2692307692    0.2692307692    0.0000000000    1.0
+        0.2307692308    0.2307692308    0.0000000000    1.0
+        0.1923076923    0.1923076923    0.0000000000    1.0
+        0.1538461538    0.1538461538    0.0000000000    1.0
+        0.1153846154    0.1153846154    0.0000000000    1.0
+        0.0769230769    0.0769230769    0.0000000000    1.0
+        0.0384615385    0.0384615385    0.0000000000    1.0
+        0.0000000000    0.0000000000    0.0000000000    1.0
+        0.0312500000    0.0312500000    0.0312500000    1.0
+        0.0625000000    0.0625000000    0.0625000000    1.0
+        0.0937500000    0.0937500000    0.0937500000    1.0
+        0.1250000000    0.1250000000    0.1250000000    1.0
+        0.1562500000    0.1562500000    0.1562500000    1.0
+        0.1875000000    0.1875000000    0.1875000000    1.0
+        0.2187500000    0.2187500000    0.2187500000    1.0
+        0.2500000000    0.2500000000    0.2500000000    1.0
+        0.2812500000    0.2812500000    0.2812500000    1.0
+        0.3125000000    0.3125000000    0.3125000000    1.0
+        0.3437500000    0.3437500000    0.3437500000    1.0
+        0.3750000000    0.3750000000    0.3750000000    1.0
+        0.4062500000    0.4062500000    0.4062500000    1.0
+        0.4375000000    0.4375000000    0.4375000000    1.0
+        0.4687500000    0.4687500000    0.4687500000    1.0
+        0.5000000000    0.5000000000    0.5000000000    1.0
 </pre></div>
 </div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpiexec -np <span class="m">4</span> pw.x -in band.in
+</pre></div>
+</div>
+<p><a class="reference download internal" href="../_downloads/bands.in" download=""><code class="xref download docutils literal"><span class="pre">bands.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;BANDS
+prefix = &quot;srvo3&quot;,
+outdir = &quot;./&quot;,
+!filband = &quot;band.dat&quot;
+!lsym = .true.
+/
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpiexec -np <span class="m">4</span> bands.x -in bands.in
+</pre></div>
+</div>
+<div class="highlight-gnuplot"><div class="highlight"><pre>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w l tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;srvo3_band.dat&quot; u ($1*0.6146):2 every 10 tit &quot;Wannier&quot;
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/band_wan.png"><img alt="../_images/band_wan.png" class="align-center" src="../_images/band_wan.png" style="width: 500px;" /></a>
 </div>
 </div>
 <div class="section" id="dmft-calculation">

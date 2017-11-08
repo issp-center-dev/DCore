@@ -1,7 +1,7 @@
 &CONTROL
  calculation = 'scf'
       outdir = './'
-  pseudo_dir = '../pseudo/'
+  pseudo_dir = './'
       prefix = 'srvo3'
 /
 &SYSTEM
