@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import sys
+import os
 import numpy
+import argparse
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
 
-from .typed_parser import TypedParser
+#from .typed_parser import TypedParser
+from typed_parser import TypedParser
+
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
@@ -247,11 +251,22 @@ def pydmft_pre(filename):
 
 if __name__ == '__main__':
 
-    #
-    # If input file is not specified ...
-    #
-    if len(sys.argv) != 2:
-        print("Usage:")
-        print("$ pydmft_pre input")
+    parser = argparse.ArgumentParser(\
+        prog='pydmft_pre.py',\
+        description='pre script for pydmft.',\
+        epilog='end',\
+        usage = '$ pydmft_pre input',\
+        add_help= True)
+    parser.add_argument('path_input_file', \
+                        action = 'store',\
+                        default= None,    \
+                        type=str, \
+                        help = "input file name."
+    )
+    
+    args=parser.parse_args()
+    if(os.path.isfile(args.path_input_file) is False):
+        print("Input file is not exist.")
         sys.exit()
-    pydmft_pre(sys.argv[1])
+    pydmft_pre(args.path_input_file)
+    

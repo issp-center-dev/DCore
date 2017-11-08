@@ -1,3 +1,4 @@
+[model]
 seedname = square_lattice
 lattice = square
 t = 1.0
