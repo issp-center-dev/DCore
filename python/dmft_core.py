@@ -21,10 +21,14 @@ def create_parser():
 
     parser.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
 
+    # Allow undefined options
+    parser.allow_undefined_options("impurity_solver")
+
     parser.add_option("control", "max_step", int, 100, "Max number of SCF steps")
     parser.add_option("control", "sigma_mix", float, 0.5, "Mixing parameter for self-energy")
     parser.add_option("control", "delta_mix", float, 0.5, "Mixing parameter for hybridization function")
     parser.add_option("control", "restart", bool, False, "Whether or not restart from a previous calculation")
+
 
     return parser
 

@@ -17,6 +17,9 @@ class TypedParser(object):
 
         self.__read = False
 
+        # Names of sections in which we accept options that are not predefined by add_option().
+        self.__allow_undefined_options = []
+
     def add_option(self, section, option, dtype, default, string):
         """
         section, option, type, default value, string
@@ -32,6 +35,12 @@ class TypedParser(object):
 
         self.__definitions[section][option] = (dtype, string, dtype(default))
         self.__results[section][option] = dtype(default)
+
+    def allow_undefined_options(self, section):
+        if type(section) == str and not (section in self.__allow_undefined_options):
+            self.__allow_undefined_options.append(section)
+        else:
+            raise ValueError("section must be a str!")
 
     def read(self, in_file):
         if self.__read:
@@ -54,7 +63,10 @@ class TypedParser(object):
                     self.__results[sect][opt] = self.__definitions[sect][opt][0](value)
                 else:
                     # if an option is not pre-defined, use the value in the input file
-                    self.__results[sect][opt] = value
+                    if sect in self.__allow_undefined_options:
+                        self.__results[sect][opt] = value
+                    else:
+                        raise RuntimeError("Undefined option " + opt + " is not allowed in section " + sect + "!")
 
     def get(self, sect, opt):
         return self.__results[sect][opt]

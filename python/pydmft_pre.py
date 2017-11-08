@@ -230,7 +230,6 @@ def pydmft_pre(filename):
         with open(seedname+'.inp', 'w') as f:
             weights_in_file = __generate_lattice_model(p_model, l, norb, equiv, f)
         # Convert General-Hk to SumDFT-HDF5 format
-        print("debug seedname", seedname)
         Converter = HkConverter(filename = seedname + ".inp", hdf_filename=seedname+".h5")
         Converter.convert_dft_input(weights_in_file=weights_in_file)
 
