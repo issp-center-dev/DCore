@@ -1,7 +1,7 @@
 &CONTROL
  calculation = 'bands'
       outdir = './'
-  pseudo_dir = '../pseudo/'
+  pseudo_dir = './'
       prefix = 'srvo3'
 /
 &SYSTEM
@@ -16,9 +16,9 @@
 &ELECTRONS
 /
 ATOMIC_SPECIES
- Sr   87.6200000000  Sr.pbe-spn-kjpaw_psl.0.2.3.UPF
-  V   50.9415000000  V.pbe-spn-kjpaw_psl.0.2.3.UPF
-  O   15.9994000000  O.pbe-n-kjpaw_psl.0.1.UPF
+ Sr   87.6200000000  Sr.pbe-spn-kjpaw_psl.0.2.3.upf
+  V   50.9415000000  V.pbe-spn-kjpaw_psl.0.2.3.upf
+  O   15.9994000000  O.pbe-n-kjpaw_psl.0.1.upf
 ATOMIC_POSITIONS crystal
  Sr   0.00000000000000   0.00000000000000   0.00000000000000
   V   0.50000000000000   0.50000000000000   0.50000000000000
