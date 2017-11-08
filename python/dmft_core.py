@@ -1,6 +1,7 @@
 from __future__ import print_function
 
-import sys, os, copy
+import sys, os, copy, re
+import __builtin__
 import pytriqs.utility.mpi as mpi
 from pytriqs.operators.util import *
 from pytriqs.archive import HDFArchive
@@ -18,8 +19,7 @@ def create_parser():
     parser.add_option("system", "dc_type", int, -1, "Type of double-counting correction")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to use a fixed chemical potential")
 
-    parser.add_option("impurity_solver", "N_l", int, 50, "Number of Legendre polynomials")
-    parser.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver")
+    parser.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
 
     parser.add_option("control", "max_step", int, 100, "Max number of SCF steps")
     parser.add_option("control", "sigma_mix", float, 0.5, "Mixing parameter for self-energy")
@@ -28,6 +28,36 @@ def create_parser():
 
     return parser
 
+def __gettype(name):
+    t = getattr(__builtin__, name)
+    if isinstance(t, type):
+        return t
+    raise ValueError(name)
+
+def create_solver_params(dict):
+    """
+    Parse a dict and create parameters for an impurity solver.
+    In dict, keyname should be parameter_name{python_type_name} (e.g. max_time:int).
+
+    :param dict: a dict object containing keys and values read from *.ini
+    :return: a dict object containing parameters
+    """
+    solver_params = {}
+    for k,v in dict.items():
+        if k == 'name':
+            continue
+
+        r = re.compile('^(.*)\{(.*)\}$')
+        try:
+            m = r.search(k)
+            param_name,param_type_str = m.group(1), m.group(2)
+            param_type = __gettype(param_type_str)
+        except:
+            raise RuntimeError("Unknown type or unrecognized format : " + k)
+        solver_params[param_name] = param_type(v)
+
+    return solver_params
+
 class DMFTCoreSolver:
     def __init__(self, seedname, params):
         self._params = copy.deepcopy(params)
@@ -35,8 +65,6 @@ class DMFTCoreSolver:
         # Construct a SumKDFT object
         self._SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
         U_file = HDFArchive(seedname+'.h5','r')
-        #Umat = U_file["pyDMFT"]["U_matrix"]
-        #Upmat = U_file["pyDMFT"]["Up_matrix"]
         self._J_hund = U_file["pyDMFT"]["J_hund"]
         self._U_int = U_file["pyDMFT"]["U_int"]
 
@@ -61,31 +89,24 @@ class DMFTCoreSolver:
         beta = float(params['system']['beta'])
         n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
         n_tau = int(params['system']['n_tau']) # Number of tau points
-        self._name = params['impurity_solver']['name']
-        n_l = int(params['impurity_solver']['N_l'])                           # Number of Legendre polynomials
-        self._solver_params = {}
-        if self._name=="TRIQS/cthyb":
+        self._solver_name = params['impurity_solver']['name']
+
+        self._solver_params = create_solver_params(params['impurity_solver'])
+
+        if self._solver_name=="TRIQS/cthyb":
             from pytriqs.applications.impurity_solvers.cthyb import Solver
-            self._solver_params["max_time"] = -1
-            self._solver_params["random_seed"] = 123 * mpi.rank + 567
-            self._solver_params["length_cycle"] = 200
-            self._solver_params["n_warmup_cycles"] = 5000
-            self._solver_params["n_cycles"] = 50000
-            self._S = Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau, n_l=n_l)
-        elif self._name=="TRIQS/hubbard-I":
+            self._S = Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau)
+        elif self._solver_name=="TRIQS/hubbard-I":
             if l==0:
                 from hubbard_solver_l0 import Solver
             else:
                 from hubbard_solver import Solver
             self._S = Solver(beta=beta, l=l)
-        elif self._name=="ALPS/cthyb":
+        elif self._solver_name=="ALPS/cthyb":
             from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
-            self._solver_params["max_time"] = 60     # Max simulation time
-            self._solver_params["perform_post_proc"] = True     # Max simulation time
-            self._solver_params["verbosity"] = 1     # Max simulation time
-            self._S = Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_l=n_l, n_iw=n_iw, n_tau=n_tau)
+            self._S = Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau)
         else:
-            raise RuntimeError("Unknown solver "+self._name)
+            raise RuntimeError("Unknown solver "+self._solver_name)
 
     def solve(self, max_step, output_file, output_group='dmft_output', dry_run=False):
         beta = float(self._params['system']['beta'])
@@ -158,15 +179,10 @@ class DMFTCoreSolver:
                 S.G0_iw << inverse(S.G0_iw)
                 del ar
 
-            #DEBUG
-            #print(dir(S.G0_iw['up']))
-            #gt = GfImTime(indices = [1, 2, 3], beta = 1.0)
-            #gt << InverseFourier(S.G0_iw['up'])
-            #print(gt.data)
             S.G0_iw << mpi.bcast(S.G0_iw)
 
             # Solve the impurity problem:
-            if self._name=="TRIQS/hubbard-I":
+            if self._solver_name=="TRIQS/hubbard-I":
                 # calculate non-interacting atomic level positions:
                 eal = SK.eff_atomic_levels()[0]
                 S.set_atomic_levels( eal = eal )
