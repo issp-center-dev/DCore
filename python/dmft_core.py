@@ -37,7 +37,7 @@ def __gettype(name):
 def create_solver_params(dict):
     """
     Parse a dict and create parameters for an impurity solver.
-    In dict, keyname should be parameter_name:type_name (e.g. max_time:int).
+    In dict, keyname should be parameter_name{python_type_name} (e.g. max_time:int).
 
     :param dict: a dict object containing keys and values read from *.ini
     :return: a dict object containing parameters
@@ -48,7 +48,7 @@ def create_solver_params(dict):
         if k == 'name':
             continue
 
-        r = re.compile('^(.*)\[(.*)\]$')
+        r = re.compile('^(.*)\{(.*)\}$')
         try:
             m = r.search(k)
             param_name,param_type_str = m.group(1), m.group(2)
