@@ -57,7 +57,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
         nkBZ = params["nk"]
         weights_in_file = True
     else:
-        print("Error ! Invalid lattice : ", lattice)
+        print("Error ! Invalid lattice : ", params["lattice"])
         sys.exit()
     print(" Total number of k =", str(nkBZ))
 

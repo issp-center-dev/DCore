@@ -28,7 +28,7 @@ t                   Float   1.0     Transfer integral (Nearest neighbor)
 tp                  Float   0.0     Transfer integral (Second nearest)
 U                   Float   0.0     On-site Coulomb potential
 J                   Float   0.0     On-site Hund potential
-model               String  single  Chosen from "single", "eg", "t2g", "full-d"
+orbital_model       String  single  Chosen from "single", "eg", "t2g", "full-d"
 nk                  Integer 8       Number of *k* along each line
 nk0                 Integer 0       Number of *k* (Only wannier90)
 nk1                 Integer 0       Number of *k* (Only wannier90)
