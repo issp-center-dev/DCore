@@ -1,5 +1,6 @@
 from __future__ import print_function
 import sys, os
+import argparse
 from pytriqs.applications.pydmft.typed_parser import TypedParser
 from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver
 
@@ -34,11 +35,29 @@ def pydmft_post(filename, seedname):
 
 if __name__ == '__main__':
 
-    #
-    # If input file is not specified ... 
-    #
-    if len(sys.argv) != 3:
-        print("Usage:")
-        print("$ pydmft_post input seedname")
+    parser = argparse.ArgumentParser(\
+                                 prog='pydmft_post.py',\
+                                 description='.',\
+                                 epilog='end',\
+                                 usage = '$ pydmft_post input.ini seedname',\
+                                 add_help= True)
+
+    parser.add_argument('path_input_file', \
+                    action = 'store',\
+                    default= None,    \
+                    type=str, \
+                    help = "input file name.")
+
+    parser.add_argument('seedname', \
+                    action = 'store',\
+                    default= None,    \
+                    type=str, \
+                    help = "seed name.")
+
+    args=parser.parse_args()
+    if(os.path.isfile(args.path_input_file) is False):
+        print("Input file is not exist.")
         sys.exit()
-    pydmft_post(sys.argv[1], sys.argv[2])
+
+    pydmft_post(args.path_input_file, args.seedname)
+    

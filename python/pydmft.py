@@ -1,21 +1,37 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import sys, os
+import argparse
 from pytriqs.applications.dft.sumk_dft import *
 from pytriqs.applications.pydmft.typed_parser import TypedParser
 from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver, create_parser
 
-#
-# If input file is not specified ... 
-#
-if len(sys.argv) != 3:
-    print("Usage:")
-    print("$ pydmft input.ini seedname")
+parser = argparse.ArgumentParser(\
+        prog='pydmft.py',\
+        description='.',\
+        epilog='end',\
+        usage = '$ pydmft input.ini seedname',\
+        add_help= True)
+
+parser.add_argument('path_input_file', \
+                    action = 'store',\
+                    default= None,    \
+                    type=str, \
+                    help = "input file name.")
+
+parser.add_argument('seedname', \
+                    action = 'store',\
+                    default= None,    \
+                    type=str, \
+                    help = "seed name.")
+
+args=parser.parse_args()
+if(os.path.isfile(args.path_input_file) is False):
+    print("Input file is not exist.")
     sys.exit()
 
-ini_file = sys.argv[1]
-seedname = sys.argv[2]
-
+# TODO Check seedname
+    
 #
 # Set Default value
 #
@@ -33,14 +49,15 @@ seedname = sys.argv[2]
 #parser.add_option("control", "sigma_mix", float, 0.5, "Mixing parameter for self-energy")
 #parser.add_option("control", "delta_mix", float, 0.5, "Mixing parameter for hybridization function")
 #parser.add_option("control", "restart", bool, False, "Whether or not restart from a previous calculation")
+
 parser = create_parser()
 
 #
 # Parse keywords and store
 #
-parser.read(ini_file)
+parser.read(args.path_input_file)
 params = parser.as_dict()
 
-solver = DMFTCoreSolver(seedname, params)
+solver = DMFTCoreSolver(args.seedname, params)
 
-solver.solve(max_step=params["control"]["max_step"], output_file=seedname+'.out.h5', output_group='dmft_out')
+solver.solve(max_step=params["control"]["max_step"], output_file=args.seedname+'.out.h5', output_group='dmft_out')
