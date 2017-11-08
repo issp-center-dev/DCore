@@ -87,6 +87,11 @@ class DMFTCoreSolver:
         else:
             raise RuntimeError("Unknown solver "+self._name)
 
+    # Make read-only getter
+    @property
+    def Solver(self):
+        return self._S
+
     def solve(self, max_step, output_file, output_group='dmft_output', dry_run=False):
         beta = float(self._params['system']['beta'])
         dc_type = int(self._params['system']['dc_type'])                        # DC type: -1 None, 0 FLL, 1 Held, 2 AMF
