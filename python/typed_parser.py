@@ -50,8 +50,10 @@ class TypedParser(object):
             for opt in self.__config_parser.options(sect):
                 value = self.__config_parser.get(sect, opt)
                 if sect in self.__definitions and opt in self.__definitions[sect]:
+                    # if an option is pre-defined.
                     self.__results[sect][opt] = self.__definitions[sect][opt][0](value)
                 else:
+                    # if an option is not pre-defined, use the value in the input file
                     self.__results[sect][opt] = value
 
     def get(self, sect, opt):
