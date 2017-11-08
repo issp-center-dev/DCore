@@ -16,7 +16,7 @@ def create_parser():
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature")
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
     parser.add_option("system", "n_tau", int, 10000, "Number of imaginary-time points")
-    parser.add_option("system", "dc_type", int, -1, "Type of double-counting correction")
+    parser.add_option("system", "dc_type", int, -1, "Type of double-counting correction. Set -1 to disable DC correction. Other availale options are according to TRIQS DFTTools.")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to use a fixed chemical potential")
 
     parser.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
