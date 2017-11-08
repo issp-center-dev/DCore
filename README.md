@@ -17,7 +17,7 @@ $ pydmft_pre input-file
 
 ### Input file format
 
-Exsample
+Example
 ```
 t = 1.0
 seedname = test
