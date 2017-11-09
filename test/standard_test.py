@@ -13,21 +13,23 @@ from pytriqs.applications.pydmft.pydmft_pre import pydmft_pre
 # Execute pydmft_pre.py to generate test.h5
 # Then Check the Diff of test.h5 and the reference output (stan_ref.h5))
 #
-f = open('stan.in', 'w')
-print("[model]", file=f)
-print("t = 1.0", file=f)
-print("U = 4.0", file=f)
-print("seedname = stan_test", file=f)
-f.close()
+for lattice in ['bethe', 'chain', 'square', 'cubic']:
+    input_fname = 'stan_'+lattice+'.in'
+    seedname = 'stan_test_' + lattice
+    seedname_ref = 'stan_ref_' + lattice
 
-pydmft_pre('stan.in')
+    with open(input_fname, 'w') as f:
+        print("[model]", file=f)
+        print("t = 1.0", file=f)
+        print("U = 4.0", file=f)
+        print("lattice = ", lattice, file=f)
+        print("seedname = " + seedname, file=f)
 
-print("\n Check Diff of stan_test.h5 stan_ref.h5\n")
-check = os.system('h5diff stan_test.h5 stan_ref.h5')
-
-if check == 0:
-    print("\n Generated file is the same as the refference.\n")
-    sys.exit(0)
-else:
-    print("\n Generated file is different from the refference.\n")
-    sys.exit(-1)
+    pydmft_pre(input_fname)
+    
+    print("\n Check Diff of {0}.h5 {1}.h5\n".format(seedname, seedname_ref))
+    check = os.system('h5diff {0}.h5 {1}.h5'.format(seedname, seedname_ref))
+    
+    if check != 0:
+        print("Generated file is different from the refference for lattice = " + lattice)
+        sys.exit(-1)

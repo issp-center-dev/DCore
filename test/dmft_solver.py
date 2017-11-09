@@ -39,7 +39,7 @@ params['system']['n_tau'] = 10000
 params['system']['dc_type'] = -1
 params['system']['fix_mu'] = False
 
-params['impurity_solver']['N_l'] = 50
+params['impurity_solver']['n_l{int}'] = 50
 params['impurity_solver']['name'] = 'TRIQS/hubbard-I'
 
 params['control']['sigma_mix'] = 0.5
