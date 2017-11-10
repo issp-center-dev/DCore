@@ -200,7 +200,7 @@ def pydmft_pre(filename):
             norb[i] = int(_cshell[1])
             if len(_cshell)==3:
                 equiv[i] = int(_cshell[2])
-    except ValueError:
+    except:
         raise RuntimeError("Error ! Format of cshell is wrong.")
         
     #
