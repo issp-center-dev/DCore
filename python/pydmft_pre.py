@@ -189,18 +189,17 @@ def pydmft_pre(filename):
     p_model = p.as_dict()["model"]
 
     #cshell=(l, norb, equiv) or (l, norb)
-    list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
-    l = [0 for i in range(len(list))]
-    norb = [0 for i in range(len(list))]
-    equiv = [-1 for i in range(len(list))]
+    cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
+    l = [0 for i in range(len(cshell_list))]
+    norb = [0 for i in range(len(cshell_list))]
+    equiv = [-1 for i in range(len(cshell_list))]
     try:
-        for (i, _list) in enumerate(list):
-            _cshell_list=filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
-            #Check value is int or not
-            l[i]=(int)(_cshell_list[0])
-            norb[i]=(int)(_cshell_list[1])
-            if(len(_cshell_list)==3):
-                equiv[i]=((int)(_cshell_list[2]))
+        for (i, _list) in enumerate(cshell_list):
+            _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
+            l[i] = int(_cshell[0])
+            norb[i] = int(_cshell[1])
+            if len(_cshell)==3:
+                equiv[i]=((int)(_cshell[2]))
     except ValueError:
         raise RuntimeError("Error ! Format of cshell is wrong.")
         
