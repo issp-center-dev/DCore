@@ -5,14 +5,12 @@
 Documentation
 =============
 
-Basic notions
--------------
+Structure of :program:`pyDMFT`
+------------------------------
 
 .. toctree::
    :maxdepth: 2
-
-   basicnotions/first
-   basicnotions/dft_dmft
+           
    basicnotions/structure
 
 Tutorial

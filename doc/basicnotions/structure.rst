@@ -1,8 +1,5 @@
 .. _structure:
 
-Structure of :program:`pyDMFT`
-==============================
-
 .. image:: images/structure.png
    :width: 700
    :align: center

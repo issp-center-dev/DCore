@@ -69,7 +69,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
         norb[0] = 1
     elif params["orbital_model"] == 'eg':
         #FIXME: l=2 does not make sense. l=2 assumes norb=5 (full d-shell) in generating Coulomb tensor.
-        #What is the proper way to generate Colomb tensor for eg?
+        #What is the proper way to generate Coulomb tensor for eg?
         l[0] = 2
         norb[0] = 2
     elif params["orbital_model"] == 't2g':
@@ -79,10 +79,10 @@ def __generate_lattice_model(params, l, norb, equiv, f):
         l[0] = 2
         norb[0] = 5
     else:
-        print("Error ! Invalid lattice : ", p_model["orbital_model"])
+        print("Error ! Invalid lattice : ", params["orbital_model"])
         sys.exit()
     #
-    # Write General-Hk formated file
+    # Write General-Hk formatted file
     #
     print(nkBZ, file=f)
     print(params["nelec"], file=f)
@@ -190,7 +190,7 @@ def pydmft_pre(filename):
     norb = [1 for i in range(1000)]
     equiv = [-1 for i in range(1000)]
     #
-    # Perse keywords and store
+    # Parse keywords and store
     #
     for line in open(filename, 'r'):
         itemList = line.split('=')

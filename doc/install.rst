@@ -8,7 +8,8 @@ Installation
 Prerequisites
 -------------
 
-#. The :ref:`TRIQS <triqslibs:welcome>` toolbox.
+#. The :ref:`TRIQS <triqslibs:welcome>` and
+   :ref:`DFT-Tools <triqsdfttools:dft>` toolbox.
    In the following, we will suppose that it is installed in the ``path_to_triqs`` directory.
 
 #. Likely, you will also need at least one impurity solver,
@@ -19,7 +20,7 @@ Installation steps
 
 #. Download the sources from github:: 
  
-     $ git clone https://github.com/ALPSCore/pyDMFT.git src
+     $ git clone https://github.com/issp-center-dev/pyDMFT.git src
  
 #. Create an empty build directory where you will compile the code:: 
  
