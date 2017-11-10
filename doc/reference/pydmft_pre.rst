@@ -1,7 +1,36 @@
+.. _pydmftpre:
+
 pydmft_pre
 ==========
 
 Prepare model for pyDMFT.
+Wannier90 as well as the following preset models:
+
+* Chain lattice
+
+  .. math::
+
+     {\hat H} = \sum_{i} \sum_{\alpha} \sum_{\sigma}
+     t c_{i+1 \alpha \sigma}^\dagger c_{i \alpha \sigma}
+     +h.c. + {\hat H}_{\rm int}
+  
+* Square lattice
+
+  .. math::
+
+     {\hat H} = \sum_{i,j} \sum_{\alpha} \sum_{\sigma}
+     t c_{i \alpha \sigma}^\dagger c_{i \alpha \sigma}
+     +h.c. + {\hat H}_{\rm int}
+  
+* Cubic lattice
+
+  .. math::
+
+     {\hat H} = \sum_{i} \sum_{\alpha} \sum_{\sigma}
+     t c_{i \alpha \sigma}^\dagger c_{i \alpha \sigma}
+     +h.c. + {\hat H}_{\rm int}
+  
+* Bethe lattice
 
 Usage
 -----

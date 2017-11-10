@@ -153,8 +153,8 @@ def __generate_lattice_model(params, l, norb, equiv, f):
                     kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk)
                     ek = 2*t*(numpy.cos(kvec[0]) +  numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
                          + 2*tp*( numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]) \
-                                  + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2]) \
-                                  + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]) )
+                                + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2]) \
+                                + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]) )
                     for iorb in range(norb[0]):
                         for jorb in range(norb[0]):
                             if iorb == jorb:
