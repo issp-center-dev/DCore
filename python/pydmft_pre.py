@@ -4,6 +4,7 @@ import sys
 import os
 import numpy
 import argparse
+import re
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
@@ -183,38 +184,32 @@ def pydmft_pre(filename):
     p.add_option("model", "lattice", str, "chain", "some help message")
     p.add_option("model", "nelec", float, 1.0, "some help message")
     p.add_option("model", "seedname", str, "pydmft", "some help message")
+    p.add_option("model", "cshell", str, "[]", "some help message")
     p.read(filename)
     p_model = p.as_dict()["model"]
 
-    l = [0 for i in range(1000)]
-    norb = [1 for i in range(1000)]
-    equiv = [-1 for i in range(1000)]
-    #
-    # Parse keywords and store
-    #
-    for line in open(filename, 'r'):
-        itemList = line.split('=')
-        keyList = itemList[0].split('-')
-        if keyList[0].strip() == 'l':
-            l[int(keyList[1])] = int(itemList[1])
-        elif keyList[0].strip() == 'norb':
-            norb[int(keyList[1])] = int(itemList[1])
-        elif keyList[0].strip() == 'equiv':
-            equiv[int(keyList[1])] = int(itemList[1])
-        elif itemList[0].strip() == '':
-            pass
-        else:
-            pass
-            #print("Error ! Invalid keyword : ", itemList[0])
-            #sys.exit()
-
+    #cshell=(l, norb, equiv) or (l, norb)
+    list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
+    l = [0 for i in range(len(list))]
+    norb = [0 for i in range(len(list))]
+    equiv = [-1 for i in range(len(list))]
+    try:
+        for (i, _list) in enumerate(list):
+            _cshell_list=filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
+            #Check value is int or not
+            l[i]=(int)(_cshell_list[0])
+            norb[i]=(int)(_cshell_list[1])
+            if(len(_cshell_list)==3):
+                equiv[i]=((int)(_cshell_list[2]))
+    except ValueError:
+        raise RuntimeError("Error ! Format of cshell is wrong.")
+        
     #
     # Summary of input parameters
     #
     print("Parameter summary")
     for k,v in p_model.items():
         print(k, " = ", str(v))
-
 
     #
     # Lattice
@@ -247,7 +242,7 @@ def pydmft_pre(filename):
     # Finish
     #
     print("Done")
-
+    
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(\
