@@ -180,7 +180,7 @@ def pydmft_pre(filename):
     p.add_option("model", "nk0", int, 0, "some help message")
     p.add_option("model", "nk1", int, 0, "some help message")
     p.add_option("model", "nk2", int, 0, "some help message")
-    p.add_option("model", "ncor", int, 0, "some help message")
+    p.add_option("model", "ncor", int, 1, "some help message")
     p.add_option("model", "lattice", str, "chain", "some help message")
     p.add_option("model", "nelec", float, 1.0, "some help message")
     p.add_option("model", "seedname", str, "pydmft", "some help message")
@@ -190,16 +190,16 @@ def pydmft_pre(filename):
 
     #cshell=(l, norb, equiv) or (l, norb)
     cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
-    l = [0 for i in range(len(cshell_list))]
-    norb = [0 for i in range(len(cshell_list))]
-    equiv = [-1 for i in range(len(cshell_list))]
+    l = [0]*p_model['ncor']
+    norb = [0]*p_model['ncor']
+    equiv = [-1]*p_model['ncor']
     try:
-        for (i, _list) in enumerate(cshell_list):
+        for  i, _list  in enumerate(cshell_list):
             _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
             l[i] = int(_cshell[0])
             norb[i] = int(_cshell[1])
             if len(_cshell)==3:
-                equiv[i]=((int)(_cshell[2]))
+                equiv[i] = int(_cshell[2])
     except ValueError:
         raise RuntimeError("Error ! Format of cshell is wrong.")
         
