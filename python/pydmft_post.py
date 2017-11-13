@@ -39,26 +39,28 @@ def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
     n_spin = 1
     print(" Total number of k =", str(n_k))
 
-    nwan_cor = 0
     print("               ncor = ", ncor)
     for i in range(ncor):
         if equiv[i] == -1: equiv[i] = i
         print("     l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
-        nwan_cor += norb[i]
-
-    #w90 = Wannier90Converter(seedname = seedname)
+    #
+    # Read hopping in the real space from the Wannier90 output
+    #
     w90c = Wannier90Converter(seedname=params["seedname"])
     nr, rvec, rdeg, nwan, hamr = w90c.read_wannier90hr(params["seedname"]+"_hr.dat")
-
-    twopi = 2 * numpy.pi
+    #
+    # Fourier transformation of the one-body Hamiltonian
+    #
     n_orbitals = [nwan] * n_k
     hopping = numpy.zeros([n_k, n_spin, numpy.max(n_orbitals), numpy.max(n_orbitals)], numpy.complex_)
     for ik in range(n_k):
         for ir in range(nr):
-            rdotk = twopi * numpy.dot(kvec[ik,:], rvec[ir,:])
+            rdotk = 2 * numpy.pi * numpy.dot(kvec[ik,:], rvec[ir,:])
             factor = (numpy.cos(rdotk) + 1j * numpy.sin(rdotk)) / float(rdeg[ir])
             hopping[ik,0,:, :] += factor * hamr[ir][:, :]
-
+    #
+    # proj_mat is (norb*norb) identities at each correlation shell
+    #
     proj_mat = numpy.zeros([n_k, n_spin, ncor, numpy.max(norb), numpy.max(n_orbitals)], numpy.complex_)
     iorb = 0
     for icor in range(ncor):
@@ -98,37 +100,35 @@ def __generate_lattice_model(params, n_k, kvec):
 
     t = params["t"]
     tp = params["tp"]
-    nk = params["nk"]
-    n_k = (params["nnode"] - 1)*nk+1
     n_spin = 1
-    print(" Total number of k =", str(n_k))
     #
     # Energy band
     #
-    n_orbitals = [norb] * n_k
-    hopping = numpy.zeros([n_k, n_spin, norb, norb], numpy.complex_)
-
     if params["lattice"] == 'bethe':
         #
         # For Bhete lattice, k-point has no meanings.
         #
         print("Skip")
     else:
-        for ik in range(nk+1):
+        n_orbitals = [norb] * n_k
+        hopping = numpy.zeros([n_k, n_spin, norb, norb], numpy.complex_)
+
+        for ik in range(n_k):
             if params["lattice"] == 'chain':
-                ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
+                ek = 2.0*t*numpy.cos(kvec[ik,0]) + 2*tp*numpy.cos(2.0*kvec[ik,0])
             elif params["lattice"] == 'square':
-                ek = 2.0 * t * (numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
-                   + 2.0 * tp * (numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
+                ek = 2.0 * t * (numpy.cos(kvec[ik,0]) + numpy.cos(kvec[ik,1])) \
+                   + 2.0 * tp * (numpy.cos(kvec[ik,0] + kvec[ik,1]) + numpy.cos(kvec[ik,0] - kvec[ik,1]))
             elif params["lattice"] == 'cubic':
-                ek = 2 * t * (numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
-                    + 2 * tp * (numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]) \
-                              + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2]) \
-                              + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
+                ek = 2 * t * (numpy.cos(kvec[ik,0]) + numpy.cos(kvec[ik,1]) + numpy.cos(kvec[ik,2])) \
+                    + 2 * tp * (numpy.cos(kvec[ik,0] + kvec[ik,1]) + numpy.cos(kvec[ik,0] - kvec[ik,1]) \
+                              + numpy.cos(kvec[ik,1] + kvec[ik,2]) + numpy.cos(kvec[ik,1] - kvec[ik,2]) \
+                              + numpy.cos(kvec[ik,2] + kvec[ik,0]) + numpy.cos(kvec[ik,2] - kvec[ik,0]))
 
-            for iorb in range(norb):
-                hopping[ik, 0, iorb, iorb] = ek
-
+            for iorb in range(norb): hopping[ik, 0, iorb, iorb] = ek
+    #
+    # proj_mat is (norb*norb) identities at each correlation shell
+    #
     proj_mat = numpy.zeros([n_k, n_spin, 1, norb, norb], numpy.complex_)
     proj_mat[:, :, 0, 0:norb, 0:norb] = numpy.identity(norb, numpy.complex_)
 
