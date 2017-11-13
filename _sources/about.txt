@@ -15,6 +15,8 @@ XXX [#pydmft1]_.
 
 .. [#pydmft1] `A. Smithee and N. Bourbaki, Phys. Rev. P 11, 123456 (2017) <https://www.google.co.jp/search?q=pie&source=lnms&tbm=isch&sa=X&ved=0ahUKEwiy273Ky97VAhUGVrwKHWLZB3kQ_AUICigB&biw=1371&bih=803>`_ (:download:`bibtex file <pydmft1.bib>`)
 
+[TRIQS paper, TRIQS/cthyb paper, ALPSCore, ALPSCore/CTHYB]
+
 This application is a part of our scientific work and we would appreciate if
 projects using it will include a citation to the above relevant papers.  In
 order to help you, we provide a BibTeX entry for each paper.

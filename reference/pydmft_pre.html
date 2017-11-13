@@ -132,8 +132,21 @@
           <div class="body" role="main">
             
   <div class="section" id="pydmft-pre">
-<h1>pydmft_pre<a class="headerlink" href="#pydmft-pre" title="Permalink to this headline">¶</a></h1>
-<p>Prepare model for pyDMFT.</p>
+<span id="pydmftpre"></span><h1>pydmft_pre<a class="headerlink" href="#pydmft-pre" title="Permalink to this headline">¶</a></h1>
+<p>Prepare model for pyDMFT.
+Wannier90 as well as the following preset models:</p>
+<ul class="simple">
+<li>chain</li>
+<li>square</li>
+<li>cubic</li>
+<li>bethe</li>
+<li>wannier90</li>
+</ul>
+<div class="math">
+\[{\hat H} = \sum_{i j} \sum_{\alpha \beta} \sum_{\sigma}
+t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
++h.c. + {\hat H}_{\rm int}\]</div>
+<a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre>$ pydmft_pre input-file
@@ -158,12 +171,15 @@
 </div>
 <div class="section" id="details">
 <h3>Details<a class="headerlink" href="#details" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>[model] block</li>
+</ul>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
-<col width="7%" />
-<col width="7%" />
-<col width="66%" />
+<col width="13%" />
+<col width="13%" />
+<col width="11%" />
+<col width="63%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -178,7 +194,7 @@
 <td>1.0</td>
 <td>Transfer integral (Nearest neighbor)</td>
 </tr>
-<tr class="row-odd"><td>tp</td>
+<tr class="row-odd"><td>t&#8217;</td>
 <td>Float</td>
 <td>0.0</td>
 <td>Transfer integral (Second nearest)</td>
@@ -239,15 +255,11 @@
 <td>Name of the system.
 It should be the same as the seedname of wannier90.</td>
 </tr>
-<tr class="row-odd"><td>l-0, l-1, ...</td>
-<td>Integer</td>
-<td>0</td>
-<td>Anguler momentum of each shell.</td>
-</tr>
-<tr class="row-even"><td>norb-0, norb-1, ...</td>
-<td>Integer</td>
-<td>1</td>
-<td>Number of orbitals in each shell.</td>
+<tr class="row-odd"><td>cshell</td>
+<td>Integer array</td>
+<td>[(0,1),...]</td>
+<td>Anguler momentum, and the number of orbitals of each
+correlation shell.</td>
 </tr>
 </tbody>
 </table>

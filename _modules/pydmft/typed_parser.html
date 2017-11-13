@@ -107,8 +107,13 @@
 
 
 <div class="viewcode-block" id="TypedParser"><a class="viewcode-back" href="../../reference/TypedParser.html#pydmft.typed_parser.TypedParser">[docs]</a><span class="k">class</span> <span class="nc">TypedParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Make case sensitive parser</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parser of an init file. One is able to define options and sections (data types and default values).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="TypedParser.__init__"><a class="viewcode-back" href="../../reference/TypedParser.html#pydmft.typed_parser.TypedParser.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__config_parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__config_parser</span><span class="o">.</span><span class="n">optionxform</span> <span class="o">=</span> <span class="nb">str</span>
 
@@ -117,9 +122,16 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__read</span> <span class="o">=</span> <span class="bp">False</span>
 
+        <span class="c1"># Names of sections in which we accept options that are not predefined by add_option().</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__allow_undefined_options</span> <span class="o">=</span> <span class="p">[]</span></div>
+
 <div class="viewcode-block" id="TypedParser.add_option"><a class="viewcode-back" href="../../reference/TypedParser.html#pydmft.typed_parser.TypedParser.add_option">[docs]</a>    <span class="k">def</span> <span class="nf">add_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        section, option, type, default value, string</span>
+<span class="sd">        :param section: section name</span>
+<span class="sd">        :param option: option name</span>
+<span class="sd">        :param dtype: data type</span>
+<span class="sd">        :param default: default value</span>
+<span class="sd">        :param string: short description</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Do not add option after an input file has been read!&quot;</span><span class="p">)</span>
@@ -133,7 +145,26 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">option</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">dtype</span><span class="p">(</span><span class="n">default</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">option</span><span class="p">]</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">(</span><span class="n">default</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+<div class="viewcode-block" id="TypedParser.allow_undefined_options"><a class="viewcode-back" href="../../reference/TypedParser.html#pydmft.typed_parser.TypedParser.allow_undefined_options">[docs]</a>    <span class="k">def</span> <span class="nf">allow_undefined_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allow undefined options for the given section.</span>
+<span class="sd">        Otherwise, it throws when an undefined option is encountered during reading an ini file.</span>
+
+<span class="sd">        :param section:  section name</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">section</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">section</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allow_undefined_options</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__allow_undefined_options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;section must be a str!&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TypedParser.read"><a class="viewcode-back" href="../../reference/TypedParser.html#pydmft.typed_parser.TypedParser.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read an init file. This function must not be called more than once.</span>
+
+<span class="sd">        :param in_file:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;An input file has been already read!&quot;</span><span class="p">)</span>
 
@@ -154,13 +185,38 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">0</span><span class="p">](</span><span class="n">value</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># if an option is not pre-defined, use the value in the input file</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">if</span> <span class="n">sect</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allow_undefined_options</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Undefined option &quot;</span> <span class="o">+</span> <span class="n">opt</span> <span class="o">+</span> <span class="s2">&quot; is not allowed in section &quot;</span> <span class="o">+</span> <span class="n">sect</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span>
+<div class="viewcode-block" id="TypedParser.get"><a class="viewcode-back" href="../../reference/TypedParser.html#pydmft.typed_parser.TypedParser.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the value of the given option in the given section</span>
 
-    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        :param sect: section name</span>
+<span class="sd">        :param opt:  option name</span>
+<span class="sd">        :return: value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TypedParser.as_dict"><a class="viewcode-back" href="../../reference/TypedParser.html#pydmft.typed_parser.TypedParser.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert all options and their values into a dict object</span>
+
+<span class="sd">        :return: dict object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TypedParser.print_options"><a class="viewcode-back" href="../../reference/TypedParser.html#pydmft.typed_parser.TypedParser.print_options">[docs]</a>    <span class="k">def</span> <span class="nf">print_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print a list of all options and sections</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># To be implemented</span>
+        <span class="k">pass</span></div></div>
 </pre></div>
 
           </div>

@@ -124,6 +124,13 @@
 <dt id="pydmft.typed_parser.TypedParser">
 <em class="property">class </em><code class="descclassname">pydmft.typed_parser.</code><code class="descname">TypedParser</code><a class="reference internal" href="../_modules/pydmft/typed_parser.html#TypedParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pydmft.typed_parser.TypedParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Parser of an init file. One is able to define options and sections (data types and default values).</p>
+<dl class="method">
+<dt id="pydmft.typed_parser.TypedParser.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pydmft/typed_parser.html#TypedParser.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pydmft.typed_parser.TypedParser.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializer</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="pydmft.typed_parser.TypedParser.__weakref__">
 <code class="descname">__weakref__</code><a class="headerlink" href="#pydmft.typed_parser.TypedParser.__weakref__" title="Permalink to this definition">¶</a></dt>
@@ -133,7 +140,103 @@
 <dl class="method">
 <dt id="pydmft.typed_parser.TypedParser.add_option">
 <code class="descname">add_option</code><span class="sig-paren">(</span><em>section</em>, <em>option</em>, <em>dtype</em>, <em>default</em>, <em>string</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pydmft/typed_parser.html#TypedParser.add_option"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pydmft.typed_parser.TypedParser.add_option" title="Permalink to this definition">¶</a></dt>
-<dd><p>section, option, type, default value, string</p>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>section</strong> &#8211; section name</li>
+<li><strong>option</strong> &#8211; option name</li>
+<li><strong>dtype</strong> &#8211; data type</li>
+<li><strong>default</strong> &#8211; default value</li>
+<li><strong>string</strong> &#8211; short description</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pydmft.typed_parser.TypedParser.allow_undefined_options">
+<code class="descname">allow_undefined_options</code><span class="sig-paren">(</span><em>section</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pydmft/typed_parser.html#TypedParser.allow_undefined_options"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pydmft.typed_parser.TypedParser.allow_undefined_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allow undefined options for the given section.
+Otherwise, it throws when an undefined option is encountered during reading an ini file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>section</strong> &#8211; section name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pydmft.typed_parser.TypedParser.as_dict">
+<code class="descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pydmft/typed_parser.html#TypedParser.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pydmft.typed_parser.TypedParser.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert all options and their values into a dict object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dict object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pydmft.typed_parser.TypedParser.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>sect</em>, <em>opt</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pydmft/typed_parser.html#TypedParser.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pydmft.typed_parser.TypedParser.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of the given option in the given section</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sect</strong> &#8211; section name</li>
+<li><strong>opt</strong> &#8211; option name</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">value</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pydmft.typed_parser.TypedParser.print_options">
+<code class="descname">print_options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pydmft/typed_parser.html#TypedParser.print_options"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pydmft.typed_parser.TypedParser.print_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a list of all options and sections</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pydmft.typed_parser.TypedParser.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>in_file</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pydmft/typed_parser.html#TypedParser.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pydmft.typed_parser.TypedParser.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an init file. This function must not be called more than once.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>in_file</strong> &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>

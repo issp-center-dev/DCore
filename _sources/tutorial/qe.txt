@@ -155,10 +155,10 @@ Running self-consistent DFT+DMFT : pydmft
 Post-processing and data analysis: pydmft_post
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:download:`input.ini <qe/input.ini>`
+:download:`post.ini <qe/input.ini>`
 
-.. literalinclude:: qe/input.ini
+.. literalinclude:: qe/post.ini
                               
 .. code-block :: bash
 
-   $ pydmf_post input.ini srvo3
+   $ pydmf_post post.ini

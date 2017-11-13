@@ -16,39 +16,28 @@ Input-file format
 Example
 ~~~~~~~
 
-.. literalinclude:: ../tutorial/bethe-t2g/dmft.ini
+.. literalinclude:: ../tutorial/qe/post.ini
 
 Details
 ~~~~~~~
 
 * [system] block
 
-======= ======= ======= =================================================
-Name    Type    Default Description
-======= ======= ======= =================================================
-beta    Float   1.0     Inverse temperature.
-n_iw    Integer 2048    Number of Matsubara frequencies.
-n_tau   Integer 10000   Number of imaginary-time points.
-dc_type Integer -1      Type of double-counting correction.
-fix_mu  Bool    False   Whether or not to use a fixed chemical potential.
-======= ======= ======= =================================================
-  
-* [impurity_solver] block
-
-==== ======= =========== ===================================================
-Name Type    Default     Description
-==== ======= =========== ===================================================
-N_l  Integer 50          Number of Legendre polynomials.
-name String  TRIQS/cthyb Name of impurity solver. Choosen from "TRIQS/cthyb"
-                         "TRIQS/hubbrad-I", and "ALPS/cthyb".
-==== ======= =========== ===================================================
-  
-* [control] block
-
-========= ======= ======= ============================================
-Name      Type    Default Description
-========= ======= ======= ============================================
-max_step  Integer 100     Max number of SCF steps.
-sigma_mix Float   0.5     Mixing parameter for self-energy.
-delta_mix Float   0.5     Mixing parameter for hybridization function.
-========= ======= ======= ============================================
+============= ================= ===================== ======================================================
+Name          Type              Default               Description
+============= ================= ===================== ======================================================
+t             Float             1.0                   Transfer integral (Nearest neighbor) 
+t'            Float             0.0                   Transfer integral (Second nearest)
+orbital_model String            single                Chosen from "single", "eg", "t2g", "full-d"
+ncor          Integer           1                     Number of correlation shell.
+lattice       String            chain                 Chosen from "chain", "square", "cubic", "bethe", and
+                                                      "wannier90"
+seedname      String            pydmft                Name of the system.
+                                                      It should be the same as the seedname of wannier90.
+cshell        Integer array     [(0,1),...]           Anguler momentum, and the number of orbitals of each
+                                                      correlation shell.
+bvec          Float array       [(0.0,0.0,0.0),...]   Reciplocal lattice vectors
+nnode         Integer           2                     Number of node for the *k* path
+nk            Integer           8                     Number of *k* along each line
+knode         Sting Float array [(G,0.0,0.0,0.0),...] The name and the fractional coordinate of each k-node.
+============= ================= ===================== ======================================================

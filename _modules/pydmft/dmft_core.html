@@ -116,15 +116,19 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;Inverse temperature&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;n_iw&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">2048</span><span class="p">,</span> <span class="s2">&quot;Number of Matsubara frequencies&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;n_tau&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="s2">&quot;Number of imaginary-time points&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;dc_type&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Type of double-counting correction&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;dc_type&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Type of double-counting correction. Set -1 to disable DC correction. Other availale options are according to TRIQS DFTTools.&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;fix_mu&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="s2">&quot;Whether or not to use a fixed chemical potential&quot;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;impurity_solver&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;TRIQS/cthyb&#39;</span><span class="p">,</span> <span class="s2">&quot;Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Allow undefined options</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">allow_undefined_options</span><span class="p">(</span><span class="s2">&quot;impurity_solver&quot;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;control&quot;</span><span class="p">,</span> <span class="s2">&quot;max_step&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;Max number of SCF steps&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;control&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_mix&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;Mixing parameter for self-energy&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;control&quot;</span><span class="p">,</span> <span class="s2">&quot;delta_mix&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;Mixing parameter for hybridization function&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;control&quot;</span><span class="p">,</span> <span class="s2">&quot;restart&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="s2">&quot;Whether or not restart from a previous calculation&quot;</span><span class="p">)</span>
+
 
     <span class="k">return</span> <span class="n">parser</span>
 
@@ -137,7 +141,7 @@
 <span class="k">def</span> <span class="nf">create_solver_params</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parse a dict and create parameters for an impurity solver.</span>
-<span class="sd">    In dict, keyname should be parameter_name{python_type_name} (e.g. max_time:int).</span>
+<span class="sd">    In dict, keyname should be parameter_name{python_type_name} (e.g. max_time{int}).</span>
 
 <span class="sd">    :param dict: a dict object containing keys and values read from *.ini</span>
 <span class="sd">    :return: a dict object containing parameters</span>
@@ -223,7 +227,6 @@
         <span class="n">prec_mu</span> <span class="o">=</span> <span class="mf">0.0001</span>
 
         <span class="n">previous_runs</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">previous_present</span> <span class="o">=</span> <span class="bp">False</span>
 
         <span class="c1"># Just for convenience</span>
         <span class="n">SK</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SK</span>
@@ -235,14 +238,30 @@
                 <span class="k">if</span> <span class="n">output_group</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="s1">&#39;control&#39;</span><span class="p">][</span><span class="s1">&#39;restart&#39;</span><span class="p">]:</span>
                         <span class="n">ar</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">output_group</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="s1">&#39;iterations&#39;</span> <span class="ow">in</span> <span class="n">ar</span><span class="p">:</span>
-                            <span class="n">previous_present</span> <span class="o">=</span> <span class="bp">True</span>
-                            <span class="n">previous_runs</span> <span class="o">=</span> <span class="n">ar</span><span class="p">[</span><span class="s1">&#39;iterations&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;iterations&#39;</span> <span class="ow">in</span> <span class="n">ar</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Failed to restart the previous simulation!&quot;</span><span class="p">)</span>
+
+                        <span class="n">previous_runs</span> <span class="o">=</span> <span class="n">ar</span><span class="p">[</span><span class="s1">&#39;iterations&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">ar</span><span class="p">[</span><span class="s1">&#39;iterations&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No previous runs to be loaded from &quot;</span> <span class="o">+</span> <span class="n">output_file</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="p">)</span>
+                        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Loading Sigma_iw... &quot;</span><span class="p">)</span>
+                        <span class="n">S</span><span class="o">.</span><span class="n">Sigma_iw</span> <span class="o">&lt;&lt;</span> <span class="n">ar</span><span class="p">[</span><span class="s1">&#39;Sigma_iw&#39;</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">del</span> <span class="n">f</span><span class="p">[</span><span class="n">output_group</span><span class="p">]</span>
                         <span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">output_group</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">output_group</span><span class="p">)</span>
+
+        <span class="n">previous_runs</span> <span class="o">=</span> <span class="n">mpi</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">previous_runs</span><span class="p">)</span>
+        <span class="n">previous_present</span> <span class="o">=</span> <span class="n">previous_runs</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">previous_present</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mpi</span><span class="o">.</span><span class="n">is_master_node</span><span class="p">():</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Broadcasting Sigma_iw... &quot;</span><span class="p">)</span>
+            <span class="n">S</span><span class="o">.</span><span class="n">Sigma_iw</span> <span class="o">&lt;&lt;</span> <span class="n">mpi</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">Sigma_iw</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mpi</span><span class="o">.</span><span class="n">is_master_node</span><span class="p">():</span>
+            <span class="n">ar</span> <span class="o">=</span> <span class="n">HDFArchive</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+            <span class="n">ar</span><span class="p">[</span><span class="n">output_group</span><span class="p">][</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span>
 
         <span class="k">for</span> <span class="n">iteration_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">previous_runs</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">previous_runs</span><span class="o">+</span><span class="n">max_step</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">mpi</span><span class="o">.</span><span class="n">is_master_node</span><span class="p">():</span>
