@@ -7,6 +7,7 @@ from pytriqs.applications.pydmft.typed_parser import TypedParser
 from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver
 from pytriqs.applications.dft.sumk_dft import *
 from pytriqs.gf.local import GfReFreq
+from pytriqs.applications.dft.sumk_dft_tools import *
 
 def pydmft_post(filename, seedname):
 
@@ -38,7 +39,7 @@ def pydmft_post(filename, seedname):
     parser.add_option("tool", "broadening", float, 0, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.01, "Imaginary frequency shift")
 
-
+    print(filename)
 
     #
     # Parse keywords and store
@@ -48,7 +49,6 @@ def pydmft_post(filename, seedname):
 
     dct=DMFTCoreTools(seedname, params)
     dct.post()
-
 
     #solver.plot(output_file=seedname+'.out.h5', output_group='dmft_out')
 
@@ -62,18 +62,18 @@ class DMFTCoreTools:
         self._omega_min=float(params['tool']['omega_min'])
         self._omega_max=float(params['tool']['omega_max'])
         self._Nomega=int(params['tool']['Nomega'])
-        self._broadning=float(params['tool']['bradning'])
+        self._broadning=float(params['tool']['broadening'])
         self._eta=float(params['tool']['eta'])
         self._seedname=seedname
         self._SKT = SumkDFTTools(hdf_file=self._seedname + '.h5', use_dft_blocks=False)
-        solver = DMFTCoreSolver(seedname, params)
-        self._S=solver._S
+        self._solver = DMFTCoreSolver(seedname, params)
 
     def post(self):
         flag_dos=self._flag_dos
         flag_band=self._flag_band
         SKT = self._SKT
-        S=self._S
+        Sol=self._solver
+        S=self._solver._S
         if flag_dos or flag_band:
             if mpi.is_master_node():
                 print("~ Real frequency")
@@ -85,15 +85,14 @@ class DMFTCoreTools:
             SKT.dc_imp = mpi.bcast(SKT.dc_imp)
             SKT.dc_energ = mpi.bcast(SKT.dc_energ)
 
-            if S._name == 'TRIQS/hubbard-I':
+            if Sol._name == 'TRIQS/hubbard-I':
                 # set atomic levels:
                 eal = SKT.eff_atomic_levels()[0]
                 S.set_atomic_levels( eal = eal )
                 # Run the solver to get GF and self-energy on the real axis
-                S.GF_realomega(ommin=self._omega_min, ommax = self._omega_max, N_om=self._Nomega, U_int=S._U_int, J_hund=S._J_hund)
-            elif S._name == "TRIQS/cthyb" or S._name == "ALPS/cthyb":
-                print("not supported yet")
-                # Read from HDF file
+                S.GF_realomega(ommin=self._omega_min, ommax = self._omega_max, N_om=self._Nomega, U_int=Sol._U_int, J_hund=Sol._J_hund)
+            elif Sol._name == "TRIQS/cthyb" or Sol._name == "ALPS/cthyb":
+                # Read info from HDF file
                 ar = HDFArchive(self._seedname+'.out.h5', 'r')
                 iteration_number = ar['dmft_out']['iterations']
                 print("Iter {0}".format(iteration_number))
