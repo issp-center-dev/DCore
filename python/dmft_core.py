@@ -127,7 +127,6 @@ class DMFTCoreSolver:
         prec_mu = 0.0001
 
         previous_runs = 0
-        previous_present = False
 
         # Just for convenience
         SK = self._SK
@@ -139,14 +138,30 @@ class DMFTCoreSolver:
                 if output_group in f:
                     if self._params['control']['restart']:
                         ar = f[output_group]
-                        if 'iterations' in ar:
-                            previous_present = True
-                            previous_runs = ar['iterations']
+                        if not 'iterations' in ar:
+                            raise RuntimeError("Failed to restart the previous simulation!")
+
+                        previous_runs = ar['iterations']
+                        if ar['iterations'] <= 0:
+                            raise RuntimeError("No previous runs to be loaded from " + output_file + "!")
+                        print("Loading Sigma_iw... ")
+                        S.Sigma_iw << ar['Sigma_iw']
                     else:
                         del f[output_group]
                         f.create_group(output_group)
                 else:
                     f.create_group(output_group)
+
+        previous_runs = mpi.bcast(previous_runs)
+        previous_present = previous_runs > 0
+        if previous_present:
+            if mpi.is_master_node():
+                print("Broadcasting Sigma_iw... ")
+            S.Sigma_iw << mpi.bcast(S.Sigma_iw)
+
+        if mpi.is_master_node():
+            ar = HDFArchive(output_file, 'a')
+            ar[output_group]['parameters'] = self._params
 
         for iteration_number in range(previous_runs+1,previous_runs+max_step+1):
             if mpi.is_master_node():
