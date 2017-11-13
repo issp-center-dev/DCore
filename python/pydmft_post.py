@@ -16,11 +16,28 @@ from typed_parser import TypedParser
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
 
-def __generate_wannier90_model(params, l, norb, equiv, f, knode):
-    nk = params["nk"]
+def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
+    """
+    Compute hopping etc. for A(k,w) of Wannier90
+
+    Parameters
+    ----------
+    params : dictionary
+        Input parameters
+    l : integer array
+        Angular momentum at each correlation shell
+    norb : integer array
+        Number of orbitals at each correlation shell
+    equiv : integer array
+        Equivalence of correlation shell
+    n_k : integer
+        Number of k points
+    kvec : float array
+        k-points where A(k,w) is computed
+    """
     ncor = params["ncor"]
-    n_k = (params["nnode"] - 1)*nk+1
     n_spin = 1
+    print(" Total number of k =", str(n_k))
 
     nwan_cor = 0
     print("               ncor = ", ncor)
@@ -30,24 +47,17 @@ def __generate_wannier90_model(params, l, norb, equiv, f, knode):
         nwan_cor += norb[i]
 
     #w90 = Wannier90Converter(seedname = seedname)
-    nr, rvec, rdeg, nwan, hamr = Wannier90Converter.read_wannier90hr(params["seedname"]+"_hr.dat")
+    w90c = Wannier90Converter(seedname=params["seedname"])
+    nr, rvec, rdeg, nwan, hamr = w90c.read_wannier90hr(params["seedname"]+"_hr.dat")
 
-    kvec = [0.0, 0.0, 0.0]
     twopi = 2 * numpy.pi
     n_orbitals = [nwan] * n_k
     hopping = numpy.zeros([n_k, n_spin, numpy.max(n_orbitals), numpy.max(n_orbitals)], numpy.complex_)
-    for inode in range(params["nnode"] - 1):
-        for ik in range(nk + 1):
-            if inode != 0 & ik == 0: pass
-            for i in range(3):
-                kvec[i] = ik * knode[i + 3 * inode] + (nk - ik) * knode[i + 3 * (inode + 1)]
-                kvec[i] = 2.0 * numpy.pi * kvec[i] / float(nk)
-
-                for ir in range(nr):
-                    rdotk = twopi * numpy.dot(kvec, rvec[ir])
-                    factor = (numpy.cos(rdotk) + 1j * numpy.sin(rdotk)) / \
-                             float(rdeg[ir])
-                    hopping[ik+nk*inode,0,:, :] += factor * hamr[ir][:, :]
+    for ik in range(n_k):
+        for ir in range(nr):
+            rdotk = twopi * numpy.dot(kvec[ik,:], rvec[ir,:])
+            factor = (numpy.cos(rdotk) + 1j * numpy.sin(rdotk)) / float(rdeg[ir])
+            hopping[ik,0,:, :] += factor * hamr[ir][:, :]
 
     proj_mat = numpy.zeros([n_k, n_spin, ncor, numpy.max(norb), numpy.max(n_orbitals)], numpy.complex_)
     iorb = 0
@@ -56,28 +66,21 @@ def __generate_wannier90_model(params, l, norb, equiv, f, knode):
         iorb += norb[icor]
 
 # FIXME: split this LONG function
-def __generate_lattice_model(params, f, knode):
-    __print_paramter(params, "t")
-    __print_paramter(params, "tp")
-    __print_paramter(params, "nk")
-    __print_paramter(params, "orbital_model")
-    weights_in_file = False
-    if params["lattice"] == 'chain':
-        nkBZ = params["nk"]
-    elif params["lattice"] == 'square':
-        nkBZ = params["nk"]**2
-    elif params["lattice"] == 'cubic':
-        nkBZ = params["nk"]**3
-    elif params["lattice"] == 'bethe':
-        nkBZ = params["nk"]
-        weights_in_file = True
-    else:
-        print("Error ! Invalid lattice : ", params["lattice"])
-        sys.exit()
-    print(" Total number of k =", str(nkBZ))
+def __generate_lattice_model(params, n_k, kvec):
+    """
+    Compute hopping etc. for A(k,w) of preset models
 
+    Parameters
+    ----------
+    params : dictionary
+        Input parameters
+    n_k : integer
+        Number of k points
+    kvec : float array
+        k-points where A(k,w) is computed
+    """
     #
-    # Model
+    # Construct model
     #
     if params["orbital_model"] == 'single':
         norb = 1
@@ -98,44 +101,46 @@ def __generate_lattice_model(params, f, knode):
     nk = params["nk"]
     n_k = (params["nnode"] - 1)*nk+1
     n_spin = 1
+    print(" Total number of k =", str(n_k))
     #
     # Energy band
     #
-    kvec = [0.0, 0.0, 0.0]
     n_orbitals = [norb] * n_k
     hopping = numpy.zeros([n_k, n_spin, norb, norb], numpy.complex_)
 
     if params["lattice"] == 'bethe':
         #
-        # If Bethe lattice, set k-weight manually to generate semi-circular DOS
+        # For Bhete lattice, k-point has no meanings.
         #
         print("Skip")
     else:
-        for inode in range(params["nnode"] - 1):
-            for ik in range(nk+1):
-                if inode != 0 & ik == 0: pass
-                for i in range(3):
-                    kvec[i] = ik * knode[i+3*inode] + (nk-ik)*knode[i+3*(inode+1)]
-                    kvec[i] = 2.0 * numpy.pi * kvec[i] / float(nk)
+        for ik in range(nk+1):
+            if params["lattice"] == 'chain':
+                ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
+            elif params["lattice"] == 'square':
+                ek = 2.0 * t * (numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
+                   + 2.0 * tp * (numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
+            elif params["lattice"] == 'cubic':
+                ek = 2 * t * (numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
+                    + 2 * tp * (numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]) \
+                              + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2]) \
+                              + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
 
-                    if params["lattice"] == 'chain':
-                        ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
-                    elif params["lattice"] == 'square':
-                        ek = 2.0 * t * (numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
-                           + 2.0 * tp * (numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
-                    elif params["lattice"] == 'cubic':
-                        ek = 2 * t * (numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
-                           + 2 * tp * (numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]) \
-                                     + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2]) \
-                                     + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
-
-                    for iorb in range(norb):
-                        hopping[ik + nk * inode, 0, iorb, iorb] = ek
+            for iorb in range(norb):
+                hopping[ik, 0, iorb, iorb] = ek
 
     proj_mat = numpy.zeros([n_k, n_spin, 1, norb, norb], numpy.complex_)
     proj_mat[:, :, 0, 0:norb, 0:norb] = numpy.identity(norb, numpy.complex_)
 
 def pydmft_post(filename):
+    """
+    Main routine for the post-processing tool
+
+    Parameters
+    ----------
+    filename : string
+        Input-file name
+    """
     print("Reading {0} ...\n".format(filename))
     #
     # Construct a parser with default values
@@ -154,10 +159,11 @@ def pydmft_post(filename):
     p.add_option("model", "bvec", str, "[]", "some help message")
     p.read(filename)
     p_model = p.as_dict()["model"]
-
-    #cshell=(l, norb, equiv) or (l, norb)
+    #
+    # Information of correlation shells. It is used only in conjunction to Wannier90.
+    # cshell=(l, norb, equiv) or (l, norb)
+    #
     cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
-    print("debug4 {0}\n {1}".format(cshell_list, p_model["cshell"]))
     l = [0]*p_model['ncor']
     norb = [0]*p_model['ncor']
     equiv = [-1]*p_model['ncor']
@@ -170,58 +176,59 @@ def pydmft_post(filename):
                 equiv[i] = int(_cshell[2])
     except:
         raise RuntimeError("Error ! Format of cshell is wrong.")
-
-    # knode=(label,k0, k1, k2)
+    #
+    # Nodes for k-point path
+    # knode=(label,k0, k1, k2) in the fractional coordinate
+    #
     knode_list = re.findall(r'\(\w\d?,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p_model["knode"])
-    print("debug3 {0}".format(knode_list))
-    knode = [0.0] * 3 * p_model['nnode']
+    knode = numpy.zeros((p_model['nnode'], 3), numpy.float_)
     klabel =['G'] * p_model['nnode']
     try:
         for i, _list in enumerate(knode_list):
             _knode = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*\,\s*,\s*\)]', _list))
             klabel[i] = _knode[0]
-            for j in range(3): knode[j+i*3] = float(_knode[j+1])
+            for j in range(3): knode[i,j] = float(_knode[j+1])
     except:
         raise RuntimeError("Error ! Format of knode is wrong.")
-
-    for i in range(p_model['nnode']):
-        print("debug2 {0} {1} {2} {3}".format(klabel[i], knode[0+i*3],knode[1+i*3],knode[2+i*3]))
+    #
+    # Reciprocal lattice vectors
     # bvec=[(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
+    #
     bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p_model["bvec"])
-    bvec = [0.0] * 9
+    bvec = numpy.zeros((3, 3), numpy.float_)
     try:
         for i, _list in enumerate(bvec_list):
             _bvec = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,\s*\)]', _list))
-            for j in range(3): bvec[j+i*3] = float(_bvec[j])
+            for j in range(3): bvec[i,j] = float(_bvec[j])
     except:
         raise RuntimeError("Error ! Format of bvec is wrong.")
-    for i in range(3):
-        print("debug1 {0} {1} {2}".format(bvec[0+i*3],bvec[1+i*3],bvec[2+i*3]))
-
     #
     # Summary of input parameters
     #
     print("Parameter summary")
     for k,v in p_model.items():
         print(k, " = ", str(v))
+    #
+    # Construct parameters for the A(k,w)
+    #
+    nk_line = p_model["nk"]
+    n_k = (p_model["nnode"] - 1)*nk_line + 1
+    print(" Total number of k =", str(n_k))
+    kvec = numpy.zeros((n_k, 3), numpy.float_)
+    ikk = 0
+    for inode in range(p_model["nnode"] - 1):
+        for ik in range(nk_line + 1):
+            if inode != 0 and ik == 0: continue
+            for i in range(3):
+                kvec[ikk,i] = float((nk_line - ik)) * knode[inode,i] + float(ik) * knode[inode + 1,i]
+                #kvec[ikk,i] = 2.0 * numpy.pi * kvec[ikk,i] / float(nk_line)
+                kvec[ikk, i] = kvec[ikk, i] / float(nk_line)
+            ikk += 1
 
-    #
-    # Lattice
-    #
-    seedname = p_model["seedname"]
     if p_model["lattice"] == 'wannier90':
-        with open(seedname+'.inp', 'w') as f:
-            __generate_wannier90_model(p_model, l, norb, equiv, f, knode)
-        # Convert General-Hk to SumDFT-HDF5 format
-    #    Converter = Wannier90Converter(seedname = seedname)
-    #    Converter.convert_dft_input()
+        __generate_wannier90_model(p_model, l, norb, equiv, n_k, kvec)
     else:
-        with open(seedname+'.inp', 'w') as f:
-            __generate_lattice_model(p_model, l, norb, equiv, f, knode)
-        # Convert General-Hk to SumDFT-HDF5 format
-    #    Converter = HkConverter(filename = seedname + ".inp", hdf_filename=seedname+".h5")
-    #    Converter.convert_dft_input(weights_in_file=weights_in_file)
-
+        __generate_lattice_model(p_model, n_k, kvec)
     #
     # Finish
     #
