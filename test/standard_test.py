@@ -28,7 +28,7 @@ for lattice in ['bethe', 'chain', 'square', 'cubic']:
     pydmft_pre(input_fname)
     
     print("\n Check Diff of {0}.h5 {1}.h5\n".format(seedname, seedname_ref))
-    check = os.system('h5diff {0}.h5 {1}.h5'.format(seedname, seedname_ref))
+    check = os.system('h5diff -d 1.0e-10 {0}.h5 {1}.h5'.format(seedname, seedname_ref))
     
     if check != 0:
         print("Generated file is different from the refference for lattice = " + lattice)
