@@ -191,7 +191,7 @@ def pydmft_pre(filename):
     #cshell=(l, norb, equiv) or (l, norb)
     cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
     l = [0]*p_model['ncor']
-    norb = [0]*p_model['ncor']
+    norb = [1]*p_model['ncor']
     equiv = [-1]*p_model['ncor']
     try:
         for  i, _list  in enumerate(cshell_list):

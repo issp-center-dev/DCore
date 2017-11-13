@@ -154,7 +154,7 @@ def pydmft_post(filename):
     p.add_option("model", "lattice", str, "chain", "some help message")
     p.add_option("model", "seedname", str, "pydmft", "some help message")
     p.add_option("model", "cshell", str, "[]", "some help message")
-    p.add_option("model", "nnode", int, 1, "some help message")
+    p.add_option("model", "nnode", int, 2, "some help message")
     p.add_option("model", "knode", str, "[]", "some help message")
     p.add_option("model", "bvec", str, "[]", "some help message")
     p.read(filename)
@@ -165,7 +165,7 @@ def pydmft_post(filename):
     #
     cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
     l = [0]*p_model['ncor']
-    norb = [0]*p_model['ncor']
+    norb = [1]*p_model['ncor']
     equiv = [-1]*p_model['ncor']
     try:
         for  i, _list  in enumerate(cshell_list):
