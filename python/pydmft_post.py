@@ -3,7 +3,9 @@ from __future__ import print_function
 import sys
 import os
 import numpy
+import math
 import argparse
+import re
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
@@ -15,7 +17,7 @@ from typed_parser import TypedParser
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
 
-def __generate_wannier90_model(params, l, norb, equiv, f):
+def __generate_wannier90_model(params, l, norb, equiv, f, knode):
     nk = params["nk"]
     nk0 = params["nk0"]
     nk1 = params["nk1"]
@@ -40,8 +42,28 @@ def __generate_wannier90_model(params, l, norb, equiv, f):
     for i in range(ncor):
         print("{0} {1} {2} {3} 0 0".format(i,equiv[i],l[i],norb[i]), file=f)
 
+    #w90 = Wannier90Converter(seedname = seedname)
+    nr, rvec, rdeg, nw, hamr = Wannier90Converter.read_wannier90hr(params["seedname"]+"_hr.dat")
+
+    kvec = [0.0, 0.0, 0.0]
+    twopi = 2 * numpy.pi
+    h_of_k = [numpy.zeros((nw, nw), dtype=numpy.complex_)
+              for ik in range((params["nnode"] - 1)*params["nk"]+1)]
+    for inode in range(params["nnode"] - 1):
+        for ik in range(nk + 1):
+            if inode != 0 & ik == 0: pass
+            for i in range(3):
+                kvec[i] = ik * knode[i + 3 * inode] + (nk - ik) * knode[i + 3 * (inode + 1)]
+                kvec[i] = 2.0 * numpy.pi * kvec[i] / float(nk)
+
+                for ir in range(nr):
+                    rdotk = twopi * numpy.dot(kvec, rvec[ir])
+                    factor = (math.cos(rdotk) + 1j * math.sin(rdotk)) / \
+                             float(rdeg[ir])
+                    h_of_k[ik][:, :] += factor * hamr[ir][:, :]
+
 # FIXME: split this LONG function
-def __generate_lattice_model(params, l, norb, equiv, f):
+def __generate_lattice_model(params, l, norb, equiv, f, knode):
     __print_paramter(params, "t")
     __print_paramter(params, "tp")
     __print_paramter(params, "nk")
@@ -99,62 +121,31 @@ def __generate_lattice_model(params, l, norb, equiv, f):
     #
     # Energy band
     #
+    kvec = [0.0, 0.0, 0.0]
     if params["lattice"] == 'bethe':
         #
         # If Bethe lattice, set k-weight manually to generate semi-circular DOS
         #
-        for i0 in range(nk):
-            ek = float(2*i0 + 1 - nk) / float(nk)
-            wk = numpy.sqrt(1.0 - ek**2)
-            print("{0}".format(wk), file=f)
-        for i0 in range(nk):
-            ek = 2.0 * t * float(2*i0 + 1 - nk) / float(nk)
-            for iorb in range(norb[0]):
-                for jorb in range(norb[0]):
-                    if iorb == jorb:
-                        print("{0}".format(ek), file=f) #Real part
-                    else:
-                        print("0.0", file=f) #Real part
-            for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
-    elif params["lattice"] == 'chain':
-        kvec = [0.0, 0.0, 0.0]
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
-            for iorb in range(norb[0]):
-                for jorb in range(norb[0]):
-                    if iorb == jorb:
-                        print("{0}".format(ek), file=f) #Real part
-                    else:
-                        print("0.0", file=f) #Real part
-            for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
-    elif params["lattice"] == 'square':
-        kvec = [0.0, 0.0, 0.0]
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            for i1 in range(nk):
-                kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk)
-                ek = 2.0*t*(numpy.cos(kvec[0]) +  numpy.cos(kvec[1])) \
-                     + 2.0*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
-                for iorb in range(norb[0]):
-                    for jorb in range(norb[0]):
-                        if iorb == jorb:
-                            print("{0}".format(ek), file=f) #Real part
-                        else:
-                            print("0.0", file=f) #Real part
-                for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
-    elif params["lattice"] == 'cubic':
-        kvec = [0.0, 0.0, 0.0]
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            for i1 in range(nk):
-                kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk)
-                for i2 in range(nk):
-                    kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk)
-                    ek = 2*t*(numpy.cos(kvec[0]) +  numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
-                         + 2*tp*( numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]) \
-                                + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2]) \
-                                + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]) )
+        print("Skip")
+    else:
+        for inode in range(params["nnode"] - 1):
+            for ik in range(nk+1):
+                if inode != 0 & ik == 0: pass
+                for i in range(3):
+                    kvec[i] = ik * knode[i+3*inode] + (nk-ik)*knode[i+3*(inode+1)]
+                    kvec[i] = 2.0 * numpy.pi * kvec[i] / float(nk)
+
+                    if params["lattice"] == 'chain':
+                        ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
+                    elif params["lattice"] == 'square':
+                        ek = 2.0 * t * (numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
+                           + 2.0 * tp * (numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
+                    elif params["lattice"] == 'cubic':
+                        ek = 2 * t * (numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
+                           + 2 * tp * (numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]) \
+                                     + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2]) \
+                                     + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
+
                     for iorb in range(norb[0]):
                         for jorb in range(norb[0]):
                             if iorb == jorb:
@@ -172,41 +163,60 @@ def pydmft_post(filename):
     p = TypedParser();
     p.add_option("model", "t", float, 1.0, "some help message")
     p.add_option("model", "tp", float, 0.0, "some help message")
-    p.add_option("model", "U", float, 0.0, "some help message")
-    p.add_option("model", "J", float, 0.0, "some help message")
     p.add_option("model", "orbital_model", str, "single", "some help message")
     p.add_option("model", "nk", int, 8, "some help message")
-    p.add_option("model", "nk0", int, 0, "some help message")
-    p.add_option("model", "nk1", int, 0, "some help message")
-    p.add_option("model", "nk2", int, 0, "some help message")
-    p.add_option("model", "ncor", int, 0, "some help message")
+    p.add_option("model", "ncor", int, 1, "some help message")
     p.add_option("model", "lattice", str, "chain", "some help message")
-    p.add_option("model", "nelec", float, 1.0, "some help message")
     p.add_option("model", "seedname", str, "pydmft", "some help message")
+    p.add_option("model", "cshell", str, "[]", "some help message")
+    p.add_option("model", "nnode", int, 1, "some help message")
+    p.add_option("model", "knode", str, "[]", "some help message")
+    p.add_option("model", "bvec", str, "[]", "some help message")
     p.read(filename)
     p_model = p.as_dict()["model"]
 
-    l = [0 for i in range(1000)]
-    norb = [1 for i in range(1000)]
-    equiv = [-1 for i in range(1000)]
-    #
-    # Parse keywords and store
-    #
-    for line in open(filename, 'r'):
-        itemList = line.split('=')
-        keyList = itemList[0].split('-')
-        if keyList[0].strip() == 'l':
-            l[int(keyList[1])] = int(itemList[1])
-        elif keyList[0].strip() == 'norb':
-            norb[int(keyList[1])] = int(itemList[1])
-        elif keyList[0].strip() == 'equiv':
-            equiv[int(keyList[1])] = int(itemList[1])
-        elif itemList[0].strip() == '':
-            pass
-        else:
-            pass
-            #print("Error ! Invalid keyword : ", itemList[0])
-            #sys.exit()
+    #cshell=(l, norb, equiv) or (l, norb)
+    cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
+    print("debug4 {0}\n {1}".format(cshell_list, p_model["cshell"]))
+    l = [0]*p_model['ncor']
+    norb = [0]*p_model['ncor']
+    equiv = [-1]*p_model['ncor']
+    try:
+        for  i, _list  in enumerate(cshell_list):
+            _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
+            l[i] = int(_cshell[0])
+            norb[i] = int(_cshell[1])
+            if len(_cshell)==3:
+                equiv[i] = int(_cshell[2])
+    except:
+        raise RuntimeError("Error ! Format of cshell is wrong.")
+
+    # knode=(label,k0, k1, k2)
+    knode_list = re.findall(r'\(\w\d?,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p_model["knode"])
+    print("debug3 {0}".format(knode_list))
+    knode = [0.0] * 3 * p_model['nnode']
+    klabel =['G'] * p_model['nnode']
+    try:
+        for i, _list in enumerate(knode_list):
+            _knode = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*\,\s*,\s*\)]', _list))
+            klabel[i] = _knode[0]
+            for j in range(3): knode[j+i*3] = float(_knode[j+1])
+    except:
+        raise RuntimeError("Error ! Format of knode is wrong.")
+
+    for i in range(p_model['nnode']):
+        print("debug2 {0} {1} {2} {3}".format(klabel[i], knode[0+i*3],knode[1+i*3],knode[2+i*3]))
+    # bvec=[(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
+    bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p_model["bvec"])
+    bvec = [0.0] * 9
+    try:
+        for i, _list in enumerate(bvec_list):
+            _bvec = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,\s*\)]', _list))
+            for j in range(3): bvec[j+i*3] = float(_bvec[j])
+    except:
+        raise RuntimeError("Error ! Format of bvec is wrong.")
+    for i in range(3):
+        print("debug1 {0} {1} {2}".format(bvec[0+i*3],bvec[1+i*3],bvec[2+i*3]))
 
     #
     # Summary of input parameters
@@ -215,39 +225,28 @@ def pydmft_post(filename):
     for k,v in p_model.items():
         print(k, " = ", str(v))
 
-
     #
     # Lattice
     #
     seedname = p_model["seedname"]
     if p_model["lattice"] == 'wannier90':
         with open(seedname+'.inp', 'w') as f:
-            __generate_wannier90_model(p_model, l, norb, equiv, f)
+            __generate_wannier90_model(p_model, l, norb, equiv, f, knode)
         # Convert General-Hk to SumDFT-HDF5 format
-        Converter = Wannier90Converter(seedname = seedname)
-        Converter.convert_dft_input()
+    #    Converter = Wannier90Converter(seedname = seedname)
+    #    Converter.convert_dft_input()
     else:
         with open(seedname+'.inp', 'w') as f:
-            weights_in_file = __generate_lattice_model(p_model, l, norb, equiv, f)
+            weights_in_file = __generate_lattice_model(p_model, l, norb, equiv, f, knode)
         # Convert General-Hk to SumDFT-HDF5 format
-        Converter = HkConverter(filename = seedname + ".inp", hdf_filename=seedname+".h5")
-        Converter.convert_dft_input(weights_in_file=weights_in_file)
-
-    #
-    # Add U-matrix block (Tentative)
-    # ####  The format of this block is not fixed  ####
-    #
-    f = HDFArchive(seedname+'.h5','a')
-    if not ("pyDMFT" in f):
-        f.create_group("pyDMFT")
-    f["pyDMFT"]["U_int"] = p_model["U"]
-    f["pyDMFT"]["J_hund"] = p_model["J"]
+    #    Converter = HkConverter(filename = seedname + ".inp", hdf_filename=seedname+".h5")
+    #    Converter.convert_dft_input(weights_in_file=weights_in_file)
 
     #
     # Finish
     #
     print("Done")
-
+    
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(\
