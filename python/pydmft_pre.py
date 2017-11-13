@@ -190,7 +190,7 @@ def pydmft_pre(filename):
     norb = [1 for i in range(1000)]
     equiv = [-1 for i in range(1000)]
     #
-    # Perse keywords and store
+    # Parse keywords and store
     #
     for line in open(filename, 'r'):
         itemList = line.split('=')

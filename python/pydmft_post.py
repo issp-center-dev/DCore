@@ -6,6 +6,7 @@ from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.pydmft.typed_parser import TypedParser
 from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver
 from pytriqs.applications.dft.sumk_dft import *
+from pytriqs.gf.local import GfReFreq
 
 def pydmft_post(filename, seedname):
 
@@ -35,6 +36,7 @@ def pydmft_post(filename, seedname):
     parser.add_option("tool", "omega_max", float, 0, "Max value of real frequency")
     parser.add_option("tool", "Nomega", int, 0, "Number of real frequencies")
     parser.add_option("tool", "broadening", float, 0, "An additional Lorentzian broadening")
+    parser.add_option("tool", "eta", float, 0.01, "Imaginary frequency shift")
 
 
 
@@ -54,12 +56,14 @@ class DMFTCoreTools:
     def __init__(self, seedname, params):
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
+        self._n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
         self._flag_dos=bool(params['dos']['flag'])
         self._flag_band=bool(params['band']['flag'])
         self._omega_min=float(params['tool']['omega_min'])
         self._omega_max=float(params['tool']['omega_max'])
         self._Nomega=int(params['tool']['Nomega'])
         self._broadning=float(params['tool']['bradning'])
+        self._eta=float(params['tool']['eta'])
         self._seedname=seedname
         self._SKT = SumkDFTTools(hdf_file=self._seedname + '.h5', use_dft_blocks=False)
         solver = DMFTCoreSolver(seedname, params)
@@ -89,6 +93,15 @@ class DMFTCoreTools:
                 S.GF_realomega(ommin=self._omega_min, ommax = self._omega_max, N_om=self._Nomega, U_int=S._U_int, J_hund=S._J_hund)
             elif S._name == "TRIQS/cthyb" or S._name == "ALPS/cthyb":
                 print("not supported yet")
+                # Read from HDF file
+                ar = HDFArchive(self._seedname+'.out.h5', 'r')
+                iteration_number = ar['dmft_out']['iterations']
+                print("Iter {0}".format(iteration_number))
+                S.Sigma_iw << ar['dmft_out']['Sigma_iw']
+                #Analytic continuation
+                sig_pade = GfReFreq(indices=S.Sigma_iw.indices(), window=(self._omega_min, self._omega_max), n_points=self._Nomega, name="sig_pade")
+                sig_pade.set_from_pade(S.Sigma_iw, n_points=self._n_iw, freq_offset=self._eta)
+
                 return
             else:
                 raise RuntimeError("Unknown solver " + S._name)
@@ -106,8 +119,6 @@ class DMFTCoreTools:
                 # ToDo Time stamp
                 print ("~ calc band")
             SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file='Akw_')
-
-
 
 
 if __name__ == '__main__':
