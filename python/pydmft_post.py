@@ -34,10 +34,18 @@ def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
         Number of k points
     kvec : float array
         k-points where A(k,w) is computed
+
+    Returns
+    -------
+    hopping : complex
+        k-dependent one-body Hamiltonian
+    n_orbitals : integer
+        Number of orbitals at each k. It does not depend on k
+    proj_mat : complex
+        Projection onto each correlated orbitals
     """
     ncor = params["ncor"]
     n_spin = 1
-    print(" Total number of k =", str(n_k))
 
     print("               ncor = ", ncor)
     for i in range(ncor):
@@ -51,7 +59,7 @@ def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
     #
     # Fourier transformation of the one-body Hamiltonian
     #
-    n_orbitals = [nwan] * n_k
+    n_orbitals = numpy.ones([n_k, n_spin], numpy.int) * nwan
     hopping = numpy.zeros([n_k, n_spin, numpy.max(n_orbitals), numpy.max(n_orbitals)], numpy.complex_)
     for ik in range(n_k):
         for ir in range(nr):
@@ -67,6 +75,8 @@ def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
         proj_mat[:, :, icor, 0:norb[icor], iorb:iorb + norb[icor]] = numpy.identity(norb[icor], numpy.complex_)
         iorb += norb[icor]
 
+    return hopping, n_orbitals, proj_mat
+
 # FIXME: split this LONG function
 def __generate_lattice_model(params, n_k, kvec):
     """
@@ -80,6 +90,15 @@ def __generate_lattice_model(params, n_k, kvec):
         Number of k points
     kvec : float array
         k-points where A(k,w) is computed
+
+    Returns
+    -------
+    hopping : complex
+        k-dependent one-body Hamiltonian
+    n_orbitals : integer
+        Number of orbitals at each k. It does not depend on k
+    proj_mat : complex
+        Projection onto each correlated orbitals
     """
     #
     # Construct model
@@ -99,7 +118,7 @@ def __generate_lattice_model(params, n_k, kvec):
         sys.exit()
 
     t = params["t"]
-    tp = params["tp"]
+    tp = params["t'"]
     n_spin = 1
     #
     # Energy band
@@ -110,7 +129,7 @@ def __generate_lattice_model(params, n_k, kvec):
         #
         print("Skip")
     else:
-        n_orbitals = [norb] * n_k
+        n_orbitals = numpy.ones([n_k, n_spin], numpy.int) * norb
         hopping = numpy.zeros([n_k, n_spin, norb, norb], numpy.complex_)
 
         for ik in range(n_k):
@@ -132,6 +151,9 @@ def __generate_lattice_model(params, n_k, kvec):
     proj_mat = numpy.zeros([n_k, n_spin, 1, norb, norb], numpy.complex_)
     proj_mat[:, :, 0, 0:norb, 0:norb] = numpy.identity(norb, numpy.complex_)
 
+    return hopping, n_orbitals, proj_mat
+
+
 def pydmft_post(filename):
     """
     Main routine for the post-processing tool
@@ -147,7 +169,7 @@ def pydmft_post(filename):
     #
     p = TypedParser();
     p.add_option("model", "t", float, 1.0, "some help message")
-    p.add_option("model", "tp", float, 0.0, "some help message")
+    p.add_option("model", "t'", float, 0.0, "some help message")
     p.add_option("model", "orbital_model", str, "single", "some help message")
     p.add_option("model", "nk", int, 8, "some help message")
     p.add_option("model", "ncor", int, 1, "some help message")
@@ -226,9 +248,20 @@ def pydmft_post(filename):
             ikk += 1
 
     if p_model["lattice"] == 'wannier90':
-        __generate_wannier90_model(p_model, l, norb, equiv, n_k, kvec)
+        hopping, n_orbitals, proj_mat = __generate_wannier90_model(p_model, l, norb, equiv, n_k, kvec)
     else:
-        __generate_lattice_model(p_model, n_k, kvec)
+        hopping, n_orbitals, proj_mat = __generate_lattice_model(p_model, n_k, kvec)
+    #
+    # Output them into seedname.h5
+    #
+    f = HDFArchive(p_model["seedname"]+'.h5','a')
+    if not ("dft_bands_input" in f):
+        f.create_group("dft_bands_input")
+    f["dft_bands_input"]["hopping"] = hopping
+    f["dft_bands_input"]["n_k"] = n_k
+    f["dft_bands_input"]["n_orbitals"] = n_orbitals
+    f["dft_bands_input"]["proj_mat"] = proj_mat
+    del  f
     #
     # Finish
     #

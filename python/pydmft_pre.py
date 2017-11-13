@@ -44,7 +44,7 @@ def __generate_wannier90_model(params, l, norb, equiv, f):
 # FIXME: split this LONG function
 def __generate_lattice_model(params, l, norb, equiv, f):
     __print_paramter(params, "t")
-    __print_paramter(params, "tp")
+    __print_paramter(params, "t'")
     __print_paramter(params, "nk")
     __print_paramter(params, "orbital_model")
     weights_in_file = False
@@ -94,7 +94,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
     print("1 {0}".format(norb[0]), file=f)
 
     t = params["t"]
-    tp = params["tp"]
+    tp = params["t'"]
     nk = params["nk"]
 
     #
@@ -172,7 +172,7 @@ def pydmft_pre(filename):
     #
     p = TypedParser();
     p.add_option("model", "t", float, 1.0, "some help message")
-    p.add_option("model", "tp", float, 0.0, "some help message")
+    p.add_option("model", "t'", float, 0.0, "some help message")
     p.add_option("model", "U", float, 0.0, "some help message")
     p.add_option("model", "J", float, 0.0, "some help message")
     p.add_option("model", "orbital_model", str, "single", "some help message")

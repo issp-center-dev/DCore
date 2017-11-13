@@ -6,31 +6,27 @@ pydmft_pre
 Prepare model for pyDMFT.
 Wannier90 as well as the following preset models:
 
-* Chain lattice
+* chain
 
-  .. math::
+* square
 
-     {\hat H} = \sum_{i} \sum_{\alpha} \sum_{\sigma}
-     t c_{i+1 \alpha \sigma}^\dagger c_{i \alpha \sigma}
-     +h.c. + {\hat H}_{\rm int}
+* cubic
+
+* bethe
+  Semicircular DOS with energy ranges [-2t:2t].  
+
+* wannier90
+  Read hopping parameters from the Wannier90 output.  
+
+.. math::
+
+   {\hat H} = \sum_{i j} \sum_{\alpha \beta} \sum_{\sigma}
+   t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
+   +h.c. + {\hat H}_{\rm int}
   
-* Square lattice
-
-  .. math::
-
-     {\hat H} = \sum_{i,j} \sum_{\alpha} \sum_{\sigma}
-     t c_{i \alpha \sigma}^\dagger c_{i \alpha \sigma}
-     +h.c. + {\hat H}_{\rm int}
-  
-* Cubic lattice
-
-  .. math::
-
-     {\hat H} = \sum_{i} \sum_{\alpha} \sum_{\sigma}
-     t c_{i \alpha \sigma}^\dagger c_{i \alpha \sigma}
-     +h.c. + {\hat H}_{\rm int}
-  
-* Bethe lattice
+.. image:: model.png
+   :width: 700
+   :align: center
 
 Usage
 -----
@@ -56,7 +52,7 @@ Details
 Name          Type          Default     Description
 ============= ============= =========== ================================================================
 t             Float         1.0         Transfer integral (Nearest neighbor) 
-tp            Float         0.0         Transfer integral (Second nearest)
+t'            Float         0.0         Transfer integral (Second nearest)
 U             Float         0.0         On-site Coulomb potential
 J             Float         0.0         On-site Hund potential
 orbital_model String        single      Chosen from "single", "eg", "t2g", "full-d"

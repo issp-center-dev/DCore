@@ -27,7 +27,7 @@ Details
 Name          Type              Default               Description
 ============= ================= ===================== ======================================================
 t             Float             1.0                   Transfer integral (Nearest neighbor) 
-tp            Float             0.0                   Transfer integral (Second nearest)
+t'            Float             0.0                   Transfer integral (Second nearest)
 orbital_model String            single                Chosen from "single", "eg", "t2g", "full-d"
 ncor          Integer           1                     Number of correlation shell.
 lattice       String            chain                 Chosen from "chain", "square", "cubic", "bethe", and
