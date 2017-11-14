@@ -7,7 +7,6 @@ import argparse
 import re
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
-from pytriqs.applications.dft.converters.hk_converter import HkConverter
 
 #from .typed_parser import TypedParser
 from typed_parser import TypedParser
