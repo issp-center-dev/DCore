@@ -226,12 +226,12 @@ class DMFTCoreSolver:
             # Write the final Sigma and G to the hdf5 archive:
             if mpi.is_master_node():
                 ar = HDFArchive(output_file, 'a')
-                ar[output_group]['iterations'] = iteration_number + previous_runs
+                ar[output_group]['iterations'] = iteration_number 
                 ar[output_group]['G_iw'] = S.G_iw
                 ar[output_group]['Sigma_iw'] = S.Sigma_iw
-                ar[output_group]['G0-%s'%(iteration_number + previous_runs)] = S.G0_iw
-                ar[output_group]['G-%s'%(iteration_number + previous_runs)] = S.G_iw
-                ar[output_group]['Sigma-%s'%(iteration_number + previous_runs)] = S.Sigma_iw
+                ar[output_group]['G0-%s'%(iteration_number)] = S.G0_iw
+                ar[output_group]['G-%s'%(iteration_number)] = S.G_iw
+                ar[output_group]['Sigma-%s'%(iteration_number)] = S.Sigma_iw
                 del ar
 
             # Set the new double counting:
