@@ -31,7 +31,6 @@ def create_parser():
 class DMFTCoreSolver:
     def __init__(self, seedname, params):
         self._params = copy.deepcopy(params)
-
         # Construct a SumKDFT object
         self._SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
         U_file = HDFArchive(seedname+'.h5','r')
@@ -62,7 +61,8 @@ class DMFTCoreSolver:
         n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
         n_tau = int(params['system']['n_tau']) # Number of tau points
         self._name = params['impurity_solver']['name']
-        n_l = int(params['impurity_solver']['N_l'])                           # Number of Legendre polynomials
+        n_l = int(params['impurity_solver']['N_l'])
+        # Number of Legendre polynomials
         self._solver_params = {}
         if self._name=="TRIQS/cthyb":
             from pytriqs.applications.impurity_solvers.cthyb import Solver

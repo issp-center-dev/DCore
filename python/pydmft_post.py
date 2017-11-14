@@ -33,10 +33,10 @@ def pydmft_post(filename, seedname):
     parser.add_option("band", "flag", bool, False, "Whether or not calculate band")
 
     # ToDo set default values
-    parser.add_option("tool", "omega_min", float, 0, "Minimum value of real frequency")
-    parser.add_option("tool", "omega_max", float, 0, "Max value of real frequency")
-    parser.add_option("tool", "Nomega", int, 0, "Number of real frequencies")
-    parser.add_option("tool", "broadening", float, 0, "An additional Lorentzian broadening")
+    parser.add_option("tool", "omega_min", float, -1, "Minimum value of real frequency")
+    parser.add_option("tool", "omega_max", float, 1, "Max value of real frequency")
+    parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
+    parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.01, "Imaginary frequency shift")
 
     print(filename)
