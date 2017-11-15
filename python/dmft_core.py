@@ -84,7 +84,7 @@ class DMFTCoreSolver:
         Umat, Upmat = U_matrix_kanamori(n_orb=n_orb, U_int=self._U_int, J_hund=self._J_hund)
 
         # Construct Hamiltonian
-        self._h_int = h_int_density(spin_names, orb_names, map_operator_structure=self._SK.sumk_to_solver[0], U=Umat, Uprime=Upmat, H_dump="H.txt")
+        self._h_int = h_int_kanamori(spin_names, orb_names, map_operator_structure=self._SK.sumk_to_solver[0], U=Umat, Uprime=Upmat, J_hund=self._J_hund, H_dump="H.txt")
 
         # Use GF structure determined by DFT blocks
         gf_struct = self._SK.gf_struct_solver[0]
