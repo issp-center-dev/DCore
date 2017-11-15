@@ -20,10 +20,10 @@ def pydmft_post(filename, seedname):
     parser.add_option("system", "n_tau", int, 10000, "Number of imaginary-time points")
     parser.add_option("system", "dc_type", int, -1, "Type of double-counting correction")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to use a fixed chemical potential")
-    
+
     parser.add_option("impurity_solver", "N_l", int, 50, "Number of Legendre polynomials")
     parser.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver")
-    
+
     parser.add_option("control", "max_step", int, 100, "Max number of SCF steps")
     parser.add_option("control", "sigma_mix", float, 0.5, "Mixing parameter for self-energy")
     parser.add_option("control", "delta_mix", float, 0.5, "Mixing parameter for hybridization function")
@@ -62,7 +62,7 @@ class DMFTCoreTools:
         self._omega_min=float(params['tool']['omega_min'])
         self._omega_max=float(params['tool']['omega_max'])
         self._Nomega=int(params['tool']['Nomega'])
-        self._broadning=float(params['tool']['broadening'])
+        self._broadening=float(params['tool']['broadening'])
         self._eta=float(params['tool']['eta'])
         self._seedname=seedname
         self._SKT = SumkDFTTools(hdf_file=self._seedname + '.h5', use_dft_blocks=False)
@@ -105,7 +105,7 @@ class DMFTCoreTools:
             else:
                 raise RuntimeError("Unknown solver " + S._name)
 
-            SKT.set_Sigma([S.Sigma])
+            SKT.set_Sigma([S.Sigma_iw])
 
         if flag_dos:
             if mpi.is_master_node():
@@ -147,5 +147,3 @@ if __name__ == '__main__':
         sys.exit()
 
     pydmft_post(args.path_input_file, args.seedname)
-
-
