@@ -13,8 +13,10 @@ Wannier90 as well as the following preset models:
 * cubic
 
 * bethe
+  Semicircular DOS with energy ranges [-2t:2t].  
 
 * wannier90
+  Read hopping parameters from the Wannier90 output.  
 
 .. math::
 

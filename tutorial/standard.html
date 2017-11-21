@@ -133,59 +133,43 @@
 <h1>Tutorial with preset model<a class="headerlink" href="#tutorial-with-preset-model" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="t2g-bethe-lattice">
 <h2>t2g Bethe lattice<a class="headerlink" href="#t2g-bethe-lattice" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" href="../_downloads/dmft.ini" download=""><code class="xref download docutils literal"><span class="pre">dmft.ini</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>[model]
+t = 1.0
+U = 8.0
+J = 1.333333333333333
+lattice = bethe
+seedname = bethe
+orbital_model = t2g
+nelec = 1.6
+
+[system]
+nk = 100
+beta = 50.0
+
+[impurity_solver]
+name = TRIQS/cthyb
+n_cycles{int} = 500000
+
+[control]
+max_step = 40
+</pre></div>
+</div>
 </div>
 <div class="section" id="pydmft-pre">
 <h2><code class="docutils literal"><span class="pre">pydmft_pre</span></code><a class="headerlink" href="#pydmft-pre" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference download internal" href="../_downloads/model1.in" download=""><code class="xref download docutils literal"><span class="pre">model.in</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
-<span class="n">t</span> <span class="o">=</span> <span class="mf">2.0</span>
-<span class="n">U</span> <span class="o">=</span> <span class="mf">16.0</span>
-<span class="n">J</span> <span class="o">=</span> <span class="mf">2.666666666666667</span>
-<span class="n">lattice</span> <span class="o">=</span> <span class="n">bethe</span>
-<span class="n">seedname</span> <span class="o">=</span> <span class="n">bethe</span>
-<span class="n">orbital_model</span> <span class="o">=</span> <span class="n">t2g</span>
-<span class="n">nk</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">nelec</span> <span class="o">=</span> <span class="mf">1.5</span>
-</pre></div>
-</div>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre model.in
 </pre></div>
 </div>
 </div>
 <div class="section" id="pydmft">
 <h2><code class="docutils literal"><span class="pre">pydmft</span></code><a class="headerlink" href="#pydmft" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference download internal" href="../_downloads/dmft.ini" download=""><code class="xref download docutils literal"><span class="pre">dmft.ini</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre>[system]
-beta = 100.0
-
-[impurity_solver]
-name = TRIQS/cthyb
-max_time{int} = 60
-n_cycles{int} = 5000
-
-[control]
-max_step = 20
-</pre></div>
-</div>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf dmft.ini bethe
 </pre></div>
 </div>
 </div>
 <div class="section" id="pydmft-post">
 <h2><code class="docutils literal"><span class="pre">pydmft_post</span></code><a class="headerlink" href="#pydmft-post" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference download internal" href="../_downloads/dmft.ini" download=""><code class="xref download docutils literal"><span class="pre">dmft.ini</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre>[system]
-beta = 100.0
-
-[impurity_solver]
-name = TRIQS/cthyb
-max_time{int} = 60
-n_cycles{int} = 5000
-
-[control]
-max_step = 20
-</pre></div>
-</div>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post dmft.ini bethe
 </pre></div>
 </div>

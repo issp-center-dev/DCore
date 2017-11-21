@@ -566,52 +566,38 @@ outdir = &quot;./&quot;,
 </div>
 <div class="section" id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="dmft-setup-pydmft-pre">
-<h3>DMFT setup: pydmft_pre<a class="headerlink" href="#dmft-setup-pydmft-pre" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference download internal" href="../_downloads/model.in" download=""><code class="xref download docutils literal"><span class="pre">model.in</span></code></a></p>
+<p><a class="reference download internal" href="../_downloads/dmft1.ini" download=""><code class="xref download docutils literal"><span class="pre">dmft.ini</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
 <span class="n">U</span> <span class="o">=</span> <span class="mf">16.0</span>
 <span class="n">J</span> <span class="o">=</span> <span class="mf">2.666666666666667</span>
 <span class="n">lattice</span> <span class="o">=</span> <span class="n">wannier90</span>
 <span class="n">seedname</span> <span class="o">=</span> <span class="n">srvo3</span>
-<span class="n">nk</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">nelec</span> <span class="o">=</span> <span class="mf">0.5</span>
 <span class="n">ncor</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">cshell</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
-</pre></div>
-</div>
-<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre model.in
-</pre></div>
-</div>
-</div>
-<div class="section" id="running-self-consistent-dft-dmft-pydmft">
-<h3>Running self-consistent DFT+DMFT : pydmft<a class="headerlink" href="#running-self-consistent-dft-dmft-pydmft" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference download internal" href="../_downloads/input.ini" download=""><code class="xref download docutils literal"><span class="pre">input.ini</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">system</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">system</span><span class="p">]</span>
+<span class="n">nk</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">beta</span> <span class="o">=</span> <span class="mf">100.0</span>
 
 <span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
 <span class="n">name</span> <span class="o">=</span> <span class="n">TRIQS</span><span class="o">/</span><span class="n">hubbard</span><span class="o">-</span><span class="n">I</span>
 </pre></div>
 </div>
+<div class="section" id="dmft-setup-pydmft-pre">
+<h3>DMFT setup: pydmft_pre<a class="headerlink" href="#dmft-setup-pydmft-pre" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre model.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-self-consistent-dft-dmft-pydmft">
+<h3>Running self-consistent DFT+DMFT : pydmft<a class="headerlink" href="#running-self-consistent-dft-dmft-pydmft" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf input.ini srvo3
 </pre></div>
 </div>
 </div>
 <div class="section" id="post-processing-and-data-analysis-pydmft-post">
 <h3>Post-processing and data analysis: pydmft_post<a class="headerlink" href="#post-processing-and-data-analysis-pydmft-post" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference download internal" href="../_downloads/input.ini" download=""><code class="xref download docutils literal"><span class="pre">post.ini</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
-<span class="n">lattice</span> <span class="o">=</span> <span class="n">wannier90</span>
-<span class="n">seedname</span> <span class="o">=</span> <span class="n">srvo3</span>
-<span class="n">nk</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">ncor</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">cshell</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
-<span class="n">bvec</span><span class="o">=</span><span class="p">[(</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">)]</span>
-<span class="n">nnode</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">knode</span><span class="o">=</span><span class="p">[(</span><span class="n">G</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">X</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">M</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">G</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">R</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)]</span>
-</pre></div>
-</div>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post post.ini
 </pre></div>
 </div>

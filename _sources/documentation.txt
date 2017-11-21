@@ -28,14 +28,10 @@ Reference manual
 
 This is the reference manual for the python routines.
 
-Input-file format and usage
-
 .. toctree::
    :maxdepth: 2
    
-   reference/pydmft_pre
-   reference/pydmft
-   reference/pydmft_post
+   reference/input
 
 Reference of python module (for developers)
       
