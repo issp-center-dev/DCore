@@ -11,13 +11,31 @@ from pytriqs.plot.mpl_interface import oplot, plt
 
 from typed_parser import *
 
+
 def create_parser():
     parser = TypedParser()
+
+    parser.add_option("model", "t", float, 1.0, "Nearest neighbor hopping")
+    parser.add_option("model", "t'", float, 0.0, "Second nearest neighbor hopping")
+    parser.add_option("model", "lattice", str, "chain", "Lattice name")
+    parser.add_option("model", "orbital_model", str, "single", "some help message")
+    parser.add_option("model", "ncor", int, 1, "Number of correlation shell")
+    parser.add_option("model", "cshell", str, "[]", "Angular momentum and number of states of each shell")
+    parser.add_option("model", "seedname", str, "pydmft", "some help message")
+    parser.add_option("model", "U", float, 0.0, "Coulomb")
+    parser.add_option("model", "J", float, 0.0, "Hund")
+    parser.add_option("model", "nelec", float, 1.0, "Number of electrons")
+    parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors")
+
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature")
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
     parser.add_option("system", "n_tau", int, 10000, "Number of imaginary-time points")
     parser.add_option("system", "dc_type", int, -1, "Type of double-counting correction. Set -1 to disable DC correction. Other availale options are according to TRIQS DFTTools.")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to use a fixed chemical potential")
+    parser.add_option("system", "nk", int, 8, "Number of k along each line")
+    parser.add_option("system", "nk0", int, 0, "Number of k along b_0")
+    parser.add_option("system", "nk1", int, 0, "Number of k along b_1")
+    parser.add_option("system", "nk2", int, 0, "Number of k along b_2")
 
     parser.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
 
@@ -29,14 +47,26 @@ def create_parser():
     parser.add_option("control", "delta_mix", float, 0.5, "Mixing parameter for hybridization function")
     parser.add_option("control", "restart", bool, False, "Whether or not restart from a previous calculation")
 
+    parser.add_option("tool", "omega_min", float, -1, "Minimum value of real frequency")
+    parser.add_option("tool", "omega_max", float, 1, "Max value of real frequency")
+    parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
+    parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
+    parser.add_option("tool", "eta", float, 0.01, "Imaginary frequency shift")
+    parser.add_option("tool", "do_dos", bool, False, "Whether or not calculate DOS")
+    parser.add_option("tool", "do_band", bool, False, "Whether or not calculate band")
+    parser.add_option("tool", "nnode", int, 2, "Number of k-node for band path")
+    parser.add_option("tool", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]", "k-node for band path")
+    parser.add_option("tool", "nk_line", int, 8, "Number of k along each line")
 
     return parser
+
 
 def __gettype(name):
     t = getattr(__builtin__, name)
     if isinstance(t, type):
         return t
     raise ValueError(name)
+
 
 def create_solver_params(dict):
     """
@@ -61,6 +91,7 @@ def create_solver_params(dict):
         solver_params[param_name] = param_type(v)
 
     return solver_params
+
 
 class DMFTCoreSolver:
     def __init__(self, seedname, params):

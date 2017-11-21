@@ -8,6 +8,7 @@ import re
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
+from dmft_core import create_parser
 
 #from .typed_parser import TypedParser
 from typed_parser import TypedParser
@@ -16,13 +17,13 @@ from typed_parser import TypedParser
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
 
+
 def __generate_wannier90_model(params, l, norb, equiv, f):
-    nk = params["nk"]
-    nk0 = params["nk0"]
-    nk1 = params["nk1"]
-    nk2 = params["nk2"]
-    ncor = params["ncor"]
-    nelec = params["nelec"]
+    nk = params["system"]["nk"]
+    nk0 = params["system"]["nk0"]
+    nk1 = params["system"]["nk1"]
+    nk2 = params["system"]["nk2"]
+    ncor = params["model"]["ncor"]
 
     if nk0 == 0: nk0 = nk
     if nk1 == 0: nk1 = nk
@@ -36,71 +37,67 @@ def __generate_wannier90_model(params, l, norb, equiv, f):
         print("     l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
 
     print("0 {0} {1} {2}".format(nk0,nk1,nk2), file=f)
-    print(nelec, file=f)
+    print(params["model"]["nelec"], file=f)
     print(ncor, file=f)
     for i in range(ncor):
         print("{0} {1} {2} {3} 0 0".format(i,equiv[i],l[i],norb[i]), file=f)
 
-# FIXME: split this LONG function
+
 def __generate_lattice_model(params, l, norb, equiv, f):
-    __print_paramter(params, "t")
-    __print_paramter(params, "t'")
-    __print_paramter(params, "nk")
-    __print_paramter(params, "orbital_model")
     weights_in_file = False
-    if params["lattice"] == 'chain':
-        nkBZ = params["nk"]
-    elif params["lattice"] == 'square':
-        nkBZ = params["nk"]**2
-    elif params["lattice"] == 'cubic':
-        nkBZ = params["nk"]**3
-    elif params["lattice"] == 'bethe':
-        nkBZ = params["nk"]
+    if params["model"]["lattice"] == 'chain':
+        nkBZ = params["system"]["nk"]
+    elif params["model"]["lattice"] == 'square':
+        nkBZ = params["system"]["nk"]**2
+    elif params["model"]["lattice"] == 'cubic':
+        nkBZ = params["system"]["nk"]**3
+    elif params["model"]["lattice"] == 'bethe':
+        nkBZ = params["system"]["nk"]
         weights_in_file = True
     else:
-        print("Error ! Invalid lattice : ", params["lattice"])
+        print("Error ! Invalid lattice : ", params["model"]["lattice"])
         sys.exit()
     print(" Total number of k =", str(nkBZ))
 
     #
     # Model
     #
-    if params["orbital_model"] == 'single':
+    if params["model"]["orbital_model"] == 'single':
         l[0] = 0
         norb[0] = 1
-    elif params["orbital_model"] == 'eg':
+    elif params["model"]["orbital_model"] == 'eg':
         #FIXME: l=2 does not make sense. l=2 assumes norb=5 (full d-shell) in generating Coulomb tensor.
         #What is the proper way to generate Coulomb tensor for eg?
         l[0] = 2
         norb[0] = 2
-    elif params["orbital_model"] == 't2g':
+    elif params["model"]["orbital_model"] == 't2g':
         l[0] = 1
         norb[0] = 3
-    elif params["orbital_model"] == 'full-d':
+    elif params["model"]["orbital_model"] == 'full-d':
         l[0] = 2
         norb[0] = 5
     else:
-        print("Error ! Invalid lattice : ", params["orbital_model"])
+        print("Error ! Invalid lattice : ", params["model"]["orbital_model"])
         sys.exit()
     #
     # Write General-Hk formatted file
     #
     print(nkBZ, file=f)
-    print(params["nelec"], file=f)
+    print(params["model"]["nelec"], file=f)
     print("1", file=f)
     print("0 0 {0} {1}".format(l[0], norb[0]), file=f)
     print("1", file=f)
     print("0 0 {0} {1} 0 0".format(l[0], norb[0]), file=f)
     print("1 {0}".format(norb[0]), file=f)
 
-    t = params["t"]
-    tp = params["t'"]
-    nk = params["nk"]
+    t = params["model"]["t"]
+    tp = params["model"]["t'"]
+    nk = params["system"]["nk"]
 
     #
     # Energy band
     #
-    if params["lattice"] == 'bethe':
+    if params["model"]["lattice"] == 'bethe':
         #
         # If Bethe lattice, set k-weight manually to generate semi-circular DOS
         #
@@ -117,7 +114,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
                     else:
                         print("0.0", file=f) #Real part
             for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
-    elif params["lattice"] == 'chain':
+    elif params["model"]["lattice"] == 'chain':
         kvec = [0.0, 0.0, 0.0]
         for i0 in range(nk):
             kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
@@ -129,7 +126,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
                     else:
                         print("0.0", file=f) #Real part
             for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
-    elif params["lattice"] == 'square':
+    elif params["model"]["lattice"] == 'square':
         kvec = [0.0, 0.0, 0.0]
         for i0 in range(nk):
             kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
@@ -144,7 +141,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
                         else:
                             print("0.0", file=f) #Real part
                 for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
-    elif params["lattice"] == 'cubic':
+    elif params["model"]["lattice"] == 'cubic':
         kvec = [0.0, 0.0, 0.0]
         for i0 in range(nk):
             kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
@@ -165,34 +162,25 @@ def __generate_lattice_model(params, l, norb, equiv, f):
                     for iorb in range(norb[0]*norb[0]): print("0.0", file=f) #Imaginary part
     return weights_in_file
 
+
 def pydmft_pre(filename):
     print("Reading {0} ...\n".format(filename))
     #
     # Construct a parser with default values
     #
-    p = TypedParser();
-    p.add_option("model", "t", float, 1.0, "some help message")
-    p.add_option("model", "t'", float, 0.0, "some help message")
-    p.add_option("model", "U", float, 0.0, "some help message")
-    p.add_option("model", "J", float, 0.0, "some help message")
-    p.add_option("model", "orbital_model", str, "single", "some help message")
-    p.add_option("model", "nk", int, 8, "some help message")
-    p.add_option("model", "nk0", int, 0, "some help message")
-    p.add_option("model", "nk1", int, 0, "some help message")
-    p.add_option("model", "nk2", int, 0, "some help message")
-    p.add_option("model", "ncor", int, 1, "some help message")
-    p.add_option("model", "lattice", str, "chain", "some help message")
-    p.add_option("model", "nelec", float, 1.0, "some help message")
-    p.add_option("model", "seedname", str, "pydmft", "some help message")
-    p.add_option("model", "cshell", str, "[]", "some help message")
-    p.read(filename)
-    p_model = p.as_dict()["model"]
-
-    #cshell=(l, norb, equiv) or (l, norb)
-    cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
-    l = [0]*p_model['ncor']
-    norb = [1]*p_model['ncor']
-    equiv = [-1]*p_model['ncor']
+    parser = create_parser()
+    #
+    # Parse keywords and store
+    #
+    parser.read(filename)
+    p = parser.as_dict()
+    #
+    # cshell=(l, norb, equiv) or (l, norb)
+    #
+    cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p["model"]["cshell"])
+    l = [0]*p["model"]['ncor']
+    norb = [1]*p["model"]['ncor']
+    equiv = [-1]*p["model"]['ncor']
     try:
         for  i, _list  in enumerate(cshell_list):
             _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
@@ -202,31 +190,30 @@ def pydmft_pre(filename):
                 equiv[i] = int(_cshell[2])
     except:
         raise RuntimeError("Error ! Format of cshell is wrong.")
-        
     #
     # Summary of input parameters
     #
     print("Parameter summary")
-    for k,v in p_model.items():
+    for k,v in p["model"].items():
         print(k, " = ", str(v))
-
+    for k,v in p["system"].items():
+        print(k, " = ", str(v))
     #
     # Lattice
     #
-    seedname = p_model["seedname"]
-    if p_model["lattice"] == 'wannier90':
+    seedname = p["model"]["seedname"]
+    if p["model"]["lattice"] == 'wannier90':
         with open(seedname+'.inp', 'w') as f:
-            __generate_wannier90_model(p_model, l, norb, equiv, f)
+            __generate_wannier90_model(p, l, norb, equiv, f)
         # Convert General-Hk to SumDFT-HDF5 format
         Converter = Wannier90Converter(seedname = seedname)
         Converter.convert_dft_input()
     else:
         with open(seedname+'.inp', 'w') as f:
-            weights_in_file = __generate_lattice_model(p_model, l, norb, equiv, f)
+            weights_in_file = __generate_lattice_model(p, l, norb, equiv, f)
         # Convert General-Hk to SumDFT-HDF5 format
         Converter = HkConverter(filename = seedname + ".inp", hdf_filename=seedname+".h5")
         Converter.convert_dft_input(weights_in_file=weights_in_file)
-
     #
     # Add U-matrix block (Tentative)
     # ####  The format of this block is not fixed  ####
@@ -234,14 +221,14 @@ def pydmft_pre(filename):
     f = HDFArchive(seedname+'.h5','a')
     if not ("pyDMFT" in f):
         f.create_group("pyDMFT")
-    f["pyDMFT"]["U_int"] = p_model["U"]
-    f["pyDMFT"]["J_hund"] = p_model["J"]
-
+    f["pyDMFT"]["U_int"] = p["model"]["U"]
+    f["pyDMFT"]["J_hund"] = p["model"]["J"]
     #
     # Finish
     #
     print("Done")
-    
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(\

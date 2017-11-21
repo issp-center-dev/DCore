@@ -1,2 +1,2 @@
-pydmft_pre model.ini
-pydmft dmft.ini bethe
+pydmft_pre dmft.ini
+pydmft dmft.ini

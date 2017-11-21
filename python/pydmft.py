@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(\
         prog='pydmft.py',\
         description='.',\
         epilog='end',\
-        usage = '$ pydmft input.ini seedname',\
+        usage = '$ pydmft input.ini',\
         add_help= True)
 
 parser.add_argument('path_input_file', \
@@ -19,19 +19,11 @@ parser.add_argument('path_input_file', \
                     type=str, \
                     help = "input file name.")
 
-parser.add_argument('seedname', \
-                    action = 'store',\
-                    default= None,    \
-                    type=str, \
-                    help = "seed name.")
-
 args=parser.parse_args()
 if(os.path.isfile(args.path_input_file) is False):
     print("Input file is not exist.")
     sys.exit()
 
-# TODO Check seedname
-    
 # Set Default value
 parser = create_parser()
 
@@ -41,6 +33,6 @@ parser = create_parser()
 parser.read(args.path_input_file)
 params = parser.as_dict()
 
-solver = DMFTCoreSolver(args.seedname, params)
+solver = DMFTCoreSolver(params["model"]["seedname"], params)
 
-solver.solve(max_step=params["control"]["max_step"], output_file=args.seedname+'.out.h5', output_group='dmft_out')
+solver.solve(max_step=params["control"]["max_step"], output_file=params["model"]["seedname"]+'.out.h5', output_group='dmft_out')

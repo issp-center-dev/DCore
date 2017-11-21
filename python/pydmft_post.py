@@ -7,11 +7,12 @@ import re
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.pydmft.typed_parser import TypedParser
-from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver
+from dmft_core import DMFTCoreSolver,create_parser
 from pytriqs.applications.dft.sumk_dft import *
 from pytriqs.gf.local import GfReFreq
 from pytriqs.applications.dft.sumk_dft_tools import *
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
+
 
 # from .typed_parser import TypedParser
 from typed_parser import TypedParser
@@ -22,8 +23,8 @@ class DMFTCoreTools:
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
         self._n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
-        self._flag_dos = bool(params['dos']['flag'])
-        self._flag_band = bool(params['band']['flag'])
+        self._flag_dos = bool(params['tool']['do_dos'])
+        self._flag_band = bool(params['tool']['do_band'])
         self._omega_min = float(params['tool']['omega_min'])
         self._omega_max = float(params['tool']['omega_max'])
         self._Nomega = int(params['tool']['Nomega'])
@@ -240,47 +241,20 @@ def pydmft_post(filename):
     #
     # Construct a parser with default values
     #
-    p = TypedParser();
-    p.add_option("model", "t", float, 1.0, "some help message")
-    p.add_option("model", "t'", float, 0.0, "some help message")
-    p.add_option("model", "orbital_model", str, "single", "some help message")
-    p.add_option("model", "nk", int, 8, "some help message")
-    p.add_option("model", "ncor", int, 1, "some help message")
-    p.add_option("model", "lattice", str, "chain", "some help message")
-    p.add_option("model", "seedname", str, "pydmft", "some help message")
-    p.add_option("model", "cshell", str, "[]", "some help message")
-    p.add_option("model", "nnode", int, 2, "some help message")
-    p.add_option("model", "knode", str, "[]", "some help message")
-    p.add_option("model", "bvec", str, "[]", "some help message")
-    
-    p.add_option("dos", "flag", bool, False, "Whether or not calculate DOS")
-    p.add_option("band", "flag", bool, False, "Whether or not calculate band")
-
-    # ToDo set default values
-    p.add_option("tool", "omega_min", float, -1, "Minimum value of real frequency")
-    p.add_option("tool", "omega_max", float, 1, "Max value of real frequency")
-    p.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
-    p.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
-    p.add_option("tool", "eta", float, 0.01, "Imaginary frequency shift")
-
-    p.add_option("system", "beta", float, 1.0, "Inverse temperature")
-    p.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
-    p.add_option("system", "n_tau", int, 10000, "Number of imaginary-time points")
-    p.add_option("system", "dc_type", int, -1, "Type of double-counting correction. Set -1 to disable DC correction. Other availale options are according to TRIQS DFTTools.")
-    p.add_option("system", "fix_mu", bool, False, "Whether or not to use a fixed chemical potential")
-
-    p.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
-
-    p.read(filename)
-    p_model = p.as_dict()["model"]
+    parser = create_parser()
+    #
+    # Parse keywords and store
+    #
+    parser.read(filename)
+    p = parser.as_dict()
     #
     # Information of correlation shells. It is used only in conjunction to Wannier90.
     # cshell=(l, norb, equiv) or (l, norb)
     #
-    cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p_model["cshell"])
-    l = [0]*p_model['ncor']
-    norb = [1]*p_model['ncor']
-    equiv = [-1]*p_model['ncor']
+    cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p["model"]["cshell"])
+    l = [0]*p["model"]['ncor']
+    norb = [1]*p["model"]['ncor']
+    equiv = [-1]*p["model"]['ncor']
     try:
         for  i, _list  in enumerate(cshell_list):
             _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
@@ -294,9 +268,9 @@ def pydmft_post(filename):
     # Nodes for k-point path
     # knode=(label,k0, k1, k2) in the fractional coordinate
     #
-    knode_list = re.findall(r'\(\w\d?,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p_model["knode"])
-    knode = numpy.zeros((p_model['nnode'], 3), numpy.float_)
-    klabel =['G'] * p_model['nnode']
+    knode_list = re.findall(r'\(\w\d?,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["tool"]["knode"])
+    knode = numpy.zeros((p["tool"]['nnode'], 3), numpy.float_)
+    klabel =['G'] * p["tool"]['nnode']
     try:
         for i, _list in enumerate(knode_list):
             _knode = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*\,\s*,\s*\)]', _list))
@@ -308,7 +282,7 @@ def pydmft_post(filename):
     # Reciprocal lattice vectors
     # bvec=[(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
     #
-    bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p_model["bvec"])
+    bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
     bvec = numpy.zeros((3, 3), numpy.float_)
     try:
         for i, _list in enumerate(bvec_list):
@@ -320,17 +294,19 @@ def pydmft_post(filename):
     # Summary of input parameters
     #
     print("Parameter summary")
-    for k,v in p_model.items():
+    for k,v in p["model"].items():
+        print(k, " = ", str(v))
+    for k,v in p["tool"].items():
         print(k, " = ", str(v))
     #
     # Construct parameters for the A(k,w)
     #
-    nk_line = p_model["nk"]
-    n_k = (p_model["nnode"] - 1)*nk_line + 1
+    nk_line = p["tool"]["nk_line"]
+    n_k = (p["tool"]["nnode"] - 1)*nk_line + 1
     print(" Total number of k =", str(n_k))
     kvec = numpy.zeros((n_k, 3), numpy.float_)
     ikk = 0
-    for inode in range(p_model["nnode"] - 1):
+    for inode in range(p["tool"]["nnode"] - 1):
         for ik in range(nk_line + 1):
             if inode != 0 and ik == 0: continue
             for i in range(3):
@@ -339,14 +315,14 @@ def pydmft_post(filename):
                 kvec[ikk, i] = kvec[ikk, i] / float(nk_line)
             ikk += 1
 
-    if p_model["lattice"] == 'wannier90':
-        hopping, n_orbitals, proj_mat = __generate_wannier90_model(p_model, l, norb, equiv, n_k, kvec)
+    if p["model"]["lattice"] == 'wannier90':
+        hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], l, norb, equiv, n_k, kvec)
     else:
-        hopping, n_orbitals, proj_mat = __generate_lattice_model(p_model, n_k, kvec)
+        hopping, n_orbitals, proj_mat = __generate_lattice_model(p["model"], n_k, kvec)
     #
     # Output them into seedname.h5
     #
-    f = HDFArchive(p_model["seedname"]+'.h5','a')
+    f = HDFArchive(p["model"]["seedname"]+'.h5','a')
     if not ("dft_bands_input" in f):
         f.create_group("dft_bands_input")
     f["dft_bands_input"]["hopping"] = hopping
@@ -357,7 +333,7 @@ def pydmft_post(filename):
     #
     # Plot
     #
-    dct=DMFTCoreTools(p_model["seedname"], p)
+    dct=DMFTCoreTools(p["model"]["seedname"], p)
     dct.post()
     #
     # Finish

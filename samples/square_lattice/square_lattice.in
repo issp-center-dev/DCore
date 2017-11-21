@@ -1,6 +1,0 @@
-[model]
-seedname = square_lattice
-lattice = square
-t = 1.0
-U = 8.0
-nk = 10

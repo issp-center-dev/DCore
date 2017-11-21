@@ -130,13 +130,13 @@ First, we compute the band structure with the following input file:
 DMFT calculation
 ----------------   
    
+:download:`dmft.ini <qe/dmft.ini>`
+
+.. literalinclude:: qe/dmft.ini
+                              
 DMFT setup: pydmft_pre
 ~~~~~~~~~~~~~~~~~~~~~~
 
-:download:`model.in <qe/model.in>`
-
-.. literalinclude:: qe/model.in
-                              
 .. code-block :: bash
 
    $ pydmf_pre model.in
@@ -144,10 +144,6 @@ DMFT setup: pydmft_pre
 Running self-consistent DFT+DMFT : pydmft
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:download:`input.ini <qe/input.ini>`
-
-.. literalinclude:: qe/input.ini
-                              
 .. code-block :: bash
 
    $ pydmf input.ini srvo3
@@ -155,10 +151,6 @@ Running self-consistent DFT+DMFT : pydmft
 Post-processing and data analysis: pydmft_post
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:download:`post.ini <qe/input.ini>`
-
-.. literalinclude:: qe/post.ini
-                              
 .. code-block :: bash
 
    $ pydmf_post post.ini
