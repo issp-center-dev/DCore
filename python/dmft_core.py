@@ -65,7 +65,6 @@ def create_solver_params(dict):
 class DMFTCoreSolver:
     def __init__(self, seedname, params):
         self._params = copy.deepcopy(params)
-
         # Construct a SumKDFT object
         self._SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
         U_file = HDFArchive(seedname+'.h5','r')
@@ -111,6 +110,11 @@ class DMFTCoreSolver:
             self._S = Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau)
         else:
             raise RuntimeError("Unknown solver "+self._solver_name)
+
+    # Make read-only getter
+    @property
+    def Solver(self):
+        return self._S
 
     def solve(self, max_step, output_file, output_group='dmft_output', dry_run=False):
         beta = float(self._params['system']['beta'])
