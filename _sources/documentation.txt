@@ -19,7 +19,8 @@ Tutorial
 .. toctree::
    :maxdepth: 2
 
-   tutorial/standard
+   tutorial/square
+   tutorial/bethe
    tutorial/qe
    tutorial/openmx
 
