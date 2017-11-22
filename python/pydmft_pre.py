@@ -45,13 +45,14 @@ def __generate_wannier90_model(params, l, norb, equiv, f):
     if nk0 == 0: nk0 = nk
     if nk1 == 0: nk1 = nk
     if nk2 == 0: nk2 = nk
-    print("\n    nk0 = {0}".foramt(nk0))
-    print("    nk1 = {0}".foramt(nk1))
-    print("    nk2 = {0}".foramt(nk2))
-    print("    ncor = {0}".foramt(ncor))
+    print("\n    nk0 = {0}".format(nk0))
+    print("    nk1 = {0}".format(nk1))
+    print("    nk2 = {0}".format(nk2))
+    print("    ncor = {0}".format(ncor))
     for i in range(ncor):
         if equiv[i] == -1: equiv[i] = i
         print("    l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
+    print("")
     #
     # Generate file for Wannier90-Converter
     #
@@ -203,7 +204,7 @@ def pydmft_pre(filename):
     filename : string
         Input-file name
     """
-    if mpi.is_master_node(): print("\n  Reading {0} ...".format(filename))
+    if mpi.is_master_node(): print("\n  @ Reading {0} ...".format(filename))
     #
     # Construct a parser with default values
     #
@@ -233,7 +234,7 @@ def pydmft_pre(filename):
     # Summary of input parameters
     #
     if mpi.is_master_node():
-        print("\n  Parameter summary")
+        print("\n  @ Parameter summary")
         print("\n    [model] block")
         for k, v in p["model"].items():
             print("      {0} = {1}".format(k, v))
@@ -244,7 +245,7 @@ def pydmft_pre(filename):
     # Lattice
     #
     if mpi.is_master_node():
-        print("\n  Generate model-HDF5 file")
+        print("\n  @ Generate model-HDF5 file")
     seedname = p["model"]["seedname"]
     if p["model"]["lattice"] == 'wannier90':
         if mpi.is_master_node():
@@ -265,7 +266,7 @@ def pydmft_pre(filename):
     # ####  The format of this block is not fixed  ####
     #
     if mpi.is_master_node():
-        print("\n  Write the information of interactions")
+        print("\n  @ Write the information of interactions")
         f = HDFArchive(seedname+'.h5','a')
         if not ("pyDMFT" in f):
             f.create_group("pyDMFT")
@@ -275,7 +276,7 @@ def pydmft_pre(filename):
     #
     # Finish
     #
-    print("\nDone\n")
+    print("\n  Done\n")
 
 
 if __name__ == '__main__':

@@ -40,7 +40,7 @@ class DMFTCoreTools:
         S = self._solver._S
 
         if mpi.is_master_node():
-            print("\n  Compute Green' function at the real frequency")
+            print("\n  @ Compute Green' function at the real frequency")
         #
         # Set necessary quantities
         #
@@ -77,7 +77,7 @@ class DMFTCoreTools:
         #
         #  (Partial) DOS
         #
-        if mpi.is_master_node(): print("\n  Compute (partial) DOS")
+        if mpi.is_master_node(): print("\n  @ Compute (partial) DOS")
         dos, dosproj, dosproj_orb = SKT.dos_wannier_basis(broadening=self._broadening,
                                                           mesh=[self._omega_min, self._omega_max, self._Nomega],
                                                           with_Sigma=False, with_dc=False, save_to_file=False)
@@ -98,7 +98,7 @@ class DMFTCoreTools:
         #
         # Band structure
         #
-        if mpi.is_master_node(): print ("\n  Compute band structure\n")
+        if mpi.is_master_node(): print ("\n  @ Compute band structure\n")
         akw = SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file=None)
         #
         # Print band-structure into file
@@ -264,7 +264,7 @@ def pydmft_post(filename):
     filename : string
         Input-file name
     """
-    if mpi.is_master_node(): print("\n  Reading {0} ...".format(filename))
+    if mpi.is_master_node(): print("\n  @ Reading {0} ...".format(filename))
     #
     # Construct a parser with default values
     #
@@ -322,7 +322,7 @@ def pydmft_post(filename):
     # Summary of input parameters
     #
     if mpi.is_master_node():
-        print("\n  Parameter summary")
+        print("\n  @ Parameter summary")
         print("\n    [model] block")
         for k,v in p["model"].items():
             print("      {0} = {1}".format(k,v))
@@ -332,7 +332,7 @@ def pydmft_post(filename):
     #
     # Construct parameters for the A(k,w)
     #
-    if mpi.is_master_node(): print("\n  Constructing k-path")
+    if mpi.is_master_node(): print("\n  @ Constructing k-path")
     nnode = p["tool"]["nnode"]
     nk_line = p["tool"]["nk_line"]
     n_k = (nnode - 1)*nk_line + 1
@@ -367,7 +367,7 @@ def pydmft_post(filename):
     #
     # Compute k-dependent Hamiltonian
     #
-    if mpi.is_master_node(): print("\n  Compute k-dependent Hamiltonian")
+    if mpi.is_master_node(): print("\n  @ Compute k-dependent Hamiltonian")
     if p["model"]["lattice"] == 'wannier90':
         hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], l, norb, equiv, n_k, kvec)
     else:
@@ -393,7 +393,7 @@ def pydmft_post(filename):
     # Output gnuplot script
     #
     if mpi.is_master_node():
-        print("\n  Generate GnuPlot script")
+        print("\n  @ Generate GnuPlot script")
         with open(seedname + '_akw.gp', 'w') as f:
             print("set xtics (\\", file=f)
             for inode in range(nnode):
@@ -411,7 +411,7 @@ def pydmft_post(filename):
     #
     # Finish
     #
-    print("Done\n")
+    print("\n  Done\n")
 
 
 if __name__ == '__main__':

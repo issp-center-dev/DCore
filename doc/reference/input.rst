@@ -17,7 +17,7 @@ They use the same input file.
 Input-file format
 -----------------
 
-.. literalinclude:: ../tutorial/bethe-t2g/dmft.ini
+.. literalinclude:: ../tutorial/bethe-t2g/dmft_bethe.ini
 
 [model] block
 ~~~~~~~~~~~~~
