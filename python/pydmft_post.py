@@ -19,7 +19,7 @@ from typed_parser import TypedParser
 
 
 class DMFTCoreTools:
-    def __init__(self, seedname, params):
+    def __init__(self, seedname, params, n_k, xk):
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
         self._n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
@@ -31,6 +31,8 @@ class DMFTCoreTools:
         self._broadening = float(params['tool']['broadening'])
         self._eta = float(params['tool']['eta'])
         self._seedname = seedname
+        self._n_k = n_k
+        self._xk = xk
         self._SKT = SumkDFTTools(hdf_file=self._seedname + '.h5', use_dft_blocks=False)
         self._solver = DMFTCoreSolver(seedname, params)
 
@@ -83,7 +85,16 @@ class DMFTCoreTools:
             if mpi.is_master_node():
                 # ToDo Time stamp
                 print ("~ calc band")
-            SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file='Akw_')
+            akw = SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file=None)
+            #
+            # Print to file
+            #
+            mesh = [x.real for x in SKT.Sigma_imp_w[0].mesh]
+            with open(self._seedname + '_akw.dat', 'w') as f:
+                for ik in range(self._n_k):
+                    for iom in range(self._Nomega):
+                        print("{0} {1} {2}".format(self._xk[ik], mesh[iom],akw['down'][ik,iom]), file=f)
+                    print("", file=f)
 
 
 def __print_paramter(p, param_name):
@@ -137,7 +148,7 @@ def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
     hopping = numpy.zeros([n_k, n_spin, numpy.max(n_orbitals), numpy.max(n_orbitals)], numpy.complex_)
     for ik in range(n_k):
         for ir in range(nr):
-            rdotk = 2 * numpy.pi * numpy.dot(kvec[ik,:], rvec[ir,:])
+            rdotk = numpy.dot(kvec[ik,:], rvec[ir,:])
             factor = (numpy.cos(rdotk) + 1j * numpy.sin(rdotk)) / float(rdeg[ir])
             hopping[ik,0,:, :] += factor * hamr[ir][:, :]
     #
@@ -247,6 +258,7 @@ def pydmft_post(filename):
     #
     parser.read(filename)
     p = parser.as_dict()
+    seedname = p["model"]["seedname"]
     #
     # Information of correlation shells. It is used only in conjunction to Wannier90.
     # cshell=(l, norb, equiv) or (l, norb)
@@ -256,7 +268,7 @@ def pydmft_post(filename):
     norb = [1]*p["model"]['ncor']
     equiv = [-1]*p["model"]['ncor']
     try:
-        for  i, _list  in enumerate(cshell_list):
+        for i, _list  in enumerate(cshell_list):
             _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
             l[i] = int(_cshell[0])
             norb[i] = int(_cshell[1])
@@ -301,20 +313,40 @@ def pydmft_post(filename):
     #
     # Construct parameters for the A(k,w)
     #
+    nnode = p["tool"]["nnode"]
     nk_line = p["tool"]["nk_line"]
-    n_k = (p["tool"]["nnode"] - 1)*nk_line + 1
+    n_k = (nnode - 1)*nk_line + 1
     print(" Total number of k =", str(n_k))
     kvec = numpy.zeros((n_k, 3), numpy.float_)
     ikk = 0
-    for inode in range(p["tool"]["nnode"] - 1):
+    for inode in range(nnode - 1):
         for ik in range(nk_line + 1):
             if inode != 0 and ik == 0: continue
             for i in range(3):
                 kvec[ikk,i] = float((nk_line - ik)) * knode[inode,i] + float(ik) * knode[inode + 1,i]
-                #kvec[ikk,i] = 2.0 * numpy.pi * kvec[ikk,i] / float(nk_line)
-                kvec[ikk, i] = kvec[ikk, i] / float(nk_line)
+                kvec[ikk,i] = 2.0 * numpy.pi * kvec[ikk,i] / float(nk_line)
             ikk += 1
-
+    #
+    # Compute x-position for plotting band
+    #
+    dk = numpy.zeros(3, numpy.float_)
+    dk_cart = numpy.zeros(3, numpy.float_)
+    xk = numpy.zeros(n_k, numpy.float_)
+    xk_label = numpy.zeros(nnode, numpy.float_)
+    xk[0] = 0.0
+    ikk = 0
+    for inode in range(nnode - 1):
+        dk[:] = knode[inode+1,:]- knode[inode,:]
+        dk_cart[:] = numpy.dot(dk[:], bvec[:,:])
+        klength = numpy.sqrt(numpy.dot(dk_cart[:],dk_cart[:])) / nk_line
+        xk_label[inode] = xk[ikk]
+        for ik in range(nk_line):
+            xk[ikk+1] = xk[ikk] + klength
+            ikk += 1
+    xk_label[nnode-1] = xk[n_k-1]
+    #
+    # Compute k-dependent Hamiltonian
+    #
     if p["model"]["lattice"] == 'wannier90':
         hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], l, norb, equiv, n_k, kvec)
     else:
@@ -322,7 +354,7 @@ def pydmft_post(filename):
     #
     # Output them into seedname.h5
     #
-    f = HDFArchive(p["model"]["seedname"]+'.h5','a')
+    f = HDFArchive(seedname+'.h5','a')
     if not ("dft_bands_input" in f):
         f.create_group("dft_bands_input")
     f["dft_bands_input"]["hopping"] = hopping
@@ -333,8 +365,23 @@ def pydmft_post(filename):
     #
     # Plot
     #
-    dct=DMFTCoreTools(p["model"]["seedname"], p)
+    dct=DMFTCoreTools(seedname, p, n_k, xk)
     dct.post()
+    #
+    # Output gnuplot script
+    #
+    with open(seedname + '_akw.gp', 'w') as f:
+        print("set xtics (\\", file=f)
+        for inode in range(nnode):
+            print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
+        print("  )", file=f)
+        print("set pm3d map", file=f)
+        print("#set pm3d interpolate 5, 5", file=f)
+        print("unset key", file=f)
+        print("set ylabel \"Energy\"", file=f)
+        print("set cblabel \"A(k,w)\"", file=f)
+        print("splot \"{0}\"".format(seedname + '_akw.dat'), file=f)
+        print("pause -1", file=f)
     #
     # Finish
     #
