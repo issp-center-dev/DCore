@@ -9,6 +9,7 @@ from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
 from dmft_core import create_parser
+import pytriqs.utility.mpi as mpi
 
 #from .typed_parser import TypedParser
 from typed_parser import TypedParser
@@ -19,6 +20,22 @@ def __print_paramter(p, param_name):
 
 
 def __generate_wannier90_model(params, l, norb, equiv, f):
+    """
+    Compute hopping etc. for A(k,w) of Wannier90
+
+    Parameters
+    ----------
+    params : dictionary
+        Input parameters
+    l : integer array
+        Angular momentum at each correlation shell
+    norb : integer array
+        Number of orbitals at each correlation shell
+    equiv : integer array
+        Equivalence of correlation shell
+    f : File stream
+        file
+    """
     nk = params["system"]["nk"]
     nk0 = params["system"]["nk0"]
     nk1 = params["system"]["nk1"]
@@ -28,14 +45,16 @@ def __generate_wannier90_model(params, l, norb, equiv, f):
     if nk0 == 0: nk0 = nk
     if nk1 == 0: nk1 = nk
     if nk2 == 0: nk2 = nk
-    print("                nk0 = ", nk0)
-    print("                nk1 = ", nk1)
-    print("                nk2 = ", nk2)
-    print("               ncor = ", ncor)
+    print("\n    nk0 = {0}".foramt(nk0))
+    print("    nk1 = {0}".foramt(nk1))
+    print("    nk2 = {0}".foramt(nk2))
+    print("    ncor = {0}".foramt(ncor))
     for i in range(ncor):
         if equiv[i] == -1: equiv[i] = i
-        print("     l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
-
+        print("    l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
+    #
+    # Generate file for Wannier90-Converter
+    #
     print("0 {0} {1} {2}".format(nk0,nk1,nk2), file=f)
     print(params["model"]["nelec"], file=f)
     print(ncor, file=f)
@@ -44,6 +63,18 @@ def __generate_wannier90_model(params, l, norb, equiv, f):
 
 
 def __generate_lattice_model(params, l, norb, equiv, f):
+    """
+    Compute hopping etc. for A(k,w) of preset models
+
+    Parameters
+    ----------
+    params : dictionary
+            Input parameters
+    Returns
+    -------
+    weights_in_file: Bool
+        Weights for the bethe lattice
+    """
     weights_in_file = False
     if params["model"]["lattice"] == 'chain':
         nkBZ = params["system"]["nk"]
@@ -57,8 +88,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
     else:
         print("Error ! Invalid lattice : ", params["model"]["lattice"])
         sys.exit()
-    print(" Total number of k =", str(nkBZ))
-
+    print("\n    Total number of k =", str(nkBZ))
     #
     # Model
     #
@@ -82,13 +112,14 @@ def __generate_lattice_model(params, l, norb, equiv, f):
     #
     # Write General-Hk formatted file
     #
-    print(nkBZ, file=f)
-    print(params["model"]["nelec"], file=f)
-    print("1", file=f)
-    print("0 0 {0} {1}".format(l[0], norb[0]), file=f)
-    print("1", file=f)
-    print("0 0 {0} {1} 0 0".format(l[0], norb[0]), file=f)
-    print("1 {0}".format(norb[0]), file=f)
+    if mpi.is_master_node():
+        print(nkBZ, file=f)
+        print(params["model"]["nelec"], file=f)
+        print("1", file=f)
+        print("0 0 {0} {1}".format(l[0], norb[0]), file=f)
+        print("1", file=f)
+        print("0 0 {0} {1} 0 0".format(l[0], norb[0]), file=f)
+        print("1 {0}".format(norb[0]), file=f)
 
     t = params["model"]["t"]
     tp = params["model"]["t'"]
@@ -164,7 +195,15 @@ def __generate_lattice_model(params, l, norb, equiv, f):
 
 
 def pydmft_pre(filename):
-    print("Reading {0} ...\n".format(filename))
+    """
+    Main routine for the pre-processing tool
+
+    Parameters
+    ----------
+    filename : string
+        Input-file name
+    """
+    if mpi.is_master_node(): print("\n  Reading {0} ...".format(filename))
     #
     # Construct a parser with default values
     #
@@ -193,24 +232,31 @@ def pydmft_pre(filename):
     #
     # Summary of input parameters
     #
-    print("Parameter summary")
-    for k,v in p["model"].items():
-        print(k, " = ", str(v))
-    for k,v in p["system"].items():
-        print(k, " = ", str(v))
+    if mpi.is_master_node():
+        print("\n  Parameter summary")
+        print("\n    [model] block")
+        for k, v in p["model"].items():
+            print("      {0} = {1}".format(k, v))
+        print("\n    [system] block")
+        for k, v in p["system"].items():
+            print("      {0} = {1}".format(k, v))
     #
     # Lattice
     #
+    if mpi.is_master_node():
+        print("\n  Generate model-HDF5 file")
     seedname = p["model"]["seedname"]
     if p["model"]["lattice"] == 'wannier90':
-        with open(seedname+'.inp', 'w') as f:
-            __generate_wannier90_model(p, l, norb, equiv, f)
+        if mpi.is_master_node():
+            with open(seedname+'.inp', 'w') as f:
+                __generate_wannier90_model(p, l, norb, equiv, f)
         # Convert General-Hk to SumDFT-HDF5 format
         Converter = Wannier90Converter(seedname = seedname)
         Converter.convert_dft_input()
     else:
-        with open(seedname+'.inp', 'w') as f:
-            weights_in_file = __generate_lattice_model(p, l, norb, equiv, f)
+        if mpi.is_master_node():
+            with open(seedname+'.inp', 'w') as f:
+                weights_in_file = __generate_lattice_model(p, l, norb, equiv, f)
         # Convert General-Hk to SumDFT-HDF5 format
         Converter = HkConverter(filename = seedname + ".inp", hdf_filename=seedname+".h5")
         Converter.convert_dft_input(weights_in_file=weights_in_file)
@@ -218,15 +264,18 @@ def pydmft_pre(filename):
     # Add U-matrix block (Tentative)
     # ####  The format of this block is not fixed  ####
     #
-    f = HDFArchive(seedname+'.h5','a')
-    if not ("pyDMFT" in f):
-        f.create_group("pyDMFT")
-    f["pyDMFT"]["U_int"] = p["model"]["U"]
-    f["pyDMFT"]["J_hund"] = p["model"]["J"]
+    if mpi.is_master_node():
+        print("\n  Write the information of interactions")
+        f = HDFArchive(seedname+'.h5','a')
+        if not ("pyDMFT" in f):
+            f.create_group("pyDMFT")
+        f["pyDMFT"]["U_int"] = p["model"]["U"]
+        f["pyDMFT"]["J_hund"] = p["model"]["J"]
+        print("\n    Wrote to {0}".format(seedname+'.h5'))
     #
     # Finish
     #
-    print("Done")
+    print("\nDone\n")
 
 
 if __name__ == '__main__':

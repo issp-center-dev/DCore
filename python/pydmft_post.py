@@ -40,7 +40,7 @@ class DMFTCoreTools:
         S = self._solver._S
 
         if mpi.is_master_node():
-            print("~ Real frequency")
+            print("\n  Compute Green' function at the real frequency")
         #
         # Set necessary quantities
         #
@@ -61,7 +61,7 @@ class DMFTCoreTools:
             # Read info from HDF file
             ar = HDFArchive(self._seedname+'.out.h5', 'r')
             iteration_number = ar['dmft_out']['iterations']
-            print("Iter {0}".format(iteration_number))
+            print("    Iteration {0}".format(iteration_number))
             S.Sigma_iw << ar['dmft_out']['Sigma_iw']
         # Analytic continuation
             sig_pade = GfReFreq(indices=S.Sigma_iw.indices(), window=(self._omega_min, self._omega_max),
@@ -73,39 +73,44 @@ class DMFTCoreTools:
             raise RuntimeError("Unknown solver " + S._name)
 
         SKT.set_Sigma([S.Sigma_iw])
-
-        if mpi.is_master_node():
-            # ToDo Time stamp
-            print ("~ calc DOS")
+        if mpi.is_master_node(): print("    Done")
+        #
+        #  (Partial) DOS
+        #
+        if mpi.is_master_node(): print("\n  Compute (partial) DOS")
         dos, dosproj, dosproj_orb = SKT.dos_wannier_basis(broadening=self._broadening,
                                                           mesh=[self._omega_min, self._omega_max, self._Nomega],
                                                           with_Sigma=False, with_dc=False, save_to_file=False)
         #
-        # Print to file
+        # Print DOS to file
         #
         om_mesh = numpy.linspace(self._omega_min, self._omega_max, self._Nomega)
-        with open(self._seedname + '_dos.dat', 'w') as f:
-            print("# Energy DOS Partial-DOS", file=f)
-            for iom in range(self._Nomega):
-                print("{0} {1}".format(om_mesh[iom], dos['down'][iom]), file=f, end="")
-                for ish in range(SKT.n_inequiv_shells):
-                    for i in range(SKT.corr_shells[SKT.inequiv_to_corr[ish]]['dim']):
-                        print(" {0}".format(dosproj_orb[ish]['down'][iom,i,i].real), end="", file=f)
-                print("", file=f)
-
         if mpi.is_master_node():
-            # ToDo Time stamp
-            print ("~ calc band")
+            with open(self._seedname + '_dos.dat', 'w') as f:
+                print("# Energy DOS Partial-DOS", file=f)
+                for iom in range(self._Nomega):
+                    print("{0} {1}".format(om_mesh[iom], dos['down'][iom]), file=f, end="")
+                    for ish in range(SKT.n_inequiv_shells):
+                        for i in range(SKT.corr_shells[SKT.inequiv_to_corr[ish]]['dim']):
+                            print(" {0}".format(dosproj_orb[ish]['down'][iom,i,i].real), end="", file=f)
+                    print("", file=f)
+            print("\n    Output {0}".format(self._seedname + '_dos.dat'))
+        #
+        # Band structure
+        #
+        if mpi.is_master_node(): print ("\n  Compute band structure\n")
         akw = SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file=None)
         #
-        # Print to file
+        # Print band-structure into file
         #
         mesh = [x.real for x in SKT.Sigma_imp_w[0].mesh]
-        with open(self._seedname + '_akw.dat', 'w') as f:
-            for ik in range(self._n_k):
-                for iom in range(self._Nomega):
-                    print("{0} {1} {2}".format(self._xk[ik], mesh[iom],akw['down'][ik,iom]), file=f)
-                print("", file=f)
+        if mpi.is_master_node():
+            with open(self._seedname + '_akw.dat', 'w') as f:
+                for ik in range(self._n_k):
+                    for iom in range(self._Nomega):
+                        print("{0} {1} {2}".format(self._xk[ik], mesh[iom],akw['down'][ik,iom]), file=f)
+                    print("", file=f)
+            print("\n    Output {0}".format(self._seedname + '_akw.dat'))
 
 
 def __print_paramter(p, param_name):
@@ -259,7 +264,7 @@ def pydmft_post(filename):
     filename : string
         Input-file name
     """
-    print("Reading {0} ...\n".format(filename))
+    if mpi.is_master_node(): print("\n  Reading {0} ...".format(filename))
     #
     # Construct a parser with default values
     #
@@ -316,18 +321,22 @@ def pydmft_post(filename):
     #
     # Summary of input parameters
     #
-    print("Parameter summary")
-    for k,v in p["model"].items():
-        print(k, " = ", str(v))
-    for k,v in p["tool"].items():
-        print(k, " = ", str(v))
+    if mpi.is_master_node():
+        print("\n  Parameter summary")
+        print("\n    [model] block")
+        for k,v in p["model"].items():
+            print("      {0} = {1}".format(k,v))
+        print("\n    [tool] block")
+        for k,v in p["tool"].items():
+            print("      {0} = {1}".format(k,v))
     #
     # Construct parameters for the A(k,w)
     #
+    if mpi.is_master_node(): print("\n  Constructing k-path")
     nnode = p["tool"]["nnode"]
     nk_line = p["tool"]["nk_line"]
     n_k = (nnode - 1)*nk_line + 1
-    print(" Total number of k =", str(n_k))
+    if mpi.is_master_node(): print("\n   Total number of k =", str(n_k))
     kvec = numpy.zeros((n_k, 3), numpy.float_)
     ikk = 0
     for inode in range(nnode - 1):
@@ -358,6 +367,7 @@ def pydmft_post(filename):
     #
     # Compute k-dependent Hamiltonian
     #
+    if mpi.is_master_node(): print("\n  Compute k-dependent Hamiltonian")
     if p["model"]["lattice"] == 'wannier90':
         hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], l, norb, equiv, n_k, kvec)
     else:
@@ -373,6 +383,7 @@ def pydmft_post(filename):
     f["dft_bands_input"]["n_orbitals"] = n_orbitals
     f["dft_bands_input"]["proj_mat"] = proj_mat
     del  f
+    if mpi.is_master_node(): print("\n    Done")
     #
     # Plot
     #
@@ -381,22 +392,26 @@ def pydmft_post(filename):
     #
     # Output gnuplot script
     #
-    with open(seedname + '_akw.gp', 'w') as f:
-        print("set xtics (\\", file=f)
-        for inode in range(nnode):
-            print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
-        print("  )", file=f)
-        print("set pm3d map", file=f)
-        print("#set pm3d interpolate 5, 5", file=f)
-        print("unset key", file=f)
-        print("set ylabel \"Energy\"", file=f)
-        print("set cblabel \"A(k,w)\"", file=f)
-        print("splot \"{0}\"".format(seedname + '_akw.dat'), file=f)
-        print("pause -1", file=f)
+    if mpi.is_master_node():
+        print("\n  Generate GnuPlot script")
+        with open(seedname + '_akw.gp', 'w') as f:
+            print("set xtics (\\", file=f)
+            for inode in range(nnode):
+                print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
+            print("  )", file=f)
+            print("set pm3d map", file=f)
+            print("#set pm3d interpolate 5, 5", file=f)
+            print("unset key", file=f)
+            print("set ylabel \"Energy\"", file=f)
+            print("set cblabel \"A(k,w)\"", file=f)
+            print("splot \"{0}\"".format(seedname + '_akw.dat'), file=f)
+            print("pause -1", file=f)
+        print("\n    Usage:")
+        print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))
     #
     # Finish
     #
-    print("Done")
+    print("Done\n")
 
 
 if __name__ == '__main__':
