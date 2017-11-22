@@ -52,8 +52,6 @@ def create_parser():
     parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
     parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.01, "Imaginary frequency shift")
-    parser.add_option("tool", "do_dos", bool, False, "Whether or not calculate DOS")
-    parser.add_option("tool", "do_band", bool, False, "Whether or not calculate band")
     parser.add_option("tool", "nnode", int, 2, "Number of k-node for band path")
     parser.add_option("tool", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]", "k-node for band path")
     parser.add_option("tool", "nk_line", int, 8, "Number of k along each line")

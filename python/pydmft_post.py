@@ -23,8 +23,6 @@ class DMFTCoreTools:
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
         self._n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
-        self._flag_dos = bool(params['tool']['do_dos'])
-        self._flag_band = bool(params['tool']['do_band'])
         self._omega_min = float(params['tool']['omega_min'])
         self._omega_max = float(params['tool']['omega_max'])
         self._Nomega = int(params['tool']['Nomega'])
@@ -37,64 +35,77 @@ class DMFTCoreTools:
         self._solver = DMFTCoreSolver(seedname, params)
 
     def post(self):
-        flag_dos = self._flag_dos
-        flag_band = self._flag_band
         SKT = self._SKT
         Sol = self._solver
         S = self._solver._S
-        if flag_dos or flag_band:
-            if mpi.is_master_node():
-                print("~ Real frequency")
 
-            # set necessary quantities
-            if mpi.is_master_node():
-                SKT.chemical_potential, SKT.dc_imp, SKT.dc_energ = SKT.load(['chemical_potential','dc_imp','dc_energ'])
-            SKT.chemical_potential = mpi.bcast(SKT.chemical_potential)
-            SKT.dc_imp = mpi.bcast(SKT.dc_imp)
-            SKT.dc_energ = mpi.bcast(SKT.dc_energ)
+        if mpi.is_master_node():
+            print("~ Real frequency")
+        #
+        # Set necessary quantities
+        #
+        if mpi.is_master_node():
+            SKT.chemical_potential, SKT.dc_imp, SKT.dc_energ = SKT.load(['chemical_potential','dc_imp','dc_energ'])
+        SKT.chemical_potential = mpi.bcast(SKT.chemical_potential)
+        SKT.dc_imp = mpi.bcast(SKT.dc_imp)
+        SKT.dc_energ = mpi.bcast(SKT.dc_energ)
 
-            if Sol._solver_name == 'TRIQS/hubbard-I':
-                # set atomic levels:
-                eal = SKT.eff_atomic_levels()[0]
-                S.set_atomic_levels( eal = eal )
-                # Run the solver to get GF and self-energy on the real axis
-                S.GF_realomega(ommin=self._omega_min, ommax=self._omega_max, N_om=self._Nomega, U_int=Sol._U_int, J_hund=Sol._J_hund)
-            elif Sol._solver_name == "TRIQS/cthyb" or Sol._name == "ALPS/cthyb":
-                # Read info from HDF file
-                ar = HDFArchive(self._seedname+'.out.h5', 'r')
-                iteration_number = ar['dmft_out']['iterations']
-                print("Iter {0}".format(iteration_number))
-                S.Sigma_iw << ar['dmft_out']['Sigma_iw']
-                # Analytic continuation
-                sig_pade = GfReFreq(indices=S.Sigma_iw.indices(), window=(self._omega_min, self._omega_max), n_points=self._Nomega, name="sig_pade")
-                sig_pade.set_from_pade(S.Sigma_iw, n_points=self._n_iw, freq_offset=self._eta)
+        if Sol._solver_name == 'TRIQS/hubbard-I':
+            # set atomic levels:
+            eal = SKT.eff_atomic_levels()[0]
+            S.set_atomic_levels( eal = eal )
+            # Run the solver to get GF and self-energy on the real axis
+            S.GF_realomega(ommin=self._omega_min, ommax=self._omega_max, N_om=self._Nomega,
+                           U_int=Sol._U_int, J_hund=Sol._J_hund)
+        elif Sol._solver_name == "TRIQS/cthyb" or Sol._name == "ALPS/cthyb":
+            # Read info from HDF file
+            ar = HDFArchive(self._seedname+'.out.h5', 'r')
+            iteration_number = ar['dmft_out']['iterations']
+            print("Iter {0}".format(iteration_number))
+            S.Sigma_iw << ar['dmft_out']['Sigma_iw']
+        # Analytic continuation
+            sig_pade = GfReFreq(indices=S.Sigma_iw.indices(), window=(self._omega_min, self._omega_max),
+                                n_points=self._Nomega, name="sig_pade")
+            sig_pade.set_from_pade(S.Sigma_iw, n_points=self._n_iw, freq_offset=self._eta)
 
-                return
-            else:
-                raise RuntimeError("Unknown solver " + S._name)
+            return
+        else:
+            raise RuntimeError("Unknown solver " + S._name)
 
-            SKT.set_Sigma([S.Sigma_iw])
+        SKT.set_Sigma([S.Sigma_iw])
 
-        if flag_dos:
-            if mpi.is_master_node():
-                # ToDo Time stamp
-                print ("~ calc DOS")
-            SKT.dos_parproj_basis(broadening=self._broadening)
+        if mpi.is_master_node():
+            # ToDo Time stamp
+            print ("~ calc DOS")
+        dos, dosproj, dosproj_orb = SKT.dos_wannier_basis(broadening=self._broadening,
+                                                          mesh=[self._omega_min, self._omega_max, self._Nomega],
+                                                          with_Sigma=False, with_dc=False, save_to_file=False)
+        #
+        # Print to file
+        #
+        om_mesh = numpy.linspace(self._omega_min, self._omega_max, self._Nomega)
+        with open(self._seedname + '_dos.dat', 'w') as f:
+            print("# Energy DOS Partial-DOS", file=f)
+            for iom in range(self._Nomega):
+                print("{0} {1}".format(om_mesh[iom], dos['down'][iom]), file=f, end="")
+                for ish in range(SKT.n_inequiv_shells):
+                    for i in range(SKT.corr_shells[SKT.inequiv_to_corr[ish]]['dim']):
+                        print(" {0}".format(dosproj_orb[ish]['down'][iom,i,i].real), end="", file=f)
+                print("", file=f)
 
-        if flag_band:
-            if mpi.is_master_node():
-                # ToDo Time stamp
-                print ("~ calc band")
-            akw = SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file=None)
-            #
-            # Print to file
-            #
-            mesh = [x.real for x in SKT.Sigma_imp_w[0].mesh]
-            with open(self._seedname + '_akw.dat', 'w') as f:
-                for ik in range(self._n_k):
-                    for iom in range(self._Nomega):
-                        print("{0} {1} {2}".format(self._xk[ik], mesh[iom],akw['down'][ik,iom]), file=f)
-                    print("", file=f)
+        if mpi.is_master_node():
+            # ToDo Time stamp
+            print ("~ calc band")
+        akw = SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file=None)
+        #
+        # Print to file
+        #
+        mesh = [x.real for x in SKT.Sigma_imp_w[0].mesh]
+        with open(self._seedname + '_akw.dat', 'w') as f:
+            for ik in range(self._n_k):
+                for iom in range(self._Nomega):
+                    print("{0} {1} {2}".format(self._xk[ik], mesh[iom],akw['down'][ik,iom]), file=f)
+                print("", file=f)
 
 
 def __print_paramter(p, param_name):
