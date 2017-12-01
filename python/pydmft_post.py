@@ -80,7 +80,7 @@ class DMFTCoreTools:
         if mpi.is_master_node(): print("\n  @ Compute (partial) DOS")
         dos, dosproj, dosproj_orb = SKT.dos_wannier_basis(broadening=self._broadening,
                                                           mesh=[self._omega_min, self._omega_max, self._Nomega],
-                                                          with_Sigma=False, with_dc=False, save_to_file=False)
+                                                          with_Sigma=True, with_dc=False, save_to_file=False)
         #
         # Print DOS to file
         #
