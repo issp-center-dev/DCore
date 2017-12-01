@@ -276,7 +276,7 @@ def pydmft_pre(filename):
     #
     # Finish
     #
-    print("\n  Done\n")
+    if mpi.is_master_node(): print("\n  Done\n")
 
 
 if __name__ == '__main__':

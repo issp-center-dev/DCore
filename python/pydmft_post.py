@@ -148,10 +148,11 @@ def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
     ncor = params["ncor"]
     n_spin = 1
 
-    print("               ncor = ", ncor)
+    if mpi.is_master_node():print("               ncor = ", ncor)
     for i in range(ncor):
         if equiv[i] == -1: equiv[i] = i
-        print("     l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
+        if mpi.is_master_node():
+            print("     l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
     #
     # Read hopping in the real space from the Wannier90 output
     #
@@ -365,28 +366,33 @@ def pydmft_post(filename):
             ikk += 1
     xk_label[nnode-1] = xk[n_k-1]
     #
-    # Compute k-dependent Hamiltonian
+    # HDF5 file for band
     #
-    if mpi.is_master_node(): print("\n  @ Compute k-dependent Hamiltonian")
-    if p["model"]["lattice"] == 'wannier90':
-        hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], l, norb, equiv, n_k, kvec)
-    else:
-        hopping, n_orbitals, proj_mat = __generate_lattice_model(p["model"], n_k, kvec)
-    #
-    # Output them into seedname.h5
-    #
-    f = HDFArchive(seedname+'.h5','a')
-    if not ("dft_bands_input" in f):
-        f.create_group("dft_bands_input")
-    f["dft_bands_input"]["hopping"] = hopping
-    f["dft_bands_input"]["n_k"] = n_k
-    f["dft_bands_input"]["n_orbitals"] = n_orbitals
-    f["dft_bands_input"]["proj_mat"] = proj_mat
-    del  f
-    if mpi.is_master_node(): print("\n    Done")
+    if mpi.is_master_node():
+        #
+        # Compute k-dependent Hamiltonian
+        #
+        if mpi.is_master_node(): print("\n  @ Compute k-dependent Hamiltonian")
+        if p["model"]["lattice"] == 'wannier90':
+            hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], l, norb, equiv, n_k, kvec)
+        else:
+            hopping, n_orbitals, proj_mat = __generate_lattice_model(p["model"], n_k, kvec)
+        #
+        # Output them into seedname.h5
+        #
+        f = HDFArchive(seedname+'.h5','a')
+        if not ("dft_bands_input" in f):
+            f.create_group("dft_bands_input")
+        f["dft_bands_input"]["hopping"] = hopping
+        f["dft_bands_input"]["n_k"] = n_k
+        f["dft_bands_input"]["n_orbitals"] = n_orbitals
+        f["dft_bands_input"]["proj_mat"] = proj_mat
+        del  f
+        print("\n    Done")
     #
     # Plot
     #
+    mpi.barrier()
     dct=DMFTCoreTools(seedname, p, n_k, xk)
     dct.post()
     #
