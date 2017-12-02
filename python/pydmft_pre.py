@@ -50,7 +50,7 @@ def __generate_wannier90_model(params, l, norb, equiv, f):
     print("    nk2 = {0}".format(nk2))
     print("    ncor = {0}".format(ncor))
     for i in range(ncor):
-        if equiv[i] == -1: equiv[i] = i
+        assert equiv[i] >= 0
         print("    l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
     print("")
     #
@@ -222,12 +222,24 @@ def pydmft_pre(filename):
     norb = [1]*p["model"]['ncor']
     equiv = [-1]*p["model"]['ncor']
     try:
+        equiv_str_list = []
+        equiv_index = 0
         for  i, _list  in enumerate(cshell_list):
             _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
             l[i] = int(_cshell[0])
             norb[i] = int(_cshell[1])
-            if len(_cshell)==3:
-                equiv[i] = int(_cshell[2])
+            if len(_cshell) == 3:
+                if _cshell[2] in equiv_str_list:
+                    # Defined before
+                    equiv[i] = equiv_str_list.index(_cshell[2])
+                else:
+                    # New one
+                    equiv_str_list.add(_cshell[2])
+                    equiv[i] = equiv_index
+                    ++ equiv_index
+            else:
+                equiv[i] = equiv_index
+                ++ equiv_index
     except:
         raise RuntimeError("Error ! Format of cshell is wrong.")
     #
