@@ -58,7 +58,7 @@ class DMFTCoreTools:
             # Run the solver to get GF and self-energy on the real axis
             S.GF_realomega(ommin=self._omega_min, ommax=self._omega_max, N_om=self._Nomega,
                            U_int=Sol._U_int, J_hund=Sol._J_hund)
-            sigma_w = Sigma_iw
+            sigma_w = S.Sigma_iw
         elif Sol._solver_name == "TRIQS/cthyb" or Sol._name == "ALPS/cthyb":
             # Read info from HDF file
             ar = HDFArchive(self._seedname+'.out.h5', 'r')
@@ -73,8 +73,6 @@ class DMFTCoreTools:
             # Analytic continuation
             for bname, sig in S.Sigma_iw:
                 sigma_w[bname].set_from_pade(sig, n_points=self._n_iw, freq_offset=self._eta)
-
-            return
         else:
             raise RuntimeError("Unknown solver " + S._name)
 
@@ -105,7 +103,7 @@ class DMFTCoreTools:
         #
         # Band structure
         #
-        if self._params["lattice"] == 'bethe': return
+        if self._params["model"]["lattice"] == 'bethe': return
         #
         if mpi.is_master_node(): print ("\n  @ Compute band structure\n")
         akw = SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file=None)
