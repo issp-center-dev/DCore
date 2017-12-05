@@ -121,7 +121,7 @@ First, we compute the band structure with the following input file:
 
 .. code-block:: gnuplot
 
-   plot [][11:18] "bands.out.gnu" u 1:2 w l tit "Orig", 12.3116 tit "E_F", "srvo3_band.dat" u ($1*0.6146):2 every 10 tit "Wannier"
+   plot [][11:18] "bands.out.gnu" u 1:2 w p tit "Orig", 12.3116 tit "E_F", "srvo3_band.dat" u ($1*0.6146):2 tit "Wannier" w l
 
 .. image:: qe/band_wan.png
    :width: 500

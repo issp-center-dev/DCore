@@ -98,6 +98,8 @@ class DMFTCoreTools:
         #
         # Band structure
         #
+        if self._params["lattice"] == 'bethe': return
+        #
         if mpi.is_master_node(): print ("\n  @ Compute band structure\n")
         akw = SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file=None)
         #
