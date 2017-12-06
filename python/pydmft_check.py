@@ -44,8 +44,9 @@ def pydmft_check(filename):
         print("  Total number of Iteration: {0}".format(iteration_number))
         print("\n  Iter  Chemical-potential")
         for iter in range(1,iteration_number+1):
-            S.Sigma_iw << ar[output_group]['Sigma-%s'%(iter)]
-            oplot(S.Sigma_iw["up"], '-o', mode='I', x_window  = (0,20), name = 'Sigma-%s'%(iter))
+            if iter > iteration_number - 7:
+                S.Sigma_iw << ar[output_group]['Sigma-%s'%(iter)]
+                oplot(S.Sigma_iw["up"][0,0], '-o', mode='I', x_window  = (p['tool']['omega_min'],p['tool']['omega_max']), name = 'Sigma-%s'%(iter))
             print("  {0} {1}".format(iter, ar[output_group]['chemical_potential-%s'%(iter)]))
         del ar
 

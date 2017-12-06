@@ -407,7 +407,11 @@ def pydmft_post(filename):
             print("unset key", file=f)
             print("set ylabel \"Energy\"", file=f)
             print("set cblabel \"A(k,w)\"", file=f)
-            print("splot \"{0}\"".format(seedname + '_akw.dat'), file=f)
+            if p["model"]["lattice"] == 'wannier90':
+                print("splot \"{0}_akw.dat\", \"{0}_band.dat\" u 1:($2-{1}):(0) every 10 w p lc 5".format(
+                    seedname, dct._SKT.chemical_potential), file=f)
+            else:
+                print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)
         print("\n    Usage:")
         print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))
