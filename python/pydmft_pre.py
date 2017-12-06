@@ -11,9 +11,6 @@ from pytriqs.applications.dft.converters.hk_converter import HkConverter
 from dmft_core import create_parser
 import pytriqs.utility.mpi as mpi
 
-#from .typed_parser import TypedParser
-from typed_parser import TypedParser
-
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))

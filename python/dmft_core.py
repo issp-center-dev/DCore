@@ -7,7 +7,6 @@ from pytriqs.operators.util import *
 from pytriqs.archive import HDFArchive
 from pytriqs.gf.local import *
 from pytriqs.applications.dft.sumk_dft import *
-from pytriqs.plot.mpl_interface import oplot, plt
 
 from typed_parser import *
 
@@ -265,6 +264,7 @@ class DMFTCoreSolver:
                 ar[output_group]['G0-%s'%(iteration_number)] = S.G0_iw
                 ar[output_group]['G-%s'%(iteration_number)] = S.G_iw
                 ar[output_group]['Sigma-%s'%(iteration_number)] = S.Sigma_iw
+                ar[output_group]['chemical_potential-%s'%(iteration_number)] = SK.chemical_potential
                 del ar
 
             # Set the new double counting:
@@ -274,23 +274,3 @@ class DMFTCoreSolver:
 
             # Save stuff into the user_data group of hdf5 archive in case of rerun:
             SK.save(['chemical_potential','dc_imp','dc_energ'])
-
-    def plot(self, output_file, output_group='dmft_out'):
-
-        beta = float(self._params['system']['beta'])
-
-        # Just for convenience
-        SK = self._SK
-        S = self._S
-
-        # Read from HDF file
-        ar = HDFArchive(output_file, 'r')
-        iteration_number = ar[output_group]['iterations']
-        print("Iter {0}".format(iteration_number))
-        S.Sigma_iw << ar[output_group]['Sigma_iw']
-        S.G_iw << ar[output_group]['G_iw']
-        oplot(S.G_iw["up"], '-o', mode='I', x_window  = (0,20), name = "G")
-        del ar
-
-        plt.legend(loc = 4)
-        plt.show()

@@ -1,21 +1,11 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import sys, os, copy
-import numpy
+import os
 import argparse
 import re
-import pytriqs.utility.mpi as mpi
-from pytriqs.archive.hdf_archive import HDFArchive
-from pytriqs.applications.pydmft.typed_parser import TypedParser
 from dmft_core import DMFTCoreSolver,create_parser
-from pytriqs.applications.dft.sumk_dft import *
-from pytriqs.gf.local import GfReFreq
 from pytriqs.applications.dft.sumk_dft_tools import *
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
-
-
-# from .typed_parser import TypedParser
-from typed_parser import TypedParser
 
 
 class DMFTCoreTools:
@@ -424,7 +414,7 @@ def pydmft_post(filename):
     #
     # Finish
     #
-    print("\n  Done\n")
+    if mpi.is_master_node(): print("\n  Done\n")
 
 
 if __name__ == '__main__':
