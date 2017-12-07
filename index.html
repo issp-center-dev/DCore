@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pyDMFT &mdash; pyDMFT 1.4.0 documentation</title>
+    <title>DCore &mdash; DCore 1.4.0 documentation</title>
     
     <link rel="stylesheet" href="_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="about.html" />
-    <link rel="top" title="pyDMFT 1.4.0 documentation" href="contents.html" />
+    <link rel="top" title="DCore 1.4.0 documentation" href="contents.html" />
     <link rel="next" title="Installation" href="install.html" />
     <link rel="prev" title="Table of contents" href="contents.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
@@ -54,11 +54,11 @@
     
     <li><a href="issues.html">Issues</a></li>
     
-    <li><a href="about.html">About pyDMFT</a></li>
+    <li><a href="about.html">About DCore</a></li>
     
   </ul>
   <div>
-    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="#">pyDMFT</a></h1>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="#">DCore</a></h1>
     <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
   </div>
 </div>
@@ -105,19 +105,15 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <span class="target" id="module-pytriqs.applications.pydmft"><span id="index-0"></span></span><div class="section" id="pydmft">
-<span id="id1"></span><h1>pyDMFT<a class="headerlink" href="#pydmft" title="Permalink to this headline">¶</a></h1>
-<p>This <a class="reference external" href="http://triqs.ipht.cnrs.fr/1.x/index.html#welcome" title="(in TRIQS v1.4)"><span class="xref std std-ref">TRIQS-based</span></a> application is aimed
-at ab-initio calculations for
-correlated materials, combining realistic DFT band-structure
-calculations with the dynamical mean-field theory. Together with the
-necessary tools to perform the DMFT self-consistency loop for
-realistic multi-band problems, the package provides a full-fledged
-charge self-consistent interface to the <a class="reference external" href="http://www.wien2k.at">Wien2K package</a>. In addition, if Wien2k is not available, it
-provides a generic interface for one-shot DFT+DMFT calculations, where
-only the single-particle Hamiltonian in orbital space has to be
-provided.</p>
+  <span class="target" id="module-pytriqs.applications.dcore"><span id="index-0"></span></span><div class="section" id="dcore">
+<span id="id1"></span><h1>DCore<a class="headerlink" href="#dcore" title="Permalink to this headline">¶</a></h1>
+<p>DCore is aimed at model calculations and ab-initio calculations by the dynamical mean-field theory (DMFT).
+This package consists of programs with text-based and hdf5-based interface.
+These programs enable users to perform DMFT calculations and analyze results without writing computer code.
+The current version is built on TRIQS Python libraries.
+We will add supports for impurity solvers based on ALPSCore libraries in future.</p>
 <p>Learn how to use this package in the <a class="reference internal" href="documentation.html#documentation"><span>Documentation</span></a>.</p>
+<a class="reference internal image-reference" href="_images/concept.png"><img alt="_images/concept.png" class="align-center" src="_images/concept.png" style="width: 500px;" /></a>
 <div class="toctree-wrapper compound">
 <ul class="simple">
 </ul>

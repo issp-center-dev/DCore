@@ -1,0 +1,653 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SrVO3 &mdash; DCore 1.4.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.4.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="top" title="DCore 1.4.0 documentation" href="../contents.html" />
+    <link rel="up" title="Tutorial with QuantumESPRESSO and wannier90" href="qe.html" />
+    <link rel="next" title="NiS" href="nis.html" />
+    <link rel="prev" title="Tutorial with QuantumESPRESSO and wannier90" href="qe.html" />
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <script src="../_static/cufon-yui.js" type="text/javascript"></script>
+    <script src="../_static/spaceman.cufonfonts.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      Cufon.replace('.triqs', { fontFamily: 'spaceman', hover: true }); 
+    </script>
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+
+  </head>
+  <body role="document">
+<div class="pageheader">
+  <ul>
+    
+    <li><a href="../install.html">Install</a></li>
+    
+    <li><a href="../documentation.html">Documentation</a></li>
+    
+    <li><a href="../issues.html">Issues</a></li>
+    
+    <li><a href="../about.html">About DCore</a></li>
+    
+  </ul>
+  <div>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nis.html" title="NiS"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="qe.html" title="Tutorial with QuantumESPRESSO and wannier90"
+             accesskey="P">previous</a> |</li>
+    <li><a href="../index.html">Home</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="qe.html" accesskey="U">Tutorial with QuantumESPRESSO and wannier90</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SrVO<sub>3</sub></a><ul>
+<li><a class="reference internal" href="#scf-calculation-of-quantum-espresso">SCF calculation of Quantum ESPRESSO</a></li>
+<li><a class="reference internal" href="#wannierization">Wannierization</a><ul>
+<li><a class="reference internal" href="#generate-bloch-orbitals-for-the-wannier">Generate Bloch orbitals for the Wannier</a></li>
+<li><a class="reference internal" href="#preprocess-for-wannier90">Preprocess for Wannier90</a></li>
+<li><a class="reference internal" href="#qe-to-wannier90-interface">QE to wannier90 interface</a></li>
+<li><a class="reference internal" href="#wannier90">Wannier90</a></li>
+<li><a class="reference internal" href="#optional-check-wannierization">(Optional) Check wannierization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dmft-calculation">DMFT calculation</a><ul>
+<li><a class="reference internal" href="#dmft-setup-dcore-pre">DMFT setup: dcore_pre</a></li>
+<li><a class="reference internal" href="#running-self-consistent-dft-dmft-dcore">Running self-consistent DFT+DMFT : dcore</a></li>
+<li><a class="reference internal" href="#post-processing-and-data-analysis-dcore-post">Post-processing and data analysis: dcore_post</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="qe.html"
+                        title="previous chapter">Tutorial with QuantumESPRESSO and wannier90</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nis.html"
+                        title="next chapter">NiS</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/srvo3.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="srvo3">
+<h1>SrVO<sub>3</sub><a class="headerlink" href="#srvo3" title="Permalink to this headline">¶</a></h1>
+<p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
+<a class="reference internal image-reference" href="../_images/struct_srvo3.png"><img alt="../_images/struct_srvo3.png" class="align-center" src="../_images/struct_srvo3.png" style="width: 200px;" /></a>
+<div class="section" id="scf-calculation-of-quantum-espresso">
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" href="../_downloads/scf_srvo3.in" download=""><code class="xref download docutils literal"><span class="pre">scf_srvo3.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;scf&#39;
+      outdir = &#39;./&#39;
+  pseudo_dir = &#39;./&#39;
+      prefix = &#39;srvo3&#39;
+/
+&amp;SYSTEM
+       ibrav = 1
+   celldm(1) = 7.29738
+        ntyp = 3
+         nat = 5
+     ecutwfc = 50.0
+     ecutrho = 400.0
+ occupations = &quot;tetrahedra_opt&quot;
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Sr   87.6200000000  Sr.pbe-spn-kjpaw_psl.0.2.3.upf
+  V   50.9415000000  V.pbe-spn-kjpaw_psl.0.2.3.upf
+  O   15.9994000000  O.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Sr   0.00000000000000   0.00000000000000   0.00000000000000
+  V   0.50000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.00000000000000   0.50000000000000
+  O   0.00000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.50000000000000   0.00000000000000
+K_POINTS automatic
+ 8 8 8 0 0 0
+</pre></div>
+</div>
+<p>The pseudopotentials are downloaded from
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/Sr.pbe-spn-kjpaw_psl.0.2.3.upf">Sr.pbe-spn-kjpaw_psl.0.2.3.upf</a>,
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/V.pbe-spn-kjpaw_psl.0.2.3.upf">V.pbe-spn-kjpaw_psl.0.2.3.upf</a>, and
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/O.pbe-n-kjpaw_psl.0.1.upf">O.pbe-n-kjpaw_psl.0.1.upf</a>.</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in scf_srvo3.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannierization">
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="generate-bloch-orbitals-for-the-wannier">
+<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this headline">¶</a></h3>
+<p>Perform non-scf calculation for generating Bloch orbitals that are used
+in the wannierization.</p>
+<p><a class="reference download internal" href="../_downloads/nscf_srvo3.in" download=""><code class="xref download docutils literal"><span class="pre">nscf_srvo3.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;bands&#39;
+      outdir = &#39;./&#39;
+  pseudo_dir = &#39;./&#39;
+      prefix = &#39;srvo3&#39;
+/
+&amp;SYSTEM
+       ibrav = 1
+   celldm(1) = 7.29738129774137562
+        ntyp = 3
+         nat = 5
+     ecutwfc = 50.0
+     ecutrho = 400.0
+ occupations = &quot;tetrahedra_opt&quot;
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Sr   87.6200000000  Sr.pbe-spn-kjpaw_psl.0.2.3.upf
+  V   50.9415000000  V.pbe-spn-kjpaw_psl.0.2.3.upf
+  O   15.9994000000  O.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Sr   0.00000000000000   0.00000000000000   0.00000000000000
+  V   0.50000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.00000000000000   0.50000000000000
+  O   0.00000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.50000000000000   0.00000000000000
+K_POINTS crystal
+64
+  0.00000000  0.00000000  0.00000000  1.562500e-02
+  0.00000000  0.00000000  0.25000000  1.562500e-02
+  0.00000000  0.00000000  0.50000000  1.562500e-02
+  0.00000000  0.00000000  0.75000000  1.562500e-02
+  0.00000000  0.25000000  0.00000000  1.562500e-02
+  0.00000000  0.25000000  0.25000000  1.562500e-02
+  0.00000000  0.25000000  0.50000000  1.562500e-02
+  0.00000000  0.25000000  0.75000000  1.562500e-02
+  0.00000000  0.50000000  0.00000000  1.562500e-02
+  0.00000000  0.50000000  0.25000000  1.562500e-02
+  0.00000000  0.50000000  0.50000000  1.562500e-02
+  0.00000000  0.50000000  0.75000000  1.562500e-02
+  0.00000000  0.75000000  0.00000000  1.562500e-02
+  0.00000000  0.75000000  0.25000000  1.562500e-02
+  0.00000000  0.75000000  0.50000000  1.562500e-02
+  0.00000000  0.75000000  0.75000000  1.562500e-02
+  0.25000000  0.00000000  0.00000000  1.562500e-02
+  0.25000000  0.00000000  0.25000000  1.562500e-02
+  0.25000000  0.00000000  0.50000000  1.562500e-02
+  0.25000000  0.00000000  0.75000000  1.562500e-02
+  0.25000000  0.25000000  0.00000000  1.562500e-02
+  0.25000000  0.25000000  0.25000000  1.562500e-02
+  0.25000000  0.25000000  0.50000000  1.562500e-02
+  0.25000000  0.25000000  0.75000000  1.562500e-02
+  0.25000000  0.50000000  0.00000000  1.562500e-02
+  0.25000000  0.50000000  0.25000000  1.562500e-02
+  0.25000000  0.50000000  0.50000000  1.562500e-02
+  0.25000000  0.50000000  0.75000000  1.562500e-02
+  0.25000000  0.75000000  0.00000000  1.562500e-02
+  0.25000000  0.75000000  0.25000000  1.562500e-02
+  0.25000000  0.75000000  0.50000000  1.562500e-02
+  0.25000000  0.75000000  0.75000000  1.562500e-02
+  0.50000000  0.00000000  0.00000000  1.562500e-02
+  0.50000000  0.00000000  0.25000000  1.562500e-02
+  0.50000000  0.00000000  0.50000000  1.562500e-02
+  0.50000000  0.00000000  0.75000000  1.562500e-02
+  0.50000000  0.25000000  0.00000000  1.562500e-02
+  0.50000000  0.25000000  0.25000000  1.562500e-02
+  0.50000000  0.25000000  0.50000000  1.562500e-02
+  0.50000000  0.25000000  0.75000000  1.562500e-02
+  0.50000000  0.50000000  0.00000000  1.562500e-02
+  0.50000000  0.50000000  0.25000000  1.562500e-02
+  0.50000000  0.50000000  0.50000000  1.562500e-02
+  0.50000000  0.50000000  0.75000000  1.562500e-02
+  0.50000000  0.75000000  0.00000000  1.562500e-02
+  0.50000000  0.75000000  0.25000000  1.562500e-02
+  0.50000000  0.75000000  0.50000000  1.562500e-02
+  0.50000000  0.75000000  0.75000000  1.562500e-02
+  0.75000000  0.00000000  0.00000000  1.562500e-02
+  0.75000000  0.00000000  0.25000000  1.562500e-02
+  0.75000000  0.00000000  0.50000000  1.562500e-02
+  0.75000000  0.00000000  0.75000000  1.562500e-02
+  0.75000000  0.25000000  0.00000000  1.562500e-02
+  0.75000000  0.25000000  0.25000000  1.562500e-02
+  0.75000000  0.25000000  0.50000000  1.562500e-02
+  0.75000000  0.25000000  0.75000000  1.562500e-02
+  0.75000000  0.50000000  0.00000000  1.562500e-02
+  0.75000000  0.50000000  0.25000000  1.562500e-02
+  0.75000000  0.50000000  0.50000000  1.562500e-02
+  0.75000000  0.50000000  0.75000000  1.562500e-02
+  0.75000000  0.75000000  0.00000000  1.562500e-02
+  0.75000000  0.75000000  0.25000000  1.562500e-02
+  0.75000000  0.75000000  0.50000000  1.562500e-02
+  0.75000000  0.75000000  0.75000000  1.562500e-02
+</pre></div>
+</div>
+<p>This <em>k</em>-grid is generated as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> 4
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">kmesh.pl</span></code> is located in the <cite>utility/</cite> directory of Wannier90.</p>
+<p>Then, run <code class="docutils literal"><span class="pre">pw.x</span></code> as</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in nscf_srvo3.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="preprocess-for-wannier90">
+<h3>Preprocess for Wannier90<a class="headerlink" href="#preprocess-for-wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Pre-process with wannier90 program.
+It is always required before pw2wannier.x runs.</p>
+<p><a class="reference download internal" href="../_downloads/srvo3.win" download=""><code class="xref download docutils literal"><span class="pre">srvo3.win</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>num_bands         =   25
+num_wann          =   3
+
+dis_win_max =  18.0
+dis_win_min =  11.0
+!dis_froz_max = 13.4
+!dis_froz_min = 11.0
+
+begin projections
+V:dxy;dxz;dyz
+end projections
+
+site_symmetry = .true.
+write_hr = .true.
+bands_plot = .true.
+wannier_plot = .true.
+write_xyz = .true.
+
+wannier_plot_supercell = 1
+
+!exclude_bands=
+
+begin kpoint_path
+G  0.0  0.0  0.0  X  0.5  0.0  0.0
+X  0.5  0.0  0.0  M  0.5  0.5  0.0
+M  0.5  0.5  0.0  G  0.0  0.0  0.0
+G  0.0  0.0  0.0  R  0.5  0.5  0.5
+end kpoint_path
+
+begin unit_cell_cart
+bohr
+7.29738  0.00000  0.00000
+0.00000  7.29738  0.00000
+0.00000  0.00000  7.29738
+end unit_cell_cart
+
+begin atoms_frac
+ Sr   0.00000000000000   0.00000000000000   0.00000000000000
+  V   0.50000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.00000000000000   0.50000000000000
+  O   0.00000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.50000000000000   0.00000000000000
+end atoms_frac
+
+mp_grid           = 4 4 4
+
+begin kpoints
+  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.25000000
+  0.00000000  0.00000000  0.50000000
+  0.00000000  0.00000000  0.75000000
+  0.00000000  0.25000000  0.00000000
+  0.00000000  0.25000000  0.25000000
+  0.00000000  0.25000000  0.50000000
+  0.00000000  0.25000000  0.75000000
+  0.00000000  0.50000000  0.00000000
+  0.00000000  0.50000000  0.25000000
+  0.00000000  0.50000000  0.50000000
+  0.00000000  0.50000000  0.75000000
+  0.00000000  0.75000000  0.00000000
+  0.00000000  0.75000000  0.25000000
+  0.00000000  0.75000000  0.50000000
+  0.00000000  0.75000000  0.75000000
+  0.25000000  0.00000000  0.00000000
+  0.25000000  0.00000000  0.25000000
+  0.25000000  0.00000000  0.50000000
+  0.25000000  0.00000000  0.75000000
+  0.25000000  0.25000000  0.00000000
+  0.25000000  0.25000000  0.25000000
+  0.25000000  0.25000000  0.50000000
+  0.25000000  0.25000000  0.75000000
+  0.25000000  0.50000000  0.00000000
+  0.25000000  0.50000000  0.25000000
+  0.25000000  0.50000000  0.50000000
+  0.25000000  0.50000000  0.75000000
+  0.25000000  0.75000000  0.00000000
+  0.25000000  0.75000000  0.25000000
+  0.25000000  0.75000000  0.50000000
+  0.25000000  0.75000000  0.75000000
+  0.50000000  0.00000000  0.00000000
+  0.50000000  0.00000000  0.25000000
+  0.50000000  0.00000000  0.50000000
+  0.50000000  0.00000000  0.75000000
+  0.50000000  0.25000000  0.00000000
+  0.50000000  0.25000000  0.25000000
+  0.50000000  0.25000000  0.50000000
+  0.50000000  0.25000000  0.75000000
+  0.50000000  0.50000000  0.00000000
+  0.50000000  0.50000000  0.25000000
+  0.50000000  0.50000000  0.50000000
+  0.50000000  0.50000000  0.75000000
+  0.50000000  0.75000000  0.00000000
+  0.50000000  0.75000000  0.25000000
+  0.50000000  0.75000000  0.50000000
+  0.50000000  0.75000000  0.75000000
+  0.75000000  0.00000000  0.00000000
+  0.75000000  0.00000000  0.25000000
+  0.75000000  0.00000000  0.50000000
+  0.75000000  0.00000000  0.75000000
+  0.75000000  0.25000000  0.00000000
+  0.75000000  0.25000000  0.25000000
+  0.75000000  0.25000000  0.50000000
+  0.75000000  0.25000000  0.75000000
+  0.75000000  0.50000000  0.00000000
+  0.75000000  0.50000000  0.25000000
+  0.75000000  0.50000000  0.50000000
+  0.75000000  0.50000000  0.75000000
+  0.75000000  0.75000000  0.00000000
+  0.75000000  0.75000000  0.25000000
+  0.75000000  0.75000000  0.50000000
+  0.75000000  0.75000000  0.75000000
+end kpoints
+</pre></div>
+</div>
+<p>This <em>k</em> grid is generated as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ wannier90.x -pp srvo3
+</pre></div>
+</div>
+</div>
+<div class="section" id="qe-to-wannier90-interface">
+<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" href="../_downloads/pw2wan_srvo3.in" download=""><code class="xref download docutils literal"><span class="pre">pw2wan_srvo3.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;inputpp 
+   outdir = &#39;./&#39;
+   prefix = &#39;srvo3&#39;
+   seedname = &#39;srvo3&#39;
+   spin_component = &#39;none&#39;
+   write_mmn = .true.
+   write_amn = .true.
+   write_unk = .true.
+   write_dmn = .true.
+   wan_mode = &#39;standalone&#39;
+/
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw2wan.x -in pw2wan_srvo3.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannier90">
+<h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Execute <code class="docutils literal"><span class="pre">wannier90.x</span></code> for the actual wannierization.
+The input file is the same as that for the preprocessing run.</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ wannier90 srvo3
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-check-wannierization">
+<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
+<p>If we want to check the quarity of the wannierization,
+we plot the original and the wannier-interpolated band structure simalteneously.</p>
+<p>First, we compute the band structure with the following input file:</p>
+<p><a class="reference download internal" href="../_downloads/band_srvo3.in" download=""><code class="xref download docutils literal"><span class="pre">band_srvo3.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;bands&#39;
+      outdir = &#39;./&#39;
+  pseudo_dir = &#39;./&#39;
+      prefix = &#39;srvo3&#39;
+/
+&amp;SYSTEM
+       ibrav = 1
+   celldm(1) = 7.29738129774137562
+        ntyp = 3
+         nat = 5
+     ecutwfc = 50.0
+     ecutrho = 400.0
+ occupations = &quot;tetrahedra_opt&quot;
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Sr   87.6200000000  Sr.pbe-spn-kjpaw_psl.0.2.3.upf
+  V   50.9415000000  V.pbe-spn-kjpaw_psl.0.2.3.upf
+  O   15.9994000000  O.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Sr   0.00000000000000   0.00000000000000   0.00000000000000
+  V   0.50000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.00000000000000   0.50000000000000
+  O   0.00000000000000   0.50000000000000   0.50000000000000
+  O   0.50000000000000   0.50000000000000   0.00000000000000
+K_POINTS crystal
+          50
+        0.0000000000    0.0000000000    0.0000000000    1.0
+        0.0500000000    0.0000000000    0.0000000000    1.0
+        0.1000000000    0.0000000000    0.0000000000    1.0
+        0.1500000000    0.0000000000    0.0000000000    1.0
+        0.2000000000    0.0000000000    0.0000000000    1.0
+        0.2500000000    0.0000000000    0.0000000000    1.0
+        0.3000000000    0.0000000000    0.0000000000    1.0
+        0.3500000000    0.0000000000    0.0000000000    1.0
+        0.4000000000    0.0000000000    0.0000000000    1.0
+        0.4500000000    0.0000000000    0.0000000000    1.0
+        0.5000000000    0.0000000000    0.0000000000    1.0
+        0.5000000000    0.0500000000    0.0000000000    1.0
+        0.5000000000    0.1000000000    0.0000000000    1.0
+        0.5000000000    0.1500000000    0.0000000000    1.0
+        0.5000000000    0.2000000000    0.0000000000    1.0
+        0.5000000000    0.2500000000    0.0000000000    1.0
+        0.5000000000    0.3000000000    0.0000000000    1.0
+        0.5000000000    0.3500000000    0.0000000000    1.0
+        0.5000000000    0.4000000000    0.0000000000    1.0
+        0.5000000000    0.4500000000    0.0000000000    1.0
+        0.5000000000    0.5000000000    0.0000000000    1.0
+        0.4615384615    0.4615384615    0.0000000000    1.0
+        0.4230769231    0.4230769231    0.0000000000    1.0
+        0.3846153846    0.3846153846    0.0000000000    1.0
+        0.3461538462    0.3461538462    0.0000000000    1.0
+        0.3076923077    0.3076923077    0.0000000000    1.0
+        0.2692307692    0.2692307692    0.0000000000    1.0
+        0.2307692308    0.2307692308    0.0000000000    1.0
+        0.1923076923    0.1923076923    0.0000000000    1.0
+        0.1538461538    0.1538461538    0.0000000000    1.0
+        0.1153846154    0.1153846154    0.0000000000    1.0
+        0.0769230769    0.0769230769    0.0000000000    1.0
+        0.0384615385    0.0384615385    0.0000000000    1.0
+        0.0000000000    0.0000000000    0.0000000000    1.0
+        0.0312500000    0.0312500000    0.0312500000    1.0
+        0.0625000000    0.0625000000    0.0625000000    1.0
+        0.0937500000    0.0937500000    0.0937500000    1.0
+        0.1250000000    0.1250000000    0.1250000000    1.0
+        0.1562500000    0.1562500000    0.1562500000    1.0
+        0.1875000000    0.1875000000    0.1875000000    1.0
+        0.2187500000    0.2187500000    0.2187500000    1.0
+        0.2500000000    0.2500000000    0.2500000000    1.0
+        0.2812500000    0.2812500000    0.2812500000    1.0
+        0.3125000000    0.3125000000    0.3125000000    1.0
+        0.3437500000    0.3437500000    0.3437500000    1.0
+        0.3750000000    0.3750000000    0.3750000000    1.0
+        0.4062500000    0.4062500000    0.4062500000    1.0
+        0.4375000000    0.4375000000    0.4375000000    1.0
+        0.4687500000    0.4687500000    0.4687500000    1.0
+        0.5000000000    0.5000000000    0.5000000000    1.0
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpiexec -np <span class="m">4</span> pw.x -in band_srvo3.in
+</pre></div>
+</div>
+<p><a class="reference download internal" href="../_downloads/bands_srvo3.in" download=""><code class="xref download docutils literal"><span class="pre">bands_srvo3.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;BANDS
+prefix = &quot;srvo3&quot;,
+outdir = &quot;./&quot;,
+!filband = &quot;band.dat&quot;
+!lsym = .true.
+/
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpiexec -np <span class="m">4</span> bands.x -in bands_srvo3.in
+</pre></div>
+</div>
+<div class="highlight-gnuplot"><div class="highlight"><pre>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;srvo3_band.dat&quot; u ($1*0.6146):2 tit &quot;Wannier&quot; w l
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/band_srvo3.png"><img alt="../_images/band_srvo3.png" class="align-center" src="../_images/band_srvo3.png" style="width: 500px;" /></a>
+</div>
+</div>
+<div class="section" id="dmft-calculation">
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" href="../_downloads/srvo3.ini" download=""><code class="xref download docutils literal"><span class="pre">srvo3.ini</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>[model]
+U = 6.0
+J = 1.0
+lattice = wannier90
+seedname = srvo3
+nelec = 1.0
+ncor = 1
+cshell = [(2, 3)]
+bvec=[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]
+
+[system]
+nk0 = 8
+nk1 = 8
+nk2 = 8
+beta = 10.0
+
+[impurity_solver]
+name = TRIQS/cthyb
+n_cycles{int} = 10000
+
+[control]
+max_step = 10
+
+[tool]
+broadening = 0.1
+nk_line = 50
+nnode = 5
+knode=[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5)]
+omega_max =4.0
+omega_min =-4.0
+Nomega = 400
+</pre></div>
+</div>
+<div class="section" id="dmft-setup-dcore-pre">
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre srvo3.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-self-consistent-dft-dmft-dcore">
+<h3>Running self-consistent DFT+DMFT : dcore<a class="headerlink" href="#running-self-consistent-dft-dmft-dcore" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf srvo3.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-processing-and-data-analysis-dcore-post">
+<h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post srvo3.ini
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nis.html" title="NiS"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="qe.html" title="Tutorial with QuantumESPRESSO and wannier90"
+             >previous</a> |</li>
+    <li><a href="../index.html">Home</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="qe.html" >Tutorial with QuantumESPRESSO and wannier90</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

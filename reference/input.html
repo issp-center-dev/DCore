@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Input-file format and usage &mdash; pyDMFT 1.4.0 documentation</title>
+    <title>Input-file format and usage &mdash; DCore 1.4.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../about.html" />
-    <link rel="top" title="pyDMFT 1.4.0 documentation" href="../contents.html" />
+    <link rel="top" title="DCore 1.4.0 documentation" href="../contents.html" />
     <link rel="up" title="Documentation" href="../documentation.html" />
     <link rel="next" title="DMFTCoreSolver" href="DMFTCoreSolver.html" />
     <link rel="prev" title="Tutorial with OpenMX" href="../tutorial/openmx.html" />
@@ -53,11 +53,11 @@
     
     <li><a href="../issues.html">Issues</a></li>
     
-    <li><a href="../about.html">About pyDMFT</a></li>
+    <li><a href="../about.html">About DCore</a></li>
     
   </ul>
   <div>
-    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">pyDMFT</a></h1>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
     <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
   </div>
 </div>
@@ -138,9 +138,9 @@
 <span id="inputformat"></span><h1>Input-file format and usage<a class="headerlink" href="#input-file-format-and-usage" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>$ pydmft_pre input-file
-$ pydmft input-file
-$ pydmft_post input-file
+<div class="highlight-python"><div class="highlight"><pre>$ dcore_pre input-file
+$ dcore input-file
+$ dcore_post input-file
 </pre></div>
 </div>
 <p>They use the same input file.</p>
@@ -170,7 +170,7 @@ max_step = 40
 </div>
 <div class="section" id="model-block">
 <h3>[model] block<a class="headerlink" href="#model-block" title="Permalink to this headline">¶</a></h3>
-<p>pydmft_pre and pydmft_post read this block.</p>
+<p>dcore_pre and dcore_post read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="13%" />
@@ -228,7 +228,7 @@ max_step = 40
 </tr>
 <tr class="row-even"><td>seedname</td>
 <td>String</td>
-<td>pydmft</td>
+<td>dcore</td>
 <td>Name of the system.
 It should be the same as the seedname of wannier90.</td>
 </tr>
@@ -240,7 +240,7 @@ correlation shell (Only wannier90).</td>
 </tr>
 </tbody>
 </table>
-<p>Prepare model for pyDMFT.
+<p>Prepare model for DCore.
 Wannier90 as well as the following preset models:</p>
 <ul class="simple">
 <li>chain</li>
@@ -259,13 +259,13 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 </div>
 <div class="section" id="system-block">
 <h3>[system] block<a class="headerlink" href="#system-block" title="Permalink to this headline">¶</a></h3>
-<p>pydmft_pre and pydmft read this block.</p>
+<p>dcore_pre and dcore read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="10%" />
-<col width="10%" />
-<col width="10%" />
-<col width="70%" />
+<col width="8%" />
+<col width="13%" />
+<col width="24%" />
+<col width="56%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -320,12 +320,19 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 <td>0</td>
 <td>Number of <em>k</em> (Only wannier90)</td>
 </tr>
+<tr class="row-odd"><td>bvec</td>
+<td>Float array</td>
+<td>[(1.0,0.0,0.0), (0.0,
+1.0,0.0),(0.0,0.0,1.0
+)]</td>
+<td>Reciplocal lattice vectors</td>
+</tr>
 </tbody>
 </table>
 </div>
 <div class="section" id="impurity-solver-block">
 <h3>[impurity_solver] block<a class="headerlink" href="#impurity-solver-block" title="Permalink to this headline">¶</a></h3>
-<p>pydmft and pydmft_post read this block.</p>
+<p>dcore and dcore_post read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="5%" />
@@ -353,7 +360,7 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 </div>
 <div class="section" id="control-block">
 <h3>[control] block<a class="headerlink" href="#control-block" title="Permalink to this headline">¶</a></h3>
-<p>pydmft reads this block.</p>
+<p>dcore reads this block.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="13%" />
@@ -389,7 +396,7 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 </div>
 <div class="section" id="tool-block">
 <h3>[tool] block<a class="headerlink" href="#tool-block" title="Permalink to this headline">¶</a></h3>
-<p>pydmft_post reads this block.</p>
+<p>dcore_post reads this block.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="12%" />
@@ -405,24 +412,17 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>bvec</td>
-<td>Float array</td>
-<td>[(1.0,0.0,0.0), (0.0,
-1.0,0.0),(0.0,0.0,1.0
-)]</td>
-<td>Reciplocal lattice vectors</td>
-</tr>
-<tr class="row-odd"><td>nnode</td>
+<tr class="row-even"><td>nnode</td>
 <td>Integer</td>
 <td>2</td>
 <td>Number of node for the <em>k</em> path</td>
 </tr>
-<tr class="row-even"><td>nk_line</td>
+<tr class="row-odd"><td>nk_line</td>
 <td>Integer</td>
 <td>8</td>
 <td>Number of <em>k</em> along each line</td>
 </tr>
-<tr class="row-odd"><td>knode</td>
+<tr class="row-even"><td>knode</td>
 <td>Sting Float array</td>
 <td><dl class="first last docutils">
 <dt>[(G,0.0,0.0,0.0),</dt>
@@ -431,40 +431,35 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 </td>
 <td>The name and the fractional coordinate of each k-node.</td>
 </tr>
-<tr class="row-even"><td>omega_min</td>
+<tr class="row-odd"><td>omega_min</td>
 <td>Float</td>
 <td>-1</td>
 <td>Minimum value of real frequency</td>
 </tr>
-<tr class="row-odd"><td>omega_max</td>
+<tr class="row-even"><td>omega_max</td>
 <td>Float</td>
 <td>1</td>
 <td>Max value of real frequency</td>
 </tr>
-<tr class="row-even"><td>Nomega</td>
+<tr class="row-odd"><td>Nomega</td>
 <td>Integer</td>
 <td>100</td>
 <td>Number of real frequencies</td>
 </tr>
-<tr class="row-odd"><td>broadening</td>
+<tr class="row-even"><td>broadening</td>
 <td>Float</td>
 <td>0.1</td>
 <td>An additional Lorentzian broadening</td>
 </tr>
-<tr class="row-even"><td>eta</td>
+<tr class="row-odd"><td>eta</td>
 <td>Float</td>
 <td>0.01</td>
-<td>Imaginary frequency shift</td>
+<td>Imaginary frequency shift for the Pade approximation</td>
 </tr>
-<tr class="row-odd"><td>do_dos</td>
-<td>Bool</td>
-<td>False</td>
-<td>Whether or not calculate DOS</td>
-</tr>
-<tr class="row-even"><td>do_band</td>
-<td>Bool</td>
-<td>False</td>
-<td>Whether or not calculate band</td>
+<tr class="row-even"><td>n_pade</td>
+<td>Integer</td>
+<td>100</td>
+<td>Number of frequencies for the Pade approximation</td>
 </tr>
 </tbody>
 </table>

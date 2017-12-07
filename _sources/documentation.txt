@@ -1,11 +1,11 @@
-.. module:: pytriqs.applications.pydmft
+.. module:: pytriqs.applications.dcore
 
 .. _documentation:
 
 Documentation
 =============
 
-Structure of :program:`pyDMFT`
+Structure of :program:`DCore`
 ------------------------------
 
 .. toctree::

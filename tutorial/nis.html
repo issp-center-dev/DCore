@@ -1,0 +1,703 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>NiS &mdash; DCore 1.4.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.4.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="top" title="DCore 1.4.0 documentation" href="../contents.html" />
+    <link rel="up" title="Tutorial with QuantumESPRESSO and wannier90" href="qe.html" />
+    <link rel="next" title="Tutorial with OpenMX" href="openmx.html" />
+    <link rel="prev" title="SrVO3" href="srvo3.html" />
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <script src="../_static/cufon-yui.js" type="text/javascript"></script>
+    <script src="../_static/spaceman.cufonfonts.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      Cufon.replace('.triqs', { fontFamily: 'spaceman', hover: true }); 
+    </script>
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+
+  </head>
+  <body role="document">
+<div class="pageheader">
+  <ul>
+    
+    <li><a href="../install.html">Install</a></li>
+    
+    <li><a href="../documentation.html">Documentation</a></li>
+    
+    <li><a href="../issues.html">Issues</a></li>
+    
+    <li><a href="../about.html">About DCore</a></li>
+    
+  </ul>
+  <div>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openmx.html" title="Tutorial with OpenMX"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="srvo3.html" title="SrVO3"
+             accesskey="P">previous</a> |</li>
+    <li><a href="../index.html">Home</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="qe.html" accesskey="U">Tutorial with QuantumESPRESSO and wannier90</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">NiS</a><ul>
+<li><a class="reference internal" href="#scf-calculation-of-quantum-espresso">SCF calculation of Quantum ESPRESSO</a></li>
+<li><a class="reference internal" href="#wannierization">Wannierization</a><ul>
+<li><a class="reference internal" href="#generate-bloch-orbitals-for-the-wannier">Generate Bloch orbitals for the Wannier</a></li>
+<li><a class="reference internal" href="#preprocess-for-wannier90">Preprocess for Wannier90</a></li>
+<li><a class="reference internal" href="#qe-to-wannier90-interface">QE to wannier90 interface</a></li>
+<li><a class="reference internal" href="#wannier90">Wannier90</a></li>
+<li><a class="reference internal" href="#optional-check-wannierization">(Optional) Check wannierization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dmft-calculation">DMFT calculation</a><ul>
+<li><a class="reference internal" href="#dmft-setup-dcore-pre">DMFT setup: dcore_pre</a></li>
+<li><a class="reference internal" href="#running-self-consistent-dft-dmft-dcore">Running self-consistent DFT+DMFT : dcore</a></li>
+<li><a class="reference internal" href="#post-processing-and-data-analysis-dcore-post">Post-processing and data analysis: dcore_post</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="srvo3.html"
+                        title="previous chapter">SrVO<sub>3</sub></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="openmx.html"
+                        title="next chapter">Tutorial with OpenMX</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/nis.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="nis">
+<h1>NiS<a class="headerlink" href="#nis" title="Permalink to this headline">¶</a></h1>
+<p>Crystal structure of NiS (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
+<a class="reference internal image-reference" href="../_images/struct_nis.png"><img alt="../_images/struct_nis.png" class="align-center" src="../_images/struct_nis.png" style="width: 200px;" /></a>
+<div class="section" id="scf-calculation-of-quantum-espresso">
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" href="../_downloads/scf_nis.in" download=""><code class="xref download docutils literal"><span class="pre">scf_nis.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;scf&#39;,
+  pseudo_dir = &#39;./&#39;,
+      prefix = &#39;nis&#39; ,
+      outdir = &#39;./&#39;
+/
+&amp;SYSTEM
+       ibrav = 4,
+   celldm(1) = 6.5158
+   celldm(3) = 1.5542
+         nat = 4,
+        ntyp = 2,
+     ecutwfc = 45.0 ,
+     ecutrho = 360.0 ,
+occupations = &#39;tetrahedra_opt&#39;,
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Ni    58.6934   Ni.pbe-n-kjpaw_psl.0.1.upf
+  S    32.066     S.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Ni    0.000000000    0.000000000    0.000000000
+ Ni    0.000000000    0.000000000    0.500000000
+  S    0.333333333    0.666666667    0.250000000
+  S    0.666666667    0.333333333    0.750000000
+K_POINTS automatic 
+8 8 6 0 0 0
+</pre></div>
+</div>
+<p>The pseudopotentials are downloaded from
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/Ni.pbe-n-kjpaw_psl.0.1.upf">Ni.pbe-n-kjpaw_psl.0.1.upf</a> and
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/S.pbe-n-kjpaw_psl.0.1.upf">S.pbe-n-kjpaw_psl.0.1.upf</a>.</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in scf_nis.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannierization">
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="generate-bloch-orbitals-for-the-wannier">
+<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this headline">¶</a></h3>
+<p>Perform non-scf calculation for generating Bloch orbitals that are used
+in the wannierization.</p>
+<p><a class="reference download internal" href="../_downloads/nscf_nis.in" download=""><code class="xref download docutils literal"><span class="pre">nscf_nis.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;bands&#39;,
+  pseudo_dir = &#39;./&#39;,
+      prefix = &#39;nis&#39; ,
+      outdir = &#39;./&#39;
+/
+&amp;SYSTEM
+        nbnd = 30
+       ibrav = 4,
+   celldm(1) = 6.5158
+   celldm(3) = 1.5542
+         nat = 4,
+        ntyp = 2,
+     ecutwfc = 45.0 ,
+     ecutrho = 360.0 ,
+ occupations = &#39;tetrahedra_opt&#39;,
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Ni    58.6934   Ni.pbe-n-kjpaw_psl.0.1.upf
+  S    32.066     S.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Ni    0.000000000    0.000000000    0.000000000
+ Ni    0.000000000    0.000000000    0.500000000
+  S    0.333333333    0.666666667    0.250000000
+  S    0.666666667    0.333333333    0.750000000
+K_POINTS crystal
+64
+  0.00000000  0.00000000  0.00000000  1.562500e-02
+  0.00000000  0.00000000  0.25000000  1.562500e-02
+  0.00000000  0.00000000  0.50000000  1.562500e-02
+  0.00000000  0.00000000  0.75000000  1.562500e-02
+  0.00000000  0.25000000  0.00000000  1.562500e-02
+  0.00000000  0.25000000  0.25000000  1.562500e-02
+  0.00000000  0.25000000  0.50000000  1.562500e-02
+  0.00000000  0.25000000  0.75000000  1.562500e-02
+  0.00000000  0.50000000  0.00000000  1.562500e-02
+  0.00000000  0.50000000  0.25000000  1.562500e-02
+  0.00000000  0.50000000  0.50000000  1.562500e-02
+  0.00000000  0.50000000  0.75000000  1.562500e-02
+  0.00000000  0.75000000  0.00000000  1.562500e-02
+  0.00000000  0.75000000  0.25000000  1.562500e-02
+  0.00000000  0.75000000  0.50000000  1.562500e-02
+  0.00000000  0.75000000  0.75000000  1.562500e-02
+  0.25000000  0.00000000  0.00000000  1.562500e-02
+  0.25000000  0.00000000  0.25000000  1.562500e-02
+  0.25000000  0.00000000  0.50000000  1.562500e-02
+  0.25000000  0.00000000  0.75000000  1.562500e-02
+  0.25000000  0.25000000  0.00000000  1.562500e-02
+  0.25000000  0.25000000  0.25000000  1.562500e-02
+  0.25000000  0.25000000  0.50000000  1.562500e-02
+  0.25000000  0.25000000  0.75000000  1.562500e-02
+  0.25000000  0.50000000  0.00000000  1.562500e-02
+  0.25000000  0.50000000  0.25000000  1.562500e-02
+  0.25000000  0.50000000  0.50000000  1.562500e-02
+  0.25000000  0.50000000  0.75000000  1.562500e-02
+  0.25000000  0.75000000  0.00000000  1.562500e-02
+  0.25000000  0.75000000  0.25000000  1.562500e-02
+  0.25000000  0.75000000  0.50000000  1.562500e-02
+  0.25000000  0.75000000  0.75000000  1.562500e-02
+  0.50000000  0.00000000  0.00000000  1.562500e-02
+  0.50000000  0.00000000  0.25000000  1.562500e-02
+  0.50000000  0.00000000  0.50000000  1.562500e-02
+  0.50000000  0.00000000  0.75000000  1.562500e-02
+  0.50000000  0.25000000  0.00000000  1.562500e-02
+  0.50000000  0.25000000  0.25000000  1.562500e-02
+  0.50000000  0.25000000  0.50000000  1.562500e-02
+  0.50000000  0.25000000  0.75000000  1.562500e-02
+  0.50000000  0.50000000  0.00000000  1.562500e-02
+  0.50000000  0.50000000  0.25000000  1.562500e-02
+  0.50000000  0.50000000  0.50000000  1.562500e-02
+  0.50000000  0.50000000  0.75000000  1.562500e-02
+  0.50000000  0.75000000  0.00000000  1.562500e-02
+  0.50000000  0.75000000  0.25000000  1.562500e-02
+  0.50000000  0.75000000  0.50000000  1.562500e-02
+  0.50000000  0.75000000  0.75000000  1.562500e-02
+  0.75000000  0.00000000  0.00000000  1.562500e-02
+  0.75000000  0.00000000  0.25000000  1.562500e-02
+  0.75000000  0.00000000  0.50000000  1.562500e-02
+  0.75000000  0.00000000  0.75000000  1.562500e-02
+  0.75000000  0.25000000  0.00000000  1.562500e-02
+  0.75000000  0.25000000  0.25000000  1.562500e-02
+  0.75000000  0.25000000  0.50000000  1.562500e-02
+  0.75000000  0.25000000  0.75000000  1.562500e-02
+  0.75000000  0.50000000  0.00000000  1.562500e-02
+  0.75000000  0.50000000  0.25000000  1.562500e-02
+  0.75000000  0.50000000  0.50000000  1.562500e-02
+  0.75000000  0.50000000  0.75000000  1.562500e-02
+  0.75000000  0.75000000  0.00000000  1.562500e-02
+  0.75000000  0.75000000  0.25000000  1.562500e-02
+  0.75000000  0.75000000  0.50000000  1.562500e-02
+  0.75000000  0.75000000  0.75000000  1.562500e-02
+</pre></div>
+</div>
+<p>This <em>k</em>-grid is generated as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> 4
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">kmesh.pl</span></code> is located in the <cite>utility/</cite> directory of Wannier90.</p>
+<p>Then, run <code class="docutils literal"><span class="pre">pw.x</span></code> as</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in nscf_nis.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="preprocess-for-wannier90">
+<h3>Preprocess for Wannier90<a class="headerlink" href="#preprocess-for-wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Pre-process with wannier90 program.
+It is always required before pw2wannier.x runs.</p>
+<p><a class="reference download internal" href="../_downloads/nis.win" download=""><code class="xref download docutils literal"><span class="pre">nis.win</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>num_bands         =   30
+num_wann          =   16
+
+dis_win_max =  13.0
+dis_win_min =  2.0
+!dis_froz_max = 13.0
+!dis_froz_min = 2.0
+
+begin projections
+Ni:d
+S:p
+end projections
+site_symmetry = .true.
+
+write_hr = .true.
+bands_plot = .true.
+wannier_plot = .true.
+
+wannier_plot_supercell = 1
+
+!exclude_bands=
+
+begin kpoint_path
+G  0.0000000000  0.0000000000  0.00  M  0.5000000000  0.0000000000  0.00
+M  0.5000000000  0.0000000000  0.00  K  0.3333333333  0.3333333333  0.00
+K  0.3333333333  0.3333333333  0.00  G  0.0000000000  0.0000000000  0.00
+G  0.0000000000  0.0000000000  0.00  A  0.0000000000  0.0000000000  0.50
+A  0.0000000000  0.0000000000  0.50  L  0.5000000000  0.0000000000  0.50
+L  0.5000000000  0.0000000000  0.50  H  0.3333333333  0.3333333333  0.50
+H  0.3333333333  0.3333333333  0.50  A  0.0000000000  0.0000000000  0.50
+end kpoint_path
+
+begin unit_cell_cart
+bohr
+ 6.515800000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+-3.257900000000000E+000  5.642848325979045E+000  0.000000000000000E+000
+ 0.000000000000000E+000  0.000000000000000E+000  1.012685636000000E+001
+end unit_cell_cart
+
+begin atoms_frac
+ Ni    0.000000000    0.000000000    0.000000000
+ Ni    0.000000000    0.000000000    0.500000000
+  S    0.333333333    0.666666667    0.250000000
+  S    0.666666667    0.333333333    0.750000000
+end atoms_frac
+
+mp_grid           = 4 4 4
+
+begin kpoints
+  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.25000000
+  0.00000000  0.00000000  0.50000000
+  0.00000000  0.00000000  0.75000000
+  0.00000000  0.25000000  0.00000000
+  0.00000000  0.25000000  0.25000000
+  0.00000000  0.25000000  0.50000000
+  0.00000000  0.25000000  0.75000000
+  0.00000000  0.50000000  0.00000000
+  0.00000000  0.50000000  0.25000000
+  0.00000000  0.50000000  0.50000000
+  0.00000000  0.50000000  0.75000000
+  0.00000000  0.75000000  0.00000000
+  0.00000000  0.75000000  0.25000000
+  0.00000000  0.75000000  0.50000000
+  0.00000000  0.75000000  0.75000000
+  0.25000000  0.00000000  0.00000000
+  0.25000000  0.00000000  0.25000000
+  0.25000000  0.00000000  0.50000000
+  0.25000000  0.00000000  0.75000000
+  0.25000000  0.25000000  0.00000000
+  0.25000000  0.25000000  0.25000000
+  0.25000000  0.25000000  0.50000000
+  0.25000000  0.25000000  0.75000000
+  0.25000000  0.50000000  0.00000000
+  0.25000000  0.50000000  0.25000000
+  0.25000000  0.50000000  0.50000000
+  0.25000000  0.50000000  0.75000000
+  0.25000000  0.75000000  0.00000000
+  0.25000000  0.75000000  0.25000000
+  0.25000000  0.75000000  0.50000000
+  0.25000000  0.75000000  0.75000000
+  0.50000000  0.00000000  0.00000000
+  0.50000000  0.00000000  0.25000000
+  0.50000000  0.00000000  0.50000000
+  0.50000000  0.00000000  0.75000000
+  0.50000000  0.25000000  0.00000000
+  0.50000000  0.25000000  0.25000000
+  0.50000000  0.25000000  0.50000000
+  0.50000000  0.25000000  0.75000000
+  0.50000000  0.50000000  0.00000000
+  0.50000000  0.50000000  0.25000000
+  0.50000000  0.50000000  0.50000000
+  0.50000000  0.50000000  0.75000000
+  0.50000000  0.75000000  0.00000000
+  0.50000000  0.75000000  0.25000000
+  0.50000000  0.75000000  0.50000000
+  0.50000000  0.75000000  0.75000000
+  0.75000000  0.00000000  0.00000000
+  0.75000000  0.00000000  0.25000000
+  0.75000000  0.00000000  0.50000000
+  0.75000000  0.00000000  0.75000000
+  0.75000000  0.25000000  0.00000000
+  0.75000000  0.25000000  0.25000000
+  0.75000000  0.25000000  0.50000000
+  0.75000000  0.25000000  0.75000000
+  0.75000000  0.50000000  0.00000000
+  0.75000000  0.50000000  0.25000000
+  0.75000000  0.50000000  0.50000000
+  0.75000000  0.50000000  0.75000000
+  0.75000000  0.75000000  0.00000000
+  0.75000000  0.75000000  0.25000000
+  0.75000000  0.75000000  0.50000000
+  0.75000000  0.75000000  0.75000000
+end kpoints
+</pre></div>
+</div>
+<p>This <em>k</em> grid is generated as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ wannier90.x -pp nis
+</pre></div>
+</div>
+</div>
+<div class="section" id="qe-to-wannier90-interface">
+<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" href="../_downloads/pw2wan_nis.in" download=""><code class="xref download docutils literal"><span class="pre">pw2wan_nis.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;inputpp 
+   outdir = &#39;./&#39;
+   prefix = &#39;nis&#39;
+   seedname = &#39;nis&#39;
+   spin_component = &#39;none&#39;
+   write_mmn = .true.
+   write_amn = .true.
+   write_unk = .true.
+   write_dmn = .true.
+   wan_mode = &#39;standalone&#39;
+/
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw2wan.x -in pw2wan_nis.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannier90">
+<h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Execute <code class="docutils literal"><span class="pre">wannier90.x</span></code> for the actual wannierization.
+The input file is the same as that for the preprocessing run.</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ wannier90 nis
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-check-wannierization">
+<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
+<p>If we want to check the quarity of the wannierization,
+we plot the original and the wannier-interpolated band structure simalteneously.</p>
+<p>First, we compute the band structure with the following input file:</p>
+<p><a class="reference download internal" href="../_downloads/band_nis.in" download=""><code class="xref download docutils literal"><span class="pre">band_nis.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
+ calculation = &#39;bands&#39;,
+  pseudo_dir = &#39;./&#39;,
+      prefix = &#39;nis&#39; ,
+      outdir = &#39;./&#39;
+/
+&amp;SYSTEM
+        nbnd = 30
+       ibrav = 4,
+   celldm(1) = 6.5158
+   celldm(3) = 1.5542
+         nat = 4,
+        ntyp = 2,
+     ecutwfc = 45.0 ,
+     ecutrho = 360.0 ,
+ occupations = &#39;tetrahedra_opt&#39;,
+/
+&amp;ELECTRONS
+/
+ATOMIC_SPECIES
+ Ni    58.6934   Ni.pbe-n-kjpaw_psl.0.1.upf
+  S    32.066     S.pbe-n-kjpaw_psl.0.1.upf
+ATOMIC_POSITIONS crystal
+ Ni    0.000000000    0.000000000    0.000000000
+ Ni    0.000000000    0.000000000    0.500000000
+  S    0.333333333    0.666666667    0.250000000
+  S    0.666666667    0.333333333    0.750000000
+K_POINTS crystal
+          98
+        0.0000000000    0.0000000000    0.0000000000    1.0
+        0.0312500000    0.0000000000    0.0000000000    1.0
+        0.0625000000    0.0000000000    0.0000000000    1.0
+        0.0937500000    0.0000000000    0.0000000000    1.0
+        0.1250000000    0.0000000000    0.0000000000    1.0
+        0.1562500000    0.0000000000    0.0000000000    1.0
+        0.1875000000    0.0000000000    0.0000000000    1.0
+        0.2187500000    0.0000000000    0.0000000000    1.0
+        0.2500000000    0.0000000000    0.0000000000    1.0
+        0.2812500000    0.0000000000    0.0000000000    1.0
+        0.3125000000    0.0000000000    0.0000000000    1.0
+        0.3437500000    0.0000000000    0.0000000000    1.0
+        0.3750000000    0.0000000000    0.0000000000    1.0
+        0.4062500000    0.0000000000    0.0000000000    1.0
+        0.4375000000    0.0000000000    0.0000000000    1.0
+        0.4687500000    0.0000000000    0.0000000000    1.0
+        0.5000000000    0.0000000000    0.0000000000    1.0
+        0.4814811111    0.0370366667    0.0000000000    1.0
+        0.4629622222    0.0740733333    0.0000000000    1.0
+        0.4444433333    0.1111100000    0.0000000000    1.0
+        0.4259244444    0.1481466667    0.0000000000    1.0
+        0.4074055556    0.1851833333    0.0000000000    1.0
+        0.3888866667    0.2222200000    0.0000000000    1.0
+        0.3703677778    0.2592566667    0.0000000000    1.0
+        0.3518488889    0.2962933333    0.0000000000    1.0
+        0.3333300000    0.3333300000    0.0000000000    1.0
+        0.3157863158    0.3157863158    0.0000000000    1.0
+        0.2982426316    0.2982426316    0.0000000000    1.0
+        0.2806989474    0.2806989474    0.0000000000    1.0
+        0.2631552632    0.2631552632    0.0000000000    1.0
+        0.2456115789    0.2456115789    0.0000000000    1.0
+        0.2280678947    0.2280678947    0.0000000000    1.0
+        0.2105242105    0.2105242105    0.0000000000    1.0
+        0.1929805263    0.1929805263    0.0000000000    1.0
+        0.1754368421    0.1754368421    0.0000000000    1.0
+        0.1578931579    0.1578931579    0.0000000000    1.0
+        0.1403494737    0.1403494737    0.0000000000    1.0
+        0.1228057895    0.1228057895    0.0000000000    1.0
+        0.1052621053    0.1052621053    0.0000000000    1.0
+        0.0877184211    0.0877184211    0.0000000000    1.0
+        0.0701747368    0.0701747368    0.0000000000    1.0
+        0.0526310526    0.0526310526    0.0000000000    1.0
+        0.0350873684    0.0350873684    0.0000000000    1.0
+        0.0175436842    0.0175436842    0.0000000000    1.0
+        0.0000000000    0.0000000000    0.0000000000    1.0
+        0.0000000000    0.0000000000    0.0555555556    1.0
+        0.0000000000    0.0000000000    0.1111111111    1.0
+        0.0000000000    0.0000000000    0.1666666667    1.0
+        0.0000000000    0.0000000000    0.2222222222    1.0
+        0.0000000000    0.0000000000    0.2777777778    1.0
+        0.0000000000    0.0000000000    0.3333333333    1.0
+        0.0000000000    0.0000000000    0.3888888889    1.0
+        0.0000000000    0.0000000000    0.4444444444    1.0
+        0.0000000000    0.0000000000    0.5000000000    1.0
+        0.0312500000    0.0000000000    0.5000000000    1.0
+        0.0625000000    0.0000000000    0.5000000000    1.0
+        0.0937500000    0.0000000000    0.5000000000    1.0
+        0.1250000000    0.0000000000    0.5000000000    1.0
+        0.1562500000    0.0000000000    0.5000000000    1.0
+        0.1875000000    0.0000000000    0.5000000000    1.0
+        0.2187500000    0.0000000000    0.5000000000    1.0
+        0.2500000000    0.0000000000    0.5000000000    1.0
+        0.2812500000    0.0000000000    0.5000000000    1.0
+        0.3125000000    0.0000000000    0.5000000000    1.0
+        0.3437500000    0.0000000000    0.5000000000    1.0
+        0.3750000000    0.0000000000    0.5000000000    1.0
+        0.4062500000    0.0000000000    0.5000000000    1.0
+        0.4375000000    0.0000000000    0.5000000000    1.0
+        0.4687500000    0.0000000000    0.5000000000    1.0
+        0.5000000000    0.0000000000    0.5000000000    1.0
+        0.4814811111    0.0370366667    0.5000000000    1.0
+        0.4629622222    0.0740733333    0.5000000000    1.0
+        0.4444433333    0.1111100000    0.5000000000    1.0
+        0.4259244444    0.1481466667    0.5000000000    1.0
+        0.4074055556    0.1851833333    0.5000000000    1.0
+        0.3888866667    0.2222200000    0.5000000000    1.0
+        0.3703677778    0.2592566667    0.5000000000    1.0
+        0.3518488889    0.2962933333    0.5000000000    1.0
+        0.3333300000    0.3333300000    0.5000000000    1.0
+        0.3157863158    0.3157863158    0.5000000000    1.0
+        0.2982426316    0.2982426316    0.5000000000    1.0
+        0.2806989474    0.2806989474    0.5000000000    1.0
+        0.2631552632    0.2631552632    0.5000000000    1.0
+        0.2456115789    0.2456115789    0.5000000000    1.0
+        0.2280678947    0.2280678947    0.5000000000    1.0
+        0.2105242105    0.2105242105    0.5000000000    1.0
+        0.1929805263    0.1929805263    0.5000000000    1.0
+        0.1754368421    0.1754368421    0.5000000000    1.0
+        0.1578931579    0.1578931579    0.5000000000    1.0
+        0.1403494737    0.1403494737    0.5000000000    1.0
+        0.1228057895    0.1228057895    0.5000000000    1.0
+        0.1052621053    0.1052621053    0.5000000000    1.0
+        0.0877184211    0.0877184211    0.5000000000    1.0
+        0.0701747368    0.0701747368    0.5000000000    1.0
+        0.0526310526    0.0526310526    0.5000000000    1.0
+        0.0350873684    0.0350873684    0.5000000000    1.0
+        0.0175436842    0.0175436842    0.5000000000    1.0
+        0.0000000000    0.0000000000    0.5000000000    1.0
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpiexec -np <span class="m">4</span> pw.x -in band_nis.in
+</pre></div>
+</div>
+<p><a class="reference download internal" href="../_downloads/bands_nis.in" download=""><code class="xref download docutils literal"><span class="pre">bands_nis.in</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;BANDS
+prefix = &quot;nis&quot;,
+outdir = &quot;./&quot;,
+!filband = &quot;band.dat&quot;
+!lsym = .true.
+/
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ mpiexec -np <span class="m">4</span> bands.x -in bands_nis.in
+</pre></div>
+</div>
+<div class="highlight-gnuplot"><div class="highlight"><pre>plot [][3:13] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 10.913 tit &quot;E_F&quot;, &quot;nis_band.dat&quot; u ($1*0.549):2 tit &quot;Wannier&quot; w l
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/band_nis.png"><img alt="../_images/band_nis.png" class="align-center" src="../_images/band_nis.png" style="width: 500px;" /></a>
+</div>
+</div>
+<div class="section" id="dmft-calculation">
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" href="../_downloads/nis.ini" download=""><code class="xref download docutils literal"><span class="pre">nis.ini</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+<span class="n">U</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">J</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">lattice</span> <span class="o">=</span> <span class="n">wannier90</span>
+<span class="n">seedname</span> <span class="o">=</span> <span class="n">nis</span>
+<span class="n">nelec</span> <span class="o">=</span> <span class="mf">24.0</span>
+<span class="n">ncor</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">cshell</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
+<span class="n">bvec</span><span class="o">=</span><span class="p">[(</span><span class="mf">1.822263</span><span class="p">,</span> <span class="mf">1.052084</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.104168</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.172476</span><span class="p">)]</span>
+
+<span class="p">[</span><span class="n">system</span><span class="p">]</span>
+<span class="n">nk0</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">nk1</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">nk2</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">beta</span> <span class="o">=</span> <span class="mf">10.0</span>
+
+<span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">TRIQS</span><span class="o">/</span><span class="n">hubbard</span><span class="o">-</span><span class="n">I</span>
+
+<span class="p">[</span><span class="n">control</span><span class="p">]</span>
+<span class="n">max_step</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="p">[</span><span class="n">tool</span><span class="p">]</span>
+<span class="n">broadening</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">nk_line</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">nnode</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">knode</span><span class="o">=</span><span class="p">[(</span><span class="n">G</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">M</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">K</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">G</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">A</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">L</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">H</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">A</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)]</span>
+<span class="n">omega_max</span> <span class="o">=</span><span class="mf">3.0</span>
+<span class="n">omega_min</span> <span class="o">=-</span><span class="mf">12.0</span>
+<span class="n">Nomega</span> <span class="o">=</span> <span class="mi">500</span>
+</pre></div>
+</div>
+<div class="section" id="dmft-setup-dcore-pre">
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre nis.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-self-consistent-dft-dmft-dcore">
+<h3>Running self-consistent DFT+DMFT : dcore<a class="headerlink" href="#running-self-consistent-dft-dmft-dcore" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf nis.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-processing-and-data-analysis-dcore-post">
+<h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post nis.ini
+$ gnuplot nis_akw.gp
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/akw_nis.png"><img alt="../_images/akw_nis.png" class="align-center" src="../_images/akw_nis.png" style="width: 500px;" /></a>
+<p>&#8220;+&#8221; indicates the original band structure.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openmx.html" title="Tutorial with OpenMX"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="srvo3.html" title="SrVO3"
+             >previous</a> |</li>
+    <li><a href="../index.html">Home</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="qe.html" >Tutorial with QuantumESPRESSO and wannier90</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial with single-band 2D Hubbard model &mdash; pyDMFT 1.4.0 documentation</title>
+    <title>Tutorial with single-band 2D Hubbard model &mdash; DCore 1.4.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../about.html" />
-    <link rel="top" title="pyDMFT 1.4.0 documentation" href="../contents.html" />
+    <link rel="top" title="DCore 1.4.0 documentation" href="../contents.html" />
     <link rel="up" title="Documentation" href="../documentation.html" />
     <link rel="next" title="Tutorial with t2g Bethe lattice" href="bethe.html" />
     <link rel="prev" title="The interface layer" href="../basicnotions/structure.html" />
@@ -53,11 +53,11 @@
     
     <li><a href="../issues.html">Issues</a></li>
     
-    <li><a href="../about.html">About pyDMFT</a></li>
+    <li><a href="../about.html">About DCore</a></li>
     
   </ul>
   <div>
-    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">pyDMFT</a></h1>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
     <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
   </div>
 </div>
@@ -87,9 +87,9 @@
   <h3><a href="../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tutorial with single-band 2D Hubbard model</a><ul>
-<li><a class="reference internal" href="#pydmft-pre"><code class="docutils literal"><span class="pre">pydmft_pre</span></code></a></li>
-<li><a class="reference internal" href="#pydmft"><code class="docutils literal"><span class="pre">pydmft</span></code></a></li>
-<li><a class="reference internal" href="#pydmft-post"><code class="docutils literal"><span class="pre">pydmft_post</span></code></a></li>
+<li><a class="reference internal" href="#dcore-pre"><code class="docutils literal"><span class="pre">dcore_pre</span></code></a></li>
+<li><a class="reference internal" href="#dcore"><code class="docutils literal"><span class="pre">dcore</span></code></a></li>
+<li><a class="reference internal" href="#dcore-post"><code class="docutils literal"><span class="pre">dcore_post</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -159,20 +159,20 @@
 <span class="n">Nomega</span> <span class="o">=</span> <span class="mi">400</span>
 </pre></div>
 </div>
-<div class="section" id="pydmft-pre">
-<h2><code class="docutils literal"><span class="pre">pydmft_pre</span></code><a class="headerlink" href="#pydmft-pre" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dcore-pre">
+<h2><code class="docutils literal"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#dcore-pre" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre dmft_square.ini
 </pre></div>
 </div>
 </div>
-<div class="section" id="pydmft">
-<h2><code class="docutils literal"><span class="pre">pydmft</span></code><a class="headerlink" href="#pydmft" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dcore">
+<h2><code class="docutils literal"><span class="pre">dcore</span></code><a class="headerlink" href="#dcore" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf dmft_square.ini
 </pre></div>
 </div>
 </div>
-<div class="section" id="pydmft-post">
-<h2><code class="docutils literal"><span class="pre">pydmft_post</span></code><a class="headerlink" href="#pydmft-post" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dcore-post">
+<h2><code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#dcore-post" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post dmft_square.ini
 $ gnuplot square_akw.gp
 </pre></div>

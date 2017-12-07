@@ -5,21 +5,21 @@ Tutorial with single-band 2D Hubbard model
 
 .. literalinclude:: square/dmft_square.ini
                               
-``pydmft_pre``
+``dcore_pre``
 --------------
 
 .. code-block :: bash
 
    $ pydmf_pre dmft_square.ini
 
-``pydmft``
+``dcore``
 ----------
 
 .. code-block :: bash
 
    $ pydmf dmft_square.ini
 
-``pydmft_post``
+``dcore_post``
 ---------------
 
 .. code-block :: bash

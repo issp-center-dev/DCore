@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pydmft.dmft_core &mdash; pyDMFT 1.4.0 documentation</title>
+    <title>pydmft.dmft_core &mdash; DCore 1.4.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
-    <link rel="top" title="pyDMFT 1.4.0 documentation" href="../../contents.html" />
+    <link rel="top" title="DCore 1.4.0 documentation" href="../../contents.html" />
     <link rel="up" title="Module code" href="../index.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
     <script src="../../_static/cufon-yui.js" type="text/javascript"></script>
@@ -51,11 +51,11 @@
     
     <li><a href="../../issues.html">Issues</a></li>
     
-    <li><a href="../../about.html">About pyDMFT</a></li>
+    <li><a href="../../about.html">About DCore</a></li>
     
   </ul>
   <div>
-    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../../index.html">pyDMFT</a></h1>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../../index.html">DCore</a></h1>
     <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
   </div>
 </div>
@@ -107,7 +107,6 @@
 <span class="kn">from</span> <span class="nn">pytriqs.archive</span> <span class="kn">import</span> <span class="n">HDFArchive</span>
 <span class="kn">from</span> <span class="nn">pytriqs.gf.local</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">pytriqs.applications.dft.sumk_dft</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">pytriqs.plot.mpl_interface</span> <span class="kn">import</span> <span class="n">oplot</span><span class="p">,</span> <span class="n">plt</span>
 
 <span class="kn">from</span> <span class="nn">typed_parser</span> <span class="kn">import</span> <span class="o">*</span>
 
@@ -152,6 +151,7 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;tool&quot;</span><span class="p">,</span> <span class="s2">&quot;Nomega&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;Number of real frequencies&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;tool&quot;</span><span class="p">,</span> <span class="s2">&quot;broadening&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;An additional Lorentzian broadening&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;tool&quot;</span><span class="p">,</span> <span class="s2">&quot;eta&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s2">&quot;Imaginary frequency shift&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;tool&quot;</span><span class="p">,</span> <span class="s2">&quot;n_pade&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;Number of imaginary frequency for Pade&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;tool&quot;</span><span class="p">,</span> <span class="s2">&quot;nnode&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Number of k-node for band path&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;tool&quot;</span><span class="p">,</span> <span class="s2">&quot;knode&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]&quot;</span><span class="p">,</span> <span class="s2">&quot;k-node for band path&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;tool&quot;</span><span class="p">,</span> <span class="s2">&quot;nk_line&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;Number of k along each line&quot;</span><span class="p">)</span>
@@ -365,6 +365,7 @@
                 <span class="n">ar</span><span class="p">[</span><span class="n">output_group</span><span class="p">][</span><span class="s1">&#39;G0-</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">iteration_number</span><span class="p">)]</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">G0_iw</span>
                 <span class="n">ar</span><span class="p">[</span><span class="n">output_group</span><span class="p">][</span><span class="s1">&#39;G-</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">iteration_number</span><span class="p">)]</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">G_iw</span>
                 <span class="n">ar</span><span class="p">[</span><span class="n">output_group</span><span class="p">][</span><span class="s1">&#39;Sigma-</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">iteration_number</span><span class="p">)]</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">Sigma_iw</span>
+                <span class="n">ar</span><span class="p">[</span><span class="n">output_group</span><span class="p">][</span><span class="s1">&#39;chemical_potential-</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">iteration_number</span><span class="p">)]</span> <span class="o">=</span> <span class="n">SK</span><span class="o">.</span><span class="n">chemical_potential</span>
                 <span class="k">del</span> <span class="n">ar</span>
 
             <span class="c1"># Set the new double counting:</span>
@@ -373,27 +374,7 @@
                 <span class="n">SK</span><span class="o">.</span><span class="n">calc_dc</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">U_interact</span> <span class="o">=</span> <span class="n">U</span><span class="p">,</span> <span class="n">J_hund</span> <span class="o">=</span> <span class="n">J</span><span class="p">,</span> <span class="n">orb</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">use_dc_formula</span> <span class="o">=</span> <span class="n">dc_type</span><span class="p">)</span>
 
             <span class="c1"># Save stuff into the user_data group of hdf5 archive in case of rerun:</span>
-            <span class="n">SK</span><span class="o">.</span><span class="n">save</span><span class="p">([</span><span class="s1">&#39;chemical_potential&#39;</span><span class="p">,</span><span class="s1">&#39;dc_imp&#39;</span><span class="p">,</span><span class="s1">&#39;dc_energ&#39;</span><span class="p">])</span>
-
-    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_group</span><span class="o">=</span><span class="s1">&#39;dmft_out&#39;</span><span class="p">):</span>
-
-        <span class="n">beta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="s1">&#39;system&#39;</span><span class="p">][</span><span class="s1">&#39;beta&#39;</span><span class="p">])</span>
-
-        <span class="c1"># Just for convenience</span>
-        <span class="n">SK</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SK</span>
-        <span class="n">S</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_S</span>
-
-        <span class="c1"># Read from HDF file</span>
-        <span class="n">ar</span> <span class="o">=</span> <span class="n">HDFArchive</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-        <span class="n">iteration_number</span> <span class="o">=</span> <span class="n">ar</span><span class="p">[</span><span class="n">output_group</span><span class="p">][</span><span class="s1">&#39;iterations&#39;</span><span class="p">]</span>
-        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Iter {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iteration_number</span><span class="p">))</span>
-        <span class="n">S</span><span class="o">.</span><span class="n">Sigma_iw</span> <span class="o">&lt;&lt;</span> <span class="n">ar</span><span class="p">[</span><span class="n">output_group</span><span class="p">][</span><span class="s1">&#39;Sigma_iw&#39;</span><span class="p">]</span>
-        <span class="n">S</span><span class="o">.</span><span class="n">G_iw</span> <span class="o">&lt;&lt;</span> <span class="n">ar</span><span class="p">[</span><span class="n">output_group</span><span class="p">][</span><span class="s1">&#39;G_iw&#39;</span><span class="p">]</span>
-        <span class="n">oplot</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">G_iw</span><span class="p">[</span><span class="s2">&quot;up&quot;</span><span class="p">],</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">x_window</span>  <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;G&quot;</span><span class="p">)</span>
-        <span class="k">del</span> <span class="n">ar</span>
-
-        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+            <span class="n">SK</span><span class="o">.</span><span class="n">save</span><span class="p">([</span><span class="s1">&#39;chemical_potential&#39;</span><span class="p">,</span><span class="s1">&#39;dc_imp&#39;</span><span class="p">,</span><span class="s1">&#39;dc_energ&#39;</span><span class="p">])</span></div>
 </pre></div>
 
           </div>

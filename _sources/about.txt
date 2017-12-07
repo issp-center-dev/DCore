@@ -7,13 +7,13 @@ The dft_tools package is published under the
 Authors & Quotation
 ===================
 
-XXX [#pydmft1]_.
+XXX [#dcore1]_.
 
 **Developers**: H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, T. Kato
 
 **Related papers**:
 
-.. [#pydmft1] `A. Smithee and N. Bourbaki, Phys. Rev. P 11, 123456 (2017) <https://www.google.co.jp/search?q=pie&source=lnms&tbm=isch&sa=X&ved=0ahUKEwiy273Ky97VAhUGVrwKHWLZB3kQ_AUICigB&biw=1371&bih=803>`_ (:download:`bibtex file <pydmft1.bib>`)
+.. [#dcore1] `A. Smithee and N. Bourbaki, Phys. Rev. P 11, 123456 (2017) <https://www.google.co.jp/search?q=pie&source=lnms&tbm=isch&sa=X&ved=0ahUKEwiy273Ky97VAhUGVrwKHWLZB3kQ_AUICigB&biw=1371&bih=803>`_ (:download:`bibtex file <dcore1.bib>`)
 
 [TRIQS paper, TRIQS/cthyb paper, ALPSCore, ALPSCore/CTHYB]
 
