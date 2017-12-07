@@ -12,7 +12,7 @@ class DMFTCoreTools:
     def __init__(self, seedname, params, n_k, xk):
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
-        self._n_iw = int(params['system']['n_iw']) # Number of Matsubara frequencies
+        self._n_pade = int(params['tool']['n_pade']) # Number of Matsubara frequencies
         self._omega_min = float(params['tool']['omega_min'])
         self._omega_max = float(params['tool']['omega_max'])
         self._Nomega = int(params['tool']['Nomega'])
@@ -62,7 +62,7 @@ class DMFTCoreTools:
             sigma_w = BlockGf(name_list=block_names, block_list=glist(), make_copies=False)
             # Analytic continuation
             for bname, sig in S.Sigma_iw:
-                sigma_w[bname].set_from_pade(sig, n_points=self._n_iw, freq_offset=self._eta)
+                sigma_w[bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
         else:
             raise RuntimeError("Unknown solver " + S._name)
 
