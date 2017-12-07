@@ -15,7 +15,7 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="structure.svg"
-   inkscape:export-filename="/mnt/c/Users/kawamuura/program/triqs/dcore.src/doc/basicnotions/images/structure.png"
+   inkscape:export-filename="/mnt/c/Users/kawamuura/program/triqs/pydmft.src/doc/basicnotions/images/structure.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <sodipodi:namedview
@@ -26,14 +26,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="1329.1491"
+     inkscape:cx="1389.2105"
      inkscape:cy="487.75994"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1137"
-     inkscape:window-x="2160"
+     inkscape:window-width="1440"
+     inkscape:window-height="897"
+     inkscape:window-x="0"
      inkscape:window-y="63"
      inkscape:window-maximized="0"
      fit-margin-top="2"
@@ -456,8 +456,8 @@
          ry="0"
          y="456.85681"
          x="572.36597"
-         height="61.619305"
-         width="235.36557"
+         height="61.619324"
+         width="209.10164"
          id="rect4232-3-6"
          style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#c80000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     </g>
@@ -479,8 +479,8 @@
          ry="0"
          y="611.41016"
          x="534.9903"
-         height="50.507648"
-         width="147.48235"
+         height="48.487324"
+         width="127.27931"
          id="rect4232-3-6-7"
          style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#cb0000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     </g>
@@ -502,8 +502,8 @@
          ry="0"
          y="743.74011"
          x="626.91418"
-         height="59.599018"
-         width="252.53819"
+         height="55.558369"
+         width="230.31483"
          id="rect4232-3-6-5"
          style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#cb0000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     </g>
@@ -596,7 +596,7 @@
     </g>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker5183)"
-       d="M 459.73669,627.24805 627.53513,484.7299"
+       d="M 459.73668,627.24805 627.53513,484.7299"
        id="path4463"
        inkscape:connector-type="polyline"
        inkscape:connector-curvature="0"
@@ -605,7 +605,7 @@
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker5095)"
-       d="M 688.98034,484.7299 874.83292,657.5367"
+       d="M 688.98035,484.7299 874.83293,657.5367"
        id="path4465"
        inkscape:connector-type="polyline"
        inkscape:connector-curvature="0"
@@ -668,7 +668,7 @@
            height="345.71429"
            x="834.28571"
            y="-358.85431" /></flowRegion><flowPara
-         id="flowPara5805"></flowPara></flowRoot>    <g
+         id="flowPara5805" /></flowRoot>    <g
        id="g5837"
        transform="translate(-22.223361,-74.751288)">
       <text

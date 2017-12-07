@@ -34,7 +34,7 @@ Standard interface
 * Square lattice
 * Cubic lattice
   
-For more details, please see :ref:`dcorepre`.
+For more details, please see :ref:`inputformat`.
 
 Wannier90 interface
 ~~~~~~~~~~~~~~~~~~~

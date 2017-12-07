@@ -55,9 +55,9 @@ Preprocess for Wannier90
 Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.
 
-:download:`srvo3.win <qe/srvo3.win>`
+:download:`nis.win <qe/nis.win>`
 
-.. literalinclude:: qe/srvo3.win
+.. literalinclude:: qe/nis.win
 
 This *k* grid is generated as follows:
 
@@ -67,7 +67,7 @@ This *k* grid is generated as follows:
 
 .. code-block:: bash
                 
-   $ wannier90.x -pp srvo3 
+   $ wannier90.x -pp nis 
 
 QE to wannier90 interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,7 +88,7 @@ The input file is the same as that for the preprocessing run.
 
 .. code-block:: bash
                 
-   $ wannier90 srvo3 
+   $ wannier90 nis
 
 (Optional) Check wannierization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
@@ -149,3 +149,10 @@ Post-processing and data analysis: dcore_post
 .. code-block :: bash
 
    $ pydmf_post nis.ini
+   $ gnuplot nis_akw.gp
+
+.. image:: qe/akw_nis.png
+   :width: 500
+   :align: center
+
+"+" indicates the original band structure.
