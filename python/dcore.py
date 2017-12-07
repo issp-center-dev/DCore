@@ -53,3 +53,5 @@ params = parser.as_dict()
 solver = DMFTCoreSolver(params["model"]["seedname"], params)
 
 solver.solve(max_step=params["control"]["max_step"], output_file=params["model"]["seedname"]+'.out.h5', output_group='dmft_out')
+
+mpi.report("\n########################  Done  ########################\n")

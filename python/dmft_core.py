@@ -215,10 +215,11 @@ class DMFTCoreSolver:
 
         for iteration_number in range(previous_runs+1,previous_runs+max_step+1):
             if mpi.is_master_node():
-                print("Iteration = ", iteration_number)
+                print("\n########################  Iteration = {0}  ########################\n".format(iteration_number))
 
             SK.symm_deg_gf(S.Sigma_iw,orb=0)                        # symmetrise Sigma
             SK.set_Sigma([ S.Sigma_iw ])                            # set Sigma into the SumK class
+            if mpi.is_master_node(): print("  @ ", end='')
             if fix_mu:
                 chemical_potential = mu_init
                 chemical_potential = mpi.bcast(chemical_potential)
@@ -226,7 +227,7 @@ class DMFTCoreSolver:
             else:
                 chemical_potential = SK.calc_mu( precision = prec_mu )  # find the chemical potential for given density
             S.G_iw << SK.extract_G_loc()[0]                         # calc the local Green function
-            mpi.report("Total charge of Gloc : %.6f"%S.G_iw.total_density())
+            mpi.report("\n    Total charge of Gloc : %.6f"%S.G_iw.total_density())
 
             # Init the DC term and the real part of Sigma, if no previous runs found:
             if (iteration_number==1 and previous_present==False):
@@ -241,7 +242,7 @@ class DMFTCoreSolver:
                 S.G0_iw << S.Sigma_iw + inverse(S.G_iw)
                 ar = HDFArchive(output_file, 'a')
                 if (iteration_number>previous_runs+1 or previous_present):
-                    mpi.report("Mixing input Delta with factor %s"%delta_mix)
+                    mpi.report("\n  @ Mixing input Delta with factor %s"%delta_mix)
                     Delta = (delta_mix * delta(S.G0_iw)) + (1.0-delta_mix) * ar[output_group]['Delta_iw']
                     S.G0_iw << S.G0_iw + delta(S.G0_iw) - Delta
                 ar[output_group]['Delta_iw'] = delta(S.G0_iw)
@@ -250,23 +251,24 @@ class DMFTCoreSolver:
 
             S.G0_iw << mpi.bcast(S.G0_iw)
 
-            # Solve the impurity problem:
+            mpi.report("\n  @ Solve the impurity problem.\n")
+
             if self._solver_name=="TRIQS/hubbard-I":
                 # calculate non-interacting atomic level positions:
                 eal = SK.eff_atomic_levels()[0]
                 S.set_atomic_levels( eal = eal )
-                S.solve(U_int=self._U_int, J_hund=self._J_hund, verbosity = 1)
+                S.solve(U_int=self._U_int, J_hund=self._J_hund, verbosity = 0)
             else:
                 S.solve(h_int=self._h_int, **self._solver_params)
 
             # Solved. Now do post-processing:
-            mpi.report("Total charge of impurity problem : %.6f"%S.G_iw.total_density())
+            mpi.report("\n    Total charge of impurity problem : %.6f"%S.G_iw.total_density())
 
             # Now mix Sigma and G with factor sigma_mix, if wanted:
             if (iteration_number>1 or previous_present):
                 if mpi.is_master_node():
                     ar = HDFArchive(output_file,'a')
-                    mpi.report("Mixing Sigma and G with factor %s"%sigma_mix)
+                    mpi.report("\n  @ Mixing Sigma and G with factor %s"%sigma_mix)
                     S.Sigma_iw << sigma_mix * S.Sigma_iw + (1.0-sigma_mix) * ar[output_group]['Sigma_iw']
                     S.G_iw << sigma_mix * S.G_iw + (1.0-sigma_mix) * ar[output_group]['G_iw']
                     del ar
