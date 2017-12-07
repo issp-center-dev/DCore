@@ -6,7 +6,7 @@ from dmft_core import DMFTCoreSolver, create_parser
 from pytriqs.applications.dft.sumk_dft_tools import *
 from pytriqs.plot.mpl_interface import oplot, plt
 
-def pydmft_check(filename):
+def dcore_check(filename):
     """
     Main routine for checking convergence
 
@@ -61,10 +61,10 @@ def pydmft_check(filename):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(\
-        prog='pydmft_check.py',\
-        description='script for checking the convergence of pydmft.',\
+        prog='dcore_check.py',\
+        description='script for checking the convergence of dcore.',\
         epilog='end',\
-        usage = '$ pydmft_check input',\
+        usage = '$ dcore_check input',\
         add_help= True)
     parser.add_argument('path_input_file', \
                         action = 'store',\
@@ -77,4 +77,4 @@ if __name__ == '__main__':
     if(os.path.isfile(args.path_input_file) is False):
         print("Input file is not exist.")
         sys.exit()
-    pydmft_check(args.path_input_file)
+    dcore_check(args.path_input_file)

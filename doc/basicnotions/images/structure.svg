@@ -15,7 +15,7 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="structure.svg"
-   inkscape:export-filename="/mnt/c/Users/kawamuura/program/triqs/pydmft.src/doc/basicnotions/images/structure.png"
+   inkscape:export-filename="/mnt/c/Users/kawamuura/program/triqs/dcore.src/doc/basicnotions/images/structure.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <sodipodi:namedview
@@ -451,7 +451,7 @@
            y="499.7883"
            x="581.9624"
            id="tspan4246"
-           sodipodi:role="line">pydmft_pre</tspan></text>
+           sodipodi:role="line">dcore_pre</tspan></text>
       <rect
          ry="0"
          y="456.85681"
@@ -474,7 +474,7 @@
            y="648.2807"
            x="542.56647"
            id="tspan4250"
-           sodipodi:role="line">pydmft</tspan></text>
+           sodipodi:role="line">dcore</tspan></text>
       <rect
          ry="0"
          y="611.41016"
@@ -497,7 +497,7 @@
            y="786.67163"
            x="636.51062"
            id="tspan4246-3"
-           sodipodi:role="line">pydmft_post</tspan></text>
+           sodipodi:role="line">dcore_post</tspan></text>
       <rect
          ry="0"
          y="743.74011"

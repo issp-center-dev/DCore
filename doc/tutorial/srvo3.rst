@@ -130,21 +130,21 @@ DMFT calculation
 
 .. literalinclude:: qe/srvo3.ini
                               
-DMFT setup: pydmft_pre
+DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
    $ pydmf_pre srvo3.ini
 
-Running self-consistent DFT+DMFT : pydmft
+Running self-consistent DFT+DMFT : dcore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
    $ pydmf srvo3.ini
 
-Post-processing and data analysis: pydmft_post
+Post-processing and data analysis: dcore_post
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash

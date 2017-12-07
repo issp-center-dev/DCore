@@ -5,8 +5,8 @@ from pytriqs.archive import *
 from pytriqs.utility.h5diff import h5diff
 import pytriqs.utility.mpi as mpi
 
-from pytriqs.applications.pydmft.pydmft_pre import pydmft_pre
-from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver, create_parser
+from pytriqs.applications.dcore.dcore_pre import dcore_pre
+from pytriqs.applications.dcore.dmft_core import DMFTCoreSolver, create_parser
 
 import tempfile
 
@@ -25,7 +25,7 @@ print("U = 4.0", file=f)
 print("seedname = "+seedname, file=f)
 f.close()
 
-pydmft_pre('stan.in')
+dcore_pre('stan.in')
 
 # Create default parameters
 parser = create_parser()

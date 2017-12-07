@@ -3,14 +3,14 @@ from __future__ import print_function
 import sys, os
 import argparse
 from pytriqs.applications.dft.sumk_dft import *
-from pytriqs.applications.pydmft.typed_parser import TypedParser
-from pytriqs.applications.pydmft.dmft_core import DMFTCoreSolver, create_parser
+from pytriqs.applications.dcore.typed_parser import TypedParser
+from pytriqs.applications.dcore.dmft_core import DMFTCoreSolver, create_parser
 
 parser = argparse.ArgumentParser(\
-        prog='pydmft.py',\
+        prog='dcore.py',\
         description='.',\
         epilog='end',\
-        usage = '$ pydmft input.ini',\
+        usage = '$ dcore input.ini',\
         add_help= True)
 
 parser.add_argument('path_input_file', \

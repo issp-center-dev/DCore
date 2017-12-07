@@ -1,9 +1,9 @@
-version = "@PYDMFT_VERSION@"
+version = "@DCORE_VERSION@"
 triqs_hash = "@TRIQS_GIT_HASH@"
-dft_tools_hash = "@PYDMFT_GIT_HASH@"
+dft_tools_hash = "@DCORE_GIT_HASH@"
 
 def show_version():
-  print "\nYou are using the pyDMFT version %s\n"%version
+  print "\nYou are using the DCore version %s\n"%version
 
 def show_git_hash():
-  print "\nYou are using the pyDMFT git hash %s based on triqs git hash %s\n"%(pydmft_hash, triqs_hash)
+  print "\nYou are using the DCore git hash %s based on triqs git hash %s\n"%(dcore_hash, triqs_hash)

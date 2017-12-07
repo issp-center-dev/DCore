@@ -11,7 +11,7 @@ add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${doc_sources} py_copy
 add_custom_target(doc_sphinx ALL DEPENDS ${sphinx_top})
 
 # install
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/pydmft
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/dcore
  FILES_MATCHING 
  PATTERN "*.html" 
  PATTERN "*.png"

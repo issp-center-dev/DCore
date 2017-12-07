@@ -1,3 +1,0 @@
-#!/bin/bash
-
-@CMAKE_INSTALL_PREFIX@/bin/pytriqs -m pytriqs.applications.pydmft.pydmft_check $@

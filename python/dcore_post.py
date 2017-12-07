@@ -253,7 +253,7 @@ def __generate_lattice_model(params, n_k, kvec):
     return hopping, n_orbitals, proj_mat
 
 
-def pydmft_post(filename):
+def dcore_post(filename):
     """
     Main routine for the post-processing tool
 
@@ -424,10 +424,10 @@ def pydmft_post(filename):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(\
-        prog='pydmft_post.py',\
-        description='pre script for pydmft.',\
+        prog='dcore_post.py',\
+        description='pre script for dcore.',\
         epilog='end',\
-        usage = '$ pydmft_post input',\
+        usage = '$ dcore_post input',\
         add_help= True)
     parser.add_argument('path_input_file', \
                         action = 'store',\
@@ -440,4 +440,4 @@ if __name__ == '__main__':
     if(os.path.isfile(args.path_input_file) is False):
         print("Input file is not exist.")
         sys.exit()
-    pydmft_post(args.path_input_file)
+    dcore_post(args.path_input_file)

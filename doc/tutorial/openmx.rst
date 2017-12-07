@@ -16,12 +16,12 @@ SCF computation and Wnaiier with OpenMX
 DMFT
 ----
 
-Running pydmft_pre
+Running dcore_pre
 ~~~~~~~~~~~~~~~~~~
 
-DMFT loop : pydmft
+DMFT loop : dcore
 ~~~~~~~~~~~~~~~~~~
 
-Post-processing : pydmft_post
+Post-processing : dcore_post
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

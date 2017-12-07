@@ -192,7 +192,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
     return weights_in_file
 
 
-def pydmft_pre(filename):
+def dcore_pre(filename):
     """
     Main routine for the pre-processing tool
 
@@ -277,10 +277,10 @@ def pydmft_pre(filename):
     if mpi.is_master_node():
         print("\n  @ Write the information of interactions")
         f = HDFArchive(seedname+'.h5','a')
-        if not ("pyDMFT" in f):
-            f.create_group("pyDMFT")
-        f["pyDMFT"]["U_int"] = p["model"]["U"]
-        f["pyDMFT"]["J_hund"] = p["model"]["J"]
+        if not ("DCore" in f):
+            f.create_group("DCore")
+        f["DCore"]["U_int"] = p["model"]["U"]
+        f["DCore"]["J_hund"] = p["model"]["J"]
         print("\n    Wrote to {0}".format(seedname+'.h5'))
     #
     # Finish
@@ -291,10 +291,10 @@ def pydmft_pre(filename):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(\
-        prog='pydmft_pre.py',\
-        description='pre script for pydmft.',\
+        prog='dcore_pre.py',\
+        description='pre script for dcore.',\
         epilog='end',\
-        usage = '$ pydmft_pre input',\
+        usage = '$ dcore_pre input',\
         add_help= True)
     parser.add_argument('path_input_file', \
                         action = 'store',\
@@ -307,5 +307,5 @@ if __name__ == '__main__':
     if(os.path.isfile(args.path_input_file) is False):
         print("Input file is not exist.")
         sys.exit()
-    pydmft_pre(args.path_input_file)
+    dcore_pre(args.path_input_file)
     

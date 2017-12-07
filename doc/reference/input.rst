@@ -8,9 +8,9 @@ Usage
 
 ::
 
-   $ pydmft_pre input-file
-   $ pydmft input-file
-   $ pydmft_post input-file
+   $ dcore_pre input-file
+   $ dcore input-file
+   $ dcore_post input-file
 
 They use the same input file.
    
@@ -22,7 +22,7 @@ Input-file format
 [model] block
 ~~~~~~~~~~~~~
 
-pydmft_pre and pydmft_post read this block.
+dcore_pre and dcore_post read this block.
 
 ============= ============= =========== ================================================================
 Name          Type          Default     Description
@@ -35,13 +35,13 @@ orbital_model String        single      Chosen from "single", "eg", "t2g", "full
 ncor          Integer       1           Number of correlation shell (Only wannier90).
 lattice       String        chain       Chosen from "chain", "square", "cubic", "bethe", and "wannier90"
 nelec         Float         1.0         Number of electrons per unit cell.
-seedname      String        pydmft      Name of the system.
+seedname      String        dcore      Name of the system.
                                         It should be the same as the seedname of wannier90.
 cshell        Integer array [(0,1),...] Anguler momentum, and the number of orbitals of each
                                         correlation shell (Only wannier90). 
 ============= ============= =========== ================================================================
 
-Prepare model for pyDMFT.
+Prepare model for DCore.
 Wannier90 as well as the following preset models:
 
 * chain
@@ -69,7 +69,7 @@ Wannier90 as well as the following preset models:
 [system] block
 ~~~~~~~~~~~~~~
 
-pydmft_pre and pydmft read this block.
+dcore_pre and dcore read this block.
 
 ======= ======= ======= =================================================
 Name    Type    Default Description
@@ -88,7 +88,7 @@ nk2     Integer 0       Number of *k* (Only wannier90)
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-pydmft and pydmft_post read this block.
+dcore and dcore_post read this block.
   
 ==== ======= =========== ===================================================
 Name Type    Default     Description
@@ -102,7 +102,7 @@ name String  TRIQS/cthyb Name of impurity solver. Choosen from "TRIQS/cthyb"
 [control] block
 ~~~~~~~~~~~~~~~
 
-pydmft reads this block.
+dcore reads this block.
 
 ========= ======= ======= ============================================
 Name      Type    Default Description
@@ -115,7 +115,7 @@ delta_mix Float   0.5     Mixing parameter for hybridization function.
 [tool] block
 ~~~~~~~~~~~~
 
-pydmft_post reads this block.
+dcore_post reads this block.
 
 ============= ================= ===================== ======================================================
 Name          Type              Default               Description

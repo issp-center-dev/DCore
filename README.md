@@ -1,5 +1,5 @@
 
-## `pydmft_pre.py`
+## `dcore_pre.py`
 
 ### Requirements
 - triqs
@@ -12,7 +12,7 @@
 ### Usage
 
 ``` bash
-$ pydmft_pre input-file
+$ dcore_pre input-file
 ```
 
 ### Input file format
@@ -34,7 +34,7 @@ Parameters
 - `model` (default `single`): Structure of a shell. Chosen from `single`, `eg`, `t2g`, and `full-d`.
 - `nelec` (default `1.0`): Number of electrons per uunit cell.
 - `nk` (default `8`): Number of *k* points along single axis.
-- `seedname` (default `pydmft`): The title of system
+- `seedname` (default `dcore`): The title of system
 - `t` (default: `1.0`): Nearest neighbor hopping
 - `t'` (default `0.0`): Second nearest hopping
 - `U` (default `0.0`)`: Coulomb parameter U

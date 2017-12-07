@@ -1,13 +1,13 @@
 # Version number of the application
-set (PYDMFT_VERSION "1.4")
-set (PYDMFT_RELEASE "1.4.0")
+set (DCORE_VERSION "1.4")
+set (DCORE_RELEASE "1.4.0")
 
 # Append triqs installed files to the cmake load path
 list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/triqs/cmake)
 
 # start configuration 
 cmake_minimum_required(VERSION 2.8)
-project(pyDMFT CXX NONE)
+project(DCore CXX NONE)
 set(CMAKE_BUILD_TYPE Release)
 enable_testing()
 
@@ -15,17 +15,17 @@ enable_testing()
 find_package(TRIQS REQUIRED)
 
 # Check that versions are compatible
-if(NOT PYDMFT_VERSION EQUAL TRIQS_VERSION)
-  message(FATAL_ERROR "The application version is not compatible with the TRIQS library (TRIQS library version: ${TRIQS_VERSION} while this application version: ${PYDMFT_VERSION})")
+if(NOT DCORE_VERSION EQUAL TRIQS_VERSION)
+  message(FATAL_ERROR "The application version is not compatible with the TRIQS library (TRIQS library version: ${TRIQS_VERSION} while this application version: ${DCORE_VERSION})")
 endif()
 if (NOT ${TRIQS_WITH_PYTHON_SUPPORT})
  MESSAGE(FATAL_ERROR "dft_tools require Python support in TRIQS")
 endif()
 
 # Get hash
-triqs_get_git_hash(${CMAKE_SOURCE_DIR} "PYDMFT")
+triqs_get_git_hash(${CMAKE_SOURCE_DIR} "DCORE")
 if(${GIT_RESULT} EQUAL 0)
-  message(STATUS "Hash: ${PYDMFT_GIT_HASH}")
+  message(STATUS "Hash: ${DCORE_GIT_HASH}")
 endif(${GIT_RESULT} EQUAL 0)
 
 # We want to be installed in the TRIQS tree

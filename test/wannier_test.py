@@ -7,10 +7,10 @@ from pytriqs.archive import *
 from pytriqs.utility.h5diff import h5diff
 import pytriqs.utility.mpi as mpi
 
-from pytriqs.applications.pydmft.pydmft_pre import pydmft_pre
+from pytriqs.applications.dcore.dcore_pre import dcore_pre
 
 #
-# Execute pydmft_pre.py to generate test.h5
+# Execute dcore_pre.py to generate test.h5
 # Then Check the Diff of test.h5 and the reference output (stan_ref.h5))
 #
 with open("nis.ini", 'w') as f:
@@ -27,7 +27,7 @@ with open("nis.ini", 'w') as f:
     print("nk1 = 4", file=f)
     print("nk2 = 3", file=f)
 
-pydmft_pre("nis.ini")
+dcore_pre("nis.ini")
     
 print("\n Check Diff of nis.h5 nis_ref.h5\n")
 check = os.system('h5diff -d 1.0e-10 nis.h5 nis_ref.h5')

@@ -1,2 +1,2 @@
-pydmft_pre dmft.ini
-pydmft dmft.ini
+dcore_pre dmft.ini
+dcore dmft.ini

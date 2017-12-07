@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from pytriqs.applications.pydmft.typed_parser import TypedParser
+from pytriqs.applications.dcore.typed_parser import TypedParser
 
 def read_file():
     p = TypedParser()

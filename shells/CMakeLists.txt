@@ -1,17 +1,17 @@
 
-configure_file(pydmft_pre.bash.in pydmft_pre)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pydmft_pre DESTINATION bin
+configure_file(dcore_pre.bash.in dcore_pre)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dcore_pre DESTINATION bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
-configure_file(pydmft.bash.in pydmft)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pydmft DESTINATION bin
+configure_file(dcore.bash.in dcore)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dcore DESTINATION bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
-configure_file(pydmft_post.bash.in pydmft_post)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pydmft_post DESTINATION bin
+configure_file(dcore_post.bash.in dcore_post)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dcore_post DESTINATION bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
-configure_file(pydmft_check.bash.in pydmft_check)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pydmft_check DESTINATION bin
+configure_file(dcore_check.bash.in dcore_check)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dcore_check DESTINATION bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 

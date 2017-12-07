@@ -1,13 +1,13 @@
 .. index:: DFTTools
 
-.. module:: pytriqs.applications.pydmft
+.. module:: pytriqs.applications.dcore
 
-.. _pydmft:
+.. _dcore:
 
-pyDMFT
+DCore
 ======
 
-pyDMFT is aimed at model calculations and ab-initio calculations by the dynamical mean-field theory (DMFT).
+DCore is aimed at model calculations and ab-initio calculations by the dynamical mean-field theory (DMFT).
 This package consists of programs with text-based and hdf5-based interface.
 These programs enable users to perform DMFT calculations and analyze results without writing computer code.
 The current version is built on TRIQS Python libraries.

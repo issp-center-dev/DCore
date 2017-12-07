@@ -20,7 +20,7 @@ Installation steps
 
 #. Download the sources from github:: 
  
-     $ git clone https://github.com/issp-center-dev/pyDMFT.git src
+     $ git clone https://github.com/issp-center-dev/DCore.git src
  
 #. Create an empty build directory where you will compile the code:: 
  

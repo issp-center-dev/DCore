@@ -20,7 +20,7 @@ def create_parser():
     parser.add_option("model", "orbital_model", str, "single", "some help message")
     parser.add_option("model", "ncor", int, 1, "Number of correlation shell")
     parser.add_option("model", "cshell", str, "[]", "Angular momentum and number of states of each shell")
-    parser.add_option("model", "seedname", str, "pydmft", "some help message")
+    parser.add_option("model", "seedname", str, "dcore", "some help message")
     parser.add_option("model", "U", float, 0.0, "Coulomb")
     parser.add_option("model", "J", float, 0.0, "Hund")
     parser.add_option("model", "nelec", float, 1.0, "Number of electrons")
@@ -97,8 +97,8 @@ class DMFTCoreSolver:
         # Construct a SumKDFT object
         self._SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
         U_file = HDFArchive(seedname+'.h5','r')
-        self._J_hund = U_file["pyDMFT"]["J_hund"]
-        self._U_int = U_file["pyDMFT"]["U_int"]
+        self._J_hund = U_file["DCore"]["J_hund"]
+        self._U_int = U_file["DCore"]["U_int"]
 
         # Assume up and down sectors are equivalent. (=paramagnetic)
         self._SK.deg_shells = [[['up','down']]]

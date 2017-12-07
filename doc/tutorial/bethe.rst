@@ -5,21 +5,21 @@ Tutorial with t2g Bethe lattice
 
 .. literalinclude:: bethe-t2g/dmft_bethe.ini
                               
-``pydmft_pre``
+``dcore_pre``
 --------------
 
 .. code-block :: bash
 
    $ pydmf_pre dmft_bethe.ini
 
-``pydmft``
+``dcore``
 ----------
 
 .. code-block :: bash
 
    $ pydmf dmft_bethe.ini
 
-``pydmft_post``
+``dcore_post``
 ---------------
 
 .. code-block :: bash
