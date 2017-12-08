@@ -12,10 +12,16 @@ XXX [#dcore1]_.
 **Developers**: H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, T. Kato
 
 **Related papers**:
+This package depends on TRIQS libraries and applications (and ALPSCore libraries in a future version).
+Please cite relevant papers for these original libraries.
 
-.. [#dcore1] `A. Smithee and N. Bourbaki, Phys. Rev. P 11, 123456 (2017) <https://www.google.co.jp/search?q=pie&source=lnms&tbm=isch&sa=X&ved=0ahUKEwiy273Ky97VAhUGVrwKHWLZB3kQ_AUICigB&biw=1371&bih=803>`_ (:download:`bibtex file <dcore1.bib>`)
+* `TRIQS libraries <https://triqs.ipht.cnrs.fr/1.x/about.html>`_
+* `TRIQS/DFTTools <https://triqs.ipht.cnrs.fr/1.4/applications/dft_tools/about.html>`_
 
-[TRIQS paper, TRIQS/cthyb paper, ALPSCore, ALPSCore/CTHYB]
+In addition to the above two libraries, you may use impurity solvers listed below.
+
+* `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/about.html>`_
+* `TRIQS/hubbardI <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/about.html>`_
 
 This application is a part of our scientific work and we would appreciate if
 projects using it will include a citation to the above relevant papers.  In
