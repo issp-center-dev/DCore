@@ -103,9 +103,12 @@ Wannier90 as well as the following preset models:
 
 .. math::
 
-   {\hat H} = \sum_{i j} \sum_{\alpha \beta} \sum_{\sigma}
+   {\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
    t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
-   +h.c. + {\hat H}_{\rm int}
+   +h.c. + {\hat H}_{\rm int}, 
+
+where :math:`{\hat H}_{\rm int}` is the Kanamori interaction term
+with :math:`U_{\rm int}` and :math:`J_{\rm Hund}`.
   
 .. image:: model.png
    :width: 700
