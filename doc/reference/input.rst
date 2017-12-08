@@ -6,13 +6,58 @@ Input-file format and usage
 Usage
 -----
 
+The following programs can read the same input file.
+
+Pre-processing : ``dcore_pre``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This program generates model HDF5 file (*seedname*.h5).
+It must be executed before the main program, ``dcore``, runs.
+This program reads ``[model]`` and ``[system]`` block.
+
 ::
 
    $ dcore_pre input-file
-   $ dcore input-file
-   $ dcore_post input-file
 
-They use the same input file.
+Main program : ``dcore``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This program performs DMFT cycle and output the self energy etc. into a HDF
+file (*seedname*.out.h5).
+This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[control]`` block.
+
+::
+
+   $ dcore input-file
+
+Convergence-check : ``dcore_check``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This program can be used for checking the convergence of the SCF-cycle.
+This program reads ``[model]`` and ``[tool]`` block.
+
+::
+
+   $ dcore_check input-file
+
+``dcore_check`` shows the history of the chemical potential and the
+first component of the self energy at imaginary frequency, :math:`\Sigma_{0 0}(i \omega_n)`
+at the last seven iterations.  
+
+.. image:: ../tutorial/square/convergence.png
+   :width: 500
+   :align: center
+   
+Post-processing : ``dcore_post``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This program compute the total and *k*\ -resolved spectrul function from the outputted
+HDF5 file (*seedname*.out.h5).
+This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` block.
+ 
+::
+
+   $ dcore_post input-file
    
 Input-file format
 -----------------
@@ -22,7 +67,7 @@ Input-file format
 [model] block
 ~~~~~~~~~~~~~
 
-dcore_pre and dcore_post read this block.
+dcore_pre, dcore_check and dcore_post read this block.
 
 ============= ============= =========== ================================================================
 Name          Type          Default     Description
@@ -102,6 +147,7 @@ name String  TRIQS/cthyb Name of impurity solver. Choosen from "TRIQS/cthyb"
 
 **... and other parameters (Solver dependent)**
 
+
 [control] block
 ~~~~~~~~~~~~~~~
 
@@ -118,7 +164,7 @@ delta_mix Float   0.5     Mixing parameter for hybridization function.
 [tool] block
 ~~~~~~~~~~~~
 
-dcore_post reads this block.
+dcore_check and dcore_post reads this block.
 
 ============= ================= ===================== ======================================================
 Name          Type              Default               Description
