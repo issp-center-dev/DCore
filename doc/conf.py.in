@@ -29,7 +29,7 @@ html_theme = 'triqs'
 html_theme_path = ['@TRIQS_THEMES_PATH@']
 html_show_sphinx = False
 html_context = {'header_title': 'DCore',
-                'header_subtitle': 'integrated DMFT software for CorreLated Electrons',
+                'header_subtitle': 'integrated DMFT software for CORrelated Electrons',
                 'header_links': [['Install', 'install'],
                                  ['Documentation', 'documentation'],
                                  ['Issues', 'issues'],

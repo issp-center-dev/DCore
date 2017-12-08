@@ -7,8 +7,6 @@ The DCore package is published under the
 Authors & Quotation
 ===================
 
-XXX [#dcore1]_.
-
 **Developers**: H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, T. Kato
 
 **Related papers**:

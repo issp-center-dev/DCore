@@ -16,12 +16,12 @@ SCF computation and Wannier with OpenMX
 DMFT
 ----
 
-Running dcore_pre
-~~~~~~~~~~~~~~~~~~
+First, convert the OpenMX output to the wannier90 format.
+It can be performed with ``openmx2dcore`` utility as:
 
-DMFT loop : dcore
-~~~~~~~~~~~~~~~~~~
+.. code-block:: bash
+                
+   $ openmx2dcore SrVO3.HWR srvo3
 
-Post-processing : dcore_post
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+Then ``srvo3_hr.dat`` is generated.
+The rest is the same as :ref:`example for QE <qesrvo3>`.   
