@@ -145,8 +145,11 @@ name String  TRIQS/cthyb Name of impurity solver. Choosen from "TRIQS/cthyb"
                          "TRIQS/hubbrad-I", and "ALPS/cthyb".
 ==== ======= =========== ===================================================
 
-**... and other parameters (Solver dependent)**
-
+**... and other parameters (Solver dependent)**.
+We have to specify additional parameters with types (e.g. ``n_cycles{int} = 500000``).
+For more details, please see the reference page of
+`TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html#solve-parameters>`_,
+`ALPS/cthyb <https://github.com/shinaoka/triqs_interface#program-parameters>`_, etc..
 
 [control] block
 ~~~~~~~~~~~~~~~
