@@ -58,7 +58,7 @@
   </ul>
   <div>
     <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
-    <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">integrated DMFT software for CORrelated Electrons</span>
   </div>
 </div>
 
@@ -87,7 +87,13 @@
   <h3><a href="../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Input-file format and usage</a><ul>
-<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#usage">Usage</a><ul>
+<li><a class="reference internal" href="#pre-processing-dcore-pre">Pre-processing : <code class="docutils literal"><span class="pre">dcore_pre</span></code></a></li>
+<li><a class="reference internal" href="#main-program-dcore">Main program : <code class="docutils literal"><span class="pre">dcore</span></code></a></li>
+<li><a class="reference internal" href="#convergence-check-dcore-check">Convergence-check : <code class="docutils literal"><span class="pre">dcore_check</span></code></a></li>
+<li><a class="reference internal" href="#post-processing-dcore-post">Post-processing : <code class="docutils literal"><span class="pre">dcore_post</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#input-file-format">Input-file format</a><ul>
 <li><a class="reference internal" href="#model-block">[model] block</a></li>
 <li><a class="reference internal" href="#system-block">[system] block</a></li>
@@ -138,12 +144,46 @@
 <span id="inputformat"></span><h1>Input-file format and usage<a class="headerlink" href="#input-file-format-and-usage" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>The following programs can read the same input file.</p>
+<div class="section" id="pre-processing-dcore-pre">
+<h3>Pre-processing : <code class="docutils literal"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-processing-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<p>This program generates model HDF5 file (<em>seedname</em>.h5).
+It must be executed before the main program, <code class="docutils literal"><span class="pre">dcore</span></code>, runs.
+This program reads <code class="docutils literal"><span class="pre">[model]</span></code> and <code class="docutils literal"><span class="pre">[system]</span></code> block.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ dcore_pre input-file
-$ dcore input-file
-$ dcore_post input-file
 </pre></div>
 </div>
-<p>They use the same input file.</p>
+</div>
+<div class="section" id="main-program-dcore">
+<h3>Main program : <code class="docutils literal"><span class="pre">dcore</span></code><a class="headerlink" href="#main-program-dcore" title="Permalink to this headline">¶</a></h3>
+<p>This program performs DMFT cycle and output the self energy etc. into a HDF
+file (<em>seedname</em>.out.h5).
+This program reads <code class="docutils literal"><span class="pre">[model]</span></code>, <code class="docutils literal"><span class="pre">[system]</span></code>, <code class="docutils literal"><span class="pre">[impurity-solver]</span></code> and <code class="docutils literal"><span class="pre">[control]</span></code> block.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ dcore input-file
+</pre></div>
+</div>
+</div>
+<div class="section" id="convergence-check-dcore-check">
+<h3>Convergence-check : <code class="docutils literal"><span class="pre">dcore_check</span></code><a class="headerlink" href="#convergence-check-dcore-check" title="Permalink to this headline">¶</a></h3>
+<p>This program can be used for checking the convergence of the SCF-cycle.
+This program reads <code class="docutils literal"><span class="pre">[model]</span></code> and <code class="docutils literal"><span class="pre">[tool]</span></code> block.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ dcore_check input-file
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">dcore_check</span></code> shows the history of the chemical potential and the
+first component of the self energy at imaginary frequency, <span class="math">\(\Sigma_{0 0}(i \omega_n)\)</span>
+at the last seven iterations.</p>
+<a class="reference internal image-reference" href="../_images/convergence.png"><img alt="../_images/convergence.png" class="align-center" src="../_images/convergence.png" style="width: 500px;" /></a>
+</div>
+<div class="section" id="post-processing-dcore-post">
+<h3>Post-processing : <code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this headline">¶</a></h3>
+<p>This program compute the total and <em>k</em>-resolved spectrul function from the outputted
+HDF5 file (<em>seedname</em>.out.h5).
+This program reads <code class="docutils literal"><span class="pre">[model]</span></code>, <code class="docutils literal"><span class="pre">[system]</span></code>, <code class="docutils literal"><span class="pre">[impurity-solver]</span></code> and <code class="docutils literal"><span class="pre">[tool]</span></code> block.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ dcore_post input-file
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="input-file-format">
 <h2>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h2>
@@ -170,7 +210,7 @@ max_step = 40
 </div>
 <div class="section" id="model-block">
 <h3>[model] block<a class="headerlink" href="#model-block" title="Permalink to this headline">¶</a></h3>
-<p>dcore_pre and dcore_post read this block.</p>
+<p>dcore_pre, dcore_check and dcore_post read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="13%" />
@@ -252,9 +292,11 @@ Semicircular DOS with energy ranges [-2t:2t].</li>
 Read hopping parameters from the Wannier90 output.</li>
 </ul>
 <div class="math">
-\[{\hat H} = \sum_{i j} \sum_{\alpha \beta} \sum_{\sigma}
+\[{\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
 t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
-+h.c. + {\hat H}_{\rm int}\]</div>
++h.c. + {\hat H}_{\rm int},\]</div>
+<p>where <span class="math">\({\hat H}_{\rm int}\)</span> is the Kanamori interaction term
+with <span class="math">\(U_{\rm int}\)</span> and <span class="math">\(J_{\rm Hund}\)</span>.</p>
 <a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
 </div>
 <div class="section" id="system-block">
@@ -356,7 +398,11 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 </tr>
 </tbody>
 </table>
-<p><strong>... and other parameters (Solver dependent)</strong></p>
+<p><strong>... and other parameters (Solver dependent)</strong>.
+We have to specify additional parameters with types (e.g. <code class="docutils literal"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">500000</span></code>).
+For more details, please see the reference page of
+<a class="reference external" href="https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html#solve-parameters">TRIQS/cthyb</a>,
+<a class="reference external" href="https://github.com/shinaoka/triqs_interface#program-parameters">ALPS/cthyb</a>, etc..</p>
 </div>
 <div class="section" id="control-block">
 <h3>[control] block<a class="headerlink" href="#control-block" title="Permalink to this headline">¶</a></h3>
@@ -396,7 +442,7 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 </div>
 <div class="section" id="tool-block">
 <h3>[tool] block<a class="headerlink" href="#tool-block" title="Permalink to this headline">¶</a></h3>
-<p>dcore_post reads this block.</p>
+<p>dcore_check and dcore_post reads this block.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="12%" />

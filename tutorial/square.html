@@ -58,7 +58,7 @@
   </ul>
   <div>
     <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
-    <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">integrated DMFT software for CORrelated Electrons</span>
   </div>
 </div>
 
@@ -87,9 +87,9 @@
   <h3><a href="../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tutorial with single-band 2D Hubbard model</a><ul>
-<li><a class="reference internal" href="#dcore-pre"><code class="docutils literal"><span class="pre">dcore_pre</span></code></a></li>
-<li><a class="reference internal" href="#dcore"><code class="docutils literal"><span class="pre">dcore</span></code></a></li>
-<li><a class="reference internal" href="#dcore-post"><code class="docutils literal"><span class="pre">dcore_post</span></code></a></li>
+<li><a class="reference internal" href="#pre-process-dcore-pre">Pre-process : <code class="docutils literal"><span class="pre">dcore_pre</span></code></a></li>
+<li><a class="reference internal" href="#scf-cycle-dcore">SCF cycle : <code class="docutils literal"><span class="pre">dcore</span></code></a></li>
+<li><a class="reference internal" href="#spectrul-function-dcore-post">Spectrul function : <code class="docutils literal"><span class="pre">dcore_post</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -159,20 +159,47 @@
 <span class="n">Nomega</span> <span class="o">=</span> <span class="mi">400</span>
 </pre></div>
 </div>
-<div class="section" id="dcore-pre">
-<h2><code class="docutils literal"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#dcore-pre" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pre-process-dcore-pre">
+<h2>Pre-process : <code class="docutils literal"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this headline">¶</a></h2>
+<p>First, we have to generate the lattice model as</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre dmft_square.ini
 </pre></div>
 </div>
+<p>Then it outputs model HDF5 file (<code class="docutils literal"><span class="pre">square.h5</span></code>).</p>
 </div>
-<div class="section" id="dcore">
-<h2><code class="docutils literal"><span class="pre">dcore</span></code><a class="headerlink" href="#dcore" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="scf-cycle-dcore">
+<h2>SCF cycle : <code class="docutils literal"><span class="pre">dcore</span></code><a class="headerlink" href="#scf-cycle-dcore" title="Permalink to this headline">¶</a></h2>
+<p>The DMFT loop is performed by <code class="docutils literal"><span class="pre">dcore</span></code> program.
+In this example, we use the Hubbard-I approximation for the impurity solver.</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf dmft_square.ini
 </pre></div>
 </div>
+<p>Then it generates the result HDF5 file.
+We can check the convergence of the SCF cycle by using <code class="docutils literal"><span class="pre">dcore_check</span></code> program.</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_check dmft_square.ini
+</pre></div>
 </div>
-<div class="section" id="dcore-post">
-<h2><code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#dcore-post" title="Permalink to this headline">¶</a></h2>
+<p>We can find the following standard output.</p>
+<div class="highlight-python"><div class="highlight"><pre>Total number of Iteration: 10
+
+Iter  Chemical-potential
+1 0.0
+2 0.350471842936
+3 0.499576874374
+4 0.590504345604
+5 0.64888137395
+6 0.686284855018
+7 0.71112006693
+8 0.727786131759
+9 0.739550620867
+10 0.748282590054
+</pre></div>
+</div>
+<p>We also can see the imaginary-time self-energy at last seven iterations.</p>
+<a class="reference internal image-reference" href="../_images/convergence1.png"><img alt="../_images/convergence1.png" class="align-center" src="../_images/convergence1.png" style="width: 500px;" /></a>
+</div>
+<div class="section" id="spectrul-function-dcore-post">
+<h2>Spectrul function : <code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectrul-function-dcore-post" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post dmft_square.ini
 $ gnuplot square_akw.gp
 </pre></div>

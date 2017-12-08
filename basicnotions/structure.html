@@ -58,7 +58,7 @@
   </ul>
   <div>
     <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
-    <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">integrated DMFT software for CORrelated Electrons</span>
   </div>
 </div>
 
@@ -129,25 +129,17 @@
           <div class="body" role="main">
             
   <a class="reference internal image-reference" href="../_images/structure.png" id="structure"><img alt="../_images/structure.png" class="align-center" id="structure" src="../_images/structure.png" style="width: 700px;" /></a>
-<p>The central part of <strong class="program">DFTTools</strong>, which is performing the
-steps for the DMFT self-consistency cycle, is written following the
-same philosophy as the <a class="reference external" href="http://triqs.ipht.cnrs.fr/1.x/index.html#welcome" title="(in TRIQS v1.4)"><span class="xref std std-ref">TRIQS</span></a> toolbox. At
-the user level, easy-to-use python modules are provided that allow to
-write simple and short scripts performing the actual calculation.
-The usage of those modules is presented in the user guide of this
-<a class="reference internal" href="../documentation.html#documentation"><span>Documentation</span></a>. Before considering the user guide, we suggest
-to read the following introduction on the general structure of
-the <strong class="program">DFTTools</strong> package.</p>
+<p>DCore is a DMFT (Dynamical Mean Field Theory) driver which works together with other
+first-principles program package.
+DCore supports input hopping parameters as the wannier90 format.
+It can also perform calculation of simple preset models (such as the Bethe lattice);
+it can be used for the practice of this code.
+After we perform DMFT-SCF calculation, we can compute the density of states and
+the spectrum function with the post-processing tool.</p>
 <div class="section" id="the-interface-layer">
 <h1>The interface layer<a class="headerlink" href="#the-interface-layer" title="Permalink to this headline">¶</a></h1>
-<p>Since the input for this DMFT part has to be provided by DMFT
-calculations, there needs to be another layer that connects the
-python-based modules with the DFT output. Naturally, this layer
-depends on the DFT package at hand. At the moment, there is an
-interface to the Wien2k band structure package, and a very light
-interface that can be used in a more general setup. Note that this
-light interface layer <strong>does not</strong> allow full charge self-consistent
-calculations.</p>
+<p>The pre-processing tool, <code class="docutils literal"><span class="pre">dcore_pre</span></code> can generate models from the wannier orbitals
+as well as intrinsic model-generator (Standard interface).</p>
 <div class="section" id="standard-interface">
 <h2>Standard interface<a class="headerlink" href="#standard-interface" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -165,6 +157,7 @@ calculations.</p>
 </div>
 <div class="section" id="post-processing">
 <h1>Post-processing<a class="headerlink" href="#post-processing" title="Permalink to this headline">¶</a></h1>
+<p>Currently, DCore can compute following quantities.</p>
 <ul class="simple">
 <li>(projected) density of states</li>
 <li>correlated band structures (<em>spaghettis</em>)</li>

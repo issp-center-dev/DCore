@@ -58,7 +58,7 @@
   </ul>
   <div>
     <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
-    <span style="font-size: 14px; margin: 0px; padding: 0px;">connecting <a class="triqs" style="font-size: 12px" href="http://triqs.ipht.cnrs.fr/1.x">TRIQS</a> to DFT packages</span>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">integrated DMFT software for CORrelated Electrons</span>
   </div>
 </div>
 
@@ -87,13 +87,8 @@
   <h3><a href="../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tutorial with OpenMX</a><ul>
-<li><a class="reference internal" href="#scf-computation-and-wnaiier-with-openmx">SCF computation and Wnaiier with OpenMX</a></li>
-<li><a class="reference internal" href="#dmft">DMFT</a><ul>
-<li><a class="reference internal" href="#running-dcore-pre">Running dcore_pre</a></li>
-<li><a class="reference internal" href="#dmft-loop-dcore">DMFT loop : dcore</a></li>
-<li><a class="reference internal" href="#post-processing-dcore-post">Post-processing : dcore_post</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#scf-computation-and-wannier-with-openmx">SCF computation and Wannier with OpenMX</a></li>
+<li><a class="reference internal" href="#dmft">DMFT</a></li>
 </ul>
 </li>
 </ul>
@@ -137,9 +132,9 @@
 <p>OpenMX is a first-principles program package based on
 the numerical localized basis set and pseudopotentials.
 OpenMX itself can generate hopping parameter in the wannier90 format.
-In this tutorial, we demonstrate the calculation of XXX.</p>
-<div class="section" id="scf-computation-and-wnaiier-with-openmx">
-<h2>SCF computation and Wnaiier with OpenMX<a class="headerlink" href="#scf-computation-and-wnaiier-with-openmx" title="Permalink to this headline">¶</a></h2>
+In this tutorial, we demonstrate the calculation of SrVO<sub>3</sub>.</p>
+<div class="section" id="scf-computation-and-wannier-with-openmx">
+<h2>SCF computation and Wannier with OpenMX<a class="headerlink" href="#scf-computation-and-wannier-with-openmx" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" href="../_downloads/scf.dat" download=""><code class="xref download docutils literal"><span class="pre">scf.dat</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>#
 # File Name
@@ -229,15 +224,13 @@ Wannier.Function.Plot.SuperCells      1 1 1       # default=0 0 0
 </div>
 <div class="section" id="dmft">
 <h2>DMFT<a class="headerlink" href="#dmft" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="running-dcore-pre">
-<h3>Running dcore_pre<a class="headerlink" href="#running-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<p>First, convert the OpenMX output to the wannier90 format.
+It can be performed with <code class="docutils literal"><span class="pre">openmx2dcore</span></code> utility as:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ openmx2dcore SrVO3.HWR srvo3
+</pre></div>
 </div>
-<div class="section" id="dmft-loop-dcore">
-<h3>DMFT loop : dcore<a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="post-processing-dcore-post">
-<h3>Post-processing : dcore_post<a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this headline">¶</a></h3>
-</div>
+<p>Then <code class="docutils literal"><span class="pre">srvo3_hr.dat</span></code> is generated.
+The rest is the same as <a class="reference internal" href="srvo3.html#qesrvo3"><span>example for QE</span></a>.</p>
 </div>
 </div>
 
