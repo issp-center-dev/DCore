@@ -27,6 +27,21 @@ from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Con
 
 class DMFTCoreTools:
     def __init__(self, seedname, params, n_k, xk):
+        """
+        Class of posting tool for DCore.
+
+        Parameters
+        ----------
+        :param seedname: string
+            name for hdf5 file
+        :param params:  dictionary
+            Input parameters
+        :param n_k: integer
+            Number of k points
+        :param xk:  integer array
+            x-position for plotting band
+        """
+
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
         self._n_pade = int(params['tool']['n_pade']) # Number of Matsubara frequencies
@@ -42,6 +57,11 @@ class DMFTCoreTools:
         self._solver = DMFTCoreSolver(seedname, params)
 
     def post(self):
+        """
+        Calculate DOS (Density Of State) and energy dispersions.
+        For Hubbard-I solver, self-energy is calculated in this function.
+        For cthyb (both TRIQS and ALPS), self-energy is read from hdf5 file.
+        """
         SKT = self._SKT
         Sol = self._solver
         S = self._solver._S
