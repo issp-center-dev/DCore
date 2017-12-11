@@ -146,10 +146,7 @@ class DMFTCoreSolver:
             from pytriqs.applications.impurity_solvers.cthyb import Solver
             self._S = Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau)
         elif self._solver_name=="TRIQS/hubbard-I":
-            if l==0:
-                from hubbard_solver_l0 import Solver
-            else:
-                from hubbard_solver import Solver
+            from hubbard_solver import Solver
             self._S = Solver(beta=beta, l=l)
         elif self._solver_name=="ALPS/cthyb":
             from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
