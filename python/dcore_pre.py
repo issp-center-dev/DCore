@@ -231,7 +231,7 @@ def dcore_pre(filename):
     #
     # cshell=(l, norb, equiv) or (l, norb)
     #
-    cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p["model"]["cshell"])
+    cshell_list=re.findall(r'\(\s*\d+\s*,\s*\d+\s*,*\s*\d*\s*\)', p["model"]["cshell"])
     l = [0]*p["model"]['ncor']
     norb = [1]*p["model"]['ncor']
     equiv = [-1]*p["model"]['ncor']
@@ -250,10 +250,10 @@ def dcore_pre(filename):
                     # New one
                     equiv_str_list.add(_cshell[2])
                     equiv[i] = equiv_index
-                    ++ equiv_index
+                    equiv_index+=1
             else:
                 equiv[i] = equiv_index
-                ++ equiv_index
+                equiv_index+=1
     except:
         raise RuntimeError("Error ! Format of cshell is wrong.")
     #
