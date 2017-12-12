@@ -59,15 +59,28 @@ We also can see the imaginary-time self-energy at last seven iterations.
    
 Spectrul function : ``dcore_post``
 ----------------------------------
+We can calculate spectrum function and density of states by using ```dcore_post``` program.
+For Hubbard-I solver, the self-energy is first calculated in ```dcore_post```.
+The calculation is done by typing the following commands.
 
 .. code-block :: bash
 
    $ pydmf_post dmft_square.ini
+
+After finishing the calculation,
+```square_akw.dat```, ```square_akw.gp``` and ```square_dos.dat``` are generated.
+The data of spectral function are output into ```square_akw.dat```.
+By using ```square_akw.gp```, we can easily plot the result:
+
+.. code-block :: bash
    $ gnuplot square_akw.gp
 
 .. image:: square/akw.png
    :width: 700
    :align: center
+
+The data of density of states are output into ```square_dos.dat```.
+We can see the results by using gnuplot as follows:
 
 .. code-block :: gnuplot
 
