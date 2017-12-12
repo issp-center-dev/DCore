@@ -231,7 +231,7 @@ def dcore_pre(filename):
     #
     # cshell=(l, norb, equiv) or (l, norb)
     #
-    cshell_list=re.findall(r'\(\s*\d+\s*,\s*\d+\s*,*\s*\d*\s*\)', p["model"]["cshell"])
+    cshell_list=re.findall(r'\(\s*\d+\s*,\s*\d+\s*,*\s*\S*\s*\)', p["model"]["cshell"])
     l = [0]*p["model"]['ncor']
     norb = [1]*p["model"]['ncor']
     equiv = [-1]*p["model"]['ncor']

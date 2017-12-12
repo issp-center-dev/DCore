@@ -324,7 +324,7 @@ def dcore_post(filename):
     # Information of correlation shells. It is used only in conjunction to Wannier90.
     # cshell=(l, norb, equiv) or (l, norb)
     #
-    cshell_list=re.findall(r'\(\s*\d+\s*,\s*\d+\s*,*\s*\d*\s*\)', p["model"]["cshell"])
+    cshell_list=re.findall(r'\(\s*\d+\s*,\s*\d+\s*,*\s*\S*\s*\)', p["model"]["cshell"])
     l = [0]*p["model"]['ncor']
     norb = [1]*p["model"]['ncor']
     equiv = [-1]*p["model"]['ncor']
