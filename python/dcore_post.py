@@ -341,7 +341,7 @@ def dcore_post(filename):
                     equiv[i] = equiv_str_list.index(_cshell[2])
                 else:
                     # New one
-                    equiv_str_list.add(_cshell[2])
+                    equiv_str_list.append(_cshell[2])
                     equiv[i] = equiv_index
                     equiv_index+=1
             else:
