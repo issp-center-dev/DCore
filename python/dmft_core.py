@@ -67,7 +67,7 @@ def create_parser():
     parser.add_option("tool", "omega_max", float, 1, "Max value of real frequency")
     parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
     parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
-    parser.add_option("tool", "eta", float, 0.01, "Imaginary frequency shift")
+    parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift")
     parser.add_option("tool", "n_pade", int, 100, "Number of imaginary frequency for Pade")
     parser.add_option("tool", "nnode", int, 2, "Number of k-node for band path")
     parser.add_option("tool", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]", "k-node for band path")

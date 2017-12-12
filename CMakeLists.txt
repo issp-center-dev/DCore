@@ -1,6 +1,6 @@
 # Version number of the application
-set (DCORE_VERSION "1.4")
-set (DCORE_RELEASE "1.4.0")
+set (DCORE_VERSION "0.1")
+set (DCORE_RELEASE "0.1.0")
 
 # Append triqs installed files to the cmake load path
 list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/triqs/cmake)
@@ -14,10 +14,6 @@ enable_testing()
 # Load TRIQS, including all predefined variables from TRIQS installation
 find_package(TRIQS REQUIRED)
 
-# Check that versions are compatible
-if(NOT DCORE_VERSION EQUAL TRIQS_VERSION)
-  message(FATAL_ERROR "The application version is not compatible with the TRIQS library (TRIQS library version: ${TRIQS_VERSION} while this application version: ${DCORE_VERSION})")
-endif()
 if (NOT ${TRIQS_WITH_PYTHON_SUPPORT})
  MESSAGE(FATAL_ERROR "dft_tools require Python support in TRIQS")
 endif()
