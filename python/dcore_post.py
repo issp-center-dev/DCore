@@ -148,6 +148,16 @@ class DMFTCoreTools:
 
 
 def __print_paramter(p, param_name):
+    """
+    Print parameters.
+
+    Parameters
+    ----------
+    p : dictionary
+        Dictionary for parameters
+    param_name : string
+        key for p
+    """
     print(param_name + " = " + str(p[param_name]))
 
 
