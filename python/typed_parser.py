@@ -22,6 +22,16 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+def cast(value_type, string):
+    if value_type == bool:
+        if string in ['true', 'True']:
+            return True
+        elif string in ['false', 'False']:
+            return False
+        else:
+            raise ValueError("Cannot cast string "+string+" to bool.")
+    else:
+        return value_type(string)
 
 class TypedParser(object):
     """
@@ -99,7 +109,7 @@ class TypedParser(object):
                 value = self.__config_parser.get(sect, opt)
                 if sect in self.__definitions and opt in self.__definitions[sect]:
                     # if an option is pre-defined.
-                    self.__results[sect][opt] = self.__definitions[sect][opt][0](value)
+                    self.__results[sect][opt] = cast(self.__definitions[sect][opt][0], value)
                 else:
                     # if an option is not pre-defined, use the value in the input file
                     if sect in self.__allow_undefined_options:
