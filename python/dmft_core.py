@@ -48,6 +48,7 @@ def create_parser():
     parser.add_option("system", "n_tau", int, 10000, "Number of imaginary-time points")
     parser.add_option("system", "dc_type", int, -1, "Type of double-counting correction. Set -1 to disable DC correction. Other availale options are according to TRIQS DFTTools.")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to use a fixed chemical potential")
+    parser.add_option("system", "mu", float, 1E+8, "Chemical potential")
     parser.add_option("system", "nk", int, 8, "Number of k along each line")
     parser.add_option("system", "nk0", int, 0, "Number of k along b_0")
     parser.add_option("system", "nk1", int, 0, "Number of k along b_1")
@@ -166,7 +167,7 @@ class DMFTCoreSolver:
             raise RuntimeError("dc_type != -1 is not supported!")
         fix_mu = self._params['system']['fix_mu']
         if fix_mu:
-            mu_init = self._params['system']['mu_init']
+            mu = self._params['system']['mu']
 
         sigma_mix = self._params['control']['sigma_mix']                  # Mixing factor of Sigma after solution of the AIM
         delta_mix = self._params['control']['delta_mix']                  # Mixing factor of Delta as input for the AIM
@@ -218,7 +219,7 @@ class DMFTCoreSolver:
             SK.set_Sigma([ S.Sigma_iw ])                            # set Sigma into the SumK class
             if mpi.is_master_node(): print("  @ ", end='')
             if fix_mu:
-                chemical_potential = mu_init
+                chemical_potential = mu
                 chemical_potential = mpi.bcast(chemical_potential)
                 SK.set_mu(chemical_potential)
             else:
