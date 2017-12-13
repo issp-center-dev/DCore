@@ -21,9 +21,9 @@ import os
 import argparse
 from dmft_core import DMFTCoreSolver, create_parser
 from pytriqs.applications.dft.sumk_dft_tools import *
-from pytriqs.plot.mpl_interface import oplot, plt
+# from pytriqs.plot.mpl_interface import oplot, plt
 
-def dcore_check(filename):
+def dcore_check(filename, fileplot=None):
     """
     Main routine for checking convergence
 
@@ -31,6 +31,9 @@ def dcore_check(filename):
     ----------
     filename : string
         Input-file name
+
+    fileplot : string
+        Output file name. File format is detemined by the extension (pdf, eps, jpg, etc).
     """
     if mpi.is_master_node(): print("\n  @ Reading {0} ...".format(filename))
     #
@@ -54,6 +57,11 @@ def dcore_check(filename):
     output_file = p["model"]["seedname"]+'.out.h5'
     output_group = 'dmft_out'
 
+    if fileplot is not None:  # if graph is to be printed in a file
+        import matplotlib
+        matplotlib.use('Agg')  # do not plot on x11
+    from pytriqs.plot.mpl_interface import oplot, plt
+
     if mpi.is_master_node():
         # Read from HDF file
         ar = HDFArchive(output_file, 'r')
@@ -69,6 +77,8 @@ def dcore_check(filename):
 
         plt.legend(loc = 4)
         plt.show()
+        if fileplot is not None:
+            plt.savefig(fileplot)
     #
     # Finish
     #
@@ -81,7 +91,6 @@ if __name__ == '__main__':
         prog='dcore_check.py',\
         description='script for checking the convergence of dcore.',\
         epilog='end',\
-        usage = '$ dcore_check input',\
         add_help= True)
     parser.add_argument('path_input_file', \
                         action = 'store',\
@@ -89,9 +98,15 @@ if __name__ == '__main__':
                         type=str, \
                         help = "input file name."
     )
+    parser.add_argument('--output',\
+                        action = 'store',\
+                        default=None,\
+                        type=str,\
+                        help='output file name (extension pdf, eps, jpg, etc)'
+    )
 
     args=parser.parse_args()
     if(os.path.isfile(args.path_input_file) is False):
         print("Input file is not exist.")
         sys.exit()
-    dcore_check(args.path_input_file)
+    dcore_check(args.path_input_file, args.output)
