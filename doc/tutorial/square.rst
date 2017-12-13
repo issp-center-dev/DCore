@@ -12,7 +12,7 @@ First, we have to generate the lattice model as
 
 .. code-block:: bash
 
-   $ pydmf_pre dmft_square.ini
+   $ dcore_pre dmft_square.ini
 
 Then it outputs model HDF5 file (``square.h5``).
 
@@ -24,14 +24,14 @@ In this example, we use the Hubbard-I approximation for the impurity solver.
 
 .. code-block:: bash
 
-   $ pydmf dmft_square.ini
+   $ dcore dmft_square.ini
 
 Then it generates the result HDF5 file.
 We can check the convergence of the SCF cycle by using ``dcore_check`` program.
 
 .. code-block:: bash
 
-   $ pydmf_check dmft_square.ini
+   $ dcore_check dmft_square.ini
 
 We can find the following standard output.
 
@@ -65,7 +65,7 @@ The calculation is done by typing the following command:
 
 .. code-block:: bash
 
-   $ pydmf_post dmft_square.ini
+   $ dcore_post dmft_square.ini
 
 After finishing the calculation,
 ``square_akw.dat``, ``square_akw.gp`` and ``square_dos.dat`` are generated.

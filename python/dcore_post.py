@@ -324,19 +324,32 @@ def dcore_post(filename):
     # Information of correlation shells. It is used only in conjunction to Wannier90.
     # cshell=(l, norb, equiv) or (l, norb)
     #
-    cshell_list=re.findall(r'\(\s*\d+,\s*\d+,*\s*\d*\)', p["model"]["cshell"])
+    cshell_list=re.findall(r'\(\s*\d+\s*,\s*\d+\s*,*\s*\S*\s*\)', p["model"]["cshell"])
     l = [0]*p["model"]['ncor']
     norb = [1]*p["model"]['ncor']
     equiv = [-1]*p["model"]['ncor']
     try:
-        for i, _list  in enumerate(cshell_list):
+        equiv_str_list = []
+        equiv_index = 0
+        for  i, _list  in enumerate(cshell_list):
             _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
             l[i] = int(_cshell[0])
             norb[i] = int(_cshell[1])
-            if len(_cshell)==3:
-                equiv[i] = int(_cshell[2])
+            if len(_cshell) == 3:
+                if _cshell[2] in equiv_str_list:
+                    # Defined before
+                    equiv[i] = equiv_str_list.index(_cshell[2])
+                else:
+                    # New one
+                    equiv_str_list.append(_cshell[2])
+                    equiv[i] = equiv_index
+                    equiv_index+=1
+            else:
+                equiv[i] = equiv_index
+                equiv_index+=1
     except:
         raise RuntimeError("Error ! Format of cshell is wrong.")
+
     #
     # Nodes for k-point path
     # knode=(label,k0, k1, k2) in the fractional coordinate
