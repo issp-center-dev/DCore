@@ -139,8 +139,12 @@ class TypedParser(object):
         """
         Print a list of all options and sections
 
-        :return:
+        :return: None
         """
 
-        # To be implemented
-        pass
+        print("\n  @ Defined options")
+        for section_name,section_data in self.__definitions.items():
+            print("")
+            print("   ["+section_name+"] block")
+            for option_name,option_data in section_data.items():
+                print("     option =  {0} : type = {1} : description = \"{2}\" : default value = {3}".format(option_name, option_data[0].__name__, option_data[1], option_data[2]))

@@ -459,8 +459,9 @@ def dcore_post(filename):
         print("\n  @ Generate GnuPlot script")
         with open(seedname + '_akw.gp', 'w') as f:
             print("set xtics (\\", file=f)
-            for inode in range(nnode):
+            for inode in range(nnode-1):
                 print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
+            print("  \"{0}\"  {1} \\".format(klabel[inode], xk_label[inode]), file=f)
             print("  )", file=f)
             print("set pm3d map", file=f)
             print("#set pm3d interpolate 5, 5", file=f)
