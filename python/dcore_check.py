@@ -23,6 +23,7 @@ from dmft_core import DMFTCoreSolver, create_parser
 from pytriqs.applications.dft.sumk_dft_tools import *
 # from pytriqs.plot.mpl_interface import oplot, plt
 
+
 def dcore_check(filename, fileplot=None):
     """
     Main routine for checking convergence
@@ -70,9 +71,9 @@ def dcore_check(filename, fileplot=None):
         print("\n  Iter  Chemical-potential")
         for iter in range(1,iteration_number+1):
             if iter > iteration_number - 7:
-                S.Sigma_iw << ar[output_group]['Sigma-%s'%(iter)]
-                oplot(S.Sigma_iw["up"][0,0], '-o', mode='I', x_window  = (p['tool']['omega_min'],p['tool']['omega_max']), name = 'Sigma-%s'%(iter))
-            print("  {0} {1}".format(iter, ar[output_group]['chemical_potential-%s'%(iter)]))
+                S[0].Sigma_iw << ar[output_group]['Sigma-log'][str(iter)]['0']
+                oplot(S[0].Sigma_iw["up"][0,0], '-o', mode='I', x_window  = (p['tool']['omega_min'],p['tool']['omega_max']), name = 'Sigma-%s'%(iter))
+            print("  {0} {1}".format(iter, ar[output_group]['chemical_potential'][str(iter)]))
         del ar
 
         plt.legend(loc = 4)

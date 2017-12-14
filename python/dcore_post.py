@@ -65,6 +65,7 @@ class DMFTCoreTools:
         SKT = self._SKT
         Sol = self._solver
         S = self._solver._S
+        nsh = SKT.n_inequiv_shells
 
         if mpi.is_master_node():
             print("\n  @ Compute Green' function at the real frequency")
@@ -78,33 +79,36 @@ class DMFTCoreTools:
         SKT.dc_energ = mpi.bcast(SKT.dc_energ)
 
         # compute real-frequency self-energy, sigma_w
+        sigma_w =[]
         if Sol._solver_name == 'TRIQS/hubbard-I':
             # set atomic levels:
-            eal = SKT.eff_atomic_levels()[0]
-            S.set_atomic_levels( eal = eal )
-            # Run the solver to get GF and self-energy on the real axis
-            S.GF_realomega(ommin=self._omega_min, ommax=self._omega_max, N_om=self._Nomega,
-                           U_int=Sol._U_int, J_hund=Sol._J_hund)
-            sigma_w = S.Sigma_iw
+            eal = SKT.eff_atomic_levels()
+            for ish in range(nsh):
+                S[ish].set_atomic_levels(eal=eal[ish])
+                # Run the solver to get GF and self-energy on the real axis
+                S[ish].GF_realomega(ommin=self._omega_min, ommax=self._omega_max, N_om=self._Nomega,
+                                    U_int=Sol._U_int, J_hund=Sol._J_hund)
+                sigma_w.append(S[ish].Sigma_iw)
         elif Sol._solver_name == "TRIQS/cthyb" or Sol._name == "ALPS/cthyb":
             # Read info from HDF file
             ar = HDFArchive(self._seedname+'.out.h5', 'r')
             iteration_number = ar['dmft_out']['iterations']
             print("    Iteration {0}".format(iteration_number))
-            S.Sigma_iw << ar['dmft_out']['Sigma_iw']
-            # set BlockGf sigma_w
-            block_names = list(S.Sigma_iw.indices)
-            glist = lambda: [GfReFreq(indices=sig.indices, window=(self._omega_min, self._omega_max),
-                                      n_points=self._Nomega, name="sig_pade") for bname, sig in S.Sigma_iw]
-            sigma_w = BlockGf(name_list=block_names, block_list=glist(), make_copies=False)
-            # Analytic continuation
-            for bname, sig in S.Sigma_iw:
-                sigma_w[bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
+            for ish in range(nsh):
+                S[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
+                # set BlockGf sigma_w
+                block_names = list(S[ish].Sigma_iw.indices)
+                glist = lambda: [GfReFreq(indices=sig.indices, window=(self._omega_min, self._omega_max),
+                                          n_points=self._Nomega, name="sig_pade") for bname, sig in S[ish].Sigma_iw]
+                sigma_w.append(BlockGf(name_list=block_names, block_list=glist(), make_copies=False))
+                # Analytic continuation
+                for bname, sig in S[ish].Sigma_iw:
+                    sigma_w[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
         else:
             raise RuntimeError("Unknown solver " + S._name)
 
-        # SKT.set_Sigma([S.Sigma_iw])
-        SKT.set_Sigma([sigma_w])
+        #
+        SKT.set_Sigma([sigma_w[ish] for ish in range(nsh)])
         if mpi.is_master_node(): print("    Done")
         #
         #  (Partial) DOS

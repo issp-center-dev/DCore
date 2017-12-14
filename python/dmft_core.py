@@ -212,7 +212,7 @@ class DMFTCoreSolver:
                 # Sub group for something
                 #
                 for gname in ['Sigma_iw', 'G0-log', 'G-log', 'Sigma-log', 'G_iw', 'chemical_potential', 'Delta_iw']:
-                    if not (gname in ar[output_group]): ar[output_group].create_group(gname)
+                    if not (gname in f[output_group]): f[output_group].create_group(gname)
 
         previous_runs = mpi.bcast(previous_runs)
         previous_present = previous_runs > 0
@@ -236,7 +236,7 @@ class DMFTCoreSolver:
                 chemical_potential = mpi.bcast(chemical_potential)
                 SK.set_mu(chemical_potential)
             else:
-                chemical_potential = SK.calc_mu( precision = prec_mu )  # find the chemical potential for given density
+                SK.calc_mu( precision = prec_mu )  # find the chemical potential for given density
             G_iw_all = SK.extract_G_loc()
             for ish in range(nsh):
                 S[ish].G_iw << G_iw_all[ish]                         # calc the local Green function
@@ -248,7 +248,7 @@ class DMFTCoreSolver:
                     dm = S[ish].G_iw.density()
                     if dc_type >= 0:
                         SK.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
-                    S[ish].Sigma_iw << SK.dc_imp[self._SK.inequiv_to_corr[ish]]
+                    S[ish].Sigma_iw << SK.dc_imp[self._SK.inequiv_to_corr[ish]]['up'][0,0]
 
             # Calculate new G0_iw to input into the solver:
             for ish in range(nsh):
@@ -258,9 +258,10 @@ class DMFTCoreSolver:
                     ar = HDFArchive(output_file, 'a')
                     if (iteration_number>previous_runs+1 or previous_present):
                         mpi.report("\n  @ Mixing input Delta with factor %s"%delta_mix)
-                        Delta = (delta_mix * delta(S[ish].G0_iw)) + (1.0-delta_mix) * ar[output_group]['Delta_iw'][ish]
+                        Delta = (delta_mix * delta(S[ish].G0_iw))\
+                                + (1.0-delta_mix) * ar[output_group]['Delta_iw'][str(ish)]
                         S[ish].G0_iw << S[ish].G0_iw + delta(S[ish].G0_iw) - Delta
-                    ar[output_group]['Delta_iw'][ish] = delta(S[ish].G0_iw)
+                    ar[output_group]['Delta_iw'][str(ish)] = delta(S[ish].G0_iw)
                     S[ish].G0_iw << inverse(S[ish].G0_iw)
                     del ar
 
@@ -287,8 +288,10 @@ class DMFTCoreSolver:
                     ar = HDFArchive(output_file,'a')
                     mpi.report("\n  @ Mixing Sigma and G with factor %s"%sigma_mix)
                     for ish in range(nsh):
-                        S[ish].Sigma_iw << sigma_mix * S[ish].Sigma_iw + (1.0-sigma_mix) * ar[output_group]['Sigma_iw']
-                        S[ish].G_iw << sigma_mix * S[ish].G_iw + (1.0-sigma_mix) * ar[output_group]['G_iw']
+                        S[ish].Sigma_iw << sigma_mix * S[ish].Sigma_iw \
+                                    + (1.0-sigma_mix) * ar[output_group]['Sigma_iw'][str(ish)]
+                        S[ish].G_iw << sigma_mix * S[ish].G_iw \
+                                + (1.0-sigma_mix) * ar[output_group]['G_iw'][str(ish)]
                     del ar
                 for ish in range(nsh):
                     S[ish].G_iw << mpi.bcast(S[ish].G_iw)
@@ -298,20 +301,20 @@ class DMFTCoreSolver:
             if mpi.is_master_node():
                 ar = HDFArchive(output_file, 'a')
                 ar[output_group]['iterations'] = iteration_number
-                ar[output_group]['chemical_potential'][iteration_number] = SK.chemical_potential
+                ar[output_group]['chemical_potential'][str(iteration_number)] = SK.chemical_potential
                 for ish in range(nsh):
-                    ar[output_group]['G_iw'][ish] = S[ish].G_iw
-                    ar[output_group]['Sigma_iw'][ish] = S[ish].Sigma_iw
+                    ar[output_group]['G_iw'][str(ish)] = S[ish].G_iw
+                    ar[output_group]['Sigma_iw'][str(ish)] = S[ish].Sigma_iw
                     #
                     # Save the history of G0, G, Sigma
                     #
                     for gname in ['G0-log', 'G-log', 'Sigma-log']:
-                        if not (iteration_number in ar[output_group][gname]):
-                            ar[output_group][gname].create_group(iteration_number)
+                        if not (str(iteration_number) in ar[output_group][gname]):
+                            ar[output_group][gname].create_group(str(iteration_number))
 
-                    ar[output_group]['G0-log'][iteration_number][ish] = S[ish].G0_iw
-                    ar[output_group]['G-log'][iteration_number][ish] = S[ish].G_iw
-                    ar[output_group]['Sigma-log'][iteration_number][ish] = S[ish].Sigma_iw
+                    ar[output_group]['G0-log'][str(iteration_number)][str(ish)] = S[ish].G0_iw
+                    ar[output_group]['G-log'][str(iteration_number)][str(ish)] = S[ish].G_iw
+                    ar[output_group]['Sigma-log'][str(iteration_number)][str(ish)] = S[ish].Sigma_iw
                 del ar
 
             # Set the new double counting:
