@@ -105,7 +105,7 @@ class DMFTCoreTools:
                 for bname, sig in S[ish].Sigma_iw:
                     sigma_w[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
         else:
-            raise RuntimeError("Unknown solver " + S._name)
+            raise RuntimeError("Unknown solver " + Sol._solver_name)
 
         #
         SKT.set_Sigma([sigma_w[ish] for ish in range(nsh)])

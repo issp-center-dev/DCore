@@ -69,22 +69,25 @@ Input-file format
 
 dcore_pre, dcore_check and dcore_post read this block.
 
-============= ============= =========== ================================================================
-Name          Type          Default     Description
-============= ============= =========== ================================================================
-t             Float         1.0         Transfer integral (Nearest neighbor) 
-t'            Float         0.0         Transfer integral (Second nearest)
-U             Float         0.0         On-site Coulomb potential
-J             Float         0.0         On-site Hund potential
-orbital_model String        single      Chosen from "single", "eg", "t2g", "full-d"
-ncor          Integer       1           Number of correlation shell (Only wannier90).
-lattice       String        chain       Chosen from "chain", "square", "cubic", "bethe", and "wannier90"
-nelec         Float         1.0         Number of electrons per unit cell.
-seedname      String        dcore       Name of the system.
-                                        It should be the same as the seedname of wannier90.
-cshell        Integer array [(0,1),...] Anguler momentum, and the number of orbitals of each
-                                        correlation shell (Only wannier90). 
-============= ============= =========== ================================================================
+============= ============= ===================== ================================================================
+Name          Type          Default               Description
+============= ============= ===================== ================================================================
+t             Float         1.0                   Transfer integral (Nearest neighbor) 
+t'            Float         0.0                   Transfer integral (Second nearest)
+U             Float         0.0                   On-site Coulomb potential
+J             Float         0.0                   On-site Hund potential
+orbital_model String        single                Chosen from "single", "eg", "t2g", "full-d"
+ncor          Integer       1                     Number of correlation shell (Only wannier90).
+lattice       String        chain                 Chosen from "chain", "square", "cubic", "bethe", and "wannier90"
+nelec         Float         1.0                   Number of electrons per unit cell.
+seedname      String        dcore                 Name of the system.
+                                                  It should be the same as the seedname of wannier90.
+cshell        Integer array [(0,1),...]           Anguler momentum, and the number of orbitals of each
+                                                  correlation shell (Only wannier90). 
+bvec          Float array   [(1.0,0.0,0.0), (0.0, Reciplocal lattice vectors
+                            1.0,0.0),(0.0,0.0,1.0
+                            )]
+============= ============= ===================== ================================================================
 
 Prepare model for DCore.
 Wannier90 as well as the following preset models:
@@ -131,9 +134,8 @@ nk      Integer     8                     Number of *k* along each line
 nk0     Integer     0                     Number of *k* (Only wannier90)
 nk1     Integer     0                     Number of *k* (Only wannier90)
 nk2     Integer     0                     Number of *k* (Only wannier90)
-bvec    Float array [(1.0,0.0,0.0), (0.0, Reciplocal lattice vectors
-                    1.0,0.0),(0.0,0.0,1.0
-                    )]
+prec_mu Float       0.0001                Threshold for calculating chemical potential
+                                          with the bisection method.
 ======= =========== ===================== =================================================
   
 [impurity_solver] block
@@ -159,13 +161,14 @@ For more details, please see the reference page of
 
 dcore reads this block.
 
-========= ======= ======= ============================================
+========= ======= ======= ==================================================
 Name      Type    Default Description
-========= ======= ======= ============================================
+========= ======= ======= ==================================================
 max_step  Integer 100     Max number of SCF steps.
 sigma_mix Float   0.5     Mixing parameter for self-energy.
 delta_mix Float   0.5     Mixing parameter for hybridization function.
-========= ======= ======= ============================================
+restart   Bool    False   Whether or not restart from a previous calculation
+========= ======= ======= ==================================================
 
 [tool] block
 ~~~~~~~~~~~~
@@ -183,6 +186,6 @@ omega_min     Float             -1                    Minimum value of real freq
 omega_max     Float             1                     Max value of real frequency
 Nomega        Integer           100                   Number of real frequencies
 broadening    Float             0.1                   An additional Lorentzian broadening
-eta           Float             0.01                  Imaginary frequency shift for the Pade approximation
+eta           Float             0.0                   Imaginary frequency shift for the Pade approximation
 n_pade        Integer           100                   Number of frequencies for the Pade approximation
 ============= ================= ===================== ======================================================

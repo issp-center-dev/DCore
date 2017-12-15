@@ -53,6 +53,7 @@ def create_parser():
     parser.add_option("system", "nk0", int, 0, "Number of k along b_0")
     parser.add_option("system", "nk1", int, 0, "Number of k along b_1")
     parser.add_option("system", "nk2", int, 0, "Number of k along b_2")
+    parser.add_option("system", "prec_mu", float, 0.0001, "Threshold for calculating chemical potential with the bisection method.")
 
     parser.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
 
@@ -144,7 +145,7 @@ class DMFTCoreSolver:
             Umat, Upmat = U_matrix_kanamori(n_orb=n_orb, U_int=self._U_int, J_hund=self._J_hund)
 
             # Construct Hamiltonian
-            self._h_int.append(h_int_kanamori(spin_names, orb_names, map_operator_structure=self._SK.sumk_to_solver[0],
+            self._h_int.append(h_int_kanamori(spin_names, orb_names, map_operator_structure=self._SK.sumk_to_solver[ish],
                                               U=Umat, Uprime=Upmat, J_hund=self._J_hund,
                                               H_dump="H"+str(ish)+".txt")
                                )
@@ -180,7 +181,7 @@ class DMFTCoreSolver:
         sigma_mix = self._params['control']['sigma_mix']                  # Mixing factor of Sigma after solution of the AIM
         delta_mix = self._params['control']['delta_mix']                  # Mixing factor of Delta as input for the AIM
 
-        prec_mu = 0.0001
+        prec_mu = self._params['system']['prec_mu']
 
         previous_runs = 0
         nsh = self._SK.n_inequiv_shells
@@ -202,7 +203,7 @@ class DMFTCoreSolver:
                         if ar['iterations'] <= 0:
                             raise RuntimeError("No previous runs to be loaded from " + output_file + "!")
                         print("Loading Sigma_iw... ")
-                        for ish in range(nsh): S[ish].Sigma_iw << ar['Sigma_iw'][ish]
+                        for ish in range(nsh): S[ish].Sigma_iw << ar['Sigma_iw'][str(ish)]
                     else:
                         del f[output_group]
                         f.create_group(output_group)
