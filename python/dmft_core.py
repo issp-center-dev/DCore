@@ -172,8 +172,9 @@ class DMFTCoreSolver:
 
     def solve(self, max_step, output_file, output_group='dmft_output', dry_run=False):
         dc_type = int(self._params['system']['dc_type'])                        # DC type: -1 None, 0 FLL, 1 Held, 2 AMF
-        if dc_type != -1:
-            raise RuntimeError("dc_type != -1 is not supported!")
+        if dc_type == -1: with_dc = False
+        else: with_dc = True
+
         fix_mu = self._params['system']['fix_mu']
         if fix_mu:
             mu = self._params['system']['mu']
@@ -219,8 +220,13 @@ class DMFTCoreSolver:
         previous_present = previous_runs > 0
         if previous_present:
             if mpi.is_master_node():
-                print("Broadcasting Sigma_iw... ")
-            for ish in range(nsh): S[ish].Sigma_iw << mpi.bcast(S[ish].Sigma_iw)
+                SK.chemical_potential, SK.dc_imp, SK.dc_energ = SK.load(['chemical_potential', 'dc_imp', 'dc_energ'])
+                print("Broadcasting Sigma_iw, chemical_potential, dc_imp, dc_energ... ")
+            for ish in range(nsh):
+                S[ish].Sigma_iw << mpi.bcast(S[ish].Sigma_iw)
+                SK.chemical_potential = mpi.bcast(SK.chemical_potential)
+                SK.dc_imp = mpi.bcast(SK.dc_imp)
+                SK.dc_energ = mpi.bcast(SK.dc_energ)
 
         if mpi.is_master_node():
             ar = HDFArchive(output_file, 'a')
@@ -238,17 +244,16 @@ class DMFTCoreSolver:
                 SK.set_mu(chemical_potential)
             else:
                 SK.calc_mu( precision = prec_mu )  # find the chemical potential for given density
-            G_iw_all = SK.extract_G_loc()
+            G_iw_all = SK.extract_G_loc(with_dc=with_dc)
             for ish in range(nsh):
                 S[ish].G_iw << G_iw_all[ish]                         # calc the local Green function
                 mpi.report("\n    Total charge of Gloc : %.6f"%S[ish].G_iw.total_density())
 
             # Init the DC term and the real part of Sigma, if no previous runs found:
-            if (iteration_number==1 and previous_present==False):
+            if (iteration_number==1 and previous_present==False and with_dc):
                 for ish in range(nsh):
                     dm = S[ish].G_iw.density()
-                    if dc_type >= 0:
-                        SK.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
+                    SK.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
                     S[ish].Sigma_iw << SK.dc_imp[self._SK.inequiv_to_corr[ish]]['up'][0,0]
 
             # Calculate new G0_iw to input into the solver:
@@ -319,9 +324,9 @@ class DMFTCoreSolver:
                 del ar
 
             # Set the new double counting:
-            for ish in range(nsh):
-                dm = S[ish].G_iw.density() # compute the density matrix of the impurity problem
-                if dc_type >= 0:
+            if with_dc:
+                for ish in range(nsh):
+                    dm = S[ish].G_iw.density() # compute the density matrix of the impurity problem
                     SK.calc_dc(dm, orb = ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
 
             # Save stuff into the user_data group of hdf5 archive in case of rerun:

@@ -66,6 +66,11 @@ class DMFTCoreTools:
         Sol = self._solver
         S = self._solver._S
         nsh = SKT.n_inequiv_shells
+        dc_type = int(self._params['system']['dc_type'])  # DC type: -1 None, 0 FLL, 1 Held, 2 AMF
+        if dc_type == -1:
+            with_dc = False
+        else:
+            with_dc = True
 
         if mpi.is_master_node():
             print("\n  @ Compute Green' function at the real frequency")
@@ -116,7 +121,7 @@ class DMFTCoreTools:
         if mpi.is_master_node(): print("\n  @ Compute (partial) DOS")
         dos, dosproj, dosproj_orb = SKT.dos_wannier_basis(broadening=self._broadening,
                                                           mesh=[self._omega_min, self._omega_max, self._Nomega],
-                                                          with_Sigma=True, with_dc=False, save_to_file=False)
+                                                          with_Sigma=True, with_dc=with_dc, save_to_file=False)
         #
         # Print DOS to file
         #
@@ -465,7 +470,7 @@ def dcore_post(filename):
             print("set xtics (\\", file=f)
             for inode in range(nnode-1):
                 print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
-            print("  \"{0}\"  {1} \\".format(klabel[inode], xk_label[inode]), file=f)
+            print("  \"{0}\"  {1} \\".format(klabel[nnode-1], xk_label[nnode-1]), file=f)
             print("  )", file=f)
             print("set pm3d map", file=f)
             print("#set pm3d interpolate 5, 5", file=f)
