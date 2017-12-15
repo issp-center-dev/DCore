@@ -92,7 +92,7 @@ class Solver:
 
 
 
-    def solve(self, U_int, J_hund, T=None, verbosity=0, Iteration_Number=1, Test_Convergence=0.0001, N_lev=0, remove_split=False):
+    def solve(self, U_int, J_hund, T=None, verbosity=0, Iteration_Number=1, Test_Convergence=0.0001, N_lev=0, remove_split=False, use_kanamori=False):
         """Calculation of the impurity Greens function using Hubbard-I"""
 
         if self.Converged :
@@ -109,10 +109,10 @@ class Solver:
         # ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
         if self.irrep is None:
             ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
-        elif self.irrep == 't2g'
-            ur,umn,ujmn=self.__set_umatrix_t2g(U=U_int,J=J_hund)
-        elif self.irrep == 'eg'
-            ur,umn,ujmn=self.__set_umatrix_eg(U=U_int,J=J_hund)
+            if use_kanamori:
+                mpi.report("Warning: flag use_kanamori is ignored")
+        else:
+            ur,umn,ujmn=self.__set_umatrix_cubic(U=U_int, J=J_hund, irrep=self.irrep, use_kanamori=use_kanamori)
 
 
         M = [x for x in self.G.mesh]
@@ -191,7 +191,7 @@ class Solver:
             mpi.report("Solver has not yet converged")
 
 
-    def GF_realomega(self, ommin, ommax, N_om, U_int, J_hund, T=None, verbosity=0, broadening=0.01, N_lev=0, remove_split=False):
+    def GF_realomega(self, ommin, ommax, N_om, U_int, J_hund, T=None, verbosity=0, broadening=0.01, N_lev=0, remove_split=False, use_kanamori=False):
         """Calculates the GF and spectral function on the real axis."""
 
         delta_om = (ommax-ommin)/(1.0*(N_om-1))
@@ -201,10 +201,11 @@ class Solver:
         # ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
         if self.irrep is None:
             ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
-        elif self.irrep == 't2g'
-            ur,umn,ujmn=self.__set_umatrix_t2g(U=U_int,J=J_hund)
-        elif self.irrep == 'eg'
-            ur,umn,ujmn=self.__set_umatrix_eg(U=U_int,J=J_hund)
+            if use_kanamori:
+                mpi.report("Warning: flag use_kanamori is ignored")
+        else:
+            ur,umn,ujmn=self.__set_umatrix_cubic(U=U_int, J=J_hund, irrep=self.irrep, use_kanamori=use_kanamori)
+
 
         for i in range(N_om):
             omega[i] = ommin + delta_om * i + 1j * broadening
@@ -328,16 +329,20 @@ class Solver:
 
         return Umat, Up, U
 
-    def __set_umatrix_t2g(self,U,J):
+    def __set_umatrix_cubic(self,U,J,irrep,use_kanamori=False):
         assert self.l==2
-        Umat = U_matrix(l=self.l, U_int=U, J_hund=J, basis='cubic')
-        U_sub = t2g_submatrix(Umat)
-        U, Up = reduce_4index_to_2index(U_sub)
-        return U_sub, Up, U
 
-    def __set_umatrix_eg(self,U,J):
-        assert self.l==2
-        Umat = U_matrix(l=self.l, U_int=U, J_hund=J, basis='cubic')
-        U_sub = eg_submatrix(Umat)
+        if not use_kanamori: # Slater
+            Umat = U_matrix(l=self.l, U_int=U, J_hund=J, basis='cubic')
+            if irrep=='t2g':
+                U_sub = t2g_submatrix(Umat)
+            elif irrep=='eg':
+                U_sub = eg_submatrix(Umat)
+        else: # Kanamori
+            if irrep=='t2g':
+                U_sub = U_matrix_kanamori_4index_t2g(U_int=U, J_hund=J)
+            elif irrep=='eg':
+                U_sub = U_matrix_kanamori_4index_eg(U_int=U, J_hund=J)
+
         U, Up = reduce_4index_to_2index(U_sub)
         return U_sub, Up, U
