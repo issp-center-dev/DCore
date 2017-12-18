@@ -15,30 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-# import pytriqs.applications.impurity_solvers.hubbard_I
-from hubbard_solver_cubic import Solver
+from pytriqs.operators.util.U_matrix import *
 
-# class Solver(pytriqs.applications.impurity_solvers.hubbard_I.Solver, object):
-class Solver(Solver, object):
-    """
-       Hubbard I Solver
-    """
+def U_matrix_kanamori_4index_t2g(U_int, J_hund):
+    F = [U_int, 63.*J_hund, -63.*J_hund]
+    Umat = U_matrix(l=2, radial_integrals=F, basis='cubic')
+    U_sub = t2g_submatrix(Umat)
+    return U_sub
 
-    # initialisation:
-    # def __init__(self, beta, l, n_msb=1025, use_spin_orbit=False, Nmoments=5, irrep=None):
-    #     super(Solver, self).__init__(beta, l, n_msb, use_spin_orbit, Nmoments, irrep)
+def U_matrix_kanamori_4index_eg(U_int, J_hund):
+    F = [U_int, 21.*J_hund, -21.*J_hund]
+    Umat = U_matrix(l=2, radial_integrals=F, basis='cubic')
+    U_sub = eg_submatrix(Umat)
+    return U_sub
 
-    # Make read-only getter
-    @property
-    def Sigma_iw(self):
-        return self.Sigma
-
-    # Make read-only getter
-    @property
-    def G_iw(self):
-        return self.G
-
-    # Make read-only getter
-    @property
-    def G0_iw(self):
-        return self.G0
+def U_matrix_kanamori_4index_p(U_int, J_hund):
+    F = [U_int-4./3.*J_hund, 25./3.*J_hund]
+    Umat = U_matrix(l=1, radial_integrals=F, basis='cubic')
+    return Umat
