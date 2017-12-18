@@ -306,7 +306,7 @@ class DMFTCoreSolver:
                 eal = SK.eff_atomic_levels()
                 for ish in range(nsh):
                     S[ish].set_atomic_levels( eal = eal[ish] )
-                    S[ish].solve(U_int=self._U_int, J_hund=self._J_hund, verbosity = 0)
+                    S[ish].solve(U_int=self._U_int, J_hund=self._J_hund, verbosity = 0, use_kanamori=True)
             else:
                 for ish in range(nsh):
                     S[ish].solve(h_int=self._h_int[ish], **self._solver_params)

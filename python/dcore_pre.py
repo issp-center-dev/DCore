@@ -111,12 +111,10 @@ def __generate_lattice_model(params, l, norb, equiv, f):
         l[0] = 0
         norb[0] = 1
     elif params["model"]["orbital_model"] == 'eg':
-        #FIXME: l=2 does not make sense. l=2 assumes norb=5 (full d-shell) in generating Coulomb tensor.
-        #What is the proper way to generate Coulomb tensor for eg?
         l[0] = 2
         norb[0] = 2
     elif params["model"]["orbital_model"] == 't2g':
-        l[0] = 1
+        l[0] = 2
         norb[0] = 3
     elif params["model"]["orbital_model"] == 'full-d':
         l[0] = 2
@@ -320,10 +318,9 @@ if __name__ == '__main__':
                         type=str, \
                         help = "input file name."
     )
-    
+
     args=parser.parse_args()
     if(os.path.isfile(args.path_input_file) is False):
         print("Input file is not exist.")
         sys.exit()
     dcore_pre(args.path_input_file)
-    

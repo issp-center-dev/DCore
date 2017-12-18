@@ -114,8 +114,8 @@ class Solver:
         # ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
         if self.irrep is None:
             ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
-            if use_kanamori:
-                mpi.report("Warning: flag use_kanamori is ignored")
+            if self.l>0 and use_kanamori:
+                raise Exception("use_kanamori flag cannot be used in the present case")
         else:
             ur,umn,ujmn=self.__set_umatrix_cubic(U=U_int, J=J_hund, irrep=self.irrep, use_kanamori=use_kanamori)
 
@@ -207,7 +207,7 @@ class Solver:
         if self.irrep is None:
             ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
             if use_kanamori:
-                mpi.report("Warning: flag use_kanamori is ignored")
+                raise Exception("use_kanamori flag cannot be used in the present case")
         else:
             ur,umn,ujmn=self.__set_umatrix_cubic(U=U_int, J=J_hund, irrep=self.irrep, use_kanamori=use_kanamori)
 
@@ -341,6 +341,10 @@ class Solver:
                 U_sub = t2g_submatrix(Umat)
             elif irrep=='eg':
                 U_sub = eg_submatrix(Umat)
+            elif irrep=='p':
+                U_sub = Umat
+            else:
+                raise ValueError("irrep")
         else: # Kanamori
             if irrep=='t2g':
                 U_sub = U_matrix_kanamori_4index_t2g(U_int=U, J_hund=J)
@@ -348,6 +352,8 @@ class Solver:
                 U_sub = U_matrix_kanamori_4index_eg(U_int=U, J_hund=J)
             elif irrep=='p':
                 U_sub = U_matrix_kanamori_4index_p(U_int=U, J_hund=J)
+            else:
+                raise ValueError("irrep")
 
         U, Up = reduce_4index_to_2index(U_sub)
         return U_sub, Up, U
