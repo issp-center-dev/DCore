@@ -158,7 +158,33 @@ class DMFTCoreSolver:
                 self._S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
             elif self._solver_name=="TRIQS/hubbard-I":
                 from hubbard_solver import Solver
-                self._S.append(Solver(beta=beta, l=l))
+                if l == 0:
+                    self._S.append(Solver(beta=beta, l=0))
+                elif l == 1:
+                    if n_orb == 1:
+                        self._S.append(Solver(beta=beta, l=0))
+                    elif n_orb == 3:
+                        self._S.append(Solver(beta=beta, l=1, irrep='p'))
+                    else:
+                        print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
+                        sys.exit()
+                elif l == 2:
+                    if n_orb == 1:
+                        self._S.append(Solver(beta=beta, l=0))
+                    elif n_orb == 2:
+                        self._S.append(Solver(beta=beta, l=2, irrep='eg'))
+                    elif n_orb == 3:
+                        self._S.append(Solver(beta=beta, l=2, irrep='t2g'))
+                    elif n_orb == 5:
+                        self._S.append(Solver(beta=beta, l=2))
+                    else:
+                        print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
+                        sys.exit()
+                elif n_orb == 1:
+                    self._S.append(Solver(beta=beta, l=0))
+                else:
+                    print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
+                    sys.exit()
             elif self._solver_name=="ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
                 self._S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau))
