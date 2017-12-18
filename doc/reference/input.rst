@@ -42,23 +42,23 @@ This program reads ``[model]`` and ``[tool]`` block.
 
 ``dcore_check`` shows the history of the chemical potential and the
 first component of the self energy at imaginary frequency, :math:`\Sigma_{0 0}(i \omega_n)`
-at the last seven iterations.  
+at the last seven iterations.
 
 .. image:: ../tutorial/square/convergence.png
    :width: 500
    :align: center
-   
+
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This program compute the total and *k*\ -resolved spectrul function from the outputted
 HDF5 file (*seedname*.out.h5).
 This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` block.
- 
+
 ::
 
    $ dcore_post input-file
-   
+
 Input-file format
 -----------------
 
@@ -72,7 +72,7 @@ dcore_pre, dcore_check and dcore_post read this block.
 ============= ============= ===================== ================================================================
 Name          Type          Default               Description
 ============= ============= ===================== ================================================================
-t             Float         1.0                   Transfer integral (Nearest neighbor) 
+t             Float         1.0                   Transfer integral (Nearest neighbor)
 t'            Float         0.0                   Transfer integral (Second nearest)
 U             Float         0.0                   On-site Coulomb potential
 J             Float         0.0                   On-site Hund potential
@@ -83,7 +83,7 @@ nelec         Float         1.0                   Number of electrons per unit c
 seedname      String        dcore                 Name of the system.
                                                   It should be the same as the seedname of wannier90.
 cshell        Integer array [(0,1),...]           Anguler momentum, and the number of orbitals of each
-                                                  correlation shell (Only wannier90). 
+                                                  correlation shell (Only wannier90).
 bvec          Float array   [(1.0,0.0,0.0), (0.0, Reciplocal lattice vectors
                             1.0,0.0),(0.0,0.0,1.0
                             )]
@@ -99,24 +99,36 @@ Wannier90 as well as the following preset models:
 * cubic
 
 * bethe
-  Semicircular DOS with energy ranges [-2t:2t].  
+  Semicircular DOS with energy ranges [-2t:2t].
 
 * wannier90
-  Read hopping parameters from the Wannier90 output.  
+  Read hopping parameters from the Wannier90 output.
 
 .. math::
 
    {\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
    t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
-   +h.c. + {\hat H}_{\rm int}, 
+   +h.c. + {\hat H}_{\rm int},
 
 where :math:`{\hat H}_{\rm int}` is the Kanamori interaction term
-with :math:`U_{\rm int}` and :math:`J_{\rm Hund}`.
-  
+given by
+
+.. math::
+
+    {\hat H}_{\rm int} = \sum_i \Big[
+    \sum_{\alpha} U n_{i\alpha\uparrow} n_{i\alpha\downarrow}
+    + \frac{1}{2} \sum_{\alpha \neq \beta, \sigma \sigma'}
+    (U' - J\delta_{\sigma\sigma'}) n_{i\alpha\sigma} n_{i\beta\sigma'}
+    - \sum_{\alpha \neq \beta} J(c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow} c_{i\beta\downarrow}^{\dagger} c_{i\beta\uparrow}
+    + c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow}^{\dagger} c_{i\beta\uparrow} c_{i\beta\downarrow}
+    \Big]
+
+The parameter :math:`U'` is fixed at :math:`U'=U-2J`.
+
 .. image:: model.png
    :width: 700
    :align: center
-        
+
 [system] block
 ~~~~~~~~~~~~~~
 
@@ -137,12 +149,12 @@ nk2     Integer     0                     Number of *k* (Only wannier90)
 prec_mu Float       0.0001                Threshold for calculating chemical potential
                                           with the bisection method.
 ======= =========== ===================== =================================================
-  
+
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 dcore and dcore_post read this block.
-  
+
 ==== ======= =========== ===================================================
 Name Type    Default     Description
 ==== ======= =========== ===================================================
