@@ -24,7 +24,6 @@ from pytriqs.applications.dcore.U_matrix_cubic import *
 
 
 def kanamori_4index():
-    l=2
     U_int=4.8673 # random
     J_hund=0.8598
 
@@ -45,6 +44,17 @@ def kanamori_4index():
     orb_names = cubic_names('t2g')
 
     Umat = U_matrix_kanamori_4index_t2g(U_int=U_int, J_hund=J_hund)
+    h_kanamori_from_slater = h_int_slater(spin_names, orb_names, U_matrix=Umat, off_diag=True)
+
+    U2, U2prime = U_matrix_kanamori(n_orb=3, U_int=U_int, J_hund=J_hund)
+    h_kanamori = h_int_kanamori(spin_names, orb_names, U2, U2prime, J_hund, off_diag=True)
+
+    assert (h_kanamori_from_slater - h_kanamori).is_zero()
+
+    # p
+    orb_names = cubic_names('p')
+
+    Umat = U_matrix_kanamori_4index_p(U_int=U_int, J_hund=J_hund)
     h_kanamori_from_slater = h_int_slater(spin_names, orb_names, U_matrix=Umat, off_diag=True)
 
     U2, U2prime = U_matrix_kanamori(n_orb=3, U_int=U_int, J_hund=J_hund)

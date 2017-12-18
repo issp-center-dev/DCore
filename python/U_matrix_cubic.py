@@ -28,3 +28,8 @@ def U_matrix_kanamori_4index_eg(U_int, J_hund):
     Umat = U_matrix(l=2, radial_integrals=F, basis='cubic')
     U_sub = eg_submatrix(Umat)
     return U_sub
+
+def U_matrix_kanamori_4index_p(U_int, J_hund):
+    F = [U_int-4./3.*J_hund, 25./3.*J_hund]
+    Umat = U_matrix(l=1, radial_integrals=F, basis='cubic')
+    return Umat

@@ -62,6 +62,9 @@ class Solver:
         elif irrep == 'eg':
             self.Nlm = 2
             assert self.l == 2
+        elif irrep == 'p':
+            self.Nlm = 3
+            assert self.l == 1
         else:
             raise ValueError("irrep")
 
@@ -332,8 +335,6 @@ class Solver:
         return Umat, Up, U
 
     def __set_umatrix_cubic(self,U,J,irrep,use_kanamori=False):
-        assert self.l==2
-
         if not use_kanamori: # Slater
             Umat = U_matrix(l=self.l, U_int=U, J_hund=J, basis='cubic')
             if irrep=='t2g':
@@ -345,6 +346,8 @@ class Solver:
                 U_sub = U_matrix_kanamori_4index_t2g(U_int=U, J_hund=J)
             elif irrep=='eg':
                 U_sub = U_matrix_kanamori_4index_eg(U_int=U, J_hund=J)
+            elif irrep=='p':
+                U_sub = U_matrix_kanamori_4index_p(U_int=U, J_hund=J)
 
         U, Up = reduce_4index_to_2index(U_sub)
         return U_sub, Up, U
