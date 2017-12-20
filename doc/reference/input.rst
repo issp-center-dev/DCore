@@ -59,6 +59,18 @@ This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]
 
    $ dcore_post input-file
 
+List of input and output
+------------------------
+
+================= ================================================== ====================
+Program           Input parameters                                   Output files
+================= ================================================== ====================
+``dcore_pre``     [model], [system]                                  *seedname*.h5
+``dcore``         [model], [system], [impurity-solver], [control]    *seedname*.out.h5
+``dcore_check``   [model], [tool]                                    ---
+``dcore_post``    [model], [system], [impurity-solver], [tool]       ---
+================= ================================================== ====================
+
 Input-file format
 -----------------
 
