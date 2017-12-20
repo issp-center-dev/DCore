@@ -218,29 +218,39 @@ class DMFTCoreSolver:
         S = self._S
 
         # Set up a HDF file for output
+        error = 0
         if mpi.is_master_node():
-            with HDFArchive(output_file, 'a') as f:
-                if output_group in f:
-                    if self._params['control']['restart']:
-                        ar = f[output_group]
-                        if not 'iterations' in ar:
-                            raise RuntimeError("Failed to restart the previous simulation!")
-
-                        previous_runs = ar['iterations']
-                        if ar['iterations'] <= 0:
-                            raise RuntimeError("No previous runs to be loaded from " + output_file + "!")
-                        print("Loading Sigma_iw... ")
-                        for ish in range(nsh): S[ish].Sigma_iw << ar['Sigma_iw'][str(ish)]
+            try:
+                with HDFArchive(output_file, 'a') as f:
+                    f[output_group]['parameters'] = self._params
+                    if output_group in f:
+                        if self._params['control']['restart']:
+                            ar = f[output_group]
+                            if not 'iterations' in ar:
+                                raise RuntimeError("Failed to restart the previous simulation!")
+    
+                            previous_runs = ar['iterations']
+                            if ar['iterations'] <= 0:
+                                raise RuntimeError("No previous runs to be loaded from " + output_file + "!")
+                            print("Loading Sigma_iw... ")
+                            for ish in range(nsh):
+                                S[ish].Sigma_iw << ar['Sigma_iw'][str(ish)]
+                        else:
+                            del f[output_group]
+                            f.create_group(output_group)
                     else:
-                        del f[output_group]
                         f.create_group(output_group)
-                else:
-                    f.create_group(output_group)
-                #
-                # Sub group for something
-                #
-                for gname in ['Sigma_iw', 'G0-log', 'G-log', 'Sigma-log', 'G_iw', 'chemical_potential', 'Delta_iw']:
-                    if not (gname in f[output_group]): f[output_group].create_group(gname)
+                    #
+                    # Sub group for something
+                    #
+                    for gname in ['Sigma_iw', 'G0-log', 'G-log', 'Sigma-log', 'G_iw', 'chemical_potential', 'Delta_iw']:
+                        if not (gname in f[output_group]): f[output_group].create_group(gname)
+            except Exception as e:
+                error = 1
+                print("Error occured in IO of a HDF file: " + str(e))
+        error = mpi.bcast(error)
+        if error != 0:
+            return
 
         previous_runs = mpi.bcast(previous_runs)
         previous_present = previous_runs > 0
@@ -254,11 +264,8 @@ class DMFTCoreSolver:
                 SK.dc_imp = mpi.bcast(SK.dc_imp)
                 SK.dc_energ = mpi.bcast(SK.dc_energ)
 
-        if mpi.is_master_node():
-            ar = HDFArchive(output_file, 'a')
-            ar[output_group]['parameters'] = self._params
-
         for iteration_number in range(previous_runs+1,previous_runs+max_step+1):
+            sys.stdout.flush()
             if mpi.is_master_node():
                 print("\n########################  Iteration = {0}  ########################\n".format(iteration_number))
 
