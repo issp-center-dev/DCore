@@ -20,7 +20,8 @@ from __future__ import print_function
 import os
 import argparse
 import re
-from dmft_core import DMFTCoreSolver,create_parser
+from dmft_core import DMFTCoreSolver
+from program_options import create_parser
 from pytriqs.applications.dft.sumk_dft_tools import *
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 

@@ -21,7 +21,9 @@ import sys, os
 import argparse
 from pytriqs.applications.dft.sumk_dft import *
 from pytriqs.applications.dcore.typed_parser import TypedParser
-from pytriqs.applications.dcore.dmft_core import DMFTCoreSolver, create_parser
+from pytriqs.applications.dcore.dmft_core import DMFTCoreSolver
+
+from program_options import *
 
 parser = argparse.ArgumentParser(\
         prog='dcore.py',\

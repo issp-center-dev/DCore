@@ -81,25 +81,7 @@ Input-file format
 
 dcore_pre, dcore_check and dcore_post read this block.
 
-============= ============= ===================== ================================================================
-Name          Type          Default               Description
-============= ============= ===================== ================================================================
-t             Float         1.0                   Transfer integral (Nearest neighbor)
-t'            Float         0.0                   Transfer integral (Second nearest)
-U             Float         0.0                   On-site Coulomb potential
-J             Float         0.0                   On-site Hund potential
-orbital_model String        single                Chosen from "single", "eg", "t2g", "full-d"
-ncor          Integer       1                     Number of correlation shell (Only wannier90).
-lattice       String        chain                 Chosen from "chain", "square", "cubic", "bethe", and "wannier90"
-nelec         Float         1.0                   Number of electrons per unit cell.
-seedname      String        dcore                 Name of the system.
-                                                  It should be the same as the seedname of wannier90.
-cshell        Integer array [(0,1),...]           Anguler momentum, and the number of orbitals of each
-                                                  correlation shell (Only wannier90).
-bvec          Float array   [(1.0,0.0,0.0), (0.0, Reciplocal lattice vectors
-                            1.0,0.0),(0.0,0.0,1.0
-                            )]
-============= ============= ===================== ================================================================
+.. include:: model_desc.rst
 
 Prepare model for DCore.
 Wannier90 as well as the following preset models:
@@ -146,33 +128,14 @@ The parameter :math:`U'` is fixed at :math:`U'=U-2J`.
 
 dcore_pre and dcore read this block.
 
-======= =========== ===================== =================================================
-Name    Type        Default               Description
-======= =========== ===================== =================================================
-beta    Float       1.0                   Inverse temperature.
-n_iw    Integer     2048                  Number of Matsubara frequencies.
-n_tau   Integer     10000                 Number of imaginary-time points.
-dc_type Integer     -1                    Type of double-counting correction.
-fix_mu  Bool        False                 Whether or not to use a fixed chemical potential.
-nk      Integer     8                     Number of *k* along each line
-nk0     Integer     0                     Number of *k* (Only wannier90)
-nk1     Integer     0                     Number of *k* (Only wannier90)
-nk2     Integer     0                     Number of *k* (Only wannier90)
-prec_mu Float       0.0001                Threshold for calculating chemical potential
-                                          with the bisection method.
-======= =========== ===================== =================================================
+.. include:: system_desc.rst
 
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 dcore and dcore_post read this block.
 
-==== ======= =========== ===================================================
-Name Type    Default     Description
-==== ======= =========== ===================================================
-name String  TRIQS/cthyb Name of impurity solver. Choosen from "TRIQS/cthyb"
-                         "TRIQS/hubbrad-I", and "ALPS/cthyb".
-==== ======= =========== ===================================================
+.. include:: impurity_solver_desc.rst
 
 **... and other parameters (Solver dependent)**.
 We have to specify additional parameters with types (e.g. ``n_cycles{int} = 500000``).
@@ -185,31 +148,11 @@ For more details, please see the reference page of
 
 dcore reads this block.
 
-========= ======= ======= ==================================================
-Name      Type    Default Description
-========= ======= ======= ==================================================
-max_step  Integer 100     Max number of SCF steps.
-sigma_mix Float   0.5     Mixing parameter for self-energy.
-delta_mix Float   0.5     Mixing parameter for hybridization function.
-restart   Bool    False   Whether or not restart from a previous calculation
-========= ======= ======= ==================================================
+.. include:: control_desc.rst
 
 [tool] block
 ~~~~~~~~~~~~
 
 dcore_check and dcore_post reads this block.
 
-============= ================= ===================== ======================================================
-Name          Type              Default               Description
-============= ================= ===================== ======================================================
-nnode         Integer           2                     Number of node for the *k* path
-nk_line       Integer           8                     Number of *k* along each line
-knode         Sting Float array [(G,0.0,0.0,0.0),     The name and the fractional coordinate of each k-node.
-                                 (X,1.0,0.0,0.0)]
-omega_min     Float             -1                    Minimum value of real frequency
-omega_max     Float             1                     Max value of real frequency
-Nomega        Integer           100                   Number of real frequencies
-broadening    Float             0.1                   An additional Lorentzian broadening
-eta           Float             0.0                   Imaginary frequency shift for the Pade approximation
-n_pade        Integer           100                   Number of frequencies for the Pade approximation
-============= ================= ===================== ======================================================
+.. include:: tool_desc.rst

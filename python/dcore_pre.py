@@ -25,9 +25,8 @@ import re
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
-from dmft_core import create_parser
+from program_options import create_parser
 import pytriqs.utility.mpi as mpi
-
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
