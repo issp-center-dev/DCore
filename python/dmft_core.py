@@ -141,14 +141,47 @@ class DMFTCoreSolver:
             spin_names = ["up","down"]
             orb_names = [i for i in range(n_orb)]
 
-            # Construct U matrix for density-density calculations
-            Umat, Upmat = U_matrix_kanamori(n_orb=n_orb, U_int=self._U_int, J_hund=self._J_hund)
+            # Construct U matrix for Slater interaction (tentative)
+            if l == 0:
+                Umat = numpy.zeros((1, 1, 1, 1), dtype=float)
+                Umat[0, 0, 0, 0] = self._U_int
+            elif l == 1:
+                if n_orb == 1:
+                    Umat = numpy.zeros((1, 1, 1, 1), dtype=float)
+                    Umat[0, 0, 0, 0] = self._U_int
+                elif n_orb == 3:
+                    Umat = U_matrix(l=1, U_int=self._U_int, J_hund=self._J_hund, basis='cubic')
+                else:
+                    print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
+                    sys.exit()
+            elif l == 2:
+                if n_orb == 1:
+                    Umat = numpy.zeros((1, 1, 1, 1), dtype=float)
+                    Umat[0, 0, 0, 0] = self._U_int
+                elif n_orb == 2:
+                    Ufull = U_matrix(l=2, U_int=self._U_int, J_hund=self._J_hund, basis='cubic')
+                    Umat = eg_submatrix(Ufull)
+                elif n_orb == 3:
+                    Ufull = U_matrix(l=2, U_int=self._U_int, J_hund=self._J_hund, basis='cubic')
+                    Umat = t2g_submatrix(Ufull)
+                elif n_orb == 5:
+                    Umat = U_matrix(l=2, U_int=self._U_int, J_hund=self._J_hund, basis='cubic')
+                else:
+                    print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
+                    sys.exit()
+            elif n_orb == 1:
+                Umat = numpy.zeros((1, 1, 1, 1), dtype=float)
+                Umat[0, 0, 0, 0] = self._U_int
+            else:
+                print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
+                sys.exit()
 
             # Construct Hamiltonian
-            self._h_int.append(h_int_kanamori(spin_names, orb_names, map_operator_structure=self._SK.sumk_to_solver[ish],
-                                              U=Umat, Uprime=Upmat, J_hund=self._J_hund,
-                                              H_dump="H"+str(ish)+".txt")
-                               )
+            self._h_int.append(
+                h_int_slater(spin_names, orb_names, U_matrix=Umat, off_diag=True,
+                             map_operator_structure=self._SK.sumk_to_solver[ish],
+                               H_dump="H" + str(ish) + ".txt", complex=True)
+                )
 
             # Use GF structure determined by DFT blocks
             gf_struct = self._SK.gf_struct_solver[ish]
@@ -313,7 +346,7 @@ class DMFTCoreSolver:
                 eal = SK.eff_atomic_levels()
                 for ish in range(nsh):
                     S[ish].set_atomic_levels( eal = eal[ish] )
-                    S[ish].solve(U_int=self._U_int, J_hund=self._J_hund, verbosity = 0, use_kanamori=True)
+                    S[ish].solve(U_int=self._U_int, J_hund=self._J_hund, verbosity = 0)
             else:
                 for ish in range(nsh):
                     S[ish].solve(h_int=self._h_int[ish], **self._solver_params)
