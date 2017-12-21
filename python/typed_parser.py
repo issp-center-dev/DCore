@@ -127,6 +127,36 @@ class TypedParser(object):
         """
         return self.__results[sect][opt]
 
+    def get_type(self, sect, opt):
+        """
+        Get the type of a given option
+        """
+        return self.__definitions[sect][opt][0]
+
+    def get_description(self, sect, opt):
+        """
+        Get the description of a given option
+        """
+        return self.__definitions[sect][opt][1]
+
+    def get_default_value(self, sect, opt):
+        """
+        Get the default value of a given option
+        """
+        return self.__definitions[sect][opt][2]
+
+    def get_predefined_sections(self):
+        """
+        Get a list of sections predefined by add_option()
+        """
+        return self.__definitions.keys()
+
+    def get_predefined_options(self, section):
+        """
+        Get a list of options predefined by add_option() in a given section
+        """
+        return self.__definitions[section].keys()
+
     def as_dict(self):
         """
         Convert all options and their values into a dict object
