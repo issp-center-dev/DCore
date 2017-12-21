@@ -171,7 +171,7 @@ and they do not depend on the shell.
         c_{i\beta\uparrow} c_{i\beta\downarrow}
         \Big]
 
-        The parameter :math:`U'` is fixed at :math:`U'=U-2J`.
+     The parameter :math:`U'` is fixed at :math:`U'=U-2J`.
 
    * The density-density interaction.
 
