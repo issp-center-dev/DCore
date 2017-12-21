@@ -1,0 +1,8 @@
+============= =========== ========= ============================================================================
+Name          Type        Default   Description                                                                 
+============= =========== ========= ============================================================================
+delta_mix     Float       0.5       Mixing parameter for hybridization function                                 
+max_step      Integer     100       Max number of SCF steps                                                     
+restart       Bool        False     Whether or not restart from a previous calculation stored in a HDF file.    
+sigma_mix     Float       0.5       Mixing parameter for self-energy                                            
+============= =========== ========= ============================================================================

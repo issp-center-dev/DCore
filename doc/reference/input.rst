@@ -81,7 +81,7 @@ Input-file format
 
 dcore_pre, dcore_check and dcore_post read this block.
 
-.. include:: model_desc.rst
+.. include:: model_desc.txt
 
 Prepare model for DCore.
 Wannier90 as well as the following preset models:
@@ -184,14 +184,14 @@ and they do not depend on the shell.
 
 dcore_pre and dcore read this block.
 
-.. include:: system_desc.rst
+.. include:: system_desc.txt
 
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 dcore and dcore_post read this block.
 
-.. include:: impurity_solver_desc.rst
+.. include:: impurity_solver_desc.txt
 
 .. warning::
 
@@ -208,11 +208,11 @@ For more details, please see the reference page of
 
 dcore reads this block.
 
-.. include:: control_desc.rst
+.. include:: control_desc.txt
 
 [tool] block
 ~~~~~~~~~~~~
 
 dcore_check and dcore_post reads this block.
 
-.. include:: tool_desc.rst
+.. include:: tool_desc.txt

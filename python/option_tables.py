@@ -42,7 +42,7 @@ def max_length(str_list):
 
 
 for section in p.get_predefined_sections():
-    with open(section+'_desc.rst', 'w') as f:
+    with open('../doc/reference/'+section+'_desc.txt', 'w') as f:
         # Check length of strings
         name_strings = p.get_predefined_options(section)
         type_strings = []

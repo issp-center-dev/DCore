@@ -53,7 +53,7 @@ def create_parser():
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
 
     # [impurity_solver] 
-    parser.add_option("impurity_solver", "name", str, 'TRIQS/cthyb', "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
+    parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I', "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
     parser.allow_undefined_options("impurity_solver")
 
     # [control] 
