@@ -205,7 +205,6 @@ class DMFTCoreSolver:
         if mpi.is_master_node():
             try:
                 with HDFArchive(output_file, 'a') as f:
-                    f[output_group]['parameters'] = self._params
                     if output_group in f:
                         if self._params['control']['restart']:
                             ar = f[output_group]
@@ -223,6 +222,7 @@ class DMFTCoreSolver:
                             f.create_group(output_group)
                     else:
                         f.create_group(output_group)
+                    f[output_group]['parameters'] = self._params
                     #
                     # Sub group for something
                     #
