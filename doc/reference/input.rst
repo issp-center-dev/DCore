@@ -128,7 +128,7 @@ The parameter :math:`U'` is fixed at :math:`U'=U-2J`.
 
 dcore_pre and dcore read this block.
 
-.. include:: block_desc.rst
+.. include:: system_desc.rst
 
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
