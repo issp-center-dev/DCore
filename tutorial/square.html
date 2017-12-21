@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial with single-band 2D Hubbard model &mdash; DCore 1.4.0 documentation</title>
+    <title>Tutorial with single-band 2D Hubbard model &mdash; DCore 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.4.0',
+        VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../about.html" />
-    <link rel="top" title="DCore 1.4.0 documentation" href="../contents.html" />
+    <link rel="top" title="DCore 0.1.0 documentation" href="../contents.html" />
     <link rel="up" title="Documentation" href="../documentation.html" />
     <link rel="next" title="Tutorial with t2g Bethe lattice" href="bethe.html" />
     <link rel="prev" title="The interface layer" href="../basicnotions/structure.html" />
@@ -89,7 +89,7 @@
 <li><a class="reference internal" href="#">Tutorial with single-band 2D Hubbard model</a><ul>
 <li><a class="reference internal" href="#pre-process-dcore-pre">Pre-process : <code class="docutils literal"><span class="pre">dcore_pre</span></code></a></li>
 <li><a class="reference internal" href="#scf-cycle-dcore">SCF cycle : <code class="docutils literal"><span class="pre">dcore</span></code></a></li>
-<li><a class="reference internal" href="#spectrul-function-dcore-post">Spectrul function : <code class="docutils literal"><span class="pre">dcore_post</span></code></a></li>
+<li><a class="reference internal" href="#spectral-function-dcore-post">Spectral function : <code class="docutils literal"><span class="pre">dcore_post</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -161,25 +161,34 @@
 </div>
 <div class="section" id="pre-process-dcore-pre">
 <h2>Pre-process : <code class="docutils literal"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this headline">¶</a></h2>
-<p>First, we have to generate the lattice model as</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre dmft_square.ini
+<p>We first generate a h5 file that is necessary for DMFT calculations.
+The script <code class="docutils literal"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore_pre dmft_square.ini
 </pre></div>
 </div>
-<p>Then it outputs model HDF5 file (<code class="docutils literal"><span class="pre">square.h5</span></code>).</p>
+<p>If succeeded, a h5 file named <em>seedname</em>.h5 (<code class="docutils literal"><span class="pre">square.h5</span></code> in the present case) is generated.</p>
 </div>
 <div class="section" id="scf-cycle-dcore">
 <h2>SCF cycle : <code class="docutils literal"><span class="pre">dcore</span></code><a class="headerlink" href="#scf-cycle-dcore" title="Permalink to this headline">¶</a></h2>
 <p>The DMFT loop is performed by <code class="docutils literal"><span class="pre">dcore</span></code> program.
-In this example, we use the Hubbard-I approximation for the impurity solver.</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ pydmf dmft_square.ini
+In this tutorial, we use the Hubbard-I solver just for simplicity.
+One can run the program by</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore dmft_square.ini
 </pre></div>
 </div>
-<p>Then it generates the result HDF5 file.
-We can check the convergence of the SCF cycle by using <code class="docutils literal"><span class="pre">dcore_check</span></code> program.</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_check dmft_square.ini
+<p>It takes several minutes. You may run it with MPI to save time.
+Results for the self-energy and Green&#8217;s function in each iteration are accumulated into a h5 file named <em>seedname</em>.out.h5 (<code class="docutils literal"><span class="pre">square.out.h5</span></code> in the present case).</p>
+<p>One can check convergence of the SCF cycle using <code class="docutils literal"><span class="pre">dcore_check</span></code> program.
+You can run it with the following command, if X window system is available:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore_check dmft_square.ini
 </pre></div>
 </div>
-<p>We can find the following standard output.</p>
+<p>If X is not available or you prefer plotting in a file, use <code class="docutils literal"><span class="pre">--output</span></code> option to specify output file name</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore_check dmft_square.ini --output<span class="o">=</span>check.pdf
+</pre></div>
+</div>
+<p>The extension can be eps, jpg, etc.</p>
+<p><code class="docutils literal"><span class="pre">dcore_check</span></code> program prints the value of the chemical potential in each iterations on the standard output:</p>
 <div class="highlight-python"><div class="highlight"><pre>Total number of Iteration: 10
 
 Iter  Chemical-potential
@@ -195,16 +204,28 @@ Iter  Chemical-potential
 10 0.748282590054
 </pre></div>
 </div>
-<p>We also can see the imaginary-time self-energy at last seven iterations.</p>
+<p><code class="docutils literal"><span class="pre">dcore_check</span></code> also plots the self-energy for the last seven iterations in Matsubara-frequency domain.</p>
 <a class="reference internal image-reference" href="../_images/convergence1.png"><img alt="../_images/convergence1.png" class="align-center" src="../_images/convergence1.png" style="width: 500px;" /></a>
+<p>If those results are not converged, one can repeate the DMFT iteration using the same ini file. <code class="docutils literal"><span class="pre">dcore</span></code> program automatically finds results in the previous run and continue iteration.</p>
 </div>
-<div class="section" id="spectrul-function-dcore-post">
-<h2>Spectrul function : <code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectrul-function-dcore-post" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="spectral-function-dcore-post">
+<h2>Spectral function : <code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectral-function-dcore-post" title="Permalink to this headline">¶</a></h2>
+<p>We can calculate the density of states and the momentum-dependent single-particle excitations using <code class="docutils literal"><span class="pre">dcore_post</span></code> program.
+For Hubbard-I solver, the self-energy is first calculated in <code class="docutils literal"><span class="pre">dcore_post</span></code>.
+The calculation is done by the following command:</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post dmft_square.ini
-$ gnuplot square_akw.gp
+</pre></div>
+</div>
+<p>After finishing the calculation,
+<code class="docutils literal"><span class="pre">square_akw.dat</span></code>, <code class="docutils literal"><span class="pre">square_akw.gp</span></code> and <code class="docutils literal"><span class="pre">square_dos.dat</span></code> are generated.
+The data of spectral function are output into <code class="docutils literal"><span class="pre">square_akw.dat</span></code>.
+By using <code class="docutils literal"><span class="pre">square_akw.gp</span></code>, we can easily plot the result:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ gnuplot square_akw.gp
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/akw.png"><img alt="../_images/akw.png" class="align-center" src="../_images/akw.png" style="width: 700px;" /></a>
+<p>The data of density of states are output into <code class="docutils literal"><span class="pre">square_dos.dat</span></code>.
+We can plot the results by using gnuplot as follows:</p>
 <div class="highlight-gnuplot"><div class="highlight"><pre>gnuplot&gt; set xlabel &quot;Energy&quot;
 gnuplot&gt; set ylabel &quot;DOS&quot;
 gnuplot&gt; plot &quot;square_dos.dat&quot; w l

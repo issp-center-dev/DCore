@@ -137,18 +137,18 @@ DMFT setup: dcore_pre
 
 .. code-block :: bash
 
-   $ pydmf_pre srvo3.ini
+   $ dcore_pre srvo3.ini
 
 Running self-consistent DFT+DMFT : dcore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
-   $ pydmf srvo3.ini
+   $ dcore srvo3.ini
 
 Post-processing and data analysis: dcore_post
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
-   $ pydmf_post srvo3.ini
+   $ dcore_post srvo3.ini

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Input-file format and usage &mdash; DCore 1.4.0 documentation</title>
+    <title>Input-file format and usage &mdash; DCore 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.4.0',
+        VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../about.html" />
-    <link rel="top" title="DCore 1.4.0 documentation" href="../contents.html" />
+    <link rel="top" title="DCore 0.1.0 documentation" href="../contents.html" />
     <link rel="up" title="Documentation" href="../documentation.html" />
     <link rel="next" title="DMFTCoreSolver" href="DMFTCoreSolver.html" />
     <link rel="prev" title="Tutorial with OpenMX" href="../tutorial/openmx.html" />
@@ -94,6 +94,7 @@
 <li><a class="reference internal" href="#post-processing-dcore-post">Post-processing : <code class="docutils literal"><span class="pre">dcore_post</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#list-of-input-and-output">List of input and output</a></li>
 <li><a class="reference internal" href="#input-file-format">Input-file format</a><ul>
 <li><a class="reference internal" href="#model-block">[model] block</a></li>
 <li><a class="reference internal" href="#system-block">[system] block</a></li>
@@ -185,6 +186,40 @@ This program reads <code class="docutils literal"><span class="pre">[model]</spa
 </div>
 </div>
 </div>
+<div class="section" id="list-of-input-and-output">
+<h2>List of input and output<a class="headerlink" href="#list-of-input-and-output" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="57%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Program</th>
+<th class="head">Input parameters</th>
+<th class="head">Output files</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">dcore_pre</span></code></td>
+<td>[model], [system]</td>
+<td><em>seedname</em>.h5</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">dcore</span></code></td>
+<td>[model], [system], [impurity-solver], [control]</td>
+<td><em>seedname</em>.out.h5</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">dcore_check</span></code></td>
+<td>[model], [tool]</td>
+<td>&#8212;</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">dcore_post</span></code></td>
+<td>[model], [system], [impurity-solver], [tool]</td>
+<td>&#8212;</td>
+</tr>
+</tbody>
+</table>
+</div>
 <div class="section" id="input-file-format">
 <h2>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre>[model]
@@ -213,10 +248,10 @@ max_step = 40
 <p>dcore_pre, dcore_check and dcore_post read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="13%" />
-<col width="13%" />
-<col width="11%" />
-<col width="63%" />
+<col width="12%" />
+<col width="12%" />
+<col width="19%" />
+<col width="58%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -278,6 +313,13 @@ It should be the same as the seedname of wannier90.</td>
 <td>Anguler momentum, and the number of orbitals of each
 correlation shell (Only wannier90).</td>
 </tr>
+<tr class="row-even"><td>bvec</td>
+<td>Float array</td>
+<td>[(1.0,0.0,0.0), (0.0,
+1.0,0.0),(0.0,0.0,1.0
+)]</td>
+<td>Reciplocal lattice vectors</td>
+</tr>
 </tbody>
 </table>
 <p>Prepare model for DCore.
@@ -296,7 +338,16 @@ Read hopping parameters from the Wannier90 output.</li>
 t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 +h.c. + {\hat H}_{\rm int},\]</div>
 <p>where <span class="math">\({\hat H}_{\rm int}\)</span> is the Kanamori interaction term
-with <span class="math">\(U_{\rm int}\)</span> and <span class="math">\(J_{\rm Hund}\)</span>.</p>
+given by</p>
+<div class="math">
+\[{\hat H}_{\rm int} = \sum_i \Big[
+\sum_{\alpha} U n_{i\alpha\uparrow} n_{i\alpha\downarrow}
++ \frac{1}{2} \sum_{\alpha \neq \beta, \sigma \sigma'}
+(U' - J\delta_{\sigma\sigma'}) n_{i\alpha\sigma} n_{i\beta\sigma'}
+- \sum_{\alpha \neq \beta} J(c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow} c_{i\beta\downarrow}^{\dagger} c_{i\beta\uparrow}
++ c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow}^{\dagger} c_{i\beta\uparrow} c_{i\beta\downarrow}
+\Big]\]</div>
+<p>The parameter <span class="math">\(U'\)</span> is fixed at <span class="math">\(U'=U-2J\)</span>.</p>
 <a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
 </div>
 <div class="section" id="system-block">
@@ -362,12 +413,11 @@ with <span class="math">\(U_{\rm int}\)</span> and <span class="math">\(J_{\rm H
 <td>0</td>
 <td>Number of <em>k</em> (Only wannier90)</td>
 </tr>
-<tr class="row-odd"><td>bvec</td>
-<td>Float array</td>
-<td>[(1.0,0.0,0.0), (0.0,
-1.0,0.0),(0.0,0.0,1.0
-)]</td>
-<td>Reciplocal lattice vectors</td>
+<tr class="row-odd"><td>prec_mu</td>
+<td>Float</td>
+<td>0.0001</td>
+<td>Threshold for calculating chemical potential
+with the bisection method.</td>
 </tr>
 </tbody>
 </table>
@@ -409,10 +459,10 @@ For more details, please see the reference page of
 <p>dcore reads this block.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="13%" />
+<col width="12%" />
 <col width="10%" />
 <col width="10%" />
-<col width="66%" />
+<col width="68%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -436,6 +486,11 @@ For more details, please see the reference page of
 <td>Float</td>
 <td>0.5</td>
 <td>Mixing parameter for hybridization function.</td>
+</tr>
+<tr class="row-odd"><td>restart</td>
+<td>Bool</td>
+<td>False</td>
+<td>Whether or not restart from a previous calculation</td>
 </tr>
 </tbody>
 </table>
@@ -499,7 +554,7 @@ For more details, please see the reference page of
 </tr>
 <tr class="row-odd"><td>eta</td>
 <td>Float</td>
-<td>0.01</td>
+<td>0.0</td>
 <td>Imaginary frequency shift for the Pade approximation</td>
 </tr>
 <tr class="row-even"><td>n_pade</td>

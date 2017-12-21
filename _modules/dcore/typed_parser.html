@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>dcore.typed_parser &mdash; DCore 1.4.0 documentation</title>
+    <title>dcore.typed_parser &mdash; DCore 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.4.0',
+        VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
-    <link rel="top" title="DCore 1.4.0 documentation" href="../../contents.html" />
+    <link rel="top" title="DCore 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="Module code" href="../index.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
     <script src="../../_static/cufon-yui.js" type="text/javascript"></script>
@@ -122,6 +122,16 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">ConfigParser</span> <span class="kn">as</span> <span class="nn">configparser</span>
 
+<span class="k">def</span> <span class="nf">cast</span><span class="p">(</span><span class="n">value_type</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">value_type</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">string</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="s1">&#39;True&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">string</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;false&#39;</span><span class="p">,</span> <span class="s1">&#39;False&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot cast string &quot;</span><span class="o">+</span><span class="n">string</span><span class="o">+</span><span class="s2">&quot; to bool.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value_type</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TypedParser"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser">[docs]</a><span class="k">class</span> <span class="nc">TypedParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -199,7 +209,7 @@
                 <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__config_parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">sect</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span> <span class="ow">and</span> <span class="n">opt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">]:</span>
                     <span class="c1"># if an option is pre-defined.</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">0</span><span class="p">](</span><span class="n">value</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># if an option is not pre-defined, use the value in the input file</span>
                     <span class="k">if</span> <span class="n">sect</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allow_undefined_options</span><span class="p">:</span>
@@ -229,11 +239,15 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print a list of all options and sections</span>
 
-<span class="sd">        :return:</span>
+<span class="sd">        :return: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># To be implemented</span>
-        <span class="k">pass</span></div></div>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  @ Defined options&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">section_name</span><span class="p">,</span><span class="n">section_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;   [&quot;</span><span class="o">+</span><span class="n">section_name</span><span class="o">+</span><span class="s2">&quot;] block&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">option_name</span><span class="p">,</span><span class="n">option_data</span> <span class="ow">in</span> <span class="n">section_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;     option =  {0} : type = {1} : description = </span><span class="se">\&quot;</span><span class="s2">{2}</span><span class="se">\&quot;</span><span class="s2"> : default value = {3}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">option_name</span><span class="p">,</span> <span class="n">option_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">option_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">option_data</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span></div></div>
 </pre></div>
 
           </div>

@@ -134,21 +134,21 @@ DMFT setup: dcore_pre
 
 .. code-block :: bash
 
-   $ pydmf_pre nis.ini
+   $ dcore_pre nis.ini
 
 Running self-consistent DFT+DMFT : dcore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
-   $ pydmf nis.ini
+   $ dcore nis.ini
 
 Post-processing and data analysis: dcore_post
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
-   $ pydmf_post nis.ini
+   $ dcore_post nis.ini
    $ gnuplot nis_akw.gp
 
 .. image:: qe/akw_nis.png

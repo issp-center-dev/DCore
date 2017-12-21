@@ -10,19 +10,19 @@ Tutorial with t2g Bethe lattice
 
 .. code-block :: bash
 
-   $ pydmf_pre dmft_bethe.ini
+   $ dcore_pre dmft_bethe.ini
 
 ``dcore``
 ----------
 
 .. code-block :: bash
 
-   $ pydmf dmft_bethe.ini
+   $ dcore dmft_bethe.ini
 
 ``dcore_post``
 ---------------
 
 .. code-block :: bash
 
-   $ pydmf_post dmft_bethe.ini
+   $ dcore_post dmft_bethe.ini
 

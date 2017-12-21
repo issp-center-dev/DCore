@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>NiS &mdash; DCore 1.4.0 documentation</title>
+    <title>NiS &mdash; DCore 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.4.0',
+        VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../about.html" />
-    <link rel="top" title="DCore 1.4.0 documentation" href="../contents.html" />
+    <link rel="top" title="DCore 0.1.0 documentation" href="../contents.html" />
     <link rel="up" title="Tutorial with QuantumESPRESSO and wannier90" href="qe.html" />
     <link rel="next" title="Tutorial with OpenMX" href="openmx.html" />
     <link rel="prev" title="SrVO3" href="srvo3.html" />
@@ -614,11 +614,11 @@ outdir = &quot;./&quot;,
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" href="../_downloads/nis.ini" download=""><code class="xref download docutils literal"><span class="pre">nis.ini</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
-<span class="n">U</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">U</span> <span class="o">=</span> <span class="mf">2.0</span>
 <span class="n">J</span> <span class="o">=</span> <span class="mf">0.0</span>
 <span class="n">lattice</span> <span class="o">=</span> <span class="n">wannier90</span>
 <span class="n">seedname</span> <span class="o">=</span> <span class="n">nis</span>
-<span class="n">nelec</span> <span class="o">=</span> <span class="mf">24.0</span>
+<span class="n">nelec</span> <span class="o">=</span> <span class="mf">28.0</span>
 <span class="n">ncor</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">cshell</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
 <span class="n">bvec</span><span class="o">=</span><span class="p">[(</span><span class="mf">1.822263</span><span class="p">,</span> <span class="mf">1.052084</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.104168</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.172476</span><span class="p">)]</span>
@@ -627,13 +627,15 @@ outdir = &quot;./&quot;,
 <span class="n">nk0</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="n">nk1</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="n">nk2</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">beta</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">beta</span> <span class="o">=</span> <span class="mf">40.0</span>
+<span class="n">dc_type</span> <span class="o">=</span> <span class="mi">1</span>
 
 <span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
 <span class="n">name</span> <span class="o">=</span> <span class="n">TRIQS</span><span class="o">/</span><span class="n">hubbard</span><span class="o">-</span><span class="n">I</span>
 
 <span class="p">[</span><span class="n">control</span><span class="p">]</span>
-<span class="n">max_step</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">max_step</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">restart</span> <span class="o">=</span> <span class="bp">True</span>
 
 <span class="p">[</span><span class="n">tool</span><span class="p">]</span>
 <span class="n">broadening</span> <span class="o">=</span> <span class="mf">0.1</span>
@@ -641,25 +643,25 @@ outdir = &quot;./&quot;,
 <span class="n">nnode</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="n">knode</span><span class="o">=</span><span class="p">[(</span><span class="n">G</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">M</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">K</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">G</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">A</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">L</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">H</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">A</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)]</span>
 <span class="n">omega_max</span> <span class="o">=</span><span class="mf">3.0</span>
-<span class="n">omega_min</span> <span class="o">=-</span><span class="mf">12.0</span>
+<span class="n">omega_min</span> <span class="o">=-</span><span class="mf">10.0</span>
 <span class="n">Nomega</span> <span class="o">=</span> <span class="mi">500</span>
 </pre></div>
 </div>
 <div class="section" id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_pre nis.ini
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore_pre nis.ini
 </pre></div>
 </div>
 </div>
 <div class="section" id="running-self-consistent-dft-dmft-dcore">
 <h3>Running self-consistent DFT+DMFT : dcore<a class="headerlink" href="#running-self-consistent-dft-dmft-dcore" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ pydmf nis.ini
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore nis.ini
 </pre></div>
 </div>
 </div>
 <div class="section" id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post nis.ini
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore_post nis.ini
 $ gnuplot nis_akw.gp
 </pre></div>
 </div>
