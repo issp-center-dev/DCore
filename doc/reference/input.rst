@@ -51,7 +51,7 @@ at the last seven iterations.
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This program compute the total and *k*\ -resolved spectrul function from the outputted
+This program compute the total and *k*\ -resolved spectral function from the outputted
 HDF5 file (*seedname*.out.h5).
 This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` block.
 
@@ -121,7 +121,7 @@ given by
 Where :math:`U^{l}_{\alpha \beta \gamma \delta}` is the interaction matrix
 constructed by the effective Slater integrals
 :math:`F_0, F_2, \cdots F_{2 l}`.
-These effective Slater integrals are commputed with the following formulae:
+These effective Slater integrals are computed with the following formulae:
 
 * :math:`l = 1`
 

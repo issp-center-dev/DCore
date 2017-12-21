@@ -49,8 +49,8 @@ Then, run ``pw.x`` as
                 
    $ mpirun -np 4 pw.x -in nscf_nis.in 
 
-Preprocess for Wannier90
-~~~~~~~~~~~~~~~~~~~~~~~~
+Pre-process for Wannier90
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.
@@ -84,7 +84,7 @@ Wannier90
 ~~~~~~~~~   
 
 Execute ``wannier90.x`` for the actual wannierization.
-The input file is the same as that for the preprocessing run.
+The input file is the same as that for the pre-processing run.
 
 .. code-block:: bash
                 
@@ -93,8 +93,8 @@ The input file is the same as that for the preprocessing run.
 (Optional) Check wannierization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
 
-If we want to check the quarity of the wannierization,
-we plot the original and the wannier-interpolated band structure simalteneously.
+If we want to check the quality of the wannierization,
+we plot the original and the wannier-interpolated band structure simultaneously.
 
 First, we compute the band structure with the following input file:
 

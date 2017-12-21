@@ -82,7 +82,7 @@ The extension can be eps, jpg, etc.
    :width: 500
    :align: center
 
-If those results are not converged, one can repeate the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iteration.
+If those results are not converged, one can repeat the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iteration.
 
 Spectral function : ``dcore_post``
 ----------------------------------
@@ -92,7 +92,7 @@ The calculation is done by the following command:
 
 .. code-block:: bash
 
-   $ pydmf_post dmft_square.ini
+   $ dcore_post dmft_square.ini
 
 After finishing the calculation,
 ``square_akw.dat``, ``square_akw.gp`` and ``square_dos.dat`` are generated.
