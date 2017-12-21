@@ -19,6 +19,5 @@ Learn how to use this package in the :ref:`documentation`.
    :width: 500
    :align: center
 
-
 .. toctree::
    :maxdepth: 2

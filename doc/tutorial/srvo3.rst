@@ -3,6 +3,10 @@
 SrVO\ :sub:`3`
 ==============
 
+.. todo::
+
+   The QE-SrVO\ :sub:`3` tutorial is not complete.
+
 Crystal structure of SrVO\ :sub:`3` (drawn by `VESTA <http://jp-minerals.org/vesta/en/>`_).
 
 .. image:: qe/struct_srvo3.png
