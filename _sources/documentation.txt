@@ -50,8 +50,8 @@ FAQs
 
    faqs/faqs
 
-TODOs
------
+To be completed
+---------------
 
 .. todolist::
 
