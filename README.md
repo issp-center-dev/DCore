@@ -1,51 +1,21 @@
+# DCore
 
-## `dcore_pre.py`
+DCore is aimed at model calculations and ab-initio calculations by the dynamical mean-field theory (DMFT). This package consists of programs with text-based and hdf5-based interface. These programs enable users to perform DMFT calculations and analyze results without writing computer code. The current version is built on TRIQS Python libraries. We will add supports for impurity solvers based on ALPSCore libraries in future.
 
-### Requirements
-- triqs
-- triqs/dft_tools
-- triqs/hubbard-I
-- triqs/cthyb (optional)
-- ALPSCore (optional)
-- ALPSCore/CT-HYB (optional)
+![Image of concept](doc/concept.png)
 
-### Usage
+## Web page
 
-``` bash
-$ dcore_pre input-file
-```
+https://issp-center-dev.github.io/DCore/index.html
+
+## Installation guide
+
+https://issp-center-dev.github.io/DCore/install.html
+
+## Documentation
+
+https://issp-center-dev.github.io/DCore/documentation.html
 
 ### Input file format
 
-Example
-```
-t = 1.0
-seedname = test
-U = 4.0
-lattice = square
-model = t2g
-nelec = 1.0
-nk = 8
-```
-
-Parameters
-
-- `lattice` (default `chain`): Lattice. Chosen from `chain`, `square`, `cubic`, and `bethe`
-- `model` (default `single`): Structure of a shell. Chosen from `single`, `eg`, `t2g`, and `full-d`.
-- `nelec` (default `1.0`): Number of electrons per uunit cell.
-- `nk` (default `8`): Number of *k* points along single axis.
-- `seedname` (default `dcore`): The title of system
-- `t` (default: `1.0`): Nearest neighbor hopping
-- `t'` (default `0.0`): Second nearest hopping
-- `U` (default `0.0`)`: Coulomb parameter U
-- `J` (default `0.0`)`: Coulomb parameter J
-
-### Output files
-
-#### `seedname`
-
-General-Hk formatted temporary file.
-
-#### `seedname.h5`
-
-HDF5 formatted file which contains the SumkDFT data and the interaction.
+https://issp-center-dev.github.io/DCore/reference/input.html
