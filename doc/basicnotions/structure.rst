@@ -9,7 +9,7 @@ first-principles program package.
 DCore supports input hopping parameters as the wannier90 format.
 It can also perform calculation of simple preset models (such as the Bethe lattice);
 it can be used for the practice of this code.
-After we perform DMFT-SCF calculation, we can compute the density of states and
+After we finish DMFT loop, we can compute the density of states and
 the spectrum function with the post-processing tool.
 
 The interface layer
