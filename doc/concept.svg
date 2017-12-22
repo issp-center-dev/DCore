@@ -1,30 +1,84 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="レイヤー_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
-	 y="0px" viewBox="0 0 334.8 121.4" style="enable-background:new 0 0 334.8 121.4;" xml:space="preserve">
-<style type="text/css">
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="レイヤー_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 334.8 121.4"
+   style="enable-background:new 0 0 334.8 121.4;"
+   xml:space="preserve"
+   sodipodi:docname="concept.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"><metadata
+     id="metadata35"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+     id="defs33" /><sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2880"
+     inkscape:window-height="1706"
+     id="namedview31"
+     showgrid="false"
+     inkscape:zoom="1.9439868"
+     inkscape:cx="47.543213"
+     inkscape:cy="60.700001"
+     inkscape:window-x="3229"
+     inkscape:window-y="49"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="レイヤー_1" /><style
+     type="text/css"
+     id="style2">
 	.st0{font-family:'TimesNewRomanPSMT';}
 	.st1{font-size:14px;}
 	.st2{font-size:18px;}
 	.st3{fill:none;stroke:#000000;stroke-width:4;stroke-miterlimit:10;}
-</style>
-<text transform="matrix(1 0 0 1 -2.260208e-04 11.6347)" class="st0 st1">Connecting  power of elaborate  TRIQS and ALPS libraries</text>
-<text transform="matrix(1 0 0 1 58.1762 76.718)" class="st0 st2">TRIQS</text>
-<text transform="matrix(1 0 0 1 229.8893 76.7181)" class="st0 st2">ALPSCore</text>
-<g>
-	<g>
-		<path class="st3" d="M214.5,85.7c-5.3,19.4-23,33.7-44.1,33.7c-25.2,0-45.7-20.5-45.7-45.7"/>
-		<g>
-			<path d="M216.1,73.7c-2.9,5.3-7.5,11.8-11.9,15.5l9.9-2L223,92C219.8,87.1,217.3,79.6,216.1,73.7z"/>
-		</g>
-	</g>
-</g>
-<g>
-	<g>
-		<path class="st3" d="M126.3,55.7c5.3-19.4,23-33.7,44.1-33.7c25.2,0,45.7,20.5,45.7,45.7"/>
-		<g>
-			<path d="M124.7,67.7c2.9-5.3,7.5-11.8,11.9-15.5l-9.9,2l-8.9-4.8C120.9,54.3,123.4,61.8,124.7,67.7z"/>
-		</g>
-	</g>
-</g>
-</svg>
+</style><text
+     transform="matrix(1 0 0 1 -2.260208e-04 11.6347)"
+     class="st0 st1"
+     id="text4"><tspan
+       style="-inkscape-font-specification:'Times New Roman, ';font-family:'Times New Roman';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal"
+       id="tspan842">Connecting  power of elaborate  TRIQS and ALPS libraries</tspan></text>
+<text
+     transform="matrix(1 0 0 1 58.1762 76.718)"
+     class="st0 st2"
+     id="text6"><tspan
+       style="-inkscape-font-specification:'Times New Roman, ';font-family:'Times New Roman';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal"
+       id="tspan844">TRIQS</tspan></text>
+<text
+     transform="matrix(1 0 0 1 229.8893 76.7181)"
+     class="st0 st2"
+     id="text8"><tspan
+       style="-inkscape-font-specification:'Times New Roman, ';font-family:'Times New Roman';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal"
+       id="tspan846">ALPSCore</tspan></text>
+<g
+     id="g18"><g
+       id="g16"><path
+         class="st3"
+         d="M214.5,85.7c-5.3,19.4-23,33.7-44.1,33.7c-25.2,0-45.7-20.5-45.7-45.7"
+         id="path10" /><g
+         id="g14"><path
+           d="M216.1,73.7c-2.9,5.3-7.5,11.8-11.9,15.5l9.9-2L223,92C219.8,87.1,217.3,79.6,216.1,73.7z"
+           id="path12" /></g></g></g><g
+     id="g28"><g
+       id="g26"><path
+         class="st3"
+         d="M126.3,55.7c5.3-19.4,23-33.7,44.1-33.7c25.2,0,45.7,20.5,45.7,45.7"
+         id="path20" /><g
+         id="g24"><path
+           d="M124.7,67.7c2.9-5.3,7.5-11.8,11.9-15.5l-9.9,2l-8.9-4.8C120.9,54.3,123.4,61.8,124.7,67.7z"
+           id="path22" /></g></g></g></svg>
