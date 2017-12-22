@@ -178,7 +178,7 @@ at the last seven iterations.</p>
 </div>
 <div class="section" id="post-processing-dcore-post">
 <h3>Post-processing : <code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this headline">¶</a></h3>
-<p>This program compute the total and <em>k</em>-resolved spectrul function from the outputted
+<p>This program compute the total and <em>k</em>-resolved spectral function from the outputted
 HDF5 file (<em>seedname</em>.out.h5).
 This program reads <code class="docutils literal"><span class="pre">[model]</span></code>, <code class="docutils literal"><span class="pre">[system]</span></code>, <code class="docutils literal"><span class="pre">[impurity-solver]</span></code> and <code class="docutils literal"><span class="pre">[tool]</span></code> block.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ dcore_post input-file
@@ -197,7 +197,7 @@ This program reads <code class="docutils literal"><span class="pre">[model]</spa
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
 <th class="head">Input parameters</th>
-<th class="head">Output files</th>
+<th class="head">Output HDF files</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -248,10 +248,10 @@ max_step = 40
 <p>dcore_pre, dcore_check and dcore_post read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="12%" />
-<col width="12%" />
-<col width="19%" />
-<col width="58%" />
+<col width="7%" />
+<col width="5%" />
+<col width="20%" />
+<col width="68%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -261,64 +261,60 @@ max_step = 40
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>t</td>
-<td>Float</td>
-<td>1.0</td>
-<td>Transfer integral (Nearest neighbor)</td>
+<tr class="row-even"><td>orbital_model</td>
+<td>String</td>
+<td>single</td>
+<td>Chosen from &#8220;single&#8221;, &#8220;eg&#8221;, &#8220;t2g&#8221;, &#8220;full-d&#8221;</td>
 </tr>
-<tr class="row-odd"><td>t&#8217;</td>
-<td>Float</td>
-<td>0.0</td>
-<td>Transfer integral (Second nearest)</td>
+<tr class="row-odd"><td>cshell</td>
+<td>String</td>
+<td>[]</td>
+<td>Anguler momentum, and the number of orbitals of each correlation shell (Only wannier90). If not explicitly specified, the default value will be  [(0,1),...].</td>
 </tr>
-<tr class="row-even"><td>U</td>
-<td>Float</td>
-<td>0.0</td>
-<td>On-site Coulomb potential</td>
+<tr class="row-even"><td>ncor</td>
+<td>Integer</td>
+<td>1</td>
+<td>Number of correlation shell (Only wannier90).</td>
 </tr>
 <tr class="row-odd"><td>J</td>
 <td>Float</td>
 <td>0.0</td>
 <td>On-site Hund potential</td>
 </tr>
-<tr class="row-even"><td>orbital_model</td>
-<td>String</td>
-<td>single</td>
-<td>Chosen from &#8220;single&#8221;, &#8220;eg&#8221;, &#8220;t2g&#8221;, &#8220;full-d&#8221;</td>
-</tr>
-<tr class="row-odd"><td>ncor</td>
-<td>Integer</td>
-<td>1</td>
-<td>Number of correlation shell (Only wannier90).</td>
-</tr>
-<tr class="row-even"><td>lattice</td>
-<td>String</td>
-<td>chain</td>
-<td>Chosen from &#8220;chain&#8221;, &#8220;square&#8221;, &#8220;cubic&#8221;, &#8220;bethe&#8221;, and &#8220;wannier90&#8221;</td>
-</tr>
-<tr class="row-odd"><td>nelec</td>
+<tr class="row-even"><td>nelec</td>
 <td>Float</td>
 <td>1.0</td>
 <td>Number of electrons per unit cell.</td>
 </tr>
+<tr class="row-odd"><td>lattice</td>
+<td>String</td>
+<td>chain</td>
+<td>Chosen from &#8220;chain&#8221;, &#8220;square&#8221;, &#8220;cubic&#8221;, &#8220;bethe&#8221;, and &#8220;wannier90&#8221;</td>
+</tr>
+<tr class="row-even"><td>U</td>
+<td>Float</td>
+<td>0.0</td>
+<td>On-site Coulomb potential</td>
+</tr>
+<tr class="row-odd"><td>t</td>
+<td>Float</td>
+<td>1.0</td>
+<td>Transfer integral (Nearest neighbor)</td>
+</tr>
+<tr class="row-even"><td>bvec</td>
+<td>String</td>
+<td>[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]</td>
+<td>Reciprocal lattice vectors</td>
+</tr>
+<tr class="row-odd"><td>t&#8217;</td>
+<td>Float</td>
+<td>0.0</td>
+<td>Transfer integral (Second nearest)</td>
+</tr>
 <tr class="row-even"><td>seedname</td>
 <td>String</td>
 <td>dcore</td>
-<td>Name of the system.
-It should be the same as the seedname of wannier90.</td>
-</tr>
-<tr class="row-odd"><td>cshell</td>
-<td>Integer array</td>
-<td>[(0,1),...]</td>
-<td>Anguler momentum, and the number of orbitals of each
-correlation shell (Only wannier90).</td>
-</tr>
-<tr class="row-even"><td>bvec</td>
-<td>Float array</td>
-<td>[(1.0,0.0,0.0), (0.0,
-1.0,0.0),(0.0,0.0,1.0
-)]</td>
-<td>Reciplocal lattice vectors</td>
+<td>Name of the system. The model HDF5 file will be seedname.h5.</td>
 </tr>
 </tbody>
 </table>
@@ -333,32 +329,82 @@ Semicircular DOS with energy ranges [-2t:2t].</li>
 <li>wannier90
 Read hopping parameters from the Wannier90 output.</li>
 </ul>
+<a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
 <div class="math">
 \[{\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
 t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 +h.c. + {\hat H}_{\rm int},\]</div>
-<p>where <span class="math">\({\hat H}_{\rm int}\)</span> is the Kanamori interaction term
+<p>where <span class="math">\({\hat H}_{\rm int}\)</span> is the Slater interaction term
 given by</p>
+<div class="math">
+\[{\hat H}_{\rm int} = \frac{1}{2}
+\sum_{ijkl,\sigma \sigma'}
+U^{l_i}_{\alpha \beta \gamma \delta}
+c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \delta \sigma'} c_{i \gamma \sigma}.\]</div>
+<p>Where <span class="math">\(U^{l}_{\alpha \beta \gamma \delta}\)</span> is the interaction matrix
+constructed by the effective Slater integrals
+<span class="math">\(F_0, F_2, \cdots F_{2 l}\)</span>.
+These effective Slater integrals are computed with the following formulae:</p>
+<ul>
+<li><p class="first"><span class="math">\(l = 1\)</span></p>
+<div class="math">
+\[F_0 = U, \quad
+F_2 = 5 J\]</div>
+</li>
+<li><p class="first"><span class="math">\(l=2\)</span></p>
+<div class="math">
+\[F_0 = U, \quad
+F_2 = \frac{14 J}{1.0 + 0.63},\quad
+F_4 = 0.63 F_2\]</div>
+</li>
+<li><p class="first"><span class="math">\(l=3\)</span></p>
+<div class="math">
+\[F_0 = U, \quad
+F_2 = \frac{6435 J}{286 + 195 \times 451 / 675 + 250 \times 1001 / 2025},\quad
+F_4 = \frac{451 F_2}{675},\quad
+F_6 = \frac{1001 F_2}{2025}\]</div>
+</li>
+</ul>
+<p><span class="math">\(U\)</span> and <span class="math">\(J\)</span> are specified by the parameters in <code class="docutils literal"><span class="pre">[model]</span></code> block
+and they do not depend on the shell.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p>The interaction part, <span class="math">\({\hat H}_{\rm int}\)</span>
+will be modified to support the following interactions</p>
+<ul class="last">
+<li><p class="first">The Slater interaction with directly specified Slater integrals.</p>
+</li>
+<li><p class="first">The Kanamori interaction given by</p>
 <div class="math">
 \[{\hat H}_{\rm int} = \sum_i \Big[
 \sum_{\alpha} U n_{i\alpha\uparrow} n_{i\alpha\downarrow}
 + \frac{1}{2} \sum_{\alpha \neq \beta, \sigma \sigma'}
 (U' - J\delta_{\sigma\sigma'}) n_{i\alpha\sigma} n_{i\beta\sigma'}
-- \sum_{\alpha \neq \beta} J(c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow} c_{i\beta\downarrow}^{\dagger} c_{i\beta\uparrow}
-+ c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow}^{\dagger} c_{i\beta\uparrow} c_{i\beta\downarrow}
+- \sum_{\alpha \neq \beta} J(c_{i\alpha\uparrow}^{\dagger}
+c_{i\alpha\downarrow} c_{i\beta\downarrow}^{\dagger} c_{i\beta\uparrow}
++ c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow}^{\dagger}
+c_{i\beta\uparrow} c_{i\beta\downarrow}
 \Big]\]</div>
 <p>The parameter <span class="math">\(U'\)</span> is fixed at <span class="math">\(U'=U-2J\)</span>.</p>
-<a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
+</li>
+<li><p class="first">The density-density interaction.</p>
+</li>
+<li><p class="first">Site-dependent interaction</p>
+</li>
+<li><p class="first">etc.</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="section" id="system-block">
 <h3>[system] block<a class="headerlink" href="#system-block" title="Permalink to this headline">¶</a></h3>
 <p>dcore_pre and dcore read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="8%" />
-<col width="13%" />
-<col width="24%" />
-<col width="56%" />
+<col width="7%" />
+<col width="7%" />
+<col width="9%" />
+<col width="78%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -368,56 +414,60 @@ given by</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>beta</td>
+<tr class="row-even"><td>mu</td>
 <td>Float</td>
-<td>1.0</td>
-<td>Inverse temperature.</td>
-</tr>
-<tr class="row-odd"><td>n_iw</td>
-<td>Integer</td>
-<td>2048</td>
-<td>Number of Matsubara frequencies.</td>
-</tr>
-<tr class="row-even"><td>n_tau</td>
-<td>Integer</td>
-<td>10000</td>
-<td>Number of imaginary-time points.</td>
-</tr>
-<tr class="row-odd"><td>dc_type</td>
-<td>Integer</td>
-<td>-1</td>
-<td>Type of double-counting correction.</td>
-</tr>
-<tr class="row-even"><td>fix_mu</td>
-<td>Bool</td>
-<td>False</td>
-<td>Whether or not to use a fixed chemical potential.</td>
+<td>100000000.0</td>
+<td>Chemical potential used when fix_mu = True</td>
 </tr>
 <tr class="row-odd"><td>nk</td>
 <td>Integer</td>
 <td>8</td>
 <td>Number of <em>k</em> along each line</td>
 </tr>
-<tr class="row-even"><td>nk0</td>
+<tr class="row-even"><td>dc_type</td>
 <td>Integer</td>
-<td>0</td>
-<td>Number of <em>k</em> (Only wannier90)</td>
+<td>-1</td>
+<td>Type of double-counting correction. Set -1 to disable DC correction. Other availale options are according to TRIQS DFTTools.</td>
 </tr>
 <tr class="row-odd"><td>nk1</td>
 <td>Integer</td>
 <td>0</td>
-<td>Number of <em>k</em> (Only wannier90)</td>
+<td>Number of <em>k</em> along b_1 (only for wannier90)</td>
 </tr>
 <tr class="row-even"><td>nk2</td>
 <td>Integer</td>
 <td>0</td>
-<td>Number of <em>k</em> (Only wannier90)</td>
+<td>Number of <em>k</em> along b_2 (only for wannier90)</td>
 </tr>
-<tr class="row-odd"><td>prec_mu</td>
+<tr class="row-odd"><td>nk0</td>
+<td>Integer</td>
+<td>0</td>
+<td>Number of <em>k</em> along b_0 (only for wannier90)</td>
+</tr>
+<tr class="row-even"><td>n_tau</td>
+<td>Integer</td>
+<td>10000</td>
+<td>Number of imaginary-time points</td>
+</tr>
+<tr class="row-odd"><td>n_iw</td>
+<td>Integer</td>
+<td>2048</td>
+<td>Number of Matsubara frequencies</td>
+</tr>
+<tr class="row-even"><td>beta</td>
+<td>Float</td>
+<td>1.0</td>
+<td>Inverse temperature.</td>
+</tr>
+<tr class="row-odd"><td>fix_mu</td>
+<td>Bool</td>
+<td>False</td>
+<td>Whether or not to fix chemical potential to a given value.</td>
+</tr>
+<tr class="row-even"><td>prec_mu</td>
 <td>Float</td>
 <td>0.0001</td>
-<td>Threshold for calculating chemical potential
-with the bisection method.</td>
+<td>Threshold for calculating chemical potential with the bisection method.</td>
 </tr>
 </tbody>
 </table>
@@ -427,10 +477,10 @@ with the bisection method.</td>
 <p>dcore and dcore_post read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="5%" />
-<col width="10%" />
+<col width="6%" />
+<col width="8%" />
 <col width="15%" />
-<col width="70%" />
+<col width="71%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -442,12 +492,15 @@ with the bisection method.</td>
 <tbody valign="top">
 <tr class="row-even"><td>name</td>
 <td>String</td>
-<td>TRIQS/cthyb</td>
-<td>Name of impurity solver. Choosen from &#8220;TRIQS/cthyb&#8221;
-&#8220;TRIQS/hubbrad-I&#8221;, and &#8220;ALPS/cthyb&#8221;.</td>
+<td>TRIQS/hubbard-I</td>
+<td>Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Only the Hubbard-I solver is tested in the version 0.1.</p>
+</div>
 <p><strong>... and other parameters (Solver dependent)</strong>.
 We have to specify additional parameters with types (e.g. <code class="docutils literal"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">500000</span></code>).
 For more details, please see the reference page of
@@ -461,8 +514,8 @@ For more details, please see the reference page of
 <colgroup>
 <col width="12%" />
 <col width="10%" />
-<col width="10%" />
-<col width="68%" />
+<col width="8%" />
+<col width="70%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -472,25 +525,25 @@ For more details, please see the reference page of
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>max_step</td>
+<tr class="row-even"><td>delta_mix</td>
+<td>Float</td>
+<td>0.5</td>
+<td>Mixing parameter for hybridization function</td>
+</tr>
+<tr class="row-odd"><td>max_step</td>
 <td>Integer</td>
 <td>100</td>
-<td>Max number of SCF steps.</td>
+<td>Max number of SCF steps</td>
+</tr>
+<tr class="row-even"><td>restart</td>
+<td>Bool</td>
+<td>False</td>
+<td>Whether or not restart from a previous calculation stored in a HDF file.</td>
 </tr>
 <tr class="row-odd"><td>sigma_mix</td>
 <td>Float</td>
 <td>0.5</td>
-<td>Mixing parameter for self-energy.</td>
-</tr>
-<tr class="row-even"><td>delta_mix</td>
-<td>Float</td>
-<td>0.5</td>
-<td>Mixing parameter for hybridization function.</td>
-</tr>
-<tr class="row-odd"><td>restart</td>
-<td>Bool</td>
-<td>False</td>
-<td>Whether or not restart from a previous calculation</td>
+<td>Mixing parameter for self-energy</td>
 </tr>
 </tbody>
 </table>
@@ -500,10 +553,10 @@ For more details, please see the reference page of
 <p>dcore_check and dcore_post reads this block.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="12%" />
-<col width="16%" />
-<col width="20%" />
-<col width="51%" />
+<col width="11%" />
+<col width="9%" />
+<col width="30%" />
+<col width="50%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -513,54 +566,50 @@ For more details, please see the reference page of
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>nnode</td>
-<td>Integer</td>
-<td>2</td>
-<td>Number of node for the <em>k</em> path</td>
+<tr class="row-even"><td>broadening</td>
+<td>Float</td>
+<td>0.1</td>
+<td>An additional Lorentzian broadening</td>
 </tr>
-<tr class="row-odd"><td>nk_line</td>
+<tr class="row-odd"><td>n_pade</td>
+<td>Integer</td>
+<td>100</td>
+<td>Number of imaginary frequencies for the Pade approximation</td>
+</tr>
+<tr class="row-even"><td>nk_line</td>
 <td>Integer</td>
 <td>8</td>
 <td>Number of <em>k</em> along each line</td>
 </tr>
-<tr class="row-even"><td>knode</td>
-<td>Sting Float array</td>
-<td><dl class="first last docutils">
-<dt>[(G,0.0,0.0,0.0),</dt>
-<dd>(X,1.0,0.0,0.0)]</dd>
-</dl>
-</td>
+<tr class="row-odd"><td>knode</td>
+<td>String</td>
+<td>[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]</td>
 <td>The name and the fractional coordinate of each k-node.</td>
-</tr>
-<tr class="row-odd"><td>omega_min</td>
-<td>Float</td>
-<td>-1</td>
-<td>Minimum value of real frequency</td>
 </tr>
 <tr class="row-even"><td>omega_max</td>
 <td>Float</td>
-<td>1</td>
+<td>1.0</td>
 <td>Max value of real frequency</td>
+</tr>
+<tr class="row-odd"><td>omega_min</td>
+<td>Float</td>
+<td>-1.0</td>
+<td>Minimum value of real frequency</td>
+</tr>
+<tr class="row-even"><td>nnode</td>
+<td>Integer</td>
+<td>2</td>
+<td>Number of node for the <em>k</em> path</td>
 </tr>
 <tr class="row-odd"><td>Nomega</td>
 <td>Integer</td>
 <td>100</td>
 <td>Number of real frequencies</td>
 </tr>
-<tr class="row-even"><td>broadening</td>
-<td>Float</td>
-<td>0.1</td>
-<td>An additional Lorentzian broadening</td>
-</tr>
-<tr class="row-odd"><td>eta</td>
+<tr class="row-even"><td>eta</td>
 <td>Float</td>
 <td>0.0</td>
 <td>Imaginary frequency shift for the Pade approximation</td>
-</tr>
-<tr class="row-even"><td>n_pade</td>
-<td>Integer</td>
-<td>100</td>
-<td>Number of frequencies for the Pade approximation</td>
 </tr>
 </tbody>
 </table>

@@ -227,6 +227,36 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span></div>
 
+<div class="viewcode-block" id="TypedParser.get_type"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the type of a given option</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TypedParser.get_description"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.get_description">[docs]</a>    <span class="k">def</span> <span class="nf">get_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the description of a given option</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TypedParser.get_default_value"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.get_default_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the default value of a given option</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TypedParser.get_predefined_sections"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.get_predefined_sections">[docs]</a>    <span class="k">def</span> <span class="nf">get_predefined_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of sections predefined by add_option()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TypedParser.get_predefined_options"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.get_predefined_options">[docs]</a>    <span class="k">def</span> <span class="nf">get_predefined_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of options predefined by add_option() in a given section</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
 <div class="viewcode-block" id="TypedParser.as_dict"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert all options and their values into a dict object</span>

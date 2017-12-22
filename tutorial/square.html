@@ -206,14 +206,14 @@ Iter  Chemical-potential
 </div>
 <p><code class="docutils literal"><span class="pre">dcore_check</span></code> also plots the self-energy for the last seven iterations in Matsubara-frequency domain.</p>
 <a class="reference internal image-reference" href="../_images/convergence1.png"><img alt="../_images/convergence1.png" class="align-center" src="../_images/convergence1.png" style="width: 500px;" /></a>
-<p>If those results are not converged, one can repeate the DMFT iteration using the same ini file. <code class="docutils literal"><span class="pre">dcore</span></code> program automatically finds results in the previous run and continue iteration.</p>
+<p>If those results are not converged, one can repeat the DMFT iteration using the same ini file. <code class="docutils literal"><span class="pre">dcore</span></code> program automatically finds results in the previous run and continue iteration.</p>
 </div>
 <div class="section" id="spectral-function-dcore-post">
 <h2>Spectral function : <code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectral-function-dcore-post" title="Permalink to this headline">¶</a></h2>
 <p>We can calculate the density of states and the momentum-dependent single-particle excitations using <code class="docutils literal"><span class="pre">dcore_post</span></code> program.
 For Hubbard-I solver, the self-energy is first calculated in <code class="docutils literal"><span class="pre">dcore_post</span></code>.
 The calculation is done by the following command:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ pydmf_post dmft_square.ini
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore_post dmft_square.ini
 </pre></div>
 </div>
 <p>After finishing the calculation,

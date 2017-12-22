@@ -91,7 +91,7 @@
 <li><a class="reference internal" href="#scf-calculation-of-quantum-espresso">SCF calculation of Quantum ESPRESSO</a></li>
 <li><a class="reference internal" href="#wannierization">Wannierization</a><ul>
 <li><a class="reference internal" href="#generate-bloch-orbitals-for-the-wannier">Generate Bloch orbitals for the Wannier</a></li>
-<li><a class="reference internal" href="#preprocess-for-wannier90">Preprocess for Wannier90</a></li>
+<li><a class="reference internal" href="#pre-process-for-wannier90">Pre-process for Wannier90</a></li>
 <li><a class="reference internal" href="#qe-to-wannier90-interface">QE to wannier90 interface</a></li>
 <li><a class="reference internal" href="#wannier90">Wannier90</a></li>
 <li><a class="reference internal" href="#optional-check-wannierization">(Optional) Check wannierization</a></li>
@@ -297,8 +297,8 @@ K_POINTS crystal
 </pre></div>
 </div>
 </div>
-<div class="section" id="preprocess-for-wannier90">
-<h3>Preprocess for Wannier90<a class="headerlink" href="#preprocess-for-wannier90" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pre-process-for-wannier90">
+<h3>Pre-process for Wannier90<a class="headerlink" href="#pre-process-for-wannier90" title="Permalink to this headline">¶</a></h3>
 <p>Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.</p>
 <p><a class="reference download internal" href="../_downloads/nis.win" download=""><code class="xref download docutils literal"><span class="pre">nis.win</span></code></a></p>
@@ -449,15 +449,15 @@ end kpoints
 <div class="section" id="wannier90">
 <h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
 <p>Execute <code class="docutils literal"><span class="pre">wannier90.x</span></code> for the actual wannierization.
-The input file is the same as that for the preprocessing run.</p>
+The input file is the same as that for the pre-processing run.</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ wannier90 nis
 </pre></div>
 </div>
 </div>
 <div class="section" id="optional-check-wannierization">
 <h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
-<p>If we want to check the quarity of the wannierization,
-we plot the original and the wannier-interpolated band structure simalteneously.</p>
+<p>If we want to check the quality of the wannierization,
+we plot the original and the wannier-interpolated band structure simultaneously.</p>
 <p>First, we compute the band structure with the following input file:</p>
 <p><a class="reference download internal" href="../_downloads/band_nis.in" download=""><code class="xref download docutils literal"><span class="pre">band_nis.in</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL

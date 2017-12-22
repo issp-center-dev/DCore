@@ -1,6 +1,11 @@
 Tutorial with t2g Bethe lattice
 ===============================
 
+.. todo::
+
+   The Bethe-t2g tutorial is not complete.
+
+
 :download:`dmft_bethe.ini <bethe-t2g/dmft_bethe.ini>`
 
 .. literalinclude:: bethe-t2g/dmft_bethe.ini

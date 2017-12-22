@@ -51,7 +51,7 @@ at the last seven iterations.
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This program compute the total and *k*\ -resolved spectrul function from the outputted
+This program compute the total and *k*\ -resolved spectral function from the outputted
 HDF5 file (*seedname*.out.h5).
 This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` block.
 
@@ -63,7 +63,7 @@ List of input and output
 ------------------------
 
 ================= ================================================== ====================
-Program           Input parameters                                   Output files
+Program           Input parameters                                   Output HDF files
 ================= ================================================== ====================
 ``dcore_pre``     [model], [system]                                  *seedname*.h5
 ``dcore``         [model], [system], [impurity-solver], [control]    *seedname*.out.h5
@@ -81,25 +81,7 @@ Input-file format
 
 dcore_pre, dcore_check and dcore_post read this block.
 
-============= ============= ===================== ================================================================
-Name          Type          Default               Description
-============= ============= ===================== ================================================================
-t             Float         1.0                   Transfer integral (Nearest neighbor)
-t'            Float         0.0                   Transfer integral (Second nearest)
-U             Float         0.0                   On-site Coulomb potential
-J             Float         0.0                   On-site Hund potential
-orbital_model String        single                Chosen from "single", "eg", "t2g", "full-d"
-ncor          Integer       1                     Number of correlation shell (Only wannier90).
-lattice       String        chain                 Chosen from "chain", "square", "cubic", "bethe", and "wannier90"
-nelec         Float         1.0                   Number of electrons per unit cell.
-seedname      String        dcore                 Name of the system.
-                                                  It should be the same as the seedname of wannier90.
-cshell        Integer array [(0,1),...]           Anguler momentum, and the number of orbitals of each
-                                                  correlation shell (Only wannier90).
-bvec          Float array   [(1.0,0.0,0.0), (0.0, Reciplocal lattice vectors
-                            1.0,0.0),(0.0,0.0,1.0
-                            )]
-============= ============= ===================== ================================================================
+.. include:: model_desc.txt
 
 Prepare model for DCore.
 Wannier90 as well as the following preset models:
@@ -116,64 +98,105 @@ Wannier90 as well as the following preset models:
 * wannier90
   Read hopping parameters from the Wannier90 output.
 
+.. image:: model.png
+   :width: 700
+   :align: center
+
 .. math::
 
    {\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
    t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
    +h.c. + {\hat H}_{\rm int},
 
-where :math:`{\hat H}_{\rm int}` is the Kanamori interaction term
+where :math:`{\hat H}_{\rm int}` is the Slater interaction term
 given by
 
 .. math::
 
-    {\hat H}_{\rm int} = \sum_i \Big[
-    \sum_{\alpha} U n_{i\alpha\uparrow} n_{i\alpha\downarrow}
-    + \frac{1}{2} \sum_{\alpha \neq \beta, \sigma \sigma'}
-    (U' - J\delta_{\sigma\sigma'}) n_{i\alpha\sigma} n_{i\beta\sigma'}
-    - \sum_{\alpha \neq \beta} J(c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow} c_{i\beta\downarrow}^{\dagger} c_{i\beta\uparrow}
-    + c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow}^{\dagger} c_{i\beta\uparrow} c_{i\beta\downarrow}
-    \Big]
+   {\hat H}_{\rm int} = \frac{1}{2}
+   \sum_{ijkl,\sigma \sigma'}
+   U^{l_i}_{\alpha \beta \gamma \delta}
+   c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \delta \sigma'} c_{i \gamma \sigma}.
 
-The parameter :math:`U'` is fixed at :math:`U'=U-2J`.
+Where :math:`U^{l}_{\alpha \beta \gamma \delta}` is the interaction matrix
+constructed by the effective Slater integrals
+:math:`F_0, F_2, \cdots F_{2 l}`.
+These effective Slater integrals are computed with the following formulae:
 
-.. image:: model.png
-   :width: 700
-   :align: center
+* :math:`l = 1`
 
+  .. math::
+   
+     F_0 = U, \quad
+     F_2 = 5 J
+
+* :math:`l=2`
+
+  .. math::
+   
+     F_0 = U, \quad
+     F_2 = \frac{14 J}{1.0 + 0.63},\quad
+     F_4 = 0.63 F_2
+  
+* :math:`l=3`
+
+  .. math::
+   
+     F_0 = U, \quad
+     F_2 = \frac{6435 J}{286 + 195 \times 451 / 675 + 250 \times 1001 / 2025},\quad
+     F_4 = \frac{451 F_2}{675},\quad
+     F_6 = \frac{1001 F_2}{2025}
+
+:math:`U` and :math:`J` are specified by the parameters in ``[model]`` block
+and they do not depend on the shell.
+     
+.. todo::
+
+   The interaction part, :math:`{\hat H}_{\rm int}`
+   will be modified to support the following interactions
+
+   * The Slater interaction with directly specified Slater integrals.
+   
+   * The Kanamori interaction given by
+
+     .. math::
+
+        {\hat H}_{\rm int} = \sum_i \Big[
+        \sum_{\alpha} U n_{i\alpha\uparrow} n_{i\alpha\downarrow}
+        + \frac{1}{2} \sum_{\alpha \neq \beta, \sigma \sigma'}
+        (U' - J\delta_{\sigma\sigma'}) n_{i\alpha\sigma} n_{i\beta\sigma'}
+        - \sum_{\alpha \neq \beta} J(c_{i\alpha\uparrow}^{\dagger}
+        c_{i\alpha\downarrow} c_{i\beta\downarrow}^{\dagger} c_{i\beta\uparrow}
+        + c_{i\alpha\uparrow}^{\dagger} c_{i\alpha\downarrow}^{\dagger}
+        c_{i\beta\uparrow} c_{i\beta\downarrow}
+        \Big]
+
+     The parameter :math:`U'` is fixed at :math:`U'=U-2J`.
+
+   * The density-density interaction.
+
+   * Site-dependent interaction
+
+   * etc.
+        
 [system] block
 ~~~~~~~~~~~~~~
 
 dcore_pre and dcore read this block.
 
-======= =========== ===================== =================================================
-Name    Type        Default               Description
-======= =========== ===================== =================================================
-beta    Float       1.0                   Inverse temperature.
-n_iw    Integer     2048                  Number of Matsubara frequencies.
-n_tau   Integer     10000                 Number of imaginary-time points.
-dc_type Integer     -1                    Type of double-counting correction.
-fix_mu  Bool        False                 Whether or not to use a fixed chemical potential.
-nk      Integer     8                     Number of *k* along each line
-nk0     Integer     0                     Number of *k* (Only wannier90)
-nk1     Integer     0                     Number of *k* (Only wannier90)
-nk2     Integer     0                     Number of *k* (Only wannier90)
-prec_mu Float       0.0001                Threshold for calculating chemical potential
-                                          with the bisection method.
-======= =========== ===================== =================================================
+.. include:: system_desc.txt
 
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 dcore and dcore_post read this block.
 
-==== ======= =========== ===================================================
-Name Type    Default     Description
-==== ======= =========== ===================================================
-name String  TRIQS/cthyb Name of impurity solver. Choosen from "TRIQS/cthyb"
-                         "TRIQS/hubbrad-I", and "ALPS/cthyb".
-==== ======= =========== ===================================================
+.. include:: impurity_solver_desc.txt
 
+.. warning::
+
+   Only the Hubbard-I solver is tested in the version 0.1.
+             
 **... and other parameters (Solver dependent)**.
 We have to specify additional parameters with types (e.g. ``n_cycles{int} = 500000``).
 For more details, please see the reference page of
@@ -185,31 +208,11 @@ For more details, please see the reference page of
 
 dcore reads this block.
 
-========= ======= ======= ==================================================
-Name      Type    Default Description
-========= ======= ======= ==================================================
-max_step  Integer 100     Max number of SCF steps.
-sigma_mix Float   0.5     Mixing parameter for self-energy.
-delta_mix Float   0.5     Mixing parameter for hybridization function.
-restart   Bool    False   Whether or not restart from a previous calculation
-========= ======= ======= ==================================================
+.. include:: control_desc.txt
 
 [tool] block
 ~~~~~~~~~~~~
 
 dcore_check and dcore_post reads this block.
 
-============= ================= ===================== ======================================================
-Name          Type              Default               Description
-============= ================= ===================== ======================================================
-nnode         Integer           2                     Number of node for the *k* path
-nk_line       Integer           8                     Number of *k* along each line
-knode         Sting Float array [(G,0.0,0.0,0.0),     The name and the fractional coordinate of each k-node.
-                                 (X,1.0,0.0,0.0)]
-omega_min     Float             -1                    Minimum value of real frequency
-omega_max     Float             1                     Max value of real frequency
-Nomega        Integer           100                   Number of real frequencies
-broadening    Float             0.1                   An additional Lorentzian broadening
-eta           Float             0.0                   Imaginary frequency shift for the Pade approximation
-n_pade        Integer           100                   Number of frequencies for the Pade approximation
-============= ================= ===================== ======================================================
+.. include:: tool_desc.txt
