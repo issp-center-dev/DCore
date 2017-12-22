@@ -23,7 +23,7 @@ The script ``dcore_pre`` is invoked for this purpose:
       
 If succeeded, a h5 file named *seedname*.h5 (``square.h5`` in the present case) is generated.
 
-SCF cycle : ``dcore``
+DMFT loop : ``dcore``
 ---------------------
 
 The DMFT loop is performed by ``dcore`` program.
@@ -39,7 +39,7 @@ One can run the program by
 It takes several minutes. You may run it with MPI to save time.
 Results for the self-energy and Green's function in each iteration are accumulated into a h5 file named *seedname*.out.h5 (``square.out.h5`` in the present case).
 
-One can check convergence of the SCF cycle using ``dcore_check`` program.
+One can check convergence of DMFT loop by using ``dcore_check`` program.
 You can run it with the following command, if X window system is available:
 
 .. code-block:: bash

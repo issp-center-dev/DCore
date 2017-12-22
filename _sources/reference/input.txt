@@ -33,7 +33,7 @@ This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[contr
 Convergence-check : ``dcore_check``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This program can be used for checking the convergence of the SCF-cycle.
+This program can be used for checking the convergence of the DMFT loop.
 This program reads ``[model]`` and ``[tool]`` block.
 
 ::
@@ -74,7 +74,7 @@ Program           Input parameters                                   Output HDF 
 Input-file format
 -----------------
 
-.. literalinclude:: ../tutorial/bethe-t2g/dmft_bethe.ini
+.. literalinclude:: ../tutorial/qe/nis.ini
 
 [model] block
 ~~~~~~~~~~~~~

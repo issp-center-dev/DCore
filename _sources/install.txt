@@ -13,7 +13,7 @@ Prerequisites
    In the following, we will suppose that it is installed in the ``path_to_triqs`` directory.
 
 #. Likely, you will also need at least one impurity solver,
-   e.g. the :ref:`CTHYB solver <triqscthyb:welcome>`.
+   e.g. the `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_.
 
 Installation steps 
 ------------------
@@ -48,6 +48,6 @@ into the directory with the sources and look at all available versions::
  
 Checkout the version of the code that you want, for instance:: 
  
-     $ git co 1.2 
+     $ git co 1.4
  
 Then follow the steps 2 to 5 described above to compile the code. 

@@ -88,7 +88,7 @@
   <ul>
 <li><a class="reference internal" href="#">Tutorial with single-band 2D Hubbard model</a><ul>
 <li><a class="reference internal" href="#pre-process-dcore-pre">Pre-process : <code class="docutils literal"><span class="pre">dcore_pre</span></code></a></li>
-<li><a class="reference internal" href="#scf-cycle-dcore">SCF cycle : <code class="docutils literal"><span class="pre">dcore</span></code></a></li>
+<li><a class="reference internal" href="#dmft-loop-dcore">DMFT loop : <code class="docutils literal"><span class="pre">dcore</span></code></a></li>
 <li><a class="reference internal" href="#spectral-function-dcore-post">Spectral function : <code class="docutils literal"><span class="pre">dcore_post</span></code></a></li>
 </ul>
 </li>
@@ -168,8 +168,8 @@ The script <code class="docutils literal"><span class="pre">dcore_pre</span></co
 </div>
 <p>If succeeded, a h5 file named <em>seedname</em>.h5 (<code class="docutils literal"><span class="pre">square.h5</span></code> in the present case) is generated.</p>
 </div>
-<div class="section" id="scf-cycle-dcore">
-<h2>SCF cycle : <code class="docutils literal"><span class="pre">dcore</span></code><a class="headerlink" href="#scf-cycle-dcore" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dmft-loop-dcore">
+<h2>DMFT loop : <code class="docutils literal"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this headline">¶</a></h2>
 <p>The DMFT loop is performed by <code class="docutils literal"><span class="pre">dcore</span></code> program.
 In this tutorial, we use the Hubbard-I solver just for simplicity.
 One can run the program by</p>
@@ -178,7 +178,7 @@ One can run the program by</p>
 </div>
 <p>It takes several minutes. You may run it with MPI to save time.
 Results for the self-energy and Green&#8217;s function in each iteration are accumulated into a h5 file named <em>seedname</em>.out.h5 (<code class="docutils literal"><span class="pre">square.out.h5</span></code> in the present case).</p>
-<p>One can check convergence of the SCF cycle using <code class="docutils literal"><span class="pre">dcore_check</span></code> program.
+<p>One can check convergence of DMFT loop by using <code class="docutils literal"><span class="pre">dcore_check</span></code> program.
 You can run it with the following command, if X window system is available:</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ dcore_check dmft_square.ini
 </pre></div>
