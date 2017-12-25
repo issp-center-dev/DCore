@@ -40,7 +40,7 @@ Version compatibility
 --------------------- 
  
 Be careful that the version of the TRIQS library and of the dft tools must be 
-compatible (more information on the :ref:`TRIQS website <triqslibs:welcome>`. 
+compatible (more information on the :ref:`TRIQS website <triqslibs:welcome>`). 
 If you want to use a version of the dft tools that is not the latest one, go
 into the directory with the sources and look at all available versions:: 
  
