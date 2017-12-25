@@ -46,7 +46,7 @@ You can run it with the following command, if X window system is available:
 
    $ dcore_check dmft_square.ini
 
-If X is not available or you prefer plotting in a file, use ``--output`` option to specify output file name
+If X window is not available or you prefer plotting in a file, use ``--output`` option to specify output file name
 
 .. code-block:: bash
 
@@ -56,7 +56,7 @@ The extension can be eps, jpg, etc.
 
 .. We can find the following standard output.
 
-``dcore_check`` program prints the value of the chemical potential in each iterations on the standard output:
+``dcore_check`` program prints the value of the chemical potential at each iteration on the standard output:
 
 ::
 
@@ -82,7 +82,7 @@ The extension can be eps, jpg, etc.
    :width: 500
    :align: center
 
-If those results are not converged, one can repeat the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iteration.
+If those results are not converged, one can repeat the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iterations.
 
 Spectral function : ``dcore_post``
 ----------------------------------

@@ -1,7 +1,8 @@
 Frequently-Asked Questions
 ==========================
 
-``dcore`` crashes abnormally when using cthyb
----------------------------------------------
+..
+   ``dcore`` crashes abnormally when using cthyb
+   ---------------------------------------------
 
-Please retry.
+   Please retry.

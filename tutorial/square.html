@@ -183,12 +183,12 @@ You can run it with the following command, if X window system is available:</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ dcore_check dmft_square.ini
 </pre></div>
 </div>
-<p>If X is not available or you prefer plotting in a file, use <code class="docutils literal"><span class="pre">--output</span></code> option to specify output file name</p>
+<p>If X window is not available or you prefer plotting in a file, use <code class="docutils literal"><span class="pre">--output</span></code> option to specify output file name</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ dcore_check dmft_square.ini --output<span class="o">=</span>check.pdf
 </pre></div>
 </div>
 <p>The extension can be eps, jpg, etc.</p>
-<p><code class="docutils literal"><span class="pre">dcore_check</span></code> program prints the value of the chemical potential in each iterations on the standard output:</p>
+<p><code class="docutils literal"><span class="pre">dcore_check</span></code> program prints the value of the chemical potential at each iteration on the standard output:</p>
 <div class="highlight-python"><div class="highlight"><pre>Total number of Iteration: 10
 
 Iter  Chemical-potential
@@ -206,7 +206,7 @@ Iter  Chemical-potential
 </div>
 <p><code class="docutils literal"><span class="pre">dcore_check</span></code> also plots the self-energy for the last seven iterations in Matsubara-frequency domain.</p>
 <a class="reference internal image-reference" href="../_images/convergence1.png"><img alt="../_images/convergence1.png" class="align-center" src="../_images/convergence1.png" style="width: 500px;" /></a>
-<p>If those results are not converged, one can repeat the DMFT iteration using the same ini file. <code class="docutils literal"><span class="pre">dcore</span></code> program automatically finds results in the previous run and continue iteration.</p>
+<p>If those results are not converged, one can repeat the DMFT iteration using the same ini file. <code class="docutils literal"><span class="pre">dcore</span></code> program automatically finds results in the previous run and continue iterations.</p>
 </div>
 <div class="section" id="spectral-function-dcore-post">
 <h2>Spectral function : <code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectral-function-dcore-post" title="Permalink to this headline">¶</a></h2>
