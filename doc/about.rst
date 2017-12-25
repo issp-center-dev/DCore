@@ -4,6 +4,10 @@ License
 The DCore package is published under the 
 `GNU General Public License, version 3 <http://www.gnu.org/licenses/gpl.html>`_.
 
+Copyright (C) 2017 The University of Tokyo
+
+This package is developed under the support of "Project for advancement of software usability in materials science" by The Institute for Solid State Physics, The University of Tokyo.
+
 Authors & Quotation
 ===================
 
@@ -21,13 +25,7 @@ In addition to the above two libraries, you may use impurity solvers listed belo
 * `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/about.html>`_
 * `TRIQS/hubbardI <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/about.html>`_
 
-This application is a part of our scientific work and we would appreciate if
-projects using it will include a citation to the above relevant papers.  In
-order to help you, we provide a BibTeX entry for each paper.
-
-If you find the application useful, giving proper reference and citation is
-indeed a simple way to help convincing funding sources that such projects are
-useful for our community and should be supported.
+These applications are scientific works by triqs's team. In order to help you, they provide a BibTeX entry for each paper in the above cites.
 
 Disclaimer
 ==========
