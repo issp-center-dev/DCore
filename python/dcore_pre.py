@@ -286,6 +286,22 @@ def dcore_pre(filename):
         Converter = HkConverter(filename = seedname + ".inp", hdf_filename=seedname+".h5")
         Converter.convert_dft_input(weights_in_file=weights_in_file)
     #
+    # Spin-Orbit case
+    #
+    if p["model"]["spin_orbit"]:
+        if mpi.is_master_node():
+            f = HDFArchive(seedname + '.h5', 'a')
+            print(f["dft_input"]["SO"])
+            f["dft_input"]["SP"] = 1
+            f["dft_input"]["SO"] = 1
+
+            corr_shells = f["dft_input"]["corr_shells"]
+            for icor in range(p["model"]['ncor']):
+                corr_shells[icor]["SO"] = 1
+            f["dft_input"]["corr_shells"] = corr_shells
+
+            del f
+    #
     # Add U-matrix block (Tentative)
     # ####  The format of this block is not fixed  ####
     #
@@ -297,6 +313,7 @@ def dcore_pre(filename):
         f["DCore"]["U_int"] = p["model"]["U"]
         f["DCore"]["J_hund"] = p["model"]["J"]
         print("\n    Wrote to {0}".format(seedname+'.h5'))
+        del f
     #
     # Finish
     #

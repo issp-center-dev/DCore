@@ -37,6 +37,7 @@ def create_parser():
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "cshell", str, "[]", "Anguler momentum, and the number of orbitals of each correlation shell (Only wannier90). If not explicitly specified, the default value will be  [(0,1),...].")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors")
+    parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case.")
 
     # [system]
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
