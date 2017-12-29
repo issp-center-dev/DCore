@@ -74,7 +74,12 @@ def dcore_check(filename, fileplot=None):
         for iter in range(1,iteration_number+1):
             if iter > iteration_number - 7:
                 S[0].Sigma_iw << ar[output_group]['Sigma-log'][str(iter)]['0']
-                oplot(S[0].Sigma_iw["up"][0,0], '-o', mode='I', x_window  = (p['tool']['omega_min'],p['tool']['omega_max']), name = 'Sigma-%s'%(iter))
+                if solver.SO:
+                    oplot(S[0].Sigma_iw["ud"][0,0], '-o', mode='I',
+                          x_window  = (p['tool']['omega_min'],p['tool']['omega_max']), name = 'Sigma-%s'%(iter))
+                else:
+                    oplot(S[0].Sigma_iw["up"][0,0], '-o', mode='I',
+                          x_window  = (p['tool']['omega_min'],p['tool']['omega_max']), name = 'Sigma-%s'%(iter))
             print("  {0} {1}".format(iter, ar[output_group]['chemical_potential'][str(iter)]))
         del ar
 

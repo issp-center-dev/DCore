@@ -73,6 +73,7 @@ class DMFTCoreSolver:
         U_file = HDFArchive(seedname+'.h5','r')
         self._J_hund = U_file["DCore"]["J_hund"]
         self._U_int = U_file["DCore"]["U_int"]
+        self.SO = params['model']['spin_orbit']
 
         # Construct an impurity solver
         beta = float(params['system']['beta'])
@@ -87,9 +88,20 @@ class DMFTCoreSolver:
         for ish in range(self._SK.n_inequiv_shells):
 
             n_orb = self._SK.corr_shells[self._SK.inequiv_to_corr[ish]]['dim']
+            if self._SK.SO == 1: n_orb/=2
             l = self._SK.corr_shells[self._SK.inequiv_to_corr[ish]]['l']
             spin_names = ["up","down"]
             orb_names = [i for i in range(n_orb)]
+
+            if self.SO:
+                map_operator_structure = {}
+                for i in range(n_orb):
+                    map_operator_structure[('up', i)] = ('ud', i)
+                    map_operator_structure[('down', i)] = ('ud', i+n_orb)
+            else:
+                for i in range(n_orb):
+                    map_operator_structure[('up', i)] = ('up', i)
+                    map_operator_structure[('down', i)] = ('down', i)
 
             # Construct U matrix for Slater interaction (tentative)
             if l == 0:
@@ -129,7 +141,7 @@ class DMFTCoreSolver:
             # Construct Hamiltonian
             self._h_int.append(
                 h_int_slater(spin_names, orb_names, U_matrix=Umat, off_diag=True,
-                             map_operator_structure=self._SK.sumk_to_solver[ish],
+                             map_operator_structure=map_operator_structure,
                                H_dump="H" + str(ish) + ".txt", complex=True)
                 )
 
@@ -142,29 +154,29 @@ class DMFTCoreSolver:
             elif self._solver_name=="TRIQS/hubbard-I":
                 from hubbard_solver import Solver
                 if l == 0:
-                    self._S.append(Solver(beta=beta, l=0))
+                    self._S.append(Solver(beta=beta, l=0, use_spin_orbit=self.SO))
                 elif l == 1:
                     if n_orb == 1:
-                        self._S.append(Solver(beta=beta, l=0))
+                        self._S.append(Solver(beta=beta, l=0, use_spin_orbit=self.SO))
                     elif n_orb == 3:
-                        self._S.append(Solver(beta=beta, l=1, irrep='p'))
+                        self._S.append(Solver(beta=beta, l=1, irrep='p', use_spin_orbit=self.SO))
                     else:
                         print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
                         sys.exit()
                 elif l == 2:
                     if n_orb == 1:
-                        self._S.append(Solver(beta=beta, l=0))
+                        self._S.append(Solver(beta=beta, l=0, use_spin_orbit=self.SO))
                     elif n_orb == 2:
-                        self._S.append(Solver(beta=beta, l=2, irrep='eg'))
+                        self._S.append(Solver(beta=beta, l=2, irrep='eg', use_spin_orbit=self.SO))
                     elif n_orb == 3:
-                        self._S.append(Solver(beta=beta, l=2, irrep='t2g'))
+                        self._S.append(Solver(beta=beta, l=2, irrep='t2g', use_spin_orbit=self.SO))
                     elif n_orb == 5:
-                        self._S.append(Solver(beta=beta, l=2))
+                        self._S.append(Solver(beta=beta, l=2, use_spin_orbit=self.SO))
                     else:
                         print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
                         sys.exit()
                 elif n_orb == 1:
-                    self._S.append(Solver(beta=beta, l=0))
+                    self._S.append(Solver(beta=beta, l=0, use_spin_orbit=self.SO))
                 else:
                     print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
                     sys.exit()
@@ -270,7 +282,10 @@ class DMFTCoreSolver:
                 for ish in range(nsh):
                     dm = S[ish].G_iw.density()
                     SK.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
-                    S[ish].Sigma_iw << SK.dc_imp[self._SK.inequiv_to_corr[ish]]['up'][0,0]
+                    if self.SO:
+                        S[ish].Sigma_iw << SK.dc_imp[self._SK.inequiv_to_corr[ish]]['ud'][0, 0]
+                    else:
+                        S[ish].Sigma_iw << SK.dc_imp[self._SK.inequiv_to_corr[ish]]['up'][0,0]
 
             # Calculate new G0_iw to input into the solver:
             for ish in range(nsh):

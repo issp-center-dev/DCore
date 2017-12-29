@@ -131,10 +131,16 @@ class DMFTCoreTools:
             with open(self._seedname + '_dos.dat', 'w') as f:
                 print("# Energy DOS Partial-DOS", file=f)
                 for iom in range(self._Nomega):
-                    print("{0} {1}".format(om_mesh[iom], dos['down'][iom]), file=f, end="")
+                    if Sol.SO:
+                        print("{0} {1}".format(om_mesh[iom], dos['ud'][iom]), file=f, end="")
+                    else:
+                        print("{0} {1}".format(om_mesh[iom], 2.0*dos['down'][iom]), file=f, end="")
                     for ish in range(SKT.n_inequiv_shells):
                         for i in range(SKT.corr_shells[SKT.inequiv_to_corr[ish]]['dim']):
-                            print(" {0}".format(dosproj_orb[ish]['down'][iom,i,i].real), end="", file=f)
+                            if Sol.SO:
+                                print(" {0}".format(dosproj_orb[ish]['ud'][iom,i,i].real), end="", file=f)
+                            else:
+                                print(" {0}".format(2.0*dosproj_orb[ish]['down'][iom, i, i].real), end="", file=f)
                     print("", file=f)
             print("\n    Output {0}".format(self._seedname + '_dos.dat'))
         #
@@ -152,7 +158,10 @@ class DMFTCoreTools:
             with open(self._seedname + '_akw.dat', 'w') as f:
                 for ik in range(self._n_k):
                     for iom in range(self._Nomega):
-                        print("{0} {1} {2}".format(self._xk[ik], mesh[iom],akw['down'][ik,iom]), file=f)
+                        if Sol.SO:
+                            print("{0} {1} {2}".format(self._xk[ik], mesh[iom],akw['ud'][ik,iom]), file=f)
+                        else:
+                            print("{0} {1} {2}".format(self._xk[ik], mesh[iom],2.0*akw['down'][ik, iom]), file=f)
                     print("", file=f)
             print("\n    Output {0}".format(self._seedname + '_akw.dat'))
 

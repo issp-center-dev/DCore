@@ -23,6 +23,7 @@ Tutorial
    tutorial/bethe
    tutorial/qe
    tutorial/openmx
+   tutorial/pb              
 
 Reference manual
 ----------------
