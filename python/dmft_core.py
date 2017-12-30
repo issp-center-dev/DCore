@@ -93,8 +93,8 @@ class DMFTCoreSolver:
             spin_names = ["up","down"]
             orb_names = [i for i in range(n_orb)]
 
+            map_operator_structure = {}
             if self.SO:
-                map_operator_structure = {}
                 for i in range(n_orb):
                     map_operator_structure[('up', i)] = ('ud', i)
                     map_operator_structure[('down', i)] = ('ud', i+n_orb)
