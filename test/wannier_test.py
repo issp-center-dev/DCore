@@ -32,12 +32,12 @@ from pytriqs.applications.dcore.dcore_pre import dcore_pre
 #
 with open("nis.ini", 'w') as f:
     print("[model]", file=f)
-    print("U = 1.0", file=f)
     print("lattice = wannier90", file=f)
     print("seedname = nis", file=f)
     print("nelec = 24.0", file=f)
     print("ncor = 2", file=f)
     print("cshell = [(2, 5), (2, 5)]", file=f)
+    print("slater_uj = [(2,1.0,0.0),(2,1.0,0.0)]", file=f)
     print("", file=f)
     print("[system]", file=f)
     print("nk0 = 4", file=f)

@@ -27,6 +27,7 @@ from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Con
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
 from program_options import create_parser
 import pytriqs.utility.mpi as mpi
+from pytriqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
@@ -101,7 +102,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
         weights_in_file = True
     else:
         print("Error ! Invalid lattice : ", params["model"]["lattice"])
-        sys.exit()
+        sys.exit(-1)
     print("\n    Total number of k =", str(nkBZ))
     #
     # Model
@@ -120,7 +121,7 @@ def __generate_lattice_model(params, l, norb, equiv, f):
         norb[0] = 5
     else:
         print("Error ! Invalid lattice : ", params["model"]["orbital_model"])
-        sys.exit()
+        sys.exit(-1)
     #
     # Write General-Hk formatted file
     #
@@ -225,22 +226,22 @@ def dcore_pre(filename):
     #
     parser.read(filename)
     p = parser.as_dict()
+    ncor = p["model"]['ncor']
     #
     # cshell=(l, norb, equiv) or (l, norb)
     #
     cshell_list=re.findall(r'\(\s*\d+\s*,\s*\d+\s*,*\s*\S*\s*\)', p["model"]["cshell"])
-    l = [0]*p["model"]['ncor']
-    norb = [1]*p["model"]['ncor']
-    equiv = [-1]*p["model"]['ncor']
+    l = [0]*ncor
+    norb = [1]*ncor
+    equiv = [-1]*ncor
     try:
         equiv_str_list = []
         equiv_index = 0
         for  i, _list  in enumerate(cshell_list):
-            _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
+            _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(,\)]', _list))
             l[i] = int(_cshell[0])
             norb[i] = int(_cshell[1])
             if len(_cshell) == 3:
-                print(_cshell[2])
                 if _cshell[2] in equiv_str_list:
                     # Defined before
                     equiv[i] = equiv_str_list.index(_cshell[2])
@@ -254,6 +255,55 @@ def dcore_pre(filename):
                 equiv_index+=1
     except:
         raise RuntimeError("Error ! Format of cshell is wrong.")
+    #
+    # Interaction
+    #
+    if p["model"]["interaction"] == 'kanamori':
+        kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
+        kanamori = numpy.zeros((ncor, 3), numpy.float_)
+        try:
+            for i, _list in enumerate(kanamori_list):
+                _kanamori = filter(lambda w: len(w) > 0, re.split(r'[\(,\)]', _list))
+                for j in range(3): kanamori[i,j] = float(_kanamori[j])
+        except:
+            raise RuntimeError("Error ! Format of u_j is wrong.")
+        print(kanamori)
+    elif p["model"]["interaction"] == 'slater_uj':
+        f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
+                            p["model"]["slater_uj"])
+        print(f_list)
+        slater_f = numpy.zeros((ncor, 4), numpy.float_)
+        slater_l = numpy.zeros((ncor), numpy.int_)
+        #try:
+        for i, _list in enumerate(f_list):
+            _slater = filter(lambda w: len(w) > 0, re.split(r'[\(,\)]', _list))
+            slater_l[i] = int(_slater[0])
+            slater_u = float(_slater[1])
+            slater_j = float(_slater[2])
+            print(slater_l[i],slater_u,slater_j)
+            if slater_l[i] == 0:
+                slater_f[i, 0] = slater_u
+            else:
+                slater_f[i, 0:slater_l[i]+1] = U_J_to_radial_integrals(slater_l[i], slater_u, slater_j)
+        #except:
+        #    raise RuntimeError("Error ! Format of u_j is wrong.")
+        print(slater_f)
+    elif p["model"]["interaction"] == 'slater_f':
+        f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
+                            p["model"]["slater_f"])
+        slater_f = numpy.zeros((ncor, 4), numpy.float_)
+        slater_l = numpy.zeros((ncor), numpy.int_)
+        try:
+            for i, _list in enumerate(f_list):
+                _slater = filter(lambda w: len(w) > 0, re.split(r'[\(,\)]', _list))
+                slater_l[i] = int(_slater[0])
+                for j in range(4): slater_f[i,j] = float(_slater[j])
+        except:
+            raise RuntimeError("Error ! Format of u_j is wrong.")
+        print(slater_f)
+    else:
+        print("Error ! Invalid interaction : ", p["model"]["interaction"])
+        sys.exit(-1)
     #
     # Summary of input parameters
     #
@@ -296,7 +346,7 @@ def dcore_pre(filename):
             f["dft_input"]["SO"] = 1
 
             corr_shells = f["dft_input"]["corr_shells"]
-            for icor in range(p["model"]['ncor']):
+            for icor in range(ncor):
                 corr_shells[icor]["SO"] = 1
             f["dft_input"]["corr_shells"] = corr_shells
 
@@ -308,10 +358,37 @@ def dcore_pre(filename):
     if mpi.is_master_node():
         print("\n  @ Write the information of interactions")
         f = HDFArchive(seedname+'.h5','a')
-        if not ("DCore" in f):
-            f.create_group("DCore")
-        f["DCore"]["U_int"] = p["model"]["U"]
-        f["DCore"]["J_hund"] = p["model"]["J"]
+        if not ("DCore" in f): f.create_group("DCore")
+        #
+        Umat = [numpy.zeros((norb[icor], norb[icor], norb[icor], norb[icor]), numpy.float_) for icor in range(ncor)]
+        if p["model"]["interaction"] == 'kanamori':
+            for icor in range(ncor):
+                for iorb in range(norb[icor]):
+                    for jorb in range(norb[icor]):
+                        Umat[icor][iorb, jorb, iorb, jorb] = kanamori[icor, 1]
+                        Umat[icor][iorb, jorb, jorb, iorb] = kanamori[icor, 2]
+                        Umat[icor][iorb, iorb, jorb, jorb] = kanamori[icor, 2]
+                for iorb in range(norb[icor]):Umat[icor][iorb,iorb,iorb,iorb] = kanamori[icor,0]
+        elif p["model"]["interaction"] == 'slater_uj' or p["model"]["interaction"] == 'slater_f':
+            for icor in range(ncor):
+                print(slater_f[icor,:])
+                if slater_l[icor] == 0:
+                    Umat_full = slater_f[icor,0]
+                else:
+                    Umat_full = U_matrix(l=slater_l[icor], radial_integrals=slater_f[icor,:], basis='cubic')
+                print(Umat_full)
+                if slater_l[icor]*2+1 != norb[icor]:
+                    if slater_l[icor] == 2 and norb[icor] == 2:
+                        Umat = eg_submatrix(Umat_full)
+                    elif slater_l[icor] == 2 and norb[icor] == 3:
+                        Umat = t2g_submatrix(Umat_full)
+                    else:
+                        print("Error ! Unsupported pair of l and norb : ", slater_l[icor], norb[icor])
+                        sys.exit(-1)
+                else:
+                    Umat[icor] = Umat_full
+        #
+        f["DCore"]["Umat"] = Umat
         print("\n    Wrote to {0}".format(seedname+'.h5'))
         del f
     #
@@ -338,5 +415,5 @@ if __name__ == '__main__':
     args=parser.parse_args()
     if(os.path.isfile(args.path_input_file) is False):
         print("Input file is not exist.")
-        sys.exit()
+        sys.exit(-1)
     dcore_pre(args.path_input_file)

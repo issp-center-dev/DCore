@@ -38,7 +38,7 @@ for lattice in ['bethe', 'chain', 'square', 'cubic']:
     with open(input_fname, 'w') as f:
         print("[model]", file=f)
         print("t = 1.0", file=f)
-        print("U = 4.0", file=f)
+        print("slater_uj = [(0,4.0,0.0)]", file=f)
         print("lattice = ", lattice, file=f)
         print("seedname = " + seedname, file=f)
 
@@ -48,5 +48,5 @@ for lattice in ['bethe', 'chain', 'square', 'cubic']:
     check = os.system('h5diff -d 1.0e-10 {0}.h5 {1}.h5'.format(seedname, seedname_ref))
     
     if check != 0:
-        print("Generated file is different from the refference for lattice = " + lattice)
+        print("Generated file is different from the reference for lattice = " + lattice)
         sys.exit(-1)
