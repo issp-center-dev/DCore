@@ -71,8 +71,7 @@ class DMFTCoreSolver:
         # Construct a SumKDFT object
         self._SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
         U_file = HDFArchive(seedname+'.h5','r')
-        self._J_hund = U_file["DCore"]["J_hund"]
-        self._U_int = U_file["DCore"]["U_int"]
+        self.Umat = U_file["DCore"]["Umat"]
         self.SO = params['model']['spin_orbit']
 
         # Construct an impurity solver
@@ -89,7 +88,6 @@ class DMFTCoreSolver:
 
             n_orb = self._SK.corr_shells[self._SK.inequiv_to_corr[ish]]['dim']
             if self._SK.SO == 1: n_orb/=2
-            l = self._SK.corr_shells[self._SK.inequiv_to_corr[ish]]['l']
             spin_names = ["up","down"]
             orb_names = [i for i in range(n_orb)]
 
@@ -103,46 +101,11 @@ class DMFTCoreSolver:
                     map_operator_structure[('up', i)] = ('up', i)
                     map_operator_structure[('down', i)] = ('down', i)
 
-            # Construct U matrix for Slater interaction (tentative)
-            if l == 0:
-                Umat = numpy.zeros((1, 1, 1, 1), dtype=float)
-                Umat[0, 0, 0, 0] = self._U_int
-            elif l == 1:
-                if n_orb == 1:
-                    Umat = numpy.zeros((1, 1, 1, 1), dtype=float)
-                    Umat[0, 0, 0, 0] = self._U_int
-                elif n_orb == 3:
-                    Umat = U_matrix(l=1, U_int=self._U_int, J_hund=self._J_hund, basis='cubic')
-                else:
-                    print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
-                    sys.exit()
-            elif l == 2:
-                if n_orb == 1:
-                    Umat = numpy.zeros((1, 1, 1, 1), dtype=float)
-                    Umat[0, 0, 0, 0] = self._U_int
-                elif n_orb == 2:
-                    Ufull = U_matrix(l=2, U_int=self._U_int, J_hund=self._J_hund, basis='cubic')
-                    Umat = eg_submatrix(Ufull)
-                elif n_orb == 3:
-                    Ufull = U_matrix(l=2, U_int=self._U_int, J_hund=self._J_hund, basis='cubic')
-                    Umat = t2g_submatrix(Ufull)
-                elif n_orb == 5:
-                    Umat = U_matrix(l=2, U_int=self._U_int, J_hund=self._J_hund, basis='cubic')
-                else:
-                    print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
-                    sys.exit()
-            elif n_orb == 1:
-                Umat = numpy.zeros((1, 1, 1, 1), dtype=float)
-                Umat[0, 0, 0, 0] = self._U_int
-            else:
-                print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
-                sys.exit()
-
             # Construct Hamiltonian
             self._h_int.append(
-                h_int_slater(spin_names, orb_names, U_matrix=Umat, off_diag=True,
+                h_int_slater(spin_names, orb_names, U_matrix=self.Umat[ish], off_diag=True,
                              map_operator_structure=map_operator_structure,
-                               H_dump="H" + str(ish) + ".txt", complex=True)
+                             H_dump="H" + str(ish) + ".txt", complex=False) # tentative
                 )
 
             # Use GF structure determined by DFT blocks
@@ -153,33 +116,7 @@ class DMFTCoreSolver:
                 self._S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
             elif self._solver_name=="TRIQS/hubbard-I":
                 from hubbard_solver import Solver
-                if l == 0:
-                    self._S.append(Solver(beta=beta, l=0, use_spin_orbit=self.SO))
-                elif l == 1:
-                    if n_orb == 1:
-                        self._S.append(Solver(beta=beta, l=0, use_spin_orbit=self.SO))
-                    elif n_orb == 3:
-                        self._S.append(Solver(beta=beta, l=1, irrep='p', use_spin_orbit=self.SO))
-                    else:
-                        print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
-                        sys.exit()
-                elif l == 2:
-                    if n_orb == 1:
-                        self._S.append(Solver(beta=beta, l=0, use_spin_orbit=self.SO))
-                    elif n_orb == 2:
-                        self._S.append(Solver(beta=beta, l=2, irrep='eg', use_spin_orbit=self.SO))
-                    elif n_orb == 3:
-                        self._S.append(Solver(beta=beta, l=2, irrep='t2g', use_spin_orbit=self.SO))
-                    elif n_orb == 5:
-                        self._S.append(Solver(beta=beta, l=2, use_spin_orbit=self.SO))
-                    else:
-                        print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
-                        sys.exit()
-                elif n_orb == 1:
-                    self._S.append(Solver(beta=beta, l=0, use_spin_orbit=self.SO))
-                else:
-                    print("Error ! At shell {0}. l={1} and n_orb={2} is not supported.".format(ish, l, n_orb))
-                    sys.exit()
+                self._S.append(Solver(beta=beta, norb=n_orb, use_spin_orbit=self.SO))
             elif self._solver_name=="ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
                 self._S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau))
@@ -242,7 +179,7 @@ class DMFTCoreSolver:
                         if not (gname in f[output_group]): f[output_group].create_group(gname)
             except Exception as e:
                 error = 1
-                print("Error occured in IO of a HDF file: " + str(e))
+                print("Error occurred in IO of a HDF file: " + str(e))
         error = mpi.bcast(error)
         if error != 0:
             return
@@ -281,7 +218,8 @@ class DMFTCoreSolver:
             if (iteration_number==1 and previous_present==False and with_dc):
                 for ish in range(nsh):
                     dm = S[ish].G_iw.density()
-                    SK.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
+                    #SK.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
+                    self.calc_dc_matrix(dm, orb = ish, Umat=self.Umat)
                     if self.SO:
                         S[ish].Sigma_iw << SK.dc_imp[self._SK.inequiv_to_corr[ish]]['ud'][0, 0]
                     else:
@@ -311,7 +249,7 @@ class DMFTCoreSolver:
                 eal = SK.eff_atomic_levels()
                 for ish in range(nsh):
                     S[ish].set_atomic_levels( eal = eal[ish] )
-                    S[ish].solve(U_int=self._U_int, J_hund=self._J_hund, verbosity = 0)
+                    S[ish].solve(Umat=self.Umat[ish], verbosity = 0)
             else:
                 for ish in range(nsh):
                     S[ish].solve(h_int=self._h_int[ish], **self._solver_params)
@@ -358,7 +296,61 @@ class DMFTCoreSolver:
             if with_dc:
                 for ish in range(nsh):
                     dm = S[ish].G_iw.density() # compute the density matrix of the impurity problem
-                    SK.calc_dc(dm, orb = ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
+                    # SK.calc_dc(dm, orb = ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
+                    self.calc_dc_matrix(dm, orb = ish, Umat=self.Umat)
 
             # Save stuff into the user_data group of hdf5 archive in case of rerun:
             SK.save(['chemical_potential','dc_imp','dc_energ'])
+
+    def calc_dc_matrix(self,dens_mat, Umat, orb=0):
+        """
+        Compute double counting term with U-matrix
+        :param dens_mat:gf_struct_solver like
+                Density matrix for the specified correlated shell.
+        :param Umat: float numpy array [:,:,:,:]
+                4-index interaction matrix
+        :param orb:int, optional
+                Index of an inequivalent shell.
+        """
+        for icrsh in range(self._SK.n_corr_shells):
+
+            # ish is the index of the inequivalent shell corresponding to icrsh
+            ish = self._SK.corr_to_inequiv[icrsh]
+            if ish != orb:  continue  # ignore this orbital
+
+            dim = self._SK.corr_shells[icrsh]['dim']
+
+            if self._SK.corr_shells[icrsh]['SO'] == 0:
+                spn = self._SK.spin_block_names[self._SK.corr_shells[icrsh]['SO']]
+                for sp1 in spn:
+                    self._SK.dc_imp[icrsh][sp1] = numpy.zeros((dim,dim), numpy.complex_)
+                    for i1 in range(dim):
+                        for i2 in range(dim):
+                            #
+                            # Hartree
+                            #
+                            for sp2 in spn:
+                                self._SK.dc_imp[icrsh][sp1][i1,i2] += numpy.sum(Umat[i1,:,i2,:] * dens_mat[sp2][:,:])
+                            #
+                            # Exchange
+                            #
+                            self._SK.dc_imp[icrsh][sp1][i1, i2] += - numpy.sum(Umat[i1, :, :, i2] * dens_mat[sp2][:, :])
+            else:
+                self._SK.dc_imp[icrsh]["ud"] = numpy.zeros((dim, dim), numpy.complex_)
+                dim /= 2
+                for s1 in range(2):
+                    for i1 in range(dim):
+                        for s2 in range(2):
+                            for i2 in range(dim):
+                                #
+                                # Hartree
+                                #
+                                self._SK.dc_imp[icrsh]["ud"][i1+s1*dim,i2+s1*dim] += numpy.sum(
+                                    Umat[i1, :, i2, :] * dens_mat[s2*dim:s2*dim+dim,s2*dim:s2*dim+dim]
+                                )
+                                #
+                                # Exchange
+                                #
+                                self._SK.dc_imp[icrsh]["ud"][i1 + s1 * dim, i2 + s2 * dim] += numpy.sum(
+                                    Umat[i1, :, :, i2] * dens_mat[s2 * dim:s2 * dim + dim, s1 * dim:s1 * dim + dim]
+                                )

@@ -116,5 +116,5 @@ if __name__ == '__main__':
     args=parser.parse_args()
     if(os.path.isfile(args.path_input_file) is False):
         print("Input file is not exist.")
-        sys.exit()
+        sys.exit(-1)
     dcore_check(args.path_input_file, args.output)

@@ -24,7 +24,7 @@ args = sys.argv
 if len(args) != 3:
     print("\nUsage:\n")
     print("  $ openmx2dcore {HWR file} {seedname}\n")
-    exit()
+    exit(-1)
 #
 # Input
 #

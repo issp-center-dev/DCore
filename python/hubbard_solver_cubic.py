@@ -41,32 +41,16 @@ class Solver:
     """
 
     # initialisation:
-    def __init__(self, beta, l, n_msb=1025, use_spin_orbit=False, Nmoments=5, irrep=None):
+    def __init__(self, beta, norb, n_msb=1025, use_spin_orbit=False, Nmoments=5):
 
         self.name = "Hubbard I"
         self.beta = beta
-        self.l = l
         self.Nmsb = n_msb
         self.UseSpinOrbit = use_spin_orbit
         self.Converged = False
         self.Nspin = 2
         self.Nmoments=Nmoments
-
-        # self.Nlm = 2*l+1
-        self.irrep = irrep
-        if irrep is None:
-            self.Nlm = 2*l+1
-        elif irrep == 't2g':
-            self.Nlm = 3
-            assert self.l == 2
-        elif irrep == 'eg':
-            self.Nlm = 2
-            assert self.l == 2
-        elif irrep == 'p':
-            self.Nlm = 3
-            assert self.l == 1
-        else:
-            raise ValueError("irrep")
+        self.Nlm = norb
 
         if (use_spin_orbit):
             # no blocks!
@@ -95,9 +79,8 @@ class Solver:
             else:
                 self.Eff_Atomic_Levels[a] = numpy.zeros([self.Nlm,self.Nlm],numpy.complex_)
 
-
-
-    def solve(self, U_int, J_hund, T=None, verbosity=0, Iteration_Number=1, Test_Convergence=0.0001, N_lev=0, remove_split=False, use_kanamori=False):
+    def solve(self, Umat, T=None, verbosity=0, Iteration_Number=1, Test_Convergence=0.0001,
+              N_lev=0, remove_split=False):
         """Calculation of the impurity Greens function using Hubbard-I"""
 
         if self.Converged :
@@ -111,14 +94,7 @@ class Solver:
 
         #self.Nmoments = 5
 
-        # ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
-        if self.irrep is None:
-            ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
-            if self.l>0 and use_kanamori:
-                raise Exception("use_kanamori flag cannot be used in the present case")
-        else:
-            ur,umn,ujmn=self.__set_umatrix_cubic(U=U_int, J=J_hund, irrep=self.irrep, use_kanamori=use_kanamori)
-
+        Upara, Uantipara = reduce_4index_to_2index(Umat)
 
         M = [x for x in self.G.mesh]
         self.zmsb = numpy.array([x for x in M],numpy.complex_)
@@ -138,8 +114,9 @@ class Solver:
 
         # call the fortran solver:
         temp = 1.0/self.beta
-        gf,tail,self.atocc,self.atmag = gf_hi_fullu(e0f=self.ealmat, ur=ur, umn=umn, ujmn=ujmn,
-                                                    zmsb=self.zmsb, nmom=self.Nmoments, ns=self.Nspin, temp=temp, verbosity = self.verbosity,remove_split = remove_split, nlev_cf = N_lev)
+        gf,tail,self.atocc,self.atmag = gf_hi_fullu(e0f=self.ealmat, ur=Umat, umn=Upara, ujmn=Uantipara,
+                                                    zmsb=self.zmsb, nmom=self.Nmoments, ns=self.Nspin, temp=temp,
+                                                    verbosity = self.verbosity,remove_split = remove_split, nlev_cf = N_lev)
 
         #self.sig = sigma_atomic_fullu(gf=self.gf,e0f=self.eal,zmsb=self.zmsb,ns=self.Nspin,nlm=self.Nlm)
 
@@ -195,22 +172,14 @@ class Solver:
         else :
             mpi.report("Solver has not yet converged")
 
-
-    def GF_realomega(self, ommin, ommax, N_om, U_int, J_hund, T=None, verbosity=0, broadening=0.01, N_lev=0, remove_split=False, use_kanamori=False):
+    def GF_realomega(self, ommin, ommax, N_om, Umat, T=None, verbosity=0, broadening=0.01, N_lev=0, remove_split=False):
         """Calculates the GF and spectral function on the real axis."""
 
         delta_om = (ommax-ommin)/(1.0*(N_om-1))
 
         omega = numpy.zeros([N_om],numpy.complex_)
 
-        # ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
-        if self.irrep is None:
-            ur,umn,ujmn=self.__set_umatrix(U=U_int,J=J_hund,T=T)
-            if use_kanamori:
-                raise Exception("use_kanamori flag cannot be used in the present case")
-        else:
-            ur,umn,ujmn=self.__set_umatrix_cubic(U=U_int, J=J_hund, irrep=self.irrep, use_kanamori=use_kanamori)
-
+        Upara, Uantipara = reduce_4index_to_2index(Umat)
 
         for i in range(N_om):
             omega[i] = ommin + delta_om * i + 1j * broadening
@@ -221,8 +190,9 @@ class Solver:
             for i in range(9): tailtempl[sig][i] *= 0.0
 
         temp = 1.0/self.beta
-        gf,tail,self.atocc,self.atmag = gf_hi_fullu(e0f=self.ealmat, ur=ur, umn=umn, ujmn=ujmn,
-                                                    zmsb=omega, nmom=self.Nmoments, ns=self.Nspin, temp=temp, verbosity = verbosity,remove_split = remove_split, nlev_cf = N_lev)
+        gf,tail,self.atocc,self.atmag = gf_hi_fullu(e0f=self.ealmat, ur=Umat, umn=Upara, ujmn=Uantipara,
+                                                    zmsb=omega, nmom=self.Nmoments, ns=self.Nspin, temp=temp,
+                                                    verbosity = verbosity,remove_split = remove_split, nlev_cf = N_lev)
 
         # transfer the data to the GF class:
         if (self.UseSpinOrbit):
@@ -259,7 +229,6 @@ class Solver:
 
         #return omega,gf,sigmamat
 
-
     def __save_eal(self,Filename,it):
         if mpi.is_master_node():
             f=open(Filename,'a')
@@ -276,7 +245,6 @@ class Solver:
             g.data[:,:,:]=data[s][:,:,:]
             for imom in range(1,min(self.Nmoments,8)):
                 g.tail.data[1+imom,:,:]=tail[s][imom]
-
 
     def set_atomic_levels(self,eal):
         """ Helps to set correctly the variables for the atomic levels from a dictionary."""

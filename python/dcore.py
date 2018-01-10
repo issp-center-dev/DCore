@@ -41,7 +41,7 @@ parser.add_argument('path_input_file', \
 args=parser.parse_args()
 if(os.path.isfile(args.path_input_file) is False):
     print("Input file is not exist.")
-    sys.exit()
+    sys.exit(-1)
 
 # Set Default value
 parser = create_parser()

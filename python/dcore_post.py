@@ -280,7 +280,7 @@ def __generate_lattice_model(params, n_k, kvec):
         norb = 5
     else:
         print("Error ! Invalid lattice : ", params["orbital_model"])
-        sys.exit()
+        sys.exit(-1)
 
     t = params["t"]
     tp = params["t'"]
@@ -519,5 +519,5 @@ if __name__ == '__main__':
     args=parser.parse_args()
     if(os.path.isfile(args.path_input_file) is False):
         print("Input file is not exist.")
-        sys.exit()
+        sys.exit(-1)
     dcore_post(args.path_input_file)

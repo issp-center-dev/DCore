@@ -267,11 +267,9 @@ def dcore_pre(filename):
                 for j in range(3): kanamori[i,j] = float(_kanamori[j])
         except:
             raise RuntimeError("Error ! Format of u_j is wrong.")
-        print(kanamori)
     elif p["model"]["interaction"] == 'slater_uj':
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_uj"])
-        print(f_list)
         slater_f = numpy.zeros((ncor, 4), numpy.float_)
         slater_l = numpy.zeros((ncor), numpy.int_)
         #try:
@@ -280,14 +278,12 @@ def dcore_pre(filename):
             slater_l[i] = int(_slater[0])
             slater_u = float(_slater[1])
             slater_j = float(_slater[2])
-            print(slater_l[i],slater_u,slater_j)
             if slater_l[i] == 0:
                 slater_f[i, 0] = slater_u
             else:
                 slater_f[i, 0:slater_l[i]+1] = U_J_to_radial_integrals(slater_l[i], slater_u, slater_j)
         #except:
         #    raise RuntimeError("Error ! Format of u_j is wrong.")
-        print(slater_f)
     elif p["model"]["interaction"] == 'slater_f':
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_f"])
@@ -300,7 +296,6 @@ def dcore_pre(filename):
                 for j in range(4): slater_f[i,j] = float(_slater[j])
         except:
             raise RuntimeError("Error ! Format of u_j is wrong.")
-        print(slater_f)
     else:
         print("Error ! Invalid interaction : ", p["model"]["interaction"])
         sys.exit(-1)
@@ -360,7 +355,7 @@ def dcore_pre(filename):
         f = HDFArchive(seedname+'.h5','a')
         if not ("DCore" in f): f.create_group("DCore")
         #
-        Umat = [numpy.zeros((norb[icor], norb[icor], norb[icor], norb[icor]), numpy.float_) for icor in range(ncor)]
+        Umat = [numpy.zeros((norb[icor], norb[icor], norb[icor], norb[icor]), numpy.complex_) for icor in range(ncor)]
         if p["model"]["interaction"] == 'kanamori':
             for icor in range(ncor):
                 for iorb in range(norb[icor]):
@@ -371,12 +366,11 @@ def dcore_pre(filename):
                 for iorb in range(norb[icor]):Umat[icor][iorb,iorb,iorb,iorb] = kanamori[icor,0]
         elif p["model"]["interaction"] == 'slater_uj' or p["model"]["interaction"] == 'slater_f':
             for icor in range(ncor):
-                print(slater_f[icor,:])
                 if slater_l[icor] == 0:
-                    Umat_full = slater_f[icor,0]
+                    Umat_full = numpy.zeros((1,1,1,1), numpy.complex_)
+                    Umat_full[0,0,0,0] = slater_f[icor,0]
                 else:
                     Umat_full = U_matrix(l=slater_l[icor], radial_integrals=slater_f[icor,:], basis='cubic')
-                print(Umat_full)
                 if slater_l[icor]*2+1 != norb[icor]:
                     if slater_l[icor] == 2 and norb[icor] == 2:
                         Umat = eg_submatrix(Umat_full)
