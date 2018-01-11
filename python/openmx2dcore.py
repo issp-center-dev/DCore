@@ -30,6 +30,7 @@ if len(args) != 3:
 #
 with open(args[1], 'r') as f:
     line = f.readline()  # Skip
+    print(line, end="")
     #
     line = f.readline()
     itemlist = line.split()
@@ -45,11 +46,9 @@ with open(args[1], 'r') as f:
     eqcell = numpy.zeros(ncell, numpy.int_)
     hopping = numpy.zeros([ncell, nwan, nwan], numpy.complex_)
     #
-    line = f.readline()
-    line = f.readline()
-    line = f.readline()
-    line = f.readline()
-    line = f.readline()
+    for ii in range(5):
+        line = f.readline()
+        print(line, end="")
     line = f.readline()
     itemlist = line.split()
     efermi = float(itemlist[2])

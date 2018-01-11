@@ -240,7 +240,7 @@ def __generate_umat(p):
                 _kanamori = filter(lambda w: len(w) > 0, re.split(r'[\(,\)]', _list))
                 for j in range(3):
                     kanamori[i, j] = float(_kanamori[j])
-        except:
+        except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
     elif p["model"]["interaction"] == 'slater_uj':
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
@@ -257,7 +257,7 @@ def __generate_umat(p):
                     slater_f[i, 0] = slater_u
                 else:
                     slater_f[i, 0:slater_l[i]+1] = U_J_to_radial_integrals(slater_l[i], slater_u, slater_j)
-        except:
+        except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
     elif p["model"]["interaction"] == 'slater_f':
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
@@ -270,7 +270,7 @@ def __generate_umat(p):
                 slater_l[i] = int(_slater[0])
                 for j in range(4):
                     slater_f[i, j] = float(_slater[j])
-        except:
+        except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
     else:
         print("Error ! Invalid interaction : ", p["model"]["interaction"])
@@ -336,12 +336,12 @@ def dcore_pre(filename):
     #
     # Construct a parser with default values
     #
-    parser = create_parser()
+    pars = create_parser()
     #
     # Parse keywords and store
     #
-    parser.read(filename)
-    p = parser.as_dict()
+    pars.read(filename)
+    p = pars.as_dict()
     ncor = p["model"]['ncor']
     #
     # Summary of input parameters

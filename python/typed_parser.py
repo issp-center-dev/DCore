@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-import os, copy
+import os
+import copy
 
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+
 
 def cast(value_type, string):
     if value_type == bool:
@@ -33,6 +35,7 @@ def cast(value_type, string):
     else:
         return value_type(string)
 
+
 class TypedParser(object):
     """
     Parser of an init file. One is able to define options and sections (data types and default values).
@@ -40,11 +43,12 @@ class TypedParser(object):
     def __init__(self):
         """
         Initializer
+        :rtype:
         """
         self.__config_parser = configparser.ConfigParser()
         self.__config_parser.optionxform = str
 
-        self.__definitions= {}
+        self.__definitions = {}
         self.__results = {}
 
         self.__read = False
@@ -63,10 +67,10 @@ class TypedParser(object):
         if self.__read:
             raise RuntimeError("Do not add option after an input file has been read!")
 
-        if not section in self.__definitions:
+        if section not in self.__definitions:
             self.__definitions[section] = {}
 
-        if not section in self.__results:
+        if section not in self.__results:
             self.__results[section] = {}
 
         self.__definitions[section][option] = (dtype, string, dtype(default))
@@ -102,7 +106,7 @@ class TypedParser(object):
         self.__config_parser.read(in_file)
 
         for sect in self.__config_parser.sections():
-            if not sect in self.__results:
+            if sect not in self.__results:
                 self.__results[sect] = {}
 
             for opt in self.__config_parser.options(sect):
@@ -173,8 +177,9 @@ class TypedParser(object):
         """
 
         print("\n  @ Defined options")
-        for section_name,section_data in self.__definitions.items():
+        for section_name, section_data in self.__definitions.items():
             print("")
             print("   ["+section_name+"] block")
-            for option_name,option_data in section_data.items():
-                print("     option =  {0} : type = {1} : description = \"{2}\" : default value = {3}".format(option_name, option_data[0].__name__, option_data[1], option_data[2]))
+            for option_name, option_data in section_data.items():
+                print("     option =  {0} : type = {1} : description = \"{2}\" : default value = {3}".format(
+                    option_name, option_data[0].__name__, option_data[1], option_data[2]))

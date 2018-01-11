@@ -17,20 +17,10 @@
 #
 from __future__ import print_function
 
-from pytriqs.applications.dft.converters import *
-from pytriqs.archive import *
-from pytriqs.utility.h5diff import h5diff
-import pytriqs.utility.mpi as mpi
-
 from pytriqs.applications.dcore.dcore_pre import dcore_pre
 from pytriqs.applications.dcore.dmft_core import DMFTCoreSolver, create_parser
 
 import tempfile
-
-#try:
-    #import configparser
-#except ImportError:
-    #import ConfigParser as configparser
 
 seedname = "test1"
 
@@ -64,6 +54,4 @@ params['control']['delta_mix'] = 0.5
 
 solver = DMFTCoreSolver(seedname, params)
 
-# FIXME: I want to use the Hubbard-I solver for tests!
 solver.solve(max_step=1, output_file=seedname+'.out.h5', output_group='dmft_out', dry_run=True)
-

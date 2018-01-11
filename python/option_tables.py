@@ -22,6 +22,7 @@ from program_options import *
 
 p = create_parser()
 
+
 def readable_type_string(t):
     if t == int:
         return "Integer"
@@ -33,6 +34,7 @@ def readable_type_string(t):
         return "Bool"
     else:
         raise RuntimeError("Unsupported type " + str(t))
+
 
 def max_length(str_list):
     """
@@ -49,15 +51,15 @@ for section in p.get_predefined_sections():
         default_value_strings = []
         description_strings = []
         for option in p.get_predefined_options(section):
-            type_strings.append(readable_type_string(p.get_type(section,option)))
-            default_value_strings.append(str(p.get_default_value(section,option)))
-            description_strings.append(p.get_description(section,option))
+            type_strings.append(readable_type_string(p.get_type(section, option)))
+            default_value_strings.append(str(p.get_default_value(section, option)))
+            description_strings.append(p.get_description(section, option))
     
         width = [max_length(sl)+4 for sl in [name_strings, type_strings, default_value_strings, description_strings]]
     
         def print_one_line(*str_list):
-            for i in range(3):
-                 print(str_list[i].ljust(width[i], ' '), end=' ', file=f)
+            for column in range(3):
+                print(str_list[column].ljust(width[i], ' '), end=' ', file=f)
             print(str_list[3].ljust(width[3], ' '), file=f)
     
         print_one_line('='*width[0], '='*width[1], '='*width[2], '='*width[3])

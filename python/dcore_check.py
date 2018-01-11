@@ -41,18 +41,18 @@ def dcore_check(filename, fileplot=None):
     #
     # Construct a parser with default values
     #
-    parser = create_parser()
+    pars = create_parser()
     #
     # Parse keywords and store
     #
-    parser.read(filename)
-    p = parser.as_dict()
+    pars.read(filename)
+    p = pars.as_dict()
     #
     solver = DMFTCoreSolver(p["model"]["seedname"], p)
     #
 
     # Just for convenience
-    S = solver._S
+    sol = solver._S
     output_file = p["model"]["seedname"]+'.out.h5'
     output_group = 'dmft_out'
 
@@ -66,16 +66,16 @@ def dcore_check(filename, fileplot=None):
     iteration_number = ar[output_group]['iterations']
     print("  Total number of Iteration: {0}".format(iteration_number))
     print("\n  Iter  Chemical-potential")
-    for iter in range(1, iteration_number+1):
-        if iter > iteration_number - 7:
-            S[0].Sigma_iw << ar[output_group]['Sigma-log'][str(iter)]['0']
+    for itr in range(1, iteration_number+1):
+        if itr > iteration_number - 7:
+            sol[0].Sigma_iw << ar[output_group]['Sigma-log'][str(itr)]['0']
             if solver.SO:
-                oplot(S[0].Sigma_iw["ud"][0, 0], '-o', mode='I',
-                      x_window=(p['tool']['omega_min'], p['tool']['omega_max']), name='Sigma-%s' % iter)
+                oplot(sol[0].Sigma_iw["ud"][0, 0], '-o', mode='I',
+                      x_window=(p['tool']['omega_min'], p['tool']['omega_max']), name='Sigma-%s' % itr)
             else:
-                oplot(S[0].Sigma_iw["up"][0, 0], '-o', mode='I',
-                      x_window=(p['tool']['omega_min'], p['tool']['omega_max']), name='Sigma-%s' % iter)
-        print("  {0} {1}".format(iter, ar[output_group]['chemical_potential'][str(iter)]))
+                oplot(sol[0].Sigma_iw["up"][0, 0], '-o', mode='I',
+                      x_window=(p['tool']['omega_min'], p['tool']['omega_max']), name='Sigma-%s' % itr)
+        print("  {0} {1}".format(itr, ar[output_group]['chemical_potential'][str(itr)]))
     del ar
 
     plt.legend(loc=4)

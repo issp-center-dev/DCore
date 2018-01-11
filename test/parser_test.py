@@ -19,6 +19,7 @@ from __future__ import print_function
 
 from pytriqs.applications.dcore.typed_parser import TypedParser
 
+
 def read_file():
     p = TypedParser()
     p.add_option("sectionA", "a", int, -1000, "a in sectionA")
@@ -33,6 +34,7 @@ def read_file():
     assert params["sectionA"]["a"] == 1
     assert params["sectionB"]["b"] == 'B'
 
+
 # Detect undefined option?
 def detect_undefined_option():
     p2 = TypedParser()
@@ -43,9 +45,10 @@ def detect_undefined_option():
     thrown = False
     try:
         p2.read("parser_test_2.in")
-    except:
+    except RuntimeError:
         thrown = True
     assert thrown
+
 
 read_file()
 detect_undefined_option()

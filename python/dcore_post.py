@@ -45,7 +45,7 @@ class DMFTCoreTools:
 
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
-        self._n_pade = int(params['tool']['n_pade']) # Number of Matsubara frequencies
+        self._n_pade = int(params['tool']['n_pade'])  # Number of Matsubara frequencies
         self._omega_min = float(params['tool']['omega_min'])
         self._omega_max = float(params['tool']['omega_max'])
         self._Nomega = int(params['tool']['Nomega'])
@@ -63,10 +63,10 @@ class DMFTCoreTools:
         For Hubbard-I solver, self-energy is calculated in this function.
         For cthyb (both TRIQS and ALPS), self-energy is read from hdf5 file.
         """
-        SKT = self._SKT
-        Sol = self._solver
-        S = self._solver._S
-        nsh = SKT.n_inequiv_shells
+        skt = self._SKT
+        core = self._solver
+        sol = self._solver._S
+        nsh = skt.n_inequiv_shells
         with_dc = int(self._params['system']['with_dc'])
 
         if mpi.is_master_node():
@@ -75,48 +75,50 @@ class DMFTCoreTools:
         # Set necessary quantities
         #
         if mpi.is_master_node():
-            SKT.chemical_potential, SKT.dc_imp, SKT.dc_energ = SKT.load(['chemical_potential','dc_imp','dc_energ'])
-        SKT.chemical_potential = mpi.bcast(SKT.chemical_potential)
-        SKT.dc_imp = mpi.bcast(SKT.dc_imp)
-        SKT.dc_energ = mpi.bcast(SKT.dc_energ)
+            skt.chemical_potential, skt.dc_imp, skt.dc_energ = skt.load(['chemical_potential', 'dc_imp', 'dc_energ'])
+        skt.chemical_potential = mpi.bcast(skt.chemical_potential)
+        skt.dc_imp = mpi.bcast(skt.dc_imp)
+        skt.dc_energ = mpi.bcast(skt.dc_energ)
 
         # compute real-frequency self-energy, sigma_w
-        sigma_w =[]
-        if Sol._solver_name == 'TRIQS/hubbard-I':
+        sigma_w = []
+        if core._solver_name == 'TRIQS/hubbard-I':
             # set atomic levels:
-            eal = SKT.eff_atomic_levels()
+            eal = skt.eff_atomic_levels()
             for ish in range(nsh):
-                S[ish].set_atomic_levels(eal=eal[ish])
+                sol[ish].set_atomic_levels(eal=eal[ish])
                 # Run the solver to get GF and self-energy on the real axis
-                S[ish].GF_realomega(ommin=self._omega_min, ommax=self._omega_max, N_om=self._Nomega,
-                                    U_int=Sol._U_int, J_hund=Sol._J_hund)
-                sigma_w.append(S[ish].Sigma_iw)
-        elif Sol._solver_name == "TRIQS/cthyb" or Sol._name == "ALPS/cthyb":
+                sol[ish].GF_realomega(ommin=self._omega_min, ommax=self._omega_max, N_om=self._Nomega,
+                                      u_mat=core.Umat[ish])
+                sigma_w.append(sol[ish].Sigma_iw)
+        elif core._solver_name == "TRIQS/cthyb" or core._name == "ALPS/cthyb":
             # Read info from HDF file
             ar = HDFArchive(self._seedname+'.out.h5', 'r')
             iteration_number = ar['dmft_out']['iterations']
             print("    Iteration {0}".format(iteration_number))
             for ish in range(nsh):
-                S[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
+                sol[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
                 # set BlockGf sigma_w
-                block_names = list(S[ish].Sigma_iw.indices)
-                glist = lambda: [GfReFreq(indices=sig.indices, window=(self._omega_min, self._omega_max),
-                                          n_points=self._Nomega, name="sig_pade") for bname, sig in S[ish].Sigma_iw]
+                block_names = list(sol[ish].Sigma_iw.indices)
+                glist = lambda: [GfReFreq(indices=sigma.indices, window=(self._omega_min, self._omega_max),
+                                          n_points=self._Nomega, name="sig_pade") for block, sigma in sol[ish].Sigma_iw]
                 sigma_w.append(BlockGf(name_list=block_names, block_list=glist(), make_copies=False))
                 # Analytic continuation
-                for bname, sig in S[ish].Sigma_iw:
+                for bname, sig in sol[ish].Sigma_iw:
                     sigma_w[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
         else:
-            raise RuntimeError("Unknown solver " + Sol._solver_name)
+            raise RuntimeError("Unknown solver " + core._solver_name)
 
         #
-        SKT.set_Sigma([sigma_w[ish] for ish in range(nsh)])
-        if mpi.is_master_node(): print("    Done")
+        skt.set_Sigma([sigma_w[ish] for ish in range(nsh)])
+        if mpi.is_master_node():
+            print("    Done")
         #
         #  (Partial) DOS
         #
-        if mpi.is_master_node(): print("\n  @ Compute (partial) DOS")
-        dos, dosproj, dosproj_orb = SKT.dos_wannier_basis(broadening=self._broadening,
+        if mpi.is_master_node():
+            print("\n  @ Compute (partial) DOS")
+        dos, dosproj, dosproj_orb = skt.dos_wannier_basis(broadening=self._broadening,
                                                           mesh=[self._omega_min, self._omega_max, self._Nomega],
                                                           with_Sigma=True, with_dc=with_dc, save_to_file=False)
         #
@@ -127,14 +129,14 @@ class DMFTCoreTools:
             with open(self._seedname + '_dos.dat', 'w') as f:
                 print("# Energy DOS Partial-DOS", file=f)
                 for iom in range(self._Nomega):
-                    if Sol.SO:
+                    if core.SO:
                         print("{0} {1}".format(om_mesh[iom], dos['ud'][iom]), file=f, end="")
                     else:
                         print("{0} {1}".format(om_mesh[iom], 2.0*dos['down'][iom]), file=f, end="")
-                    for ish in range(SKT.n_inequiv_shells):
-                        for i in range(SKT.corr_shells[SKT.inequiv_to_corr[ish]]['dim']):
-                            if Sol.SO:
-                                print(" {0}".format(dosproj_orb[ish]['ud'][iom,i,i].real), end="", file=f)
+                    for ish in range(skt.n_inequiv_shells):
+                        for i in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
+                            if core.SO:
+                                print(" {0}".format(dosproj_orb[ish]['ud'][iom, i, i].real), end="", file=f)
                             else:
                                 print(" {0}".format(2.0*dosproj_orb[ish]['down'][iom, i, i].real), end="", file=f)
                     print("", file=f)
@@ -142,22 +144,24 @@ class DMFTCoreTools:
         #
         # Band structure
         #
-        if self._params["model"]["lattice"] == 'bethe': return
+        if self._params["model"]["lattice"] == 'bethe':
+            return
         #
-        if mpi.is_master_node(): print ("\n  @ Compute band structure\n")
-        akw = SKT.spaghettis(broadening=self._broadening,plot_range=None,ishell=None,save_to_file=None)
+        if mpi.is_master_node():
+            print ("\n  @ Compute band structure\n")
+        akw = skt.spaghettis(broadening=self._broadening, plot_range=None, ishell=None, save_to_file=None)
         #
         # Print band-structure into file
         #
-        mesh = [x.real for x in SKT.Sigma_imp_w[0].mesh]
+        mesh = [x.real for x in skt.Sigma_imp_w[0].mesh]
         if mpi.is_master_node():
             with open(self._seedname + '_akw.dat', 'w') as f:
                 for ik in range(self._n_k):
                     for iom in range(self._Nomega):
-                        if Sol.SO:
-                            print("{0} {1} {2}".format(self._xk[ik], mesh[iom],akw['ud'][ik,iom]), file=f)
+                        if core.SO:
+                            print("{0} {1} {2}".format(self._xk[ik], mesh[iom], akw['ud'][ik, iom]), file=f)
                         else:
-                            print("{0} {1} {2}".format(self._xk[ik], mesh[iom],2.0*akw['down'][ik, iom]), file=f)
+                            print("{0} {1} {2}".format(self._xk[ik], mesh[iom], 2.0*akw['down'][ik, iom]), file=f)
                     print("", file=f)
             print("\n    Output {0}".format(self._seedname + '_akw.dat'))
 
@@ -206,7 +210,7 @@ def __generate_wannier90_model(params, n_k, kvec):
     if mpi.is_master_node():
         print("               ncor = ", ncor)
         for i in range(ncor):
-            print("     norb[{0}] = {1}".format(i,norb[i]))
+            print("     norb[{0}] = {1}".format(i, norb[i]))
     #
     # Read hopping in the real space from the Wannier90 output
     #
@@ -219,9 +223,9 @@ def __generate_wannier90_model(params, n_k, kvec):
     hopping = numpy.zeros([n_k, n_spin, numpy.max(n_orbitals), numpy.max(n_orbitals)], numpy.complex_)
     for ik in range(n_k):
         for ir in range(nr):
-            rdotk = numpy.dot(kvec[ik,:], rvec[ir,:])
+            rdotk = numpy.dot(kvec[ik, :], rvec[ir, :])
             factor = (numpy.cos(rdotk) + 1j * numpy.sin(rdotk)) / float(rdeg[ir])
-            hopping[ik,0,:, :] += factor * hamr[ir][:, :]
+            hopping[ik, 0, :, :] += factor * hamr[ir][:, :]
     #
     # proj_mat is (norb*norb) identities at each correlation shell
     #
@@ -245,7 +249,7 @@ def __generate_lattice_model(params, n_k, kvec):
     n_k : integer
         Number of k points
     kvec : float array
-        k-points where A(k,w) is computed
+        k-points where A(k, w) is computed
 
     Returns
     -------
@@ -277,20 +281,21 @@ def __generate_lattice_model(params, n_k, kvec):
 
         for ik in range(n_k):
             if params["lattice"] == 'chain':
-                ek = 2.0*t*numpy.cos(kvec[ik,0]) + 2*tp*numpy.cos(2.0*kvec[ik,0])
+                ek = 2.0*t*numpy.cos(kvec[ik, 0]) + 2*tp*numpy.cos(2.0*kvec[ik, 0])
             elif params["lattice"] == 'square':
-                ek = 2.0 * t * (numpy.cos(kvec[ik,0]) + numpy.cos(kvec[ik,1])) \
-                   + 2.0 * tp * (numpy.cos(kvec[ik,0] + kvec[ik,1]) + numpy.cos(kvec[ik,0] - kvec[ik,1]))
+                ek = 2.0 * t * (numpy.cos(kvec[ik, 0]) + numpy.cos(kvec[ik, 1])) \
+                   + 2.0 * tp * (numpy.cos(kvec[ik, 0] + kvec[ik, 1]) + numpy.cos(kvec[ik, 0] - kvec[ik, 1]))
             elif params["lattice"] == 'cubic':
-                ek = 2 * t * (numpy.cos(kvec[ik,0]) + numpy.cos(kvec[ik,1]) + numpy.cos(kvec[ik,2])) \
-                    + 2 * tp * (numpy.cos(kvec[ik,0] + kvec[ik,1]) + numpy.cos(kvec[ik,0] - kvec[ik,1]) \
-                              + numpy.cos(kvec[ik,1] + kvec[ik,2]) + numpy.cos(kvec[ik,1] - kvec[ik,2]) \
-                              + numpy.cos(kvec[ik,2] + kvec[ik,0]) + numpy.cos(kvec[ik,2] - kvec[ik,0]))
+                ek = 2 * t * (numpy.cos(kvec[ik, 0]) + numpy.cos(kvec[ik, 1]) + numpy.cos(kvec[ik, 2])) \
+                    + 2 * tp * (numpy.cos(kvec[ik, 0] + kvec[ik, 1]) + numpy.cos(kvec[ik, 0] - kvec[ik, 1])
+                                + numpy.cos(kvec[ik, 1] + kvec[ik, 2]) + numpy.cos(kvec[ik, 1] - kvec[ik, 2])
+                                + numpy.cos(kvec[ik, 2] + kvec[ik, 0]) + numpy.cos(kvec[ik, 2] - kvec[ik, 0]))
             else:
                 print("Error ! Invalid lattice : ", params["model"]["lattice"])
                 sys.exit(-1)
 
-            for iorb in range(norb): hopping[ik, 0, iorb, iorb] = ek
+            for iorb in range(norb):
+                hopping[ik, 0, iorb, iorb] = ek
     #
     # proj_mat is (norb*norb) identities at each correlation shell
     #
@@ -309,30 +314,32 @@ def dcore_post(filename):
     filename : string
         Input-file name
     """
-    if mpi.is_master_node(): print("\n  @ Reading {0} ...".format(filename))
+    if mpi.is_master_node():
+        print("\n  @ Reading {0} ...".format(filename))
     #
     # Construct a parser with default values
     #
-    parser = create_parser()
+    pars = create_parser()
     #
     # Parse keywords and store
     #
-    parser.read(filename)
-    p = parser.as_dict()
+    pars.read(filename)
+    p = pars.as_dict()
     seedname = p["model"]["seedname"]
     #
     # Nodes for k-point path
-    # knode=(label,k0, k1, k2) in the fractional coordinate
+    # knode=(label, k0, k1, k2) in the fractional coordinate
     #
     knode_list = re.findall(r'\(\w\d?,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["tool"]["knode"])
     knode = numpy.zeros((p["tool"]['nnode'], 3), numpy.float_)
-    klabel =['G'] * p["tool"]['nnode']
+    klabel = ['G'] * p["tool"]['nnode']
     try:
         for i, _list in enumerate(knode_list):
             _knode = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*\,\s*,\s*\)]', _list))
             klabel[i] = _knode[0]
-            for j in range(3): knode[i,j] = float(_knode[j+1])
-    except:
+            for j in range(3):
+                knode[i, j] = float(_knode[j+1])
+    except RuntimeError:
         raise RuntimeError("Error ! Format of knode is wrong.")
     #
     # Reciprocal lattice vectors
@@ -343,8 +350,9 @@ def dcore_post(filename):
     try:
         for i, _list in enumerate(bvec_list):
             _bvec = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,\s*\)]', _list))
-            for j in range(3): bvec[i,j] = float(_bvec[j])
-    except:
+            for j in range(3):
+                bvec[i, j] = float(_bvec[j])
+    except RuntimeError:
         raise RuntimeError("Error ! Format of bvec is wrong.")
     #
     # Summary of input parameters
@@ -352,24 +360,27 @@ def dcore_post(filename):
     if mpi.is_master_node():
         print("\n  @ Parameter summary")
         print("\n    [model] block")
-        for k,v in p["model"].items():
-            print("      {0} = {1}".format(k,v))
+        for k, v in p["model"].items():
+            print("      {0} = {1}".format(k, v))
         print("\n    [tool] block")
-        for k,v in p["tool"].items():
-            print("      {0} = {1}".format(k,v))
+        for k, v in p["tool"].items():
+            print("      {0} = {1}".format(k, v))
     #
     # Construct parameters for the A(k,w)
     #
-    if mpi.is_master_node(): print("\n  @ Constructing k-path")
+    if mpi.is_master_node():
+        print("\n  @ Constructing k-path")
     nnode = p["tool"]["nnode"]
     nk_line = p["tool"]["nk_line"]
     n_k = (nnode - 1)*nk_line + 1
-    if mpi.is_master_node(): print("\n   Total number of k =", str(n_k))
+    if mpi.is_master_node():
+        print("\n   Total number of k =", str(n_k))
     kvec = numpy.zeros((n_k, 3), numpy.float_)
     ikk = 0
     for inode in range(nnode - 1):
         for ik in range(nk_line + 1):
-            if inode != 0 and ik == 0: continue
+            if inode != 0 and ik == 0:
+                continue
             for i in range(3):
                 kvec[ikk, i] = float((nk_line - ik)) * knode[inode, i] + float(ik) * knode[inode + 1, i]
                 kvec[ikk, i] = 2.0 * numpy.pi * kvec[ikk, i] / float(nk_line)
@@ -384,9 +395,9 @@ def dcore_post(filename):
     xk[0] = 0.0
     ikk = 0
     for inode in range(nnode - 1):
-        dk[:] = knode[inode+1,:]- knode[inode,:]
-        dk_cart[:] = numpy.dot(dk[:], bvec[:,:])
-        klength = numpy.sqrt(numpy.dot(dk_cart[:],dk_cart[:])) / nk_line
+        dk[:] = knode[inode+1, :] - knode[inode, :]
+        dk_cart[:] = numpy.dot(dk[:], bvec[:, :])
+        klength = numpy.sqrt(numpy.dot(dk_cart[:], dk_cart[:])) / nk_line
         xk_label[inode] = xk[ikk]
         for ik in range(nk_line):
             xk[ikk+1] = xk[ikk] + klength
@@ -399,7 +410,8 @@ def dcore_post(filename):
         #
         # Compute k-dependent Hamiltonian
         #
-        if mpi.is_master_node(): print("\n  @ Compute k-dependent Hamiltonian")
+        if mpi.is_master_node():
+            print("\n  @ Compute k-dependent Hamiltonian")
         if p["model"]["lattice"] == 'wannier90':
             hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], n_k, kvec)
         else:
@@ -407,20 +419,20 @@ def dcore_post(filename):
         #
         # Output them into seedname.h5
         #
-        f = HDFArchive(seedname+'.h5','a')
+        f = HDFArchive(seedname+'.h5', 'a')
         if not ("dft_bands_input" in f):
             f.create_group("dft_bands_input")
         f["dft_bands_input"]["hopping"] = hopping
         f["dft_bands_input"]["n_k"] = n_k
         f["dft_bands_input"]["n_orbitals"] = n_orbitals
         f["dft_bands_input"]["proj_mat"] = proj_mat
-        del  f
+        del f
         print("\n    Done")
     #
     # Plot
     #
     mpi.barrier()
-    dct=DMFTCoreTools(seedname, p, n_k, xk)
+    dct = DMFTCoreTools(seedname, p, n_k, xk)
     dct.post()
     #
     # Output gnuplot script
@@ -449,26 +461,27 @@ def dcore_post(filename):
     #
     # Finish
     #
-    if mpi.is_master_node(): print("\n  Done\n")
+    if mpi.is_master_node():
+        print("\n  Done\n")
 
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(\
-        prog='dcore_post.py',\
-        description='pre script for dcore.',\
-        epilog='end',\
-        usage = '$ dcore_post input',\
-        add_help= True)
-    parser.add_argument('path_input_file', \
-                        action = 'store',\
-                        default= None,    \
-                        type=str, \
-                        help = "input file name."
-    )
+    parser = argparse.ArgumentParser(
+        prog='dcore_post.py',
+        description='pre script for dcore.',
+        epilog='end',
+        usage='$ dcore_post input',
+        add_help=True)
+    parser.add_argument('path_input_file',
+                        action='store',
+                        default=None,
+                        type=str,
+                        help="input file name."
+                        )
 
-    args=parser.parse_args()
-    if(os.path.isfile(args.path_input_file) is False):
+    args = parser.parse_args()
+    if os.path.isfile(args.path_input_file) is False:
         print("Input file is not exist.")
         sys.exit(-1)
     dcore_post(args.path_input_file)

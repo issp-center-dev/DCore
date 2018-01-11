@@ -19,10 +19,6 @@ from __future__ import print_function
 
 import sys
 import os
-from pytriqs.applications.dft.converters import *
-from pytriqs.archive import *
-from pytriqs.utility.h5diff import h5diff
-import pytriqs.utility.mpi as mpi
 
 from pytriqs.applications.dcore.dcore_pre import dcore_pre
 
