@@ -38,7 +38,7 @@ for lattice in ['bethe', 'chain', 'square', 'cubic']:
     with open(input_fname, 'w') as f:
         print("[model]", file=f)
         print("t = 1.0", file=f)
-        print("slater_uj = [(0,4.0,0.0)]", file=f)
+        print("kanamori = [(4.0,0.0,0.0)]", file=f)
         print("lattice = ", lattice, file=f)
         print("seedname = " + seedname, file=f)
 

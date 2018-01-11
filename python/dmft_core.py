@@ -103,7 +103,7 @@ class DMFTCoreSolver:
 
             # Construct Hamiltonian
             self._h_int.append(
-                h_int_slater(spin_names, orb_names, U_matrix=self.Umat[ish], off_diag=True,
+                h_int_slater(spin_names, orb_names, U_matrix=self.Umat[self._SK.inequiv_to_corr[ish]], off_diag=True,
                              map_operator_structure=map_operator_structure,
                              H_dump="H" + str(ish) + ".txt", complex=False) # tentative
                 )
@@ -115,7 +115,7 @@ class DMFTCoreSolver:
                 from pytriqs.applications.impurity_solvers.cthyb import Solver
                 self._S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
             elif self._solver_name=="TRIQS/hubbard-I":
-                from hubbard_solver import Solver
+                from hubbard_solver_matrix import Solver
                 self._S.append(Solver(beta=beta, norb=n_orb, use_spin_orbit=self.SO))
             elif self._solver_name=="ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
@@ -129,16 +129,14 @@ class DMFTCoreSolver:
         return self._S
 
     def solve(self, max_step, output_file, output_group='dmft_output', dry_run=False):
-        dc_type = int(self._params['system']['dc_type'])                        # DC type: -1 None, 0 FLL, 1 Held, 2 AMF
-        if dc_type == -1: with_dc = False
-        else: with_dc = True
+        with_dc = self._params['system']['with_dc']
 
         fix_mu = self._params['system']['fix_mu']
         if fix_mu:
             mu = self._params['system']['mu']
 
-        sigma_mix = self._params['control']['sigma_mix']                  # Mixing factor of Sigma after solution of the AIM
-        delta_mix = self._params['control']['delta_mix']                  # Mixing factor of Delta as input for the AIM
+        sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
+        delta_mix = self._params['control']['delta_mix']  # Mixing factor of Delta as input for the AIM
 
         prec_mu = self._params['system']['prec_mu']
 
@@ -219,7 +217,7 @@ class DMFTCoreSolver:
                 for ish in range(nsh):
                     dm = S[ish].G_iw.density()
                     #SK.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
-                    self.calc_dc_matrix(dm, orb = ish, Umat=self.Umat)
+                    self.calc_dc_matrix(dm, orb = ish, Umat=self.Umat[self._SK.inequiv_to_corr[ish]])
                     if self.SO:
                         S[ish].Sigma_iw << SK.dc_imp[self._SK.inequiv_to_corr[ish]]['ud'][0, 0]
                     else:
@@ -249,7 +247,7 @@ class DMFTCoreSolver:
                 eal = SK.eff_atomic_levels()
                 for ish in range(nsh):
                     S[ish].set_atomic_levels( eal = eal[ish] )
-                    S[ish].solve(Umat=self.Umat[ish], verbosity = 0)
+                    S[ish].solve(Umat=self.Umat[self._SK.inequiv_to_corr[ish]], verbosity = 0)
             else:
                 for ish in range(nsh):
                     S[ish].solve(h_int=self._h_int[ish], **self._solver_params)
@@ -297,7 +295,7 @@ class DMFTCoreSolver:
                 for ish in range(nsh):
                     dm = S[ish].G_iw.density() # compute the density matrix of the impurity problem
                     # SK.calc_dc(dm, orb = ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
-                    self.calc_dc_matrix(dm, orb = ish, Umat=self.Umat)
+                    self.calc_dc_matrix(dm, orb = ish, Umat=self.Umat[SK.inequiv_to_corr[ish]])
 
             # Save stuff into the user_data group of hdf5 archive in case of rerun:
             SK.save(['chemical_potential','dc_imp','dc_energ'])

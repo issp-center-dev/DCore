@@ -17,11 +17,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-import os
 import argparse
-from dmft_core import DMFTCoreSolver, create_parser
+from dmft_core import DMFTCoreSolver
 from pytriqs.applications.dft.sumk_dft_tools import *
-# from pytriqs.plot.mpl_interface import oplot, plt
 
 from program_options import *
 
@@ -36,9 +34,10 @@ def dcore_check(filename, fileplot=None):
         Input-file name
 
     fileplot : string
-        Output file name. File format is detemined by the extension (pdf, eps, jpg, etc).
+        Output file name. File format is determined by the extension (pdf, eps, jpg, etc).
     """
-    if mpi.is_master_node(): print("\n  @ Reading {0} ...".format(filename))
+    if mpi.is_master_node():
+        print("\n  @ Reading {0} ...".format(filename))
     #
     # Construct a parser with default values
     #
@@ -48,14 +47,11 @@ def dcore_check(filename, fileplot=None):
     #
     parser.read(filename)
     p = parser.as_dict()
-    seedname = p["model"]["seedname"]
     #
     solver = DMFTCoreSolver(p["model"]["seedname"], p)
     #
-    beta = float(p['system']['beta'])
 
     # Just for convenience
-    SK = solver._SK
     S = solver._S
     output_file = p["model"]["seedname"]+'.out.h5'
     output_group = 'dmft_out'
@@ -65,28 +61,27 @@ def dcore_check(filename, fileplot=None):
         matplotlib.use('Agg')  # do not plot on x11
     from pytriqs.plot.mpl_interface import oplot, plt
 
-    if mpi.is_master_node():
-        # Read from HDF file
-        ar = HDFArchive(output_file, 'r')
-        iteration_number = ar[output_group]['iterations']
-        print("  Total number of Iteration: {0}".format(iteration_number))
-        print("\n  Iter  Chemical-potential")
-        for iter in range(1,iteration_number+1):
-            if iter > iteration_number - 7:
-                S[0].Sigma_iw << ar[output_group]['Sigma-log'][str(iter)]['0']
-                if solver.SO:
-                    oplot(S[0].Sigma_iw["ud"][0,0], '-o', mode='I',
-                          x_window  = (p['tool']['omega_min'],p['tool']['omega_max']), name = 'Sigma-%s'%(iter))
-                else:
-                    oplot(S[0].Sigma_iw["up"][0,0], '-o', mode='I',
-                          x_window  = (p['tool']['omega_min'],p['tool']['omega_max']), name = 'Sigma-%s'%(iter))
-            print("  {0} {1}".format(iter, ar[output_group]['chemical_potential'][str(iter)]))
-        del ar
+    # Read from HDF file
+    ar = HDFArchive(output_file, 'r')
+    iteration_number = ar[output_group]['iterations']
+    print("  Total number of Iteration: {0}".format(iteration_number))
+    print("\n  Iter  Chemical-potential")
+    for iter in range(1, iteration_number+1):
+        if iter > iteration_number - 7:
+            S[0].Sigma_iw << ar[output_group]['Sigma-log'][str(iter)]['0']
+            if solver.SO:
+                oplot(S[0].Sigma_iw["ud"][0, 0], '-o', mode='I',
+                      x_window=(p['tool']['omega_min'], p['tool']['omega_max']), name='Sigma-%s' % iter)
+            else:
+                oplot(S[0].Sigma_iw["up"][0, 0], '-o', mode='I',
+                      x_window=(p['tool']['omega_min'], p['tool']['omega_max']), name='Sigma-%s' % iter)
+        print("  {0} {1}".format(iter, ar[output_group]['chemical_potential'][str(iter)]))
+    del ar
 
-        plt.legend(loc = 4)
-        plt.show()
-        if fileplot is not None:
-            plt.savefig(fileplot)
+    plt.legend(loc=4)
+    plt.show()
+    if fileplot is not None:
+        plt.savefig(fileplot)
     #
     # Finish
     #
@@ -95,26 +90,27 @@ def dcore_check(filename, fileplot=None):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(\
-        prog='dcore_check.py',\
-        description='script for checking the convergence of dcore.',\
-        epilog='end',\
-        add_help= True)
-    parser.add_argument('path_input_file', \
-                        action = 'store',\
-                        default= None,    \
-                        type=str, \
-                        help = "input file name."
-    )
-    parser.add_argument('--output',\
-                        action = 'store',\
-                        default=None,\
-                        type=str,\
+    parser = argparse.ArgumentParser(
+        prog='dcore_check.py',
+        description='script for checking the convergence of dcore.',
+        epilog='end',
+        add_help=True)
+    parser.add_argument('path_input_file',
+                        action='store',
+                        default=None,
+                        type=str,
+                        help="input file name."
+                        )
+    parser.add_argument('--output',
+                        action='store',
+                        default=None,
+                        type=str,
                         help='output file name (extension pdf, eps, jpg, etc)'
-    )
+                        )
 
-    args=parser.parse_args()
-    if(os.path.isfile(args.path_input_file) is False):
+    args = parser.parse_args()
+    if os.path.isfile(args.path_input_file) is False:
         print("Input file is not exist.")
         sys.exit(-1)
-    dcore_check(args.path_input_file, args.output)
+    if mpi.is_master_node():
+        dcore_check(args.path_input_file, args.output)

@@ -67,11 +67,7 @@ class DMFTCoreTools:
         Sol = self._solver
         S = self._solver._S
         nsh = SKT.n_inequiv_shells
-        dc_type = int(self._params['system']['dc_type'])  # DC type: -1 None, 0 FLL, 1 Held, 2 AMF
-        if dc_type == -1:
-            with_dc = False
-        else:
-            with_dc = True
+        with_dc = int(self._params['system']['with_dc'])
 
         if mpi.is_master_node():
             print("\n  @ Compute Green' function at the real frequency")
@@ -180,7 +176,7 @@ def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
 
 
-def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
+def __generate_wannier90_model(params, n_k, kvec):
     """
     Compute hopping etc. for A(k,w) of Wannier90
 
@@ -188,12 +184,6 @@ def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
     ----------
     params : dictionary
         Input parameters
-    l : integer array
-        Angular momentum at each correlation shell
-    norb : integer array
-        Number of orbitals at each correlation shell
-    equiv : integer array
-        Equivalence of correlation shell
     n_k : integer
         Number of k points
     kvec : float array
@@ -210,12 +200,13 @@ def __generate_wannier90_model(params, l, norb, equiv, n_k, kvec):
     """
     ncor = params["ncor"]
     n_spin = 1
-
-    if mpi.is_master_node():print("               ncor = ", ncor)
-    for i in range(ncor):
-        if equiv[i] == -1: equiv[i] = i
-        if mpi.is_master_node():
-            print("     l[{0}], norb[{0}], equiv[{0}] = {1}, {2}, {3}".format(i,l[i],norb[i],equiv[i]))
+    norb_list = re.findall(r'\d+', params["norb"])
+    norb = [int(norb_list[icor]) for icor in range(ncor)]
+    #
+    if mpi.is_master_node():
+        print("               ncor = ", ncor)
+        for i in range(ncor):
+            print("     norb[{0}] = {1}".format(i,norb[i]))
     #
     # Read hopping in the real space from the Wannier90 output
     #
@@ -268,20 +259,7 @@ def __generate_lattice_model(params, n_k, kvec):
     #
     # Construct model
     #
-    if params["orbital_model"] == 'single':
-        norb = 1
-    elif params["orbital_model"] == 'eg':
-        #FIXME: l=2 does not make sense. l=2 assumes norb=5 (full d-shell) in generating Coulomb tensor.
-        #What is the proper way to generate Coulomb tensor for eg?
-        norb = 2
-    elif params["orbital_model"] == 't2g':
-        norb = 3
-    elif params["orbital_model"] == 'full-d':
-        norb = 5
-    else:
-        print("Error ! Invalid lattice : ", params["orbital_model"])
-        sys.exit(-1)
-
+    norb = int(params["norb"])
     t = params["t"]
     tp = params["t'"]
     n_spin = 1
@@ -308,6 +286,9 @@ def __generate_lattice_model(params, n_k, kvec):
                     + 2 * tp * (numpy.cos(kvec[ik,0] + kvec[ik,1]) + numpy.cos(kvec[ik,0] - kvec[ik,1]) \
                               + numpy.cos(kvec[ik,1] + kvec[ik,2]) + numpy.cos(kvec[ik,1] - kvec[ik,2]) \
                               + numpy.cos(kvec[ik,2] + kvec[ik,0]) + numpy.cos(kvec[ik,2] - kvec[ik,0]))
+            else:
+                print("Error ! Invalid lattice : ", params["model"]["lattice"])
+                sys.exit(-1)
 
             for iorb in range(norb): hopping[ik, 0, iorb, iorb] = ek
     #
@@ -339,36 +320,6 @@ def dcore_post(filename):
     parser.read(filename)
     p = parser.as_dict()
     seedname = p["model"]["seedname"]
-    #
-    # Information of correlation shells. It is used only in conjunction to Wannier90.
-    # cshell=(l, norb, equiv) or (l, norb)
-    #
-    cshell_list=re.findall(r'\(\s*\d+\s*,\s*\d+\s*,*\s*\S*\s*\)', p["model"]["cshell"])
-    l = [0]*p["model"]['ncor']
-    norb = [1]*p["model"]['ncor']
-    equiv = [-1]*p["model"]['ncor']
-    try:
-        equiv_str_list = []
-        equiv_index = 0
-        for  i, _list  in enumerate(cshell_list):
-            _cshell = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,*\s*\)]', _list))
-            l[i] = int(_cshell[0])
-            norb[i] = int(_cshell[1])
-            if len(_cshell) == 3:
-                if _cshell[2] in equiv_str_list:
-                    # Defined before
-                    equiv[i] = equiv_str_list.index(_cshell[2])
-                else:
-                    # New one
-                    equiv_str_list.append(_cshell[2])
-                    equiv[i] = equiv_index
-                    equiv_index+=1
-            else:
-                equiv[i] = equiv_index
-                equiv_index+=1
-    except:
-        raise RuntimeError("Error ! Format of cshell is wrong.")
-
     #
     # Nodes for k-point path
     # knode=(label,k0, k1, k2) in the fractional coordinate
@@ -420,8 +371,8 @@ def dcore_post(filename):
         for ik in range(nk_line + 1):
             if inode != 0 and ik == 0: continue
             for i in range(3):
-                kvec[ikk,i] = float((nk_line - ik)) * knode[inode,i] + float(ik) * knode[inode + 1,i]
-                kvec[ikk,i] = 2.0 * numpy.pi * kvec[ikk,i] / float(nk_line)
+                kvec[ikk, i] = float((nk_line - ik)) * knode[inode, i] + float(ik) * knode[inode + 1, i]
+                kvec[ikk, i] = 2.0 * numpy.pi * kvec[ikk, i] / float(nk_line)
             ikk += 1
     #
     # Compute x-position for plotting band
@@ -450,7 +401,7 @@ def dcore_post(filename):
         #
         if mpi.is_master_node(): print("\n  @ Compute k-dependent Hamiltonian")
         if p["model"]["lattice"] == 'wannier90':
-            hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], l, norb, equiv, n_k, kvec)
+            hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], n_k, kvec)
         else:
             hopping, n_orbitals, proj_mat = __generate_lattice_model(p["model"], n_k, kvec)
         #

@@ -38,7 +38,7 @@ seedname = "test1"
 f = open('stan.in', 'w')
 print("[model]", file=f)
 print("t = 1.0", file=f)
-print("U = 4.0", file=f)
+print("kanamori = [(4.0, 0.0, 0.0)]", file=f)
 print("seedname = "+seedname, file=f)
 f.close()
 
