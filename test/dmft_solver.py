@@ -54,4 +54,4 @@ params['control']['delta_mix'] = 0.5
 
 solver = DMFTCoreSolver(seedname, params)
 
-solver.solve(max_step=1, output_file=seedname+'.out.h5', output_group='dmft_out', dry_run=True)
+solver.solve(max_step=1, output_file=seedname+'.out.h5', output_group='dmft_out')

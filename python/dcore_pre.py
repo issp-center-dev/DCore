@@ -237,7 +237,7 @@ def __generate_umat(p):
         kanamori = numpy.zeros((ncor, 3), numpy.float_)
         try:
             for i, _list in enumerate(kanamori_list):
-                _kanamori = filter(lambda w: len(w) > 0, re.split(r'[\(,\)]', _list))
+                _kanamori = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
                 for j in range(3):
                     kanamori[i, j] = float(_kanamori[j])
         except RuntimeError:
@@ -249,7 +249,8 @@ def __generate_umat(p):
         slater_l = numpy.zeros(ncor, numpy.int_)
         try:
             for i, _list in enumerate(f_list):
-                _slater = filter(lambda w: len(w) > 0, re.split(r'[\(,\)]', _list))
+                _slater = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
+                print("debug", _list, _slater)
                 slater_l[i] = int(_slater[0])
                 slater_u = float(_slater[1])
                 slater_j = float(_slater[2])
@@ -266,7 +267,7 @@ def __generate_umat(p):
         slater_l = numpy.zeros(ncor, numpy.int_)
         try:
             for i, _list in enumerate(f_list):
-                _slater = filter(lambda w: len(w) > 0, re.split(r'[\(,\)]', _list))
+                _slater = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
                 slater_l[i] = int(_slater[0])
                 for j in range(4):
                     slater_f[i, j] = float(_slater[j])

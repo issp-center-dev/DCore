@@ -52,7 +52,7 @@ def dcore_check(filename, fileplot=None):
     #
 
     # Just for convenience
-    sol = solver._S
+    sol = solver.S
     output_file = p["model"]["seedname"]+'.out.h5'
     output_group = 'dmft_out'
 

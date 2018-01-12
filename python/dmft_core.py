@@ -76,12 +76,12 @@ class DMFTCoreSolver:
         beta = float(params['system']['beta'])
         n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
         n_tau = int(params['system']['n_tau'])  # Number of tau points
-        self._solver_name = params['impurity_solver']['name']
+        self.solver_name = params['impurity_solver']['name']
 
         self._solver_params = create_solver_params(params['impurity_solver'])
 
         self._h_int = []
-        self._S = []
+        self.S = []
         for ish in range(self._SK.n_inequiv_shells):
 
             n_orb = self._SK.corr_shells[self._SK.inequiv_to_corr[ish]]['dim']
@@ -110,22 +110,22 @@ class DMFTCoreSolver:
             # Use GF structure determined by DFT blocks
             gf_struct = self._SK.gf_struct_solver[ish]
 
-            if self._solver_name == "TRIQS/cthyb":
+            if self.solver_name == "TRIQS/cthyb":
                 from pytriqs.applications.impurity_solvers.cthyb import Solver
-                self._S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
-            elif self._solver_name == "TRIQS/hubbard-I":
+                self.S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
+            elif self.solver_name == "TRIQS/hubbard-I":
                 from hubbard_solver_matrix import Solver
-                self._S.append(Solver(beta=beta, norb=n_orb, use_spin_orbit=self.SO))
-            elif self._solver_name == "ALPS/cthyb":
+                self.S.append(Solver(beta=beta, norb=n_orb, use_spin_orbit=self.SO))
+            elif self.solver_name == "ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
-                self._S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau))
+                self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau))
             else:
-                raise RuntimeError("Unknown solver "+self._solver_name)
+                raise RuntimeError("Unknown solver "+self.solver_name)
 
     # Make read-only getter
     @property
     def Solver(self):
-        return self._S
+        return self.S
 
     def solve(self, max_step, output_file, output_group='dmft_output'):
         with_dc = self._params['system']['with_dc']
@@ -144,7 +144,7 @@ class DMFTCoreSolver:
 
         # Just for convenience
         sk = self._SK
-        s = self._S
+        s = self.S
 
         # Set up a HDF file for output
         error = 0
@@ -244,7 +244,7 @@ class DMFTCoreSolver:
 
             mpi.report("\n  @ Solve the impurity problem.\n")
 
-            if self._solver_name == "TRIQS/hubbard-I":
+            if self.solver_name == "TRIQS/hubbard-I":
                 # calculate non-interacting atomic level positions:
                 eal = sk.eff_atomic_levels()
                 for ish in range(nsh):

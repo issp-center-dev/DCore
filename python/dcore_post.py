@@ -54,7 +54,7 @@ class DMFTCoreTools:
         self._seedname = seedname
         self._n_k = n_k
         self._xk = xk
-        self._SKT = SumkDFTTools(hdf_file=self._seedname + '.h5', use_dft_blocks=False)
+        self.SKT = SumkDFTTools(hdf_file=self._seedname + '.h5', use_dft_blocks=False)
         self._solver = DMFTCoreSolver(seedname, params)
 
     def post(self):
@@ -63,9 +63,9 @@ class DMFTCoreTools:
         For Hubbard-I solver, self-energy is calculated in this function.
         For cthyb (both TRIQS and ALPS), self-energy is read from hdf5 file.
         """
-        skt = self._SKT
+        skt = self.SKT
         core = self._solver
-        sol = self._solver._S
+        sol = self._solver.S
         nsh = skt.n_inequiv_shells
         with_dc = int(self._params['system']['with_dc'])
 
@@ -82,16 +82,16 @@ class DMFTCoreTools:
 
         # compute real-frequency self-energy, sigma_w
         sigma_w = []
-        if core._solver_name == 'TRIQS/hubbard-I':
+        if core.solver_name == 'TRIQS/hubbard-I':
             # set atomic levels:
             eal = skt.eff_atomic_levels()
             for ish in range(nsh):
                 sol[ish].set_atomic_levels(eal=eal[ish])
                 # Run the solver to get GF and self-energy on the real axis
-                sol[ish].GF_realomega(ommin=self._omega_min, ommax=self._omega_max, N_om=self._Nomega,
+                sol[ish].gf_realomega(ommin=self._omega_min, ommax=self._omega_max, n_om=self._Nomega,
                                       u_mat=core.Umat[ish])
                 sigma_w.append(sol[ish].Sigma_iw)
-        elif core._solver_name == "TRIQS/cthyb" or core._name == "ALPS/cthyb":
+        elif core.solver_name == "TRIQS/cthyb" or core.solver_name == "ALPS/cthyb":
             # Read info from HDF file
             ar = HDFArchive(self._seedname+'.out.h5', 'r')
             iteration_number = ar['dmft_out']['iterations']
@@ -100,15 +100,16 @@ class DMFTCoreTools:
                 sol[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
                 # set BlockGf sigma_w
                 block_names = list(sol[ish].Sigma_iw.indices)
-                glist = lambda: [GfReFreq(indices=sigma.indices, window=(self._omega_min, self._omega_max),
-                                          n_points=self._Nomega, name="sig_pade") for block, sigma in sol[ish].Sigma_iw]
+
+                def glist():
+                    return [GfReFreq(indices=sigma.indices, window=(self._omega_min, self._omega_max),
+                                     n_points=self._Nomega, name="sig_pade") for block, sigma in sol[ish].Sigma_iw]
                 sigma_w.append(BlockGf(name_list=block_names, block_list=glist(), make_copies=False))
                 # Analytic continuation
                 for bname, sig in sol[ish].Sigma_iw:
                     sigma_w[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
         else:
-            raise RuntimeError("Unknown solver " + core._solver_name)
-
+            raise RuntimeError("Unknown solver " + core.solver_name)
         #
         skt.set_Sigma([sigma_w[ish] for ish in range(nsh)])
         if mpi.is_master_node():
@@ -287,9 +288,9 @@ def __generate_lattice_model(params, n_k, kvec):
                    + 2.0 * tp * (numpy.cos(kvec[ik, 0] + kvec[ik, 1]) + numpy.cos(kvec[ik, 0] - kvec[ik, 1]))
             elif params["lattice"] == 'cubic':
                 ek = 2 * t * (numpy.cos(kvec[ik, 0]) + numpy.cos(kvec[ik, 1]) + numpy.cos(kvec[ik, 2])) \
-                    + 2 * tp * (numpy.cos(kvec[ik, 0] + kvec[ik, 1]) + numpy.cos(kvec[ik, 0] - kvec[ik, 1])
-                                + numpy.cos(kvec[ik, 1] + kvec[ik, 2]) + numpy.cos(kvec[ik, 1] - kvec[ik, 2])
-                                + numpy.cos(kvec[ik, 2] + kvec[ik, 0]) + numpy.cos(kvec[ik, 2] - kvec[ik, 0]))
+                   + 2 * tp * (numpy.cos(kvec[ik, 0] + kvec[ik, 1]) + numpy.cos(kvec[ik, 0] - kvec[ik, 1])
+                               + numpy.cos(kvec[ik, 1] + kvec[ik, 2]) + numpy.cos(kvec[ik, 1] - kvec[ik, 2])
+                               + numpy.cos(kvec[ik, 2] + kvec[ik, 0]) + numpy.cos(kvec[ik, 2] - kvec[ik, 0]))
             else:
                 print("Error ! Invalid lattice : ", params["model"]["lattice"])
                 sys.exit(-1)
@@ -335,7 +336,7 @@ def dcore_post(filename):
     klabel = ['G'] * p["tool"]['nnode']
     try:
         for i, _list in enumerate(knode_list):
-            _knode = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*\,\s*,\s*\)]', _list))
+            _knode = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
             klabel[i] = _knode[0]
             for j in range(3):
                 knode[i, j] = float(_knode[j+1])
@@ -349,7 +350,7 @@ def dcore_post(filename):
     bvec = numpy.zeros((3, 3), numpy.float_)
     try:
         for i, _list in enumerate(bvec_list):
-            _bvec = filter(lambda w: len(w) > 0, re.split(r'[\(\s*\,\s*,\s*\)]', _list))
+            _bvec = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
             for j in range(3):
                 bvec[i, j] = float(_bvec[j])
     except RuntimeError:
@@ -452,7 +453,7 @@ def dcore_post(filename):
             print("set cblabel \"A(k,w)\"", file=f)
             if p["model"]["lattice"] == 'wannier90':
                 print("splot \"{0}_akw.dat\", \"{0}_band.dat\" u 1:($2-{1}):(0) every 10 w p lc 5".format(
-                    seedname, dct._SKT.chemical_potential), file=f)
+                    seedname, dct.SKT.chemical_potential), file=f)
             else:
                 print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)
