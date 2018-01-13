@@ -233,8 +233,22 @@ def __generate_umat(p):
     # Read interaction from input file
     #
     if p["model"]["interaction"] == 'kanamori':
+        if p["model"]["kanamori"] == "None":
+            print("Error ! Parameter \"kanamori\" is not specified.")
+            sys.exit(-1)
+        if p["model"]["slater_f"] != "None":
+            print("Error ! Parameter \"slater_f\" is specified but is not used.")
+            sys.exit(-1)
+        if p["model"]["slater_uj"] != "None":
+            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
+            sys.exit(-1)
+
         kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
         kanamori = numpy.zeros((ncor, 3), numpy.float_)
+        if len(kanamori_list) != ncor:
+            print("\nError! The length of \"kanamori\" is wrong.")
+            sys.exit(-1)
+
         try:
             for i, _list in enumerate(kanamori_list):
                 _kanamori = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
@@ -243,14 +257,27 @@ def __generate_umat(p):
         except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
     elif p["model"]["interaction"] == 'slater_uj':
+        if p["model"]["slater_uj"] == "None":
+            print("Error ! Parameter \"slater_uj\" is not specified.")
+            sys.exit(-1)
+        if p["model"]["slater_f"] != "None":
+            print("Error ! Parameter \"slater_f\" is specified but is not used.")
+            sys.exit(-1)
+        if p["model"]["kanamori"] != "None":
+            print("Error ! Parameter \"kanamori\" is specified but is not used.")
+            sys.exit(-1)
+
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_uj"])
         slater_f = numpy.zeros((ncor, 4), numpy.float_)
         slater_l = numpy.zeros(ncor, numpy.int_)
+        if len(f_list) != ncor:
+            print("\nError! The length of \"slater_uj\" is wrong.")
+            sys.exit(-1)
+
         try:
             for i, _list in enumerate(f_list):
                 _slater = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
-                print("debug", _list, _slater)
                 slater_l[i] = int(_slater[0])
                 slater_u = float(_slater[1])
                 slater_j = float(_slater[2])
@@ -261,10 +288,24 @@ def __generate_umat(p):
         except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
     elif p["model"]["interaction"] == 'slater_f':
+        if p["model"]["slater_f"] == "None":
+            print("Error ! Parameter \"slater_f\" is not specified.")
+            sys.exit(-1)
+        if p["model"]["kanamori"] != "None":
+            print("Error ! Parameter \"kanamori\" is specified but is not used.")
+            sys.exit(-1)
+        if p["model"]["slater_uj"] != "None":
+            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
+            sys.exit(-1)
+
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_f"])
         slater_f = numpy.zeros((ncor, 4), numpy.float_)
         slater_l = numpy.zeros(ncor, numpy.int_)
+        if len(f_list) != ncor:
+            print("\nError! The length of \"slater_f\" is wrong.")
+            sys.exit(-1)
+
         try:
             for i, _list in enumerate(f_list):
                 _slater = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))

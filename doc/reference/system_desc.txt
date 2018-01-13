@@ -1,15 +1,15 @@
-=========== =========== =============== ================================================================================================================================
-Name        Type        Default         Description                                                                                                                     
-=========== =========== =============== ================================================================================================================================
-mu          Float       100000000.0     Chemical potential used when fix_mu = True                                                                                      
-nk          Integer     8               Number of *k* along each line                                                                                                   
-dc_type     Integer     -1              Type of double-counting correction. Set -1 to disable DC correction. Other availale options are according to TRIQS DFTTools.    
-nk1         Integer     0               Number of *k* along b_1 (only for wannier90)                                                                                    
-nk2         Integer     0               Number of *k* along b_2 (only for wannier90)                                                                                    
-nk0         Integer     0               Number of *k* along b_0 (only for wannier90)                                                                                    
-n_tau       Integer     10000           Number of imaginary-time points                                                                                                 
-n_iw        Integer     2048            Number of Matsubara frequencies                                                                                                 
-beta        Float       1.0             Inverse temperature.                                                                                                            
-fix_mu      Bool        False           Whether or not to fix chemical potential to a given value.                                                                      
-prec_mu     Float       0.0001          Threshold for calculating chemical potential with the bisection method.                                                         
-=========== =========== =============== ================================================================================================================================
+=========== =========== =============== ===========================================================================
+Name        Type        Default         Description                                                                
+=========== =========== =============== ===========================================================================
+fix_mu      Bool        False           Whether or not to fix chemical potential to a given value.                 
+nk          Integer     8               Number of *k* along each line                                              
+nk1         Integer     0               Number of *k* along b_1 (only for wannier90)                               
+with_dc     Bool        False           Whether or not use double counting correction                              
+nk2         Integer     0               Number of *k* along b_2 (only for wannier90)                               
+mu          Float       100000000.0     Chemical potential used when fix_mu = True                                 
+nk0         Integer     0               Number of *k* along b_0 (only for wannier90)                               
+n_tau       Integer     10000           Number of imaginary-time points                                            
+n_iw        Integer     2048            Number of Matsubara frequencies                                            
+beta        Float       1.0             Inverse temperature.                                                       
+prec_mu     Float       0.0001          Threshold for calculating chemical potential with the bisection method.    
+=========== =========== =============== ===========================================================================

@@ -59,7 +59,7 @@ for section in p.get_predefined_sections():
     
         def print_one_line(*str_list):
             for column in range(3):
-                print(str_list[column].ljust(width[i], ' '), end=' ', file=f)
+                print(str_list[column].ljust(width[column], ' '), end=' ', file=f)
             print(str_list[3].ljust(width[3], ' '), file=f)
     
         print_one_line('='*width[0], '='*width[1], '='*width[2], '='*width[3])

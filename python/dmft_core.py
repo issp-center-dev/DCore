@@ -62,8 +62,13 @@ class DMFTCoreSolver:
     def __init__(self, seedname, params):
         """
         Initialize solver at each inequivalent correlation shell
-        :param seedname:
-        :param params:
+
+        Parameters
+        ----------
+        seedname : string
+            seedname
+        params : dict
+            Input parameters
         """
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
@@ -295,6 +300,7 @@ class DMFTCoreSolver:
 
             # Set the new double counting:
             if with_dc:
+                mpi.report("\n  @ Double-counting correction.\n")
                 for ish in range(nsh):
                     dm = s[ish].G_iw.density()  # compute the density matrix of the impurity problem
                     # sk.calc_dc(dm, orb = ish, U_interact = self._U_int, J_hund = self._J_hund, \
@@ -307,13 +313,47 @@ class DMFTCoreSolver:
     def calc_dc_matrix(self, dens_mat, u_mat, orb=0):
         """
         Compute double counting term with U-matrix
-        :param dens_mat:gf_struct_solver like
-                Density matrix for the specified correlated shell.
-        :param u_mat: float numpy array [:, :, :, :]
-                4-index interaction matrix
-        :param orb:int, optional
-                Index of an inequivalent shell.
+
+        Parameters
+        ----------
+        dens_mat : gf_struct_solver like
+            Density matrix for the specified correlated shell.
+        u_mat : float numpy array [:, :, :, :]
+            4-index interaction matrix
+        orb : int, optional
+            Index of an inequivalent shell.
         """
+        dim_tot = self._SK.corr_shells[self._SK.inequiv_to_corr[orb]]['dim']
+        spn = self._SK.spin_block_names[self._SK.corr_shells[self._SK.inequiv_to_corr[orb]]['SO']]
+        if self._SK.corr_shells[self._SK.inequiv_to_corr[orb]]['SO'] == 0:
+            dim = dim_tot
+        else:
+            dim = dim_tot / 2
+
+        if mpi.is_master_node():
+            print("    DC for inequivalent shell {0}".format(orb))
+            print("\n      2-index U:".format(orb))
+            for i1 in range(dim):
+                print("          ", end="")
+                for i2 in range(dim):
+                    print("{0:.3f} ".format(u_mat[i1, i2, i1, i2]), end="")
+                print("")
+            print("\n      2-index J:".format(orb))
+            for i1 in range(dim):
+                print("          ", end="")
+                for i2 in range(dim):
+                    print("{0:.3f} ".format(u_mat[i1, i2, i2, i1]), end="")
+                print("")
+
+            print("\n      Local Density Matrix:".format(orb))
+            for sp1 in spn:
+                print("        Spin {0}".format(sp1))
+                for i1 in range(dim_tot):
+                    print("          ", end="")
+                    for i2 in range(dim_tot):
+                        print("{0:.3f} ".format(dens_mat[sp1][i1, i2]), end="")
+                    print("")
+
         for icrsh in range(self._SK.n_corr_shells):
 
             # ish is the index of the inequivalent shell corresponding to icrsh
@@ -321,10 +361,7 @@ class DMFTCoreSolver:
             if ish != orb:
                 continue  # ignore this orbital
 
-            dim = self._SK.corr_shells[icrsh]['dim']
-
             if self._SK.corr_shells[icrsh]['SO'] == 0:
-                spn = self._SK.spin_block_names[self._SK.corr_shells[icrsh]['SO']]
                 for sp1 in spn:
                     self._SK.dc_imp[icrsh][sp1] = numpy.zeros((dim, dim), numpy.complex_)
                     for i1 in range(dim):
@@ -342,7 +379,6 @@ class DMFTCoreSolver:
                                 - numpy.sum(u_mat[i1, :, :, i2] * dens_mat[sp1][:, :])
             else:
                 self._SK.dc_imp[icrsh]["ud"] = numpy.zeros((dim, dim), numpy.complex_)
-                dim /= 2
                 for s1 in range(2):
                     for i1 in range(dim):
                         for s2 in range(2):
@@ -359,3 +395,13 @@ class DMFTCoreSolver:
                                 self._SK.dc_imp[icrsh]["ud"][i1 + s1 * dim, i2 + s2 * dim] += numpy.sum(
                                     u_mat[i1, :, :, i2] * dens_mat[s2 * dim:s2 * dim + dim, s1 * dim:s1 * dim + dim]
                                 )
+
+        if mpi.is_master_node():
+            print("\n      DC Self Energy:".format(orb))
+            for sp1 in spn:
+                print("        Spin {0}".format(sp1))
+                for i1 in range(dim_tot):
+                    print("          ", end="")
+                    for i2 in range(dim_tot):
+                        print("{0:.3f} ".format(self._SK.dc_imp[self._SK.inequiv_to_corr[orb]][sp1][i1, i2]), end="")
+                    print("")

@@ -31,7 +31,7 @@ Reference manual
 This is the reference manual for the python routines.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    
    reference/input
 

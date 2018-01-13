@@ -35,17 +35,18 @@ def create_parser():
     parser.add_option("model", "nelec", float, 1.0, "Number of electrons per unit cell.")
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "norb", str, "1", "Number of orbitals")
-    parser.add_option("model", "equiv", str, "", "Equivalence of each correlation shell")
+    parser.add_option("model", "equiv", str, "None",
+                      "Equivalence of each correlation shell. Please, be careful to use it (See below).")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors")
     parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case.")
     parser.add_option("model", "interaction", str, "kanamori",
-                      'Chosen from "slater_uj", "slater_f", "kanamori", "respack"')
+                      'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
                       "If true, only the density-density part of the interaction is used.")
-    parser.add_option("model", "kanamori", str, "[]",
-                      "U (Diagonal Coulomb potential), U\' (Off-diagonal Coulomb potential) and J (Hund coupling)")
-    parser.add_option("model", "slater_f", str, "[]", "Angular momentum, Slater integrals F.")
-    parser.add_option("model", "slater_uj", str, "[]", "Angular momentum, Slater integrals in U and J.")
+    parser.add_option("model", "kanamori", str, "None",
+                      "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
+    parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
+    parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
 
     # [system]
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
