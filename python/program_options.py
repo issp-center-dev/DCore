@@ -34,15 +34,16 @@ def create_parser():
                       'Chosen from "chain", "square", "cubic", "bethe", and "wannier90"')
     parser.add_option("model", "nelec", float, 1.0, "Number of electrons per unit cell.")
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
-    parser.add_option("model", "norb", str, "1", "Number of orbitals")
+    parser.add_option("model", "norb", str, "1",
+                      "Number of orbitals at each correlated shell. Separated by commas or spaces.")
     parser.add_option("model", "equiv", str, "None",
                       "Equivalence of each correlation shell. Please, be careful to use it (See below).")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors")
-    parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case.")
+    parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case (See :ref:`pbtutorial`).")
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
-                      "If true, only the density-density part of the interaction is used.")
+                      "If true, only the density-density part of the interaction is used (See below).")
     parser.add_option("model", "kanamori", str, "None",
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
@@ -61,7 +62,7 @@ def create_parser():
     parser.add_option("system", "prec_mu", float, 0.0001,
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
-    parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction")
+    parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction (See below)")
 
     # [impurity_solver] 
     parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I',

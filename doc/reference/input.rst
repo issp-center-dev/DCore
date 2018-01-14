@@ -108,8 +108,7 @@ Wannier90 as well as the following preset models:
    t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
    +h.c. + {\hat H}_{\rm int},
 
-where :math:`{\hat H}_{\rm int}` is the Slater interaction term
-given by
+where
 
 .. math::
 
@@ -118,7 +117,7 @@ given by
    U^{i}_{\alpha \beta \gamma \delta}
    c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \delta \sigma'} c_{i \gamma \sigma}.
 
-Where the interaction matrix :math:`U^{i}_{\alpha \beta \gamma \delta}`
+The interaction matrix :math:`U^{i}_{\alpha \beta \gamma \delta}`
 is specified by the parameter ``interaction``.
 
 * If ``interaction = kanamori``
@@ -245,7 +244,10 @@ we specify the parameter ``density-density`` as
 
    density-density = True
 
-**Under construction**
+.. note::
+
+   It can not be used in conjunction to the Hubbard-I solver or
+   the double-counting correction.
 
 [system] block
 ~~~~~~~~~~~~~~
@@ -254,6 +256,20 @@ dcore_pre and dcore read this block.
 
 .. include:: system_desc.txt
 
+If the parameter ``with_dc`` is specified to ``True``,
+the following part of the self-energy is subtracted to avoid the double-counting error of
+the self energy.
+
+.. math::
+
+   \Sigma_{i, \alpha \sigma \beta \sigma'}^{\rm dc-imp}
+   = \delta_{\sigma \sigma'} \sum_{\gamma \delta \sigma_1}
+   U_{\alpha \gamma \beta \delta}
+   \langle c_{\gamma \sigma_1}^\dagger c_{\delta \sigma_1}\rangle
+   - \sum_{\gamma \delta}
+   U_{\alpha \gamma \delta \beta}
+   \langle c_{\gamma \sigma'}^\dagger c_{\delta \sigma}\rangle             
+         
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 

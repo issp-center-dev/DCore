@@ -59,6 +59,24 @@ It is always required before pw2wannier.x runs.
 
 .. literalinclude:: qe/nis.win
 
+.. note::
+
+   The order of projection is important for the following DMFT calculation.
+   If there are both correlated shells and non-correlated shell,
+   the correlated shells must appear first, i.e.
+
+   ::
+
+      begin projections
+      Correlated_shell_1
+      Correlated_shell_2
+      :
+      Non-correlated_shell_1
+      Non-correlated_shell_2
+      :
+      end projections
+      
+   
 This *k* grid is generated as follows:
 
 .. code-block:: bash

@@ -4,7 +4,7 @@ Name        Type        Default         Description
 fix_mu      Bool        False           Whether or not to fix chemical potential to a given value.                 
 nk          Integer     8               Number of *k* along each line                                              
 nk1         Integer     0               Number of *k* along b_1 (only for wannier90)                               
-with_dc     Bool        False           Whether or not use double counting correction                              
+with_dc     Bool        False           Whether or not use double counting correction (See below)                  
 nk2         Integer     0               Number of *k* along b_2 (only for wannier90)                               
 mu          Float       100000000.0     Chemical potential used when fix_mu = True                                 
 nk0         Integer     0               Number of *k* along b_0 (only for wannier90)                               

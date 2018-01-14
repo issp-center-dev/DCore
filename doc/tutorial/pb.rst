@@ -1,3 +1,5 @@
+.. _pbtutorial:
+
 Pb with spin-orbit interaction
 ==============================
 
@@ -55,7 +57,22 @@ We will wannieriza Pb 6p orbitals.
 
 .. literalinclude:: qe/pb.win
 
-This *k* grid is generated as follows:
+.. note::
+
+   For the followin DMFT calculation,
+   the projection of the Wannier function should be the correct order, namely,
+
+   ::
+
+      begin projections
+      First_shell(u)
+      First_shell(d)
+      Second_shell(u)
+      Second_shell(d)
+      :
+      end projections
+
+The *k* grid is generated as follows:
 
 .. code-block:: bash
 
