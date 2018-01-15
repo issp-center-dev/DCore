@@ -54,7 +54,7 @@ def __generate_wannier90_model(params, f):
     norb_list = re.findall(r'\d+', params["model"]["norb"])
     norb = [int(norb_list[icor]) for icor in range(ncor)]
     #
-    if params["model"]["equiv"] == "":
+    if params["model"]["equiv"] == "None":
         equiv = [icor for icor in range(ncor)]
     else:
         equiv_list = re.findall(r'[^\s,]+', params["model"]["equiv"])
@@ -314,6 +314,16 @@ def __generate_umat(p):
                     slater_f[i, j] = float(_slater[j])
         except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
+    elif p["model"]["interaction"] == 'respack':
+        if p["model"]["kanamori"] != "None":
+            print("Error ! Parameter \"kanamori\" is specified but is not used.")
+            sys.exit(-1)
+        if p["model"]["slater_uj"] != "None":
+            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
+            sys.exit(-1)
+        if p["model"]["slater_f"] != "None":
+            print("Error ! Parameter \"slater_f\" is specified but is not used.")
+            sys.exit(-1)
     else:
         print("Error ! Invalid interaction : ", p["model"]["interaction"])
         sys.exit(-1)
@@ -325,6 +335,9 @@ def __generate_umat(p):
 
     corr_shells = f["dft_input"]["corr_shells"]
     norb = [corr_shells[icor]["dim"] for icor in range(ncor)]
+    if p["model"]["spin_orbit"]:
+        for icor in range(ncor):
+            norb[icor] /= 2
 
     if not ("DCore" in f):
         f.create_group("DCore")
@@ -359,6 +372,38 @@ def __generate_umat(p):
                     sys.exit(-1)
             else:
                 u_mat[icor] = umat_full
+    elif p["model"]["interaction"] == 'respack':
+        w90u = Wannier90Converter(seedname=p["model"]["seedname"])
+        nr_u, rvec_u, rdeg_u, nwan_u, hamr_u = w90u.read_wannier90hr(p["model"]["seedname"] + "_ur.dat")
+        w90j = Wannier90Converter(seedname=p["model"]["seedname"])
+        nr_j, rvec_j, rdeg_j, nwan_j, hamr_j = w90j.read_wannier90hr(p["model"]["seedname"] + "_jr.dat")
+        #
+        # Read 2-index U-matrix
+        #
+        umat2 = numpy.zeros((nwan_u, nwan_u), numpy.complex_)
+        for ir in range(nr_u):
+            if rvec_u[ir, 0] == 0 and rvec_u[ir, 1] == 0 and rvec_u[ir, 2] == 0:
+                umat2 = hamr_u[ir]
+        #
+        # Read 2-index J-matrix
+        #
+        jmat2 = numpy.zeros((nwan_j, nwan_j), numpy.complex_)
+        for ir in range(nr_j):
+            if rvec_j[ir, 0] == 0 and rvec_j[ir, 1] == 0 and rvec_j[ir, 2] == 0:
+                jmat2 = hamr_j[ir]
+        #
+        # Map into 4-index U at each correlated shell
+        #
+        start = 0
+        for icor in range(ncor):
+            for iorb in range(norb[icor]):
+                for jorb in range(norb[icor]):
+                    u_mat[icor][iorb, jorb, iorb, jorb] = umat2[start+iorb, start+jorb]
+                    u_mat[icor][iorb, jorb, jorb, iorb] = jmat2[start+iorb, start+jorb]
+                    u_mat[icor][iorb, iorb, jorb, jorb] = jmat2[start+iorb, start+jorb]
+            for iorb in range(norb[icor]):
+                u_mat[icor][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
+            start += norb[icor]
     #
     f["DCore"]["Umat"] = u_mat
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
