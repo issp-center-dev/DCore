@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # DCore -- Integrated DMFT software for correlated electrons
 # Copyright (C) 2017 The University of Tokyo
@@ -23,7 +24,7 @@ args = sys.argv
 
 if len(args) != 3:
     print("\nUsage:\n")
-    print("  $ openmx2dcore {HWR file} {seedname}\n")
+    print("  $ openmx2dcore.py {HWR file} {seedname}\n")
     exit(-1)
 #
 # Input

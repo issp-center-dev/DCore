@@ -25,7 +25,7 @@ It can be performed with ``openmx2dcore`` utility as:
 
 .. code-block:: bash
                 
-   $ openmx2dcore SrVO3.HWR srvo3
+   $ openmx2dcore.py SrVO3.HWR srvo3
 
 Then ``srvo3_hr.dat`` is generated.
 The rest is the same as :ref:`example for QE <qesrvo3>`.   
