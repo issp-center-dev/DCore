@@ -60,26 +60,23 @@ The extension can be eps, jpg, etc.
 
 ::
 
-   Total number of Iteration: 10
+   Total number of Iteration: 7
 
    Iter  Chemical-potential
    1 0.0
-   2 0.350471842936
-   3 0.499576874374
-   4 0.590504345604
-   5 0.64888137395
-   6 0.686284855018
-   7 0.71112006693
-   8 0.727786131759
-   9 0.739550620867
-   10 0.748282590054
+   2 0.141978800943
+   3 0.46478279315
+   4 0.637322531819
+   5 0.646372779247
+   6 0.680315738712
+   7 0.708829559685
 
 .. We also can see the imaginary-time self-energy at last seven iterations.
       
 ``dcore_check`` also plots the self-energy for the last seven iterations in Matsubara-frequency domain.
 
 .. image:: square/convergence.png
-   :width: 500
+   :width: 800
    :align: center
 
 If those results are not converged, one can repeat the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iterations.

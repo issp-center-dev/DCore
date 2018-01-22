@@ -134,7 +134,7 @@ class DMFTCoreTools:
                         print("{0} {1}".format(om_mesh[iom], dos['ud'][iom]), file=f, end="")
                     else:
                         print("{0} {1}".format(om_mesh[iom], 2.0*dos['down'][iom]), file=f, end="")
-                    for ish in range(skt.n_inequiv_shells):
+                    for ish in range(nsh):
                         for i in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
                             if core.SO:
                                 print(" {0}".format(dosproj_orb[ish]['ud'][iom, i, i].real), end="", file=f)
@@ -441,6 +441,7 @@ def dcore_post(filename):
     if mpi.is_master_node():
         print("\n  @ Generate GnuPlot script")
         with open(seedname + '_akw.gp', 'w') as f:
+            print("set size 0.95, 1.0", file=f)
             print("set xtics (\\", file=f)
             for inode in range(nnode-1):
                 print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
@@ -452,8 +453,11 @@ def dcore_post(filename):
             print("set ylabel \"Energy\"", file=f)
             print("set cblabel \"A(k,w)\"", file=f)
             if p["model"]["lattice"] == 'wannier90':
-                print("splot \"{0}_akw.dat\", \"{0}_band.dat\" u 1:($2-{1}):(0) every 10 w p lc 5".format(
+                print("splot \"{0}_akw.dat\", \\".format(seedname), file=f)
+                print("\"{0}_band.dat\" u 1:($2-{1}):(0) every 10 w p lc 5, \\".format(
                     seedname, dct.SKT.chemical_potential), file=f)
+                print("\"./dir-wan/dat.iband\" u ($1*{0}):($2-{1}):(0) every 10 w p lc 5".format(
+                    xk_label[nnode - 1], dct.SKT.chemical_potential), file=f)
             else:
                 print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)

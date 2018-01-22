@@ -123,7 +123,7 @@ class DMFTCoreSolver:
                 self.S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
             elif self.solver_name == "TRIQS/hubbard-I":
                 from hubbard_solver_matrix import Solver
-                self.S.append(Solver(beta=beta, norb=n_orb, use_spin_orbit=self.SO))
+                self.S.append(Solver(beta=beta, norb=n_orb, n_msb=n_iw, use_spin_orbit=self.SO))
             elif self.solver_name == "ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
                 self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau))
@@ -141,6 +141,7 @@ class DMFTCoreSolver:
         fix_mu = self._params['system']['fix_mu']
         if fix_mu:
             mu = self._params['system']['mu']
+        self._SK.chemical_potential = self._params['system']['mu']
 
         sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
         delta_mix = self._params['control']['delta_mix']  # Mixing factor of Delta as input for the AIM
@@ -366,7 +367,7 @@ class DMFTCoreSolver:
 
             if self._SK.corr_shells[icrsh]['SO'] == 0:
                 for sp1 in spn:
-                    self._SK.dc_imp[icrsh][sp1] = numpy.zeros((dim, dim), numpy.complex_)
+                    self._SK.dc_imp[icrsh][sp1] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
                     for i1 in range(dim):
                         for i2 in range(dim):
                             #
@@ -381,7 +382,7 @@ class DMFTCoreSolver:
                             self._SK.dc_imp[icrsh][sp1][i1, i2] += \
                                 - numpy.sum(u_mat[i1, :, :, i2] * dens_mat[sp1][:, :])
             else:
-                self._SK.dc_imp[icrsh]["ud"] = numpy.zeros((dim, dim), numpy.complex_)
+                self._SK.dc_imp[icrsh]["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
                 for s1 in range(2):
                     for i1 in range(dim):
                         for s2 in range(2):
@@ -390,13 +391,14 @@ class DMFTCoreSolver:
                                 # Hartree
                                 #
                                 self._SK.dc_imp[icrsh]["ud"][i1+s1*dim, i2+s1*dim] += numpy.sum(
-                                    u_mat[i1, :, i2, :] * dens_mat[s2*dim:s2*dim+dim, s2*dim:s2*dim+dim]
+                                    u_mat[i1, :, i2, :] * dens_mat["ud"][s2*dim:s2*dim+dim, s2*dim:s2*dim+dim]
                                 )
                                 #
                                 # Exchange
                                 #
                                 self._SK.dc_imp[icrsh]["ud"][i1 + s1 * dim, i2 + s2 * dim] += numpy.sum(
-                                    u_mat[i1, :, :, i2] * dens_mat[s2 * dim:s2 * dim + dim, s1 * dim:s1 * dim + dim]
+                                    u_mat[i1, :, :, i2]
+                                    * dens_mat["ud"][s2 * dim:s2 * dim + dim, s1 * dim:s1 * dim + dim]
                                 )
 
         if mpi.is_master_node():

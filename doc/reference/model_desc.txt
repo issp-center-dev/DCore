@@ -6,7 +6,7 @@ norb                String      1                                               
 slater_f            String      None                                            Angular momentum, Slater integrals F (See below).                                               
 seedname            String      dcore                                           Name of the system. The model HDF5 file will be seedname.h5.                                    
 density_density     Bool        False                                           If true, only the density-density part of the interaction is used (See below).                  
-spin_orbit          Bool        False                                           Whether the spin-orbit case :ref:`pbtutorial`.                                                  
+spin_orbit          Bool        False                                           Whether the spin-orbit case (See :ref:`pbtutorial`).                                            
 kanamori            String      None                                            U (Diagonal Coulomb pot.), U' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).    
 lattice             String      chain                                           Chosen from "chain", "square", "cubic", "bethe", and "wannier90"                                
 nelec               Float       1.0                                             Number of electrons per unit cell.                                                              

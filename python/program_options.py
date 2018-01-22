@@ -54,7 +54,7 @@ def create_parser():
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
     parser.add_option("system", "n_tau", int, 10000, "Number of imaginary-time points")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
-    parser.add_option("system", "mu", float, 1E+8, "Chemical potential used when fix_mu = True")
+    parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
     parser.add_option("system", "nk", int, 8, "Number of *k* along each line")
     parser.add_option("system", "nk0", int, 0, "Number of *k* along b_0 (only for wannier90)")
     parser.add_option("system", "nk1", int, 0, "Number of *k* along b_1 (only for wannier90)")
@@ -87,5 +87,6 @@ def create_parser():
     parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
     parser.add_option("tool", "n_pade", int, 100, "Number of imaginary frequencies for the Pade approximation")
+    parser.add_option("tool", "omega_check", float, 5.0, "Maximum frequency for dcore_check.")
 
     return parser

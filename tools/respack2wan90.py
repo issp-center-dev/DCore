@@ -23,7 +23,7 @@ import numpy
 
 def res2wan(name_in, name_out):
     #
-    print("  Convert from \"{0}\" tp \"{1}\"".format(name_in, name_out))
+    print("  Convert from \"{0}\" to \"{1}\"".format(name_in, name_out))
     #
     # Input
     #
@@ -31,7 +31,7 @@ def res2wan(name_in, name_out):
         for ii in range(3):
             line = f.readline()  # Skip
             print("    "+line, end="")
-        line = f.readlines()  # Skip
+        line = f.readlines()
     #
     # Parse from RESPACK format
     #
@@ -83,6 +83,48 @@ def res2wan(name_in, name_out):
                            hopping[ir, jorb, iorb].real, hopping[ir, jorb, iorb].imag), file=f)
 
 
+def ref2geom(filename):
+    #
+    print("  Convert from \"./dir-wfn/dat.lattice\" and \"./dir-wan/dat.wan-center\" to \"{0}\"".format(filename))
+    #
+    # Geometry (for HPhi and mVMC)
+    #
+    avec = numpy.zeros((3, 3), numpy.float_)
+    with open("./dir-wfn/dat.lattice", 'r') as fi:
+        for ii in range(3):
+            line = fi.readline()
+            itemlist = line.split()
+            for jj in range(3):
+                avec[ii, jj] = float(itemlist[jj])
+    #
+    bvec = numpy.linalg.inv(avec)
+    #
+    #
+    with open("./dir-wan/dat.wan-center", 'r') as fi:
+        for ii in range(2):
+            line = fi.readline()  # skip
+            print("    " + line, end="")
+        line = fi.readlines()
+    nwan = len(line)
+    centre = numpy.zeros((nwan, 3), numpy.float_)
+    for iwan in range(nwan):
+        itemlist = line[iwan].split()
+        for ii in range(3):
+            centre[iwan, ii] = float(itemlist[ii])
+    centre = numpy.dot(centre, bvec)
+    #
+    # Bohr -> Angstrom
+    #
+    avec[:, :] *= 0.529177249
+    #
+    with open(filename, 'w') as fo:
+        for ii in range(3):
+            print("%f %f %f" % (avec[ii, 0], avec[ii, 1], avec[ii, 2]), file=fo)
+        print("%d" % nwan, file=fo)
+        for iwan in range(nwan):
+            print("%f %f %f" % (centre[iwan, 0], centre[iwan, 1], centre[iwan, 2]), file=fo)
+
+
 args = sys.argv
 
 if len(args) != 2:
@@ -93,3 +135,5 @@ if len(args) != 2:
 res2wan("./dir-wan/dat.h_mat_r", args[1] + "_hr.dat")
 res2wan("./dir-intW/dat.Wmat", args[1] + "_ur.dat")
 res2wan("./dir-intJ/dat.Jmat", args[1] + "_jr.dat")
+
+ref2geom(args[1] + "_geom.dat")

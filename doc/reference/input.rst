@@ -41,13 +41,23 @@ This program reads ``[model]`` and ``[tool]`` block.
    $ dcore_check input-file
 
 ``dcore_check`` shows the history of the chemical potential and the
-first component of the self energy at imaginary frequency, :math:`\Sigma_{0 0}(i \omega_n)`
+average of the self energy at imaginary frequency,
+
+.. math::
+
+   \Sigma_{\rm Ave} (i \omega_n) = 
+   \left[\sum_i^{\rm shell} \sum_{\alpha \beta}^{N_{\rm orb}^i} \Sigma_{\alpha \beta}(i\omega)\right]
+   /\left[\sum_i^{\rm shell} N_{\rm orb}^{i}\right],
+
 at the last seven iterations.
 
 .. image:: ../tutorial/square/convergence.png
-   :width: 500
+   :width: 800
    :align: center
 
+The maximum frequency of this plot is specified with the parameter ``omega_check``
+in the ``[tool]`` block.           
+           
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

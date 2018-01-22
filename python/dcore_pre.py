@@ -405,6 +405,8 @@ def __generate_umat(p):
                 u_mat[icor][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
             start += norb[icor]
     #
+    for icor in range(ncor):
+        u_mat[icor][:, :].imag = 0.0
     f["DCore"]["Umat"] = u_mat
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
     del f

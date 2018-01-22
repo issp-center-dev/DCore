@@ -20,6 +20,7 @@ from __future__ import print_function
 import argparse
 from dmft_core import DMFTCoreSolver
 from pytriqs.applications.dft.sumk_dft_tools import *
+from matplotlib.gridspec import GridSpec
 
 from program_options import *
 
@@ -55,27 +56,71 @@ def dcore_check(filename, fileplot=None):
     sol = solver.S
     output_file = p["model"]["seedname"]+'.out.h5'
     output_group = 'dmft_out'
+    gs = GridSpec(1,2)
 
     if fileplot is not None:  # if graph is to be printed in a file
         import matplotlib
         matplotlib.use('Agg')  # do not plot on x11
     from pytriqs.plot.mpl_interface import oplot, plt
-
-    # Read from HDF file
+    #
+    # Chemical potential
+    #
     ar = HDFArchive(output_file, 'r')
     iteration_number = ar[output_group]['iterations']
+    nsh = solver._SK.n_inequiv_shells
     print("  Total number of Iteration: {0}".format(iteration_number))
     print("\n  Iter  Chemical-potential")
     for itr in range(1, iteration_number+1):
-        if itr > iteration_number - 7:
-            sol[0].Sigma_iw << ar[output_group]['Sigma-log'][str(itr)]['0']
-            if solver.SO:
-                oplot(sol[0].Sigma_iw["ud"][0, 0], '-o', mode='I',
-                      x_window=(p['tool']['omega_min'], p['tool']['omega_max']), name='Sigma-%s' % itr)
-            else:
-                oplot(sol[0].Sigma_iw["up"][0, 0], '-o', mode='I',
-                      x_window=(p['tool']['omega_min'], p['tool']['omega_max']), name='Sigma-%s' % itr)
         print("  {0} {1}".format(itr, ar[output_group]['chemical_potential'][str(itr)]))
+    #
+    # Real part
+    #
+    sigma_ave = GfImFreq(indices=[0], beta=p["system"]["beta"], n_points=p["system"]["n_iw"])
+    plt.subplot(gs[0])
+    for itr in range(1, iteration_number+1):
+        if itr > iteration_number - 7:
+            sigma_ave.data[:, 0, 0] = 0.0
+            norb_tot = 0
+            for ish in range(nsh):
+                spn = solver._SK.spin_block_names[solver._SK.corr_shells[solver._SK.inequiv_to_corr[ish]]['SO']]
+                norb = solver._SK.corr_shells[solver._SK.inequiv_to_corr[ish]]['dim']
+                sol[ish].Sigma_iw << ar[output_group]['Sigma-log'][str(itr)][str(ish)]
+                for isp in spn:
+                    for iorb in range(norb):
+                        norb_tot += 1
+                        for jorb in range(norb):
+                            sigma_ave.data[:, 0, 0] += sol[ish].Sigma_iw[isp].data[:, iorb, jorb]
+            sigma_ave.data[:, 0, 0] /= norb_tot
+            if solver.SO:
+                oplot(sigma_ave, '-o', mode='R',
+                      x_window=(0.0, p['tool']['omega_check']), name='Sigma-%s' % itr)
+            else:
+                oplot(sigma_ave, '-o', mode='R',
+                      x_window=(0.0, p['tool']['omega_check']), name='Sigma-%s' % itr)
+    #
+    # Imaginary part
+    #
+    plt.subplot(gs[1])
+    for itr in range(1, iteration_number+1):
+        if itr > iteration_number - 7:
+            sigma_ave.data[:, 0, 0] = 0.0
+            norb_tot = 0
+            for ish in range(nsh):
+                spn = solver._SK.spin_block_names[solver._SK.corr_shells[solver._SK.inequiv_to_corr[ish]]['SO']]
+                norb = solver._SK.corr_shells[solver._SK.inequiv_to_corr[ish]]['dim']
+                sol[ish].Sigma_iw << ar[output_group]['Sigma-log'][str(itr)][str(ish)]
+                for isp in spn:
+                    for iorb in range(norb):
+                        norb_tot += 1
+                        for jorb in range(norb):
+                            sigma_ave.data[:, 0, 0] += sol[ish].Sigma_iw[isp].data[:, iorb, jorb]
+            sigma_ave.data[:, 0, 0] /= norb_tot
+            if solver.SO:
+                oplot(sigma_ave, '-o', mode='I',
+                      x_window=(0.0, p['tool']['omega_check']), name='Sigma-%s' % itr)
+            else:
+                oplot(sigma_ave, '-o', mode='I',
+                      x_window=(0.0, p['tool']['omega_check']), name='Sigma-%s' % itr)
     del ar
 
     plt.legend(loc=4)
