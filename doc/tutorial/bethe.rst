@@ -4,9 +4,9 @@ Tutorial with t2g Bethe lattice
 :download:`dmft_bethe.ini <bethe-t2g/dmft_bethe.ini>`
 
 An interesting phenomena in multi-orbital models in spin-freezing phenomena found in
-P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008).
+`P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.101.166405>`_.
 They solved a t2g three-orbital model on a bethe lattice by means of DMFT.
-The so-called spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: :math: `\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}`.
+The so-called spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: :math:`\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}`.
 
 .. literalinclude:: bethe-t2g/dmft_bethe.ini
                               
