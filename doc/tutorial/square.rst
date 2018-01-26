@@ -76,7 +76,7 @@ The extension can be eps, jpg, etc.
 ``dcore_check`` also plots the self-energy for the last seven iterations in Matsubara-frequency domain.
 
 .. image:: square/convergence.png
-   :width: 800
+   :width: 500
    :align: center
 
 If those results are not converged, one can repeat the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iterations.

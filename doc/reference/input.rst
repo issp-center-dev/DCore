@@ -52,11 +52,28 @@ average of the self energy at imaginary frequency,
 at the last seven iterations.
 
 .. image:: ../tutorial/square/convergence.png
-   :width: 800
+   :width: 500
    :align: center
 
 The maximum frequency of this plot is specified with the parameter ``omega_check``
-in the ``[tool]`` block.           
+in the ``[tool]`` block.
+
+Also, this program generates a text file, *seedname*\ ``_sigma.dat``, which contains
+the local self energy at the final step as follows:
+
+::
+
+   # Local self energy at imaginary frequency
+   # [Column] Data
+   # [1] Frequency
+   # [2] Re(Sigma_{shell=0, spin=up, 0, 0})
+   # [3] Im(Sigma_{shell=0, spin=up, 0, 0})
+   # [4] Re(Sigma_{shell=0, spin=down, 0, 0})
+   # [5] Im(Sigma_{shell=0, spin=down, 0, 0})
+   -157.001093 0.994751 0.006358 0.994751 0.006358
+   -156.844013 0.994751 0.006365 0.994751 0.006365
+   -156.686934 0.994751 0.006371 0.994751 0.006371
+   :
            
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
