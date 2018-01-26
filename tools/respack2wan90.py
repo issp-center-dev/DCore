@@ -38,7 +38,7 @@ def res2wan(name_in, name_out):
     temp1 = [[]]
     nr = 0
     for iline in range(len(line)):
-        if line[iline] == "\n":
+        if line[iline] == "\n" or line[iline] == " \n":
             temp1.append([])
             nr += 1
         else:

@@ -72,7 +72,7 @@ class DMFTCoreSolver:
         """
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
-        self._SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
+        self.SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
         u_file = HDFArchive(seedname+'.h5', 'r')
         self.Umat = u_file["DCore"]["Umat"]
         self.SO = params['model']['spin_orbit']
@@ -87,10 +87,10 @@ class DMFTCoreSolver:
 
         self._h_int = []
         self.S = []
-        for ish in range(self._SK.n_inequiv_shells):
+        for ish in range(self.SK.n_inequiv_shells):
 
-            n_orb = self._SK.corr_shells[self._SK.inequiv_to_corr[ish]]['dim']
-            if self._SK.SO == 1:
+            n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim']
+            if self.SK.SO == 1:
                 n_orb /= 2
             spin_names = ["up", "down"]
             orb_names = [i for i in range(n_orb)]
@@ -108,7 +108,7 @@ class DMFTCoreSolver:
             # Construct Hamiltonian
 
             self._h_int.append(
-                h_int_slater(spin_names, orb_names, U_matrix=self.Umat[self._SK.inequiv_to_corr[ish]], off_diag=True,
+                h_int_slater(spin_names, orb_names, U_matrix=self.Umat[self.SK.inequiv_to_corr[ish]], off_diag=True,
                              map_operator_structure=map_operator_structure,
                              H_dump="H" + str(ish) + ".txt", complex=False)  # tentative
                 )
@@ -116,7 +116,7 @@ class DMFTCoreSolver:
                 self._h_int[ish] = diagonal_part(self._h_int[ish])
 
             # Use GF structure determined by DFT blocks
-            gf_struct = self._SK.gf_struct_solver[ish]
+            gf_struct = self.SK.gf_struct_solver[ish]
 
             if self.solver_name == "TRIQS/cthyb":
                 from pytriqs.applications.impurity_solvers.cthyb import Solver
@@ -141,7 +141,7 @@ class DMFTCoreSolver:
         fix_mu = self._params['system']['fix_mu']
         if fix_mu:
             mu = self._params['system']['mu']
-        self._SK.chemical_potential = self._params['system']['mu']
+        self.SK.chemical_potential = self._params['system']['mu']
 
         sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
         delta_mix = self._params['control']['delta_mix']  # Mixing factor of Delta as input for the AIM
@@ -149,10 +149,10 @@ class DMFTCoreSolver:
         prec_mu = self._params['system']['prec_mu']
 
         previous_runs = 0
-        nsh = self._SK.n_inequiv_shells
+        nsh = self.SK.n_inequiv_shells
 
         # Just for convenience
-        sk = self._SK
+        sk = self.SK
         s = self.S
 
         # Set up a HDF file for output
@@ -228,11 +228,11 @@ class DMFTCoreSolver:
                 for ish in range(nsh):
                     dm = s[ish].G_iw.density()
                     # sk.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
-                    self.calc_dc_matrix(dm, orb=ish, u_mat=self.Umat[self._SK.inequiv_to_corr[ish]])
+                    self.calc_dc_matrix(dm, orb=ish, u_mat=self.Umat[self.SK.inequiv_to_corr[ish]])
                     if self.SO:
-                        s[ish].Sigma_iw << sk.dc_imp[self._SK.inequiv_to_corr[ish]]['ud'][0, 0]
+                        s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['ud'][0, 0]
                     else:
-                        s[ish].Sigma_iw << sk.dc_imp[self._SK.inequiv_to_corr[ish]]['up'][0, 0]
+                        s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['up'][0, 0]
 
             # Calculate new G0_iw to input into the solver:
             for ish in range(nsh):
@@ -258,7 +258,7 @@ class DMFTCoreSolver:
                 eal = sk.eff_atomic_levels()
                 for ish in range(nsh):
                     s[ish].set_atomic_levels(eal=eal[ish])
-                    s[ish].solve(u_mat=self.Umat[self._SK.inequiv_to_corr[ish]], verbosity=0)
+                    s[ish].solve(u_mat=self.Umat[self.SK.inequiv_to_corr[ish]], verbosity=0)
             else:
                 for ish in range(nsh):
                     s[ish].solve(h_int=self._h_int[ish], **self._solver_params)
@@ -327,9 +327,9 @@ class DMFTCoreSolver:
         orb : int, optional
             Index of an inequivalent shell.
         """
-        dim_tot = self._SK.corr_shells[self._SK.inequiv_to_corr[orb]]['dim']
-        spn = self._SK.spin_block_names[self._SK.corr_shells[self._SK.inequiv_to_corr[orb]]['SO']]
-        if self._SK.corr_shells[self._SK.inequiv_to_corr[orb]]['SO'] == 0:
+        dim_tot = self.SK.corr_shells[self.SK.inequiv_to_corr[orb]]['dim']
+        spn = self.SK.spin_block_names[self.SK.corr_shells[self.SK.inequiv_to_corr[orb]]['SO']]
+        if self.SK.corr_shells[self.SK.inequiv_to_corr[orb]]['SO'] == 0:
             dim = dim_tot
         else:
             dim = dim_tot / 2
@@ -358,31 +358,31 @@ class DMFTCoreSolver:
                         print("{0:.3f} ".format(dens_mat[sp1][i1, i2]), end="")
                     print("")
 
-        for icrsh in range(self._SK.n_corr_shells):
+        for icrsh in range(self.SK.n_corr_shells):
 
             # ish is the index of the inequivalent shell corresponding to icrsh
-            ish = self._SK.corr_to_inequiv[icrsh]
+            ish = self.SK.corr_to_inequiv[icrsh]
             if ish != orb:
                 continue  # ignore this orbital
 
-            if self._SK.corr_shells[icrsh]['SO'] == 0:
+            if self.SK.corr_shells[icrsh]['SO'] == 0:
                 for sp1 in spn:
-                    self._SK.dc_imp[icrsh][sp1] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+                    self.SK.dc_imp[icrsh][sp1] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
                     for i1 in range(dim):
                         for i2 in range(dim):
                             #
                             # Hartree
                             #
                             for sp2 in spn:
-                                self._SK.dc_imp[icrsh][sp1][i1, i2] += \
+                                self.SK.dc_imp[icrsh][sp1][i1, i2] += \
                                     numpy.sum(u_mat[i1, :, i2, :] * dens_mat[sp2][:, :])
                             #
                             # Exchange
                             #
-                            self._SK.dc_imp[icrsh][sp1][i1, i2] += \
+                            self.SK.dc_imp[icrsh][sp1][i1, i2] += \
                                 - numpy.sum(u_mat[i1, :, :, i2] * dens_mat[sp1][:, :])
             else:
-                self._SK.dc_imp[icrsh]["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+                self.SK.dc_imp[icrsh]["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
                 for s1 in range(2):
                     for i1 in range(dim):
                         for s2 in range(2):
@@ -390,13 +390,13 @@ class DMFTCoreSolver:
                                 #
                                 # Hartree
                                 #
-                                self._SK.dc_imp[icrsh]["ud"][i1+s1*dim, i2+s1*dim] += numpy.sum(
+                                self.SK.dc_imp[icrsh]["ud"][i1+s1*dim, i2+s1*dim] += numpy.sum(
                                     u_mat[i1, :, i2, :] * dens_mat["ud"][s2*dim:s2*dim+dim, s2*dim:s2*dim+dim]
                                 )
                                 #
                                 # Exchange
                                 #
-                                self._SK.dc_imp[icrsh]["ud"][i1 + s1 * dim, i2 + s2 * dim] += numpy.sum(
+                                self.SK.dc_imp[icrsh]["ud"][i1 + s1 * dim, i2 + s2 * dim] += numpy.sum(
                                     u_mat[i1, :, :, i2]
                                     * dens_mat["ud"][s2 * dim:s2 * dim + dim, s1 * dim:s1 * dim + dim]
                                 )
@@ -408,5 +408,5 @@ class DMFTCoreSolver:
                 for i1 in range(dim_tot):
                     print("          ", end="")
                     for i2 in range(dim_tot):
-                        print("{0:.3f} ".format(self._SK.dc_imp[self._SK.inequiv_to_corr[orb]][sp1][i1, i2]), end="")
+                        print("{0:.3f} ".format(self.SK.dc_imp[self.SK.inequiv_to_corr[orb]][sp1][i1, i2]), end="")
                     print("")
