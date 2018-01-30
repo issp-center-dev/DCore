@@ -124,3 +124,29 @@ The extension can be eps, jpg, etc.
 
 If those results are not converged, one can repeat the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iterations.
 
+``dcore_check`` also writes the self-energy obtained in the last iteration into a text file named *seedname* _sigma.dat (``bethe_sigma.dat`` in the present case).
+You can plot the data for positive Matsubara frequencies as follows (like Fig. 3 of PRL 101, 166405 (2008)).
+
+.. code-block:: gnuplot
+
+   gnuplot> set xlabel "Energy"
+   gnuplot> beta = 50.0
+
+   gnuplot> set xr [0:2]
+   gnuplot> set yr [0:3]
+
+   gnuplot> set xlabel "(w_n)^{0.5}"
+   gnuplot> set ylabel "- Im Sigma(i w_n)"
+
+   gnuplot> plot \
+   gnuplot> "bethe_sigma.dat" u (($1)**0.5):($1 > 0 ? -$3 : 1/0) t "DCore" w lp, \
+   gnuplot> "sigma-PRL101-166405.txt" u (((2*$0+1)*pi/beta)**0.5):($1) t "PRL 101, 166405 (2008)" w lp
+
+The reference data extracted from PRL 101, 166405 (2008) are available 
+:download:`here <bethe-t2g/sigma-PRL101-166405.txt>`.
+
+
+.. image:: bethe-t2g/sigma.png
+   :width: 600
+   :align: center
+
