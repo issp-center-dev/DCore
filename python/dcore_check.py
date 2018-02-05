@@ -84,57 +84,56 @@ def dcore_check(filename, fileplot=None):
     for iom in range(n_iom):
         print("    %d  %f" % (iom, numpy.pi*(2*iom+1)/beta))
     #
-    # Real part
+    # Read Sigma and average it
     #
-    sigma_ave = GfImFreq(indices=[0], beta=beta, n_points=p["system"]["n_iw"])
-    plt.subplot(gs[0])
+    sigma_ave = []
+    sigma_fit = []
+    nsigma = 0
+    itr_sigma = [0]*7
     for itr in range(1, iteration_number+1):
         if itr > iteration_number - 7:
-            sigma_ave.data[:, 0, 0] = 0.0
+            itr_sigma[nsigma] = itr
+            sigma_ave.append(GfImFreq(indices=[0], beta=beta, n_points=p["system"]["n_iw"]))
+            sigma_fit.append(GfImFreq(indices=[0], beta=beta, n_points=p["system"]["n_iw"]))
+            sigma_ave[nsigma].data[:, 0, 0] = 0.0
+            sigma_fit[nsigma].data[:, 0, 0] = 0.0
             norb_tot = 0
             for ish in range(nsh):
                 spn = solver.SK.spin_block_names[solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['SO']]
                 norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
                 sol[ish].Sigma_iw << ar[output_group]['Sigma-log'][str(itr)][str(ish)]
+                sigma_iw_fit = sol[ish].Sigma_iw.copy()
+                if p["tool"]["perform_tail_fit"]:
+                    sigma_iw_fit << tail_fit(sigma_iw_fit, fit_max_moment=p["tool"]["fit_max_moment"],
+                                             fit_min_n=p["tool"]["fit_min_n"], fit_max_n=p["tool"]["fit_max_n"])[0]
                 for isp in spn:
                     for iorb in range(norb):
                         norb_tot += 1
                         for jorb in range(norb):
-                            sigma_ave.data[:, 0, 0] += sol[ish].Sigma_iw[isp].data[:, iorb, jorb]
-            sigma_ave.data[:, 0, 0] /= norb_tot
-            if solver.SO:
-                oplot(sigma_ave, '-o', mode='R',
-                      x_window=(0.0, omega_check), name='Sigma-%s' % itr)
-            else:
-                oplot(sigma_ave, '-o', mode='R',
-                      x_window=(0.0, omega_check), name='Sigma-%s' % itr)
+                            sigma_ave[nsigma].data[:, 0, 0] += sol[ish].Sigma_iw[isp].data[:, iorb, jorb]
+                            sigma_fit[nsigma].data[:, 0, 0] += sigma_iw_fit[isp].data[:, iorb, jorb]
+            sigma_ave[nsigma].data[:, 0, 0] /= norb_tot
+            sigma_fit[nsigma].data[:, 0, 0] /= norb_tot
+            nsigma += 1
+    del ar
+    #
+    # Real part
+    #
+    plt.subplot(gs[0])
+    for itr in range(nsigma):
+        oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, omega_check), name='Sigma-%s' % itr_sigma[itr])
+        if p["tool"]["perform_tail_fit"]:
+            oplot(sigma_fit[itr], '-o', mode='R', x_window=(0.0, omega_check), name='S_fit-%s' % itr_sigma[itr])
     plt.legend(loc=0)
     #
     # Imaginary part
     #
     plt.subplot(gs[1])
-    for itr in range(1, iteration_number+1):
-        if itr > iteration_number - 7:
-            sigma_ave.data[:, 0, 0] = 0.0
-            norb_tot = 0
-            for ish in range(nsh):
-                spn = solver.SK.spin_block_names[solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['SO']]
-                norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
-                sol[ish].Sigma_iw << ar[output_group]['Sigma-log'][str(itr)][str(ish)]
-                for isp in spn:
-                    for iorb in range(norb):
-                        norb_tot += 1
-                        for jorb in range(norb):
-                            sigma_ave.data[:, 0, 0] += sol[ish].Sigma_iw[isp].data[:, iorb, jorb]
-            sigma_ave.data[:, 0, 0] /= norb_tot
-            if solver.SO:
-                oplot(sigma_ave, '-o', mode='I',
-                      x_window=(0.0, omega_check), name='Sigma-%s' % itr)
-            else:
-                oplot(sigma_ave, '-o', mode='I',
-                      x_window=(0.0, omega_check), name='Sigma-%s' % itr)
+    for itr in range(nsigma):
+        oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, omega_check), name='Sigma-%s' % itr_sigma[itr])
+        if p["tool"]["perform_tail_fit"]:
+            oplot(sigma_fit[itr], '-o', mode='I', x_window=(0.0, omega_check), name='S_fit-%s' % itr_sigma[itr])
     plt.legend(loc=0)
-    del ar
 
     plt.show()
     if fileplot is not None:

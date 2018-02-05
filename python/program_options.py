@@ -88,5 +88,9 @@ def create_parser():
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
     parser.add_option("tool", "n_pade", int, 100, "Number of imaginary frequencies for the Pade approximation")
     parser.add_option("tool", "omega_check", float, 5.0, "Maximum frequency for dcore_check.")
+    parser.add_option("tool", "perform_tail_fit", bool, False, "Maximum frequency for dcore_check.")
+    parser.add_option("tool", "fit_max_moment", int, 3, "Maximum frequency for dcore_check.")
+    parser.add_option("tool", "fit_min_n", int, 10, "Maximum frequency for dcore_check.")
+    parser.add_option("tool", "fit_max_n", int, 20, "Maximum frequency for dcore_check.")
 
     return parser
