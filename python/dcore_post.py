@@ -95,7 +95,8 @@ class DMFTCoreTools:
             # Read info from HDF file
             ar = HDFArchive(self._seedname+'.out.h5', 'r')
             iteration_number = ar['dmft_out']['iterations']
-            print("    Iteration {0}".format(iteration_number))
+            if mpi.is_master_node():
+                print("    Iteration {0}".format(iteration_number))
             for ish in range(nsh):
                 sol[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
                 # set BlockGf sigma_w

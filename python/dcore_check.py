@@ -21,6 +21,7 @@ import argparse
 from dmft_core import DMFTCoreSolver
 from pytriqs.applications.dft.sumk_dft_tools import *
 from matplotlib.gridspec import GridSpec
+import numpy
 
 from program_options import *
 
@@ -56,6 +57,8 @@ def dcore_check(filename, fileplot=None):
     sol = solver.S
     output_file = p["model"]["seedname"]+'.out.h5'
     output_group = 'dmft_out'
+    beta = p["system"]["beta"]
+    omega_check = p['tool']['omega_check']
     gs = GridSpec(2, 1)
 
     if fileplot is not None:  # if graph is to be printed in a file
@@ -74,9 +77,16 @@ def dcore_check(filename, fileplot=None):
     for itr in range(1, iteration_number+1):
         print("  {0} {1}".format(itr, ar[output_group]['chemical_potential'][str(itr)]))
     #
+    # Index of the Matsubara frequencies
+    #
+    print("\n Matsubara frequency and its indices:")
+    n_iom = int((beta*omega_check-numpy.pi) / (2*numpy.pi))
+    for iom in range(n_iom):
+        print("    %d  %f" % (iom, numpy.pi*(2*iom+1)/beta))
+    #
     # Real part
     #
-    sigma_ave = GfImFreq(indices=[0], beta=p["system"]["beta"], n_points=p["system"]["n_iw"])
+    sigma_ave = GfImFreq(indices=[0], beta=beta, n_points=p["system"]["n_iw"])
     plt.subplot(gs[0])
     for itr in range(1, iteration_number+1):
         if itr > iteration_number - 7:
@@ -94,10 +104,10 @@ def dcore_check(filename, fileplot=None):
             sigma_ave.data[:, 0, 0] /= norb_tot
             if solver.SO:
                 oplot(sigma_ave, '-o', mode='R',
-                      x_window=(0.0, p['tool']['omega_check']), name='Sigma-%s' % itr)
+                      x_window=(0.0, omega_check), name='Sigma-%s' % itr)
             else:
                 oplot(sigma_ave, '-o', mode='R',
-                      x_window=(0.0, p['tool']['omega_check']), name='Sigma-%s' % itr)
+                      x_window=(0.0, omega_check), name='Sigma-%s' % itr)
     plt.legend(loc=0)
     #
     # Imaginary part
@@ -119,10 +129,10 @@ def dcore_check(filename, fileplot=None):
             sigma_ave.data[:, 0, 0] /= norb_tot
             if solver.SO:
                 oplot(sigma_ave, '-o', mode='I',
-                      x_window=(0.0, p['tool']['omega_check']), name='Sigma-%s' % itr)
+                      x_window=(0.0, omega_check), name='Sigma-%s' % itr)
             else:
                 oplot(sigma_ave, '-o', mode='I',
-                      x_window=(0.0, p['tool']['omega_check']), name='Sigma-%s' % itr)
+                      x_window=(0.0, omega_check), name='Sigma-%s' % itr)
     plt.legend(loc=0)
     del ar
 
@@ -132,6 +142,7 @@ def dcore_check(filename, fileplot=None):
     #
     # Output Sigma into a text file
     #
+    print("\n Output Local Self Energy : ", p["model"]["seedname"] + "_sigma.dat")
     with open(p["model"]["seedname"] + "_sigma.dat", 'w') as fo:
         print("# Local self energy at imaginary frequency", file=fo)
         #
