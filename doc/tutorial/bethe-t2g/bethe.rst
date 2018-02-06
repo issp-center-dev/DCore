@@ -1,14 +1,14 @@
 Tutorial with t2g Bethe lattice
 ===============================
 
-:download:`dmft_bethe.ini <bethe-t2g/dmft_bethe.ini>`
+:download:`dmft_bethe.ini <dmft_bethe.ini>`
 
 An interesting phenomena in multi-orbital models in spin-freezing phenomena found in
 `P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.101.166405>`_.
 They solved a t2g three-orbital model on a bethe lattice by means of DMFT.
 The so-called spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: :math:`\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}`.
 
-.. literalinclude:: bethe-t2g/dmft_bethe.ini
+.. literalinclude:: dmft_bethe.ini
                               
 Pre-process : ``dcore_pre``
 ---------------------------
@@ -118,7 +118,7 @@ The extension can be eps, jpg, etc.
 
 ``dcore_check`` also plots the self-energy for the last seven iterations in Matsubara-frequency domain.
 
-.. image:: bethe-t2g/convergence.png
+.. image:: convergence.png
    :width: 800
    :align: center
 
@@ -143,10 +143,10 @@ You can plot the data for positive Matsubara frequencies as follows (like Fig. 3
    gnuplot> "sigma-PRL101-166405.txt" u (((2*$0+1)*pi/beta)**0.5):($1) t "PRL 101, 166405 (2008)" w lp
 
 The reference data extracted from PRL 101, 166405 (2008) are available 
-:download:`here <bethe-t2g/sigma-PRL101-166405.txt>`.
+:download:`here <sigma-PRL101-166405.txt>`.
 
 
-.. image:: bethe-t2g/sigma.png
+.. image:: sigma.png
    :width: 600
    :align: center
 

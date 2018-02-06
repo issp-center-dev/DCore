@@ -14,5 +14,5 @@ In this tutorial we will perform DFT+DMFT calculations of SrVO\ :sub:`3` and NiS
 .. toctree::
    :maxdepth: 2
 
-   nis
-   srvo3
+   nis/nis
+   srvo3_qe/srvo3

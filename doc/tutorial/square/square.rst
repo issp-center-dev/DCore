@@ -1,9 +1,9 @@
 Tutorial with single-band 2D Hubbard model
 ==========================================
 
-:download:`dmft_square.ini <square/dmft_square.ini>`
+:download:`dmft_square.ini <dmft_square.ini>`
 
-.. literalinclude:: square/dmft_square.ini
+.. literalinclude:: dmft_square.ini
 
 Pre-process : ``dcore_pre``
 ---------------------------
@@ -75,7 +75,7 @@ The extension can be eps, jpg, etc.
       
 ``dcore_check`` also plots the self-energy for the last seven iterations in Matsubara-frequency domain.
 
-.. image:: square/convergence.png
+.. image:: convergence.png
    :width: 500
    :align: center
 
@@ -100,7 +100,7 @@ By using ``square_akw.gp``, we can easily plot the result:
 
    $ gnuplot square_akw.gp
 
-.. image:: square/akw.png
+.. image:: akw.png
    :width: 700
    :align: center
 
@@ -113,6 +113,6 @@ We can plot the results by using gnuplot as follows:
    gnuplot> set ylabel "DOS"
    gnuplot> plot "square_dos.dat" w l
 
-.. image:: square/dos.png
+.. image:: dos.png
    :width: 700
    :align: center

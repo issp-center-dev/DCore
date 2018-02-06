@@ -24,12 +24,12 @@ args = sys.argv
 
 if len(args) != 3:
     print("\nUsage:\n")
-    print("  $ openmx2dcore.py {HWR file} {seedname}\n")
+    print("  $ openmx2dcore.py {system.name in openmx-input} {seedname}\n")
     exit(-1)
 #
 # Input
 #
-with open(args[1], 'r') as f:
+with open(args[1] + ".HWR", 'r') as f:
     line = f.readline()  # Skip
     print(line, end="")
     #
@@ -88,3 +88,27 @@ with open(args[2]+"_hr.dat", 'w') as f:
                 print("%5d%5d%5d%5d%5d%12.6f%12.6f" % (
                     cell[icell, 0], cell[icell, 1], cell[icell, 2], iwan+1, jwan+1,
                     numpy.real(hopping[icell, iwan, jwan]), numpy.imag(hopping[icell, iwan, jwan]), ), file=f)
+#
+# Band structure
+#
+with open(args[1] + "_Wan.BANDDAT1", 'r') as f:
+    lines = f.readlines()
+    band = [[]]
+    npath = 0
+    for ii in range(len(lines)):
+        if len(lines[ii].split()) == 0:
+            if len(band[npath]) != 0:
+                npath += 1
+                band.append([])
+        else:
+            band[npath].append(lines[ii].split())
+#
+# Output
+#
+with open(args[2] + "_band.dat", 'w') as f:
+    for ipath in range(npath):
+        if len(band[ipath]) != 0:
+            if band[ipath][0][0] != band[ipath][1][0]:
+                for ik in range(len(band[ipath])):
+                    print("%f %f" % (float(band[ipath][ik][0])/0.529177249, float(band[ipath][ik][1])), file=f)
+                print("", file=f)

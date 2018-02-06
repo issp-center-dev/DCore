@@ -19,17 +19,16 @@ Tutorial
 .. toctree::
    :maxdepth: 2
 
-   tutorial/square
-   tutorial/bethe
+   tutorial/square/square
+   tutorial/bethe-t2g/bethe
    tutorial/qe
-   tutorial/openmx
-   tutorial/pb
-   tutorial/respack
+   tutorial/srvo3_openmx/openmx
+   tutorial/pb/pb
+   tutorial/srvo3_respack/respack
+   tutorial/cthyb/cthyb           
 
 Reference manual
 ----------------
-
-This is the reference manual for the python routines.
 
 .. toctree::
    :maxdepth: 3

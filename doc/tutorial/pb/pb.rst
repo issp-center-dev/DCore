@@ -8,9 +8,9 @@ In this tutrial, we perform the DMFT calculation of Pb with the spin-orbit inter
 SCF calculation of Quantum ESPRESSO
 -----------------------------------
 
-:download:`scf_pb.in <qe/scf_pb.in>`
+:download:`scf_pb.in <scf_pb.in>`
 
-.. literalinclude:: qe/scf_pb.in
+.. literalinclude:: scf_pb.in
 
 The pseudopotential is included in 
 `rel-pbe.0.3.1.tgz <http://theossrv1.epfl.ch/uploads/Main/NoBackup/rel-pbe.0.3.1.tgz>`_.
@@ -28,9 +28,9 @@ Generate Bloch orbitals for the Wannier
 Perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.
 
-:download:`nscf_pb.in <qe/nscf_pb.in>`
+:download:`nscf_pb.in <nscf_pb.in>`
 
-.. literalinclude:: qe/nscf_pb.in
+.. literalinclude:: nscf_pb.in
 
 This *k*\ -grid is generated as follows:
 
@@ -53,9 +53,9 @@ Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.
 We will wannieriza Pb 6p orbitals.
 
-:download:`pb.win <qe/pb.win>`
+:download:`pb.win <pb.win>`
 
-.. literalinclude:: qe/pb.win
+.. literalinclude:: pb.win
 
 .. note::
 
@@ -85,9 +85,9 @@ The *k* grid is generated as follows:
 QE to wannier90 interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:download:`pw2wan_pb.in <qe/pw2wan_pb.in>`
+:download:`pw2wan_pb.in <pw2wan_pb.in>`
 
-.. literalinclude:: qe/pw2wan_pb.in
+.. literalinclude:: pw2wan_pb.in
 
 .. code-block:: bash
                 
@@ -106,9 +106,9 @@ The input file is the same as that for the pre-processing run.
 DMFT calculation
 ----------------   
    
-:download:`pb.ini <qe/pb.ini>`
+:download:`pb.ini <pb.ini>`
 
-.. literalinclude:: qe/pb.ini
+.. literalinclude:: pb.ini
                               
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -132,7 +132,7 @@ Post-processing and data analysis: dcore_post
    $ dcore_post pb.ini
    $ gnuplot pb_akw.gp
 
-.. image:: qe/akw_pb.png
+.. image:: akw_pb.png
    :width: 500
    :align: center
 

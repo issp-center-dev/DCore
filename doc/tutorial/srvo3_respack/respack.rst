@@ -3,27 +3,25 @@
 Downfolding with RESPACK (SrVO\ :sub:`3`)
 =========================================
 
-.. todo::
+.. note::
 
-   The QE-SrVO\ :sub:`3` tutorial is not complete.
+   This tutorial requires lerge computational resorces or the long simulation time.
 
 Crystal structure of SrVO\ :sub:`3` (drawn by `VESTA <http://jp-minerals.org/vesta/en/>`_).
 
-.. image:: qe/struct_srvo3.png
+.. image:: ../srvo3_qe/struct_srvo3.png
    :width: 200
    :align: center
 
 SCF calculation of Quantum ESPRESSO
 -----------------------------------
 
-:download:`scf_srvo3.in <qe/scf_srvo3.in>`
+:download:`scf_srvo3_r.in <scf_srvo3_r.in>`
 
-.. literalinclude:: qe/scf_srvo3.in
+.. literalinclude:: scf_srvo3_r.in
 
 The pseudopotentials are downloaded from
-`Sr.pbe-spn-kjpaw_psl.0.2.3.upf <http://theossrv1.epfl.ch/uploads/Main/NoBackup/Sr.pbe-spn-kjpaw_psl.0.2.3.upf>`_,
-`V.pbe-spn-kjpaw_psl.0.2.3.upf <http://theossrv1.epfl.ch/uploads/Main/NoBackup/V.pbe-spn-kjpaw_psl.0.2.3.upf>`_, and
-`O.pbe-n-kjpaw_psl.0.1.upf <http://theossrv1.epfl.ch/uploads/Main/NoBackup/O.pbe-n-kjpaw_psl.0.1.upf>`_.
+
 
 .. code-block:: bash
                 
@@ -35,9 +33,9 @@ Wannierization
 Perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.
 
-:download:`nscf_respack.in <respack/nscf_respack.in>`
+:download:`nscf_respack.in <nscf_respack.in>`
 
-.. literalinclude:: respack/nscf_respack.in
+.. literalinclude:: nscf_respack.in
 
 Then, run ``pw.x`` as
 
@@ -56,9 +54,9 @@ This program locates in the ``util/qe2respack/`` directory of RESPACK.
 Execute ``calc_wannier`` (in ``src/wannier/`` of RESPACK) for the actual wannierization.
 with the following input file:
 
-:download:`nscf_respack.in <respack/respack.in>`
+:download:`nscf_respack.in <respack.in>`
 
-.. literalinclude:: respack/respack.in
+.. literalinclude:: respack.in
 
 .. code-block:: bash
                 
@@ -72,17 +70,17 @@ we plot the original and the wannier-interpolated band structure simultaneously.
 
 First, we compute the band structure with the following input file:
 
-:download:`band_srvo3.in <qe/band_srvo3.in>`
+:download:`band_srvo3.in <../srvo3_qe/band_srvo3.in>`
 
-.. literalinclude:: qe/band_srvo3.in
+.. literalinclude:: ../srvo3_qe/band_srvo3.in
 
 .. code-block:: bash
 
    $ mpiexec -np 4 pw.x -in band_srvo3.in
 
-:download:`bands_srvo3.in <qe/bands_srvo3.in>`
+:download:`bands_srvo3.in <../srvo3_qe/bands_srvo3.in>`
 
-.. literalinclude:: qe/bands_srvo3.in
+.. literalinclude:: ../srvo3_qe/bands_srvo3.in
 
 .. code-block:: bash
 
@@ -92,7 +90,7 @@ First, we compute the band structure with the following input file:
 
    plot [][11:18] "bands.out.gnu" u 1:2 w p tit "Orig", 12.3116 tit "E_F", "dir-wan/dat.iband" u ($1*2.5731):2 tit "Wannier" w l
 
-.. image:: qe/band_srvo3.png
+.. image:: ../srvo3_qe/band_srvo3.png
    :width: 500
    :align: center
 
@@ -127,9 +125,9 @@ The command-line argument (``"srvo3"`` in this case) must be the same as ``seedn
 DMFT calculation
 ----------------   
    
-:download:`srvo3.ini <respack/srvo3_respack.ini>`
+:download:`srvo3.ini <srvo3_respack.ini>`
 
-.. literalinclude:: respack/srvo3_respack.ini
+.. literalinclude:: srvo3_respack.ini
                               
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~

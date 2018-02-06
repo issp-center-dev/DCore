@@ -3,22 +3,22 @@
 SrVO\ :sub:`3`
 ==============
 
-.. todo::
+.. note::
 
-   The QE-SrVO\ :sub:`3` tutorial is not complete.
+   This tutorial requires lerge computational resorces or the long simulation time.
 
 Crystal structure of SrVO\ :sub:`3` (drawn by `VESTA <http://jp-minerals.org/vesta/en/>`_).
 
-.. image:: qe/struct_srvo3.png
+.. image:: struct_srvo3.png
    :width: 200
    :align: center
 
 SCF calculation of Quantum ESPRESSO
 -----------------------------------
 
-:download:`scf_srvo3.in <qe/scf_srvo3.in>`
+:download:`scf_srvo3.in <scf_srvo3.in>`
 
-.. literalinclude:: qe/scf_srvo3.in
+.. literalinclude:: scf_srvo3.in
 
 The pseudopotentials are downloaded from
 `Sr.pbe-spn-kjpaw_psl.0.2.3.upf <http://theossrv1.epfl.ch/uploads/Main/NoBackup/Sr.pbe-spn-kjpaw_psl.0.2.3.upf>`_,
@@ -38,9 +38,9 @@ Generate Bloch orbitals for the Wannier
 Perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.
 
-:download:`nscf_srvo3.in <qe/nscf_srvo3.in>`
+:download:`nscf_srvo3.in <nscf_srvo3.in>`
 
-.. literalinclude:: qe/nscf_srvo3.in
+.. literalinclude:: nscf_srvo3.in
 
 This *k*\ -grid is generated as follows:
 
@@ -62,9 +62,9 @@ Pre-process for Wannier90
 Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.
 
-:download:`srvo3.win <qe/srvo3.win>`
+:download:`srvo3.win <srvo3.win>`
 
-.. literalinclude:: qe/srvo3.win
+.. literalinclude:: srvo3.win
 
 This *k* grid is generated as follows:
 
@@ -79,9 +79,9 @@ This *k* grid is generated as follows:
 QE to wannier90 interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:download:`pw2wan_srvo3.in <qe/pw2wan_srvo3.in>`
+:download:`pw2wan_srvo3.in <pw2wan_srvo3.in>`
 
-.. literalinclude:: qe/pw2wan_srvo3.in
+.. literalinclude:: pw2wan_srvo3.in
 
 .. code-block:: bash
                 
@@ -105,17 +105,17 @@ we plot the original and the wannier-interpolated band structure simultaneously.
 
 First, we compute the band structure with the following input file:
 
-:download:`band_srvo3.in <qe/band_srvo3.in>`
+:download:`band_srvo3.in <band_srvo3.in>`
 
-.. literalinclude:: qe/band_srvo3.in
+.. literalinclude:: band_srvo3.in
 
 .. code-block:: bash
 
    $ mpiexec -np 4 pw.x -in band_srvo3.in
 
-:download:`bands_srvo3.in <qe/bands_srvo3.in>`
+:download:`bands_srvo3.in <bands_srvo3.in>`
 
-.. literalinclude:: qe/bands_srvo3.in
+.. literalinclude:: bands_srvo3.in
 
 .. code-block:: bash
 
@@ -125,17 +125,27 @@ First, we compute the band structure with the following input file:
 
    plot [][11:18] "bands.out.gnu" u 1:2 w p tit "Orig", 12.3116 tit "E_F", "srvo3_band.dat" u ($1*0.6146):2 tit "Wannier" w l
 
-.. image:: qe/band_srvo3.png
+.. image:: band_srvo3.png
    :width: 500
    :align: center
 
 DMFT calculation
 ----------------   
    
-:download:`srvo3.ini <qe/srvo3.ini>`
+:download:`srvo3.ini <srvo3.ini>`
 
-.. literalinclude:: qe/srvo3.ini
-                              
+.. literalinclude:: srvo3.ini
+
+Please see :ref:`howtocthyb` for the details of the parameter setting.
+
+.. note::
+
+   The parameter ``n_cycles{int}`` should be tuned in inverse propotion to the number of MPI processes.
+   The following result is obtained with 432 MPI processes at ``n_cycles{int} = 10000``
+   (70 seconds per DMFT cycle on ISSP system B).
+   If we want to compute by using 32 MPI processes at the same accuracy,
+   ``n_cycles{int}`` should be 10000\*432/32=135000.
+                    
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -156,3 +166,10 @@ Post-processing and data analysis: dcore_post
 .. code-block :: bash
 
    $ dcore_post srvo3.ini
+   $ gnuplot nis_akw.gp
+
+.. image:: akw_srvo3.png
+   :width: 500
+   :align: center
+
+"+" indicates the original band structure.

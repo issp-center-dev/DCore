@@ -6,16 +6,16 @@ the numerical localized basis set and pseudopotentials.
 OpenMX itself can generate hopping parameter in the wannier90 format.
 In this tutorial, we demonstrate the calculation of SrVO\ :sub:`3`.
 
-.. todo::
+.. note::
 
-   The OpenMX-SrVO\ :sub:`3` tutorial is not complete.
+   This tutorial requires lerge computational resorces or the long simulation time.
 
 SCF computation and Wannier with OpenMX
 ---------------------------------------
 
-:download:`scf.dat <openmx/scf.dat>`
+:download:`scf.dat <scf.dat>`
 
-.. literalinclude:: openmx/scf.dat
+.. literalinclude:: scf.dat
 
 DMFT
 ----

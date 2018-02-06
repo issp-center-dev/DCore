@@ -101,7 +101,7 @@ Program           Input parameters                                   Output HDF 
 Input-file format
 -----------------
 
-.. literalinclude:: ../tutorial/qe/nis.ini
+.. literalinclude:: ../tutorial/nis/nis.ini
 
 [model] block
 ~~~~~~~~~~~~~
