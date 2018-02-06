@@ -450,9 +450,9 @@ def dcore_post(filename):
             if p["model"]["lattice"] == 'wannier90':
                 print("splot \"{0}_akw.dat\", \\".format(seedname), file=f)
                 print("\"{0}_band.dat\" u 1:($2-{1}):(0) every 10 w p lc 5, \\".format(
-                    seedname, dct.SKT.chemical_potential), file=f)
+                    seedname, p['system']['mu']), file=f)
                 print("\"./dir-wan/dat.iband\" u ($1*{0}):($2-{1}):(0) every 10 w p lc 5".format(
-                    xk_label[nnode - 1], dct.SKT.chemical_potential), file=f)
+                    xk_label[nnode - 1], p['system']['mu']), file=f)
             else:
                 print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)
