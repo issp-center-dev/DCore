@@ -69,8 +69,7 @@ class DMFTCoreTools:
         nsh = skt.n_inequiv_shells
         with_dc = int(self._params['system']['with_dc'])
 
-        if mpi.is_master_node():
-            print("\n  @ Compute Green' function at the real frequency")
+        mpi.report("\n#############  Compute Green' Function at the Real Frequency  ################\n")
         #
         # Set necessary quantities
         #
@@ -89,7 +88,7 @@ class DMFTCoreTools:
                 sol[ish].set_atomic_levels(eal=eal[ish])
                 # Run the solver to get GF and self-energy on the real axis
                 sol[ish].gf_realomega(ommin=self._omega_min, ommax=self._omega_max, n_om=self._Nomega,
-                                      u_mat=core.Umat[ish])
+                                      u_mat=numpy.real(core.Umat[ish]))
                 sigma_w.append(sol[ish].Sigma_iw)
         elif core.solver_name == "TRIQS/cthyb" or core.solver_name == "ALPS/cthyb":
             # Read info from HDF file
@@ -113,13 +112,11 @@ class DMFTCoreTools:
             raise RuntimeError("Unknown solver " + core.solver_name)
         #
         skt.set_Sigma([sigma_w[ish] for ish in range(nsh)])
-        if mpi.is_master_node():
-            print("    Done")
+        mpi.report("    Done")
         #
         #  (Partial) DOS
         #
-        if mpi.is_master_node():
-            print("\n  @ Compute (partial) DOS")
+        mpi.report("\n#############  Compute (partial) DOS  ################\n")
         dos, dosproj, dosproj_orb = skt.dos_wannier_basis(broadening=self._broadening,
                                                           mesh=[self._omega_min, self._omega_max, self._Nomega],
                                                           with_Sigma=True, with_dc=with_dc, save_to_file=False)
@@ -149,8 +146,7 @@ class DMFTCoreTools:
         if self._params["model"]["lattice"] == 'bethe':
             return
         #
-        if mpi.is_master_node():
-            print ("\n  @ Compute band structure\n")
+        mpi.report("\n#############  Compute Band Structure  ################\n")
         akw = skt.spaghettis(broadening=self._broadening, plot_range=None, ishell=None, save_to_file=None)
         #
         # Print band-structure into file
@@ -316,8 +312,8 @@ def dcore_post(filename):
     filename : string
         Input-file name
     """
-    if mpi.is_master_node():
-        print("\n  @ Reading {0} ...".format(filename))
+    mpi.report("\n############  Reading Input File  #################\n")
+    mpi.report("  Input File Name : ", filename)
     #
     # Construct a parser with default values
     #
@@ -370,8 +366,7 @@ def dcore_post(filename):
     #
     # Construct parameters for the A(k,w)
     #
-    if mpi.is_master_node():
-        print("\n  @ Constructing k-path")
+    mpi.report("\n################  Constructing k-path  ##################")
     nnode = p["tool"]["nnode"]
     nk_line = p["tool"]["nk_line"]
     n_k = (nnode - 1)*nk_line + 1
@@ -412,8 +407,7 @@ def dcore_post(filename):
         #
         # Compute k-dependent Hamiltonian
         #
-        if mpi.is_master_node():
-            print("\n  @ Compute k-dependent Hamiltonian")
+        print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
         if p["model"]["lattice"] == 'wannier90':
             hopping, n_orbitals, proj_mat = __generate_wannier90_model(p["model"], n_k, kvec)
         else:
@@ -429,7 +423,7 @@ def dcore_post(filename):
         f["dft_bands_input"]["n_orbitals"] = n_orbitals
         f["dft_bands_input"]["proj_mat"] = proj_mat
         del f
-        print("\n    Done")
+        print("    Done")
     #
     # Plot
     #
@@ -440,7 +434,7 @@ def dcore_post(filename):
     # Output gnuplot script
     #
     if mpi.is_master_node():
-        print("\n  @ Generate GnuPlot script")
+        print("\n#############   Generate GnuPlot Script  ########################\n")
         with open(seedname + '_akw.gp', 'w') as f:
             print("set size 0.95, 1.0", file=f)
             print("set xtics (\\", file=f)
@@ -462,13 +456,13 @@ def dcore_post(filename):
             else:
                 print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)
-        print("\n    Usage:")
+        print("    Usage:")
         print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))
     #
     # Finish
     #
     if mpi.is_master_node():
-        print("\n  Done\n")
+        print("\n#################  Done  #####################\n")
 
 
 if __name__ == '__main__':

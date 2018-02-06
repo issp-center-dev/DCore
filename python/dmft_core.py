@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import sys
 import re
+import time
 import __builtin__
 from pytriqs.operators.util import *
 from pytriqs.applications.dft.sumk_dft import *
@@ -84,6 +85,9 @@ class DMFTCoreSolver:
         self.solver_name = params['impurity_solver']['name']
 
         self._solver_params = create_solver_params(params['impurity_solver'])
+        if 'verbosity' in self._solver_params.keys():
+            if not mpi.is_master_node():
+                del self._solver_params['verbosity']
 
         self._h_int = []
         self.S = []
@@ -203,15 +207,16 @@ class DMFTCoreSolver:
                 sk.dc_imp = mpi.bcast(sk.dc_imp)
                 sk.dc_energ = mpi.bcast(sk.dc_energ)
 
+        t0 = time.time()
         for iteration_number in range(previous_runs+1, previous_runs+max_step+1):
             sys.stdout.flush()
-            if mpi.is_master_node():
-                print("\n########################  Iteration = {0}  ########################\n".format(
-                    iteration_number))
+            mpi.report("\n#####################################################################",
+                       "########################  Iteration = %5d  ########################" % iteration_number,
+                       "#####################################################################\n")
+
+            mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Chemical potential and G0_imp  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
             sk.set_Sigma([s[ish].Sigma_iw for ish in range(nsh)])   # set Sigma into the SumK class
-            if mpi.is_master_node():
-                print("  @ ", end='')
             if fix_mu:
                 chemical_potential = mu
                 chemical_potential = mpi.bcast(chemical_potential)
@@ -241,7 +246,6 @@ class DMFTCoreSolver:
                     s[ish].G0_iw << s[ish].Sigma_iw + inverse(s[ish].G_iw)
                     ar = HDFArchive(output_file, 'a')
                     if iteration_number > previous_runs+1 or previous_present:
-                        mpi.report("\n  @ Mixing input Delta with factor %s" % delta_mix)
                         delta_new = (delta_mix * delta(s[ish].G0_iw))\
                             + (1.0-delta_mix) * ar[output_group]['Delta_iw'][str(ish)]
                         s[ish].G0_iw << s[ish].G0_iw + delta(s[ish].G0_iw) - delta_new
@@ -251,27 +255,32 @@ class DMFTCoreSolver:
 
                 s[ish].G0_iw << mpi.bcast(s[ish].G0_iw)
 
-            mpi.report("\n  @ Solve the impurity problem.\n")
+            mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
+
+            mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Solve the impurity problem  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
             if self.solver_name == "TRIQS/hubbard-I":
+                if 'verbosity' in self._solver_params.keys():
+                    verbosity = self._solver_params["verbosity"]
+                else:
+                    verbosity = 0
                 # calculate non-interacting atomic level positions:
                 eal = sk.eff_atomic_levels()
                 for ish in range(nsh):
                     s[ish].set_atomic_levels(eal=eal[ish])
-                    s[ish].solve(u_mat=self.Umat[self.SK.inequiv_to_corr[ish]], verbosity=0)
+                    s[ish].solve(u_mat=numpy.real(self.Umat[self.SK.inequiv_to_corr[ish]]), verbosity=verbosity)
             else:
                 for ish in range(nsh):
                     s[ish].solve(h_int=self._h_int[ish], **self._solver_params)
 
             # Solved. Now do post-processing:
             for ish in range(nsh):
-                mpi.report("\n    Total charge of impurity problem : %.6f" % s[ish].G_iw.total_density())
+                mpi.report("\nTotal charge of impurity problem : %.6f" % s[ish].G_iw.total_density())
 
             # Now mix Sigma and G with factor sigma_mix, if wanted:
             if iteration_number > 1 or previous_present:
                 if mpi.is_master_node():
                     ar = HDFArchive(output_file, 'a')
-                    mpi.report("\n  @ Mixing Sigma and G with factor %s" % sigma_mix)
                     for ish in range(nsh):
                         s[ish].Sigma_iw << sigma_mix * s[ish].Sigma_iw \
                                     + (1.0-sigma_mix) * ar[output_group]['Sigma_iw'][str(ish)]
@@ -282,7 +291,7 @@ class DMFTCoreSolver:
                     s[ish].G_iw << mpi.bcast(s[ish].G_iw)
                     s[ish].Sigma_iw << mpi.bcast(s[ish].Sigma_iw)
 
-            # Write the final Sigma and G to the hdf5 archive:
+            # Write Sigma and G to the hdf5 archive:
             if mpi.is_master_node():
                 ar = HDFArchive(output_file, 'a')
                 ar[output_group]['iterations'] = iteration_number
@@ -302,14 +311,17 @@ class DMFTCoreSolver:
                     ar[output_group]['Sigma-log'][str(iteration_number)][str(ish)] = s[ish].Sigma_iw
                 del ar
 
+            mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
+
             # Set the new double counting:
             if with_dc:
-                mpi.report("\n  @ Double-counting correction.\n")
+                mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Double-counting correction  @@@@@@@@@@@@@@@@@@@@@@@@\n")
                 for ish in range(nsh):
                     dm = s[ish].G_iw.density()  # compute the density matrix of the impurity problem
                     # sk.calc_dc(dm, orb = ish, U_interact = self._U_int, J_hund = self._J_hund, \
                     # use_dc_formula = dc_type)
                     self.calc_dc_matrix(dm, orb=ish, u_mat=self.Umat[sk.inequiv_to_corr[ish]])
+                    mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
 
             # Save stuff into the user_data group of hdf5 archive in case of rerun:
             sk.save(['chemical_potential', 'dc_imp', 'dc_energ'])

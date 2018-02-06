@@ -421,7 +421,8 @@ def dcore_pre(filename):
     filename : string
         Input-file name
     """
-    print("\n  @ Reading {0} ...".format(filename))
+    print("\n@@@@@@@@@@@@@@@@@@@  Reading Input File  @@@@@@@@@@@@@@@@@@@@\n")
+    print("Input File Name : ", filename)
     #
     # Construct a parser with default values
     #
@@ -445,7 +446,7 @@ def dcore_pre(filename):
     #
     # One-body term
     #
-    print("\n  @ Generate model-HDF5 file")
+    print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
     seedname = p["model"]["seedname"]
     if p["model"]["lattice"] == 'wannier90':
         with open(seedname+'.inp', 'w') as f:
@@ -480,7 +481,7 @@ def dcore_pre(filename):
     #
     # Finish
     #
-    print("\n  Done\n")
+    print("\n@@@@@@@@@@@@@@@@@@@@@@  Done  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 
 if __name__ == '__main__':
