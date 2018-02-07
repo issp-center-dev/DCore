@@ -22,6 +22,14 @@ SCF calculation of Quantum ESPRESSO
 
 The pseudopotentials are downloaded from
 
+http://www.quantum-simulation.org/potentials/sg15_oncv/sg15_oncv_upf_2015-10-07.tar.gz
+
+They are part of
+`The SG15 Optimized Norm-Conserving Vanderbilt (ONCV) pseudopotentials <http://www.quantum-simulation.org/potentials/sg15_oncv/>`_.
+For the downfolding with RESPACK, we should use the norm-conserving pseudopotentials rather than
+the ultrasoft pseudopotentials or PAW.
+
+The SCF calculation of the electronic charge is performed as follows:
 
 .. code-block:: bash
                 
@@ -30,7 +38,7 @@ The pseudopotentials are downloaded from
 Wannierization
 --------------   
    
-Perform non-scf calculation for generating Bloch orbitals that are used
+Next, we perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.
 
 :download:`nscf_respack.in <nscf_respack.in>`
@@ -148,4 +156,12 @@ Post-processing and data analysis: dcore_post
 
 .. code-block :: bash
 
-   $ dcore_post srvo3_respack.ini
+   $ dcore_post srvo3.ini
+   $ sed -e "s/every 10/every 3/g" srvo3_akw.gp
+   $ gnuplot nis_akw.gp
+
+.. image:: akw_srvo3.png
+   :width: 500
+   :align: center
+
+"x" indicates the original band structure.
