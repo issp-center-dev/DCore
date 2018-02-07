@@ -71,18 +71,13 @@ def dcore_check(filename, fileplot=None):
     #
     ar = HDFArchive(output_file, 'r')
     iteration_number = ar[output_group]['iterations']
+    perform_tail_fit = p["system"]["perform_tail_fit"] and \
+                       not ar[output_group]['parameters']["system"]["perform_tail_fit"]
     nsh = solver.SK.n_inequiv_shells
     print("  Total number of Iteration: {0}".format(iteration_number))
     print("\n  Iter  Chemical-potential")
     for itr in range(1, iteration_number+1):
         print("  {0} {1}".format(itr, ar[output_group]['chemical_potential'][str(itr)]))
-    #
-    # Index of the Matsubara frequencies
-    #
-    print("\n Matsubara frequency and its indices:")
-    n_iom = int((beta*omega_check-numpy.pi) / (2*numpy.pi))
-    for iom in range(n_iom):
-        print("    %d  %f" % (iom, numpy.pi*(2*iom+1)/beta))
     #
     # Read Sigma and average it
     #
@@ -103,9 +98,9 @@ def dcore_check(filename, fileplot=None):
                 norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
                 sol[ish].Sigma_iw << ar[output_group]['Sigma-log'][str(itr)][str(ish)]
                 sigma_iw_fit = sol[ish].Sigma_iw.copy()
-                if p["tool"]["perform_tail_fit"]:
-                    sigma_iw_fit << tail_fit(sigma_iw_fit, fit_max_moment=p["tool"]["fit_max_moment"],
-                                             fit_min_n=p["tool"]["fit_min_n"], fit_max_n=p["tool"]["fit_max_n"])[0]
+                if perform_tail_fit:
+                    tail_fit(sigma_iw_fit, fit_max_moment=p["system"]["fit_max_moment"],
+                             fit_min_w=p["system"]["fit_min_w"], fit_max_w=p["system"]["fit_max_w"])
                 for isp in spn:
                     for iorb in range(norb):
                         norb_tot += 1
@@ -122,7 +117,7 @@ def dcore_check(filename, fileplot=None):
     plt.subplot(gs[0])
     for itr in range(nsigma):
         oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, omega_check), name='Sigma-%s' % itr_sigma[itr])
-        if p["tool"]["perform_tail_fit"]:
+        if perform_tail_fit:
             oplot(sigma_fit[itr], '-o', mode='R', x_window=(0.0, omega_check), name='S_fit-%s' % itr_sigma[itr])
     plt.legend(loc=0)
     #
@@ -131,7 +126,7 @@ def dcore_check(filename, fileplot=None):
     plt.subplot(gs[1])
     for itr in range(nsigma):
         oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, omega_check), name='Sigma-%s' % itr_sigma[itr])
-        if p["tool"]["perform_tail_fit"]:
+        if perform_tail_fit:
             oplot(sigma_fit[itr], '-o', mode='I', x_window=(0.0, omega_check), name='S_fit-%s' % itr_sigma[itr])
     plt.legend(loc=0)
 

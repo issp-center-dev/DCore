@@ -272,6 +272,10 @@ class DMFTCoreSolver:
             else:
                 for ish in range(nsh):
                     s[ish].solve(h_int=self._h_int[ish], **self._solver_params)
+                    if self._params["system"]["perform_tail_fit"]:
+                        tail_fit(s[ish].Sigma_iw, fit_max_moment=self._params["system"]["fit_max_moment"],
+                                 fit_min_w=self._params["system"]["fit_min_w"],
+                                 fit_max_w=self._params["system"]["fit_max_w"])
 
             # Solved. Now do post-processing:
             for ish in range(nsh):

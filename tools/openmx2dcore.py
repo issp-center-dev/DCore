@@ -53,6 +53,7 @@ with open(args[1] + ".HWR", 'r') as f:
     line = f.readline()
     itemlist = line.split()
     efermi = float(itemlist[2])
+    efermi *= 13.60569228 * 2.0  # Hartree -> eV
     #
     for icell in range(ncell):
         #
@@ -68,6 +69,9 @@ with open(args[1] + ".HWR", 'r') as f:
                 itemlist = line.split()
                 hopping[icell, iwan, jwan] = float(itemlist[2]) + 1j * float(itemlist[3])
                 hopping[icell, iwan, jwan] *= 13.60569228 * 2.0  # Hartree -> eV
+        if cell[icell, 0] == 0 and cell[icell, 1] == 0 and cell[icell, 2] == 0:
+            for iwan in range(nwan):
+                hopping[icell, iwan, iwan] += -efermi
 #
 # Output
 #

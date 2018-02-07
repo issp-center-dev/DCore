@@ -63,6 +63,10 @@ def create_parser():
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction (See below)")
+    parser.add_option("system", "perform_tail_fit", bool, False, "Whether or not perform the tail-fit.")
+    parser.add_option("system", "fit_max_moment", int, 2, "Highest moment to fit in the tail of Sigma_iw.")
+    parser.add_option("system", "fit_min_w", float, False, "Matsubara frequency from which tail fitting should start.")
+    parser.add_option("system", "fit_max_w", float, False, "Matsubara frequency at which tail fitting should end.")
 
     # [impurity_solver] 
     parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I',
@@ -86,11 +90,7 @@ def create_parser():
     parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
     parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
-    parser.add_option("tool", "n_pade", int, 100, "Number of imaginary frequencies for the Pade approximation")
+    parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation")
     parser.add_option("tool", "omega_check", float, 5.0, "Maximum frequency for dcore_check.")
-    parser.add_option("tool", "perform_tail_fit", bool, False, "Maximum frequency for dcore_check.")
-    parser.add_option("tool", "fit_max_moment", int, 3, "Maximum frequency for dcore_check.")
-    parser.add_option("tool", "fit_min_n", int, 10, "Maximum frequency for dcore_check.")
-    parser.add_option("tool", "fit_max_n", int, 20, "Maximum frequency for dcore_check.")
 
     return parser

@@ -45,7 +45,7 @@ class DMFTCoreTools:
 
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
-        self._n_pade = int(params['tool']['n_pade'])  # Number of Matsubara frequencies
+        self._n_pade = int((params['system']['beta']*params['tool']['omega_pade']+numpy.pi) / (2*numpy.pi))
         self._omega_min = float(params['tool']['omega_min'])
         self._omega_max = float(params['tool']['omega_max'])
         self._Nomega = int(params['tool']['Nomega'])
