@@ -34,6 +34,7 @@ DMFT calculation
 :download:`srvo3.ini <srvo3_openmx.ini>`
 
 .. literalinclude:: srvo3_openmx.ini
+   :language: ini
 
 Please see :ref:`howtocthyb` for the details of the parameter setting.
 

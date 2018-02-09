@@ -9,6 +9,7 @@ They solved a t2g three-orbital model on a bethe lattice by means of DMFT.
 The so-called spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: :math:`\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}`.
 
 .. literalinclude:: dmft_bethe.ini
+   :language: ini
                               
 Pre-process : ``dcore_pre``
 ---------------------------

@@ -4,6 +4,7 @@ Tutorial with single-band 2D Hubbard model
 :download:`dmft_square.ini <dmft_square.ini>`
 
 .. literalinclude:: dmft_square.ini
+   :language: ini
 
 Pre-process : ``dcore_pre``
 ---------------------------

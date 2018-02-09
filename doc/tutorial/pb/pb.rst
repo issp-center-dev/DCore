@@ -109,6 +109,7 @@ DMFT calculation
 :download:`pb.ini <pb.ini>`
 
 .. literalinclude:: pb.ini
+   :language: ini
                               
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~

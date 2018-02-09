@@ -25,6 +25,7 @@ Tutorial
    tutorial/srvo3_openmx/openmx
    tutorial/pb/pb
    tutorial/srvo3_respack/respack
+   tutorial/cthyb/alps_cthyb           
    tutorial/cthyb/cthyb           
 
 Reference manual

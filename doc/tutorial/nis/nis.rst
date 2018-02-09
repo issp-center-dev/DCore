@@ -146,6 +146,7 @@ DMFT calculation
 :download:`nis.ini <nis.ini>`
 
 .. literalinclude:: nis.ini
+   :language: ini
                               
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~

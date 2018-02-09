@@ -135,6 +135,7 @@ DMFT calculation
 :download:`srvo3.ini <srvo3.ini>`
 
 .. literalinclude:: srvo3.ini
+   :language: ini
 
 Please see :ref:`howtocthyb` for the details of the parameter setting.
 

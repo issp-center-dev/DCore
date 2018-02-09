@@ -136,7 +136,18 @@ DMFT calculation
 :download:`srvo3.ini <srvo3_respack.ini>`
 
 .. literalinclude:: srvo3_respack.ini
+   :language: ini
                               
+Please see :ref:`howtocthyb` for the details of the parameter setting.
+
+.. note::
+
+   The parameter ``n_cycles{int}`` should be tuned in inverse propotion to the number of MPI processes.
+   The following result is obtained with 432 MPI processes at ``n_cycles{int} = 10000``
+   (70 seconds per DMFT cycle on ISSP system B).
+   If we want to compute by using 32 MPI processes at the same accuracy,
+   ``n_cycles{int}`` should be 10000\*432/32=135000.
+
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
 

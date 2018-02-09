@@ -88,7 +88,6 @@ def create_parser():
     parser.add_option("tool", "omega_min", float, -1, "Minimum value of real frequency")
     parser.add_option("tool", "omega_max", float, 1, "Max value of real frequency")
     parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
-    parser.add_option("tool", "nfile", int, 1, "Number of HDF5 file for the convergence check.")
     parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
     parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation")
