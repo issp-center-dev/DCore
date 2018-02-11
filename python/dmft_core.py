@@ -124,13 +124,25 @@ class DMFTCoreSolver:
 
             if self.solver_name == "TRIQS/cthyb":
                 from pytriqs.applications.impurity_solvers.cthyb import Solver
-                self.S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
+                if params['system']['n_l'] > 0:
+                    self._solver_params['measure_g_l'] = True
+                    self._solver_params['measure_g_tau'] = False
+                    self.S.append(Solver(beta=beta, gf_struct=gf_struct,
+                                         n_iw=n_iw, n_tau=n_tau, n_l=params['system']['n_l']))
+                else:
+                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
             elif self.solver_name == "TRIQS/hubbard-I":
                 from hubbard_solver_matrix import Solver
                 self.S.append(Solver(beta=beta, norb=n_orb, n_msb=n_iw, use_spin_orbit=self.SO))
             elif self.solver_name == "ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
-                self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau))
+                if params['system']['n_l'] > 0:
+                    self._solver_params['measure_g_l'] = True
+                    self._solver_params['measure_g_tau'] = False
+                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True,
+                                         n_iw=n_iw, n_tau=n_tau, n_l=params['system']['n_l']))
+                else:
+                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau))
             else:
                 raise RuntimeError("Unknown solver "+self.solver_name)
 
@@ -185,7 +197,8 @@ class DMFTCoreSolver:
                     #
                     # Sub group for something
                     #
-                    for gname in ['Sigma_iw', 'G0-log', 'G-log', 'Sigma-log', 'G_iw', 'chemical_potential', 'Delta_iw']:
+                    for gname in ['Sigma_iw', 'G0-log', 'G-log', 'Sigma-log', 'G_iw', 'G_l',
+                                  'chemical_potential', 'Delta_iw']:
                         if not (gname in f[output_group]):
                             f[output_group].create_group(gname)
             except Exception as e:
@@ -273,9 +286,13 @@ class DMFTCoreSolver:
                 for ish in range(nsh):
                     s[ish].solve(h_int=self._h_int[ish], **self._solver_params)
                     if self._params["system"]["perform_tail_fit"]:
-                        tail_fit(s[ish].Sigma_iw, fit_max_moment=self._params["system"]["fit_max_moment"],
+                        tail_fit(Sigma_iw=s[ish].Sigma_iw, G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw,
+                                 fit_max_moment=self._params["system"]["fit_max_moment"],
                                  fit_min_w=self._params["system"]["fit_min_w"],
                                  fit_max_w=self._params["system"]["fit_max_w"])
+                    if self._params['system']['n_l'] > 0:
+                        for name, g in s[ish].G_l: s[ish].G_iw[name] << LegendreToMatsubara(g)
+                        s[ish].Sigma_iw = dyson(G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw)
 
             # Solved. Now do post-processing:
             for ish in range(nsh):
@@ -303,6 +320,8 @@ class DMFTCoreSolver:
                 for ish in range(nsh):
                     ar[output_group]['G_iw'][str(ish)] = s[ish].G_iw
                     ar[output_group]['Sigma_iw'][str(ish)] = s[ish].Sigma_iw
+                    if self._params['system']['n_l'] > 0:
+                        ar[output_group]['G_l'][str(ish)] = s[ish].G_l
                     #
                     # Save the history of G0, G, Sigma
                     #

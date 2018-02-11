@@ -8,7 +8,7 @@ In this tutorial, we demonstrate the calculation of SrVO\ :sub:`3`.
 
 .. note::
 
-   This tutorial requires lerge computational resorces or the long simulation time.
+   This tutorial requires large computational resources or the long simulation time.
 
 SCF computation and Wannier with OpenMX
 ---------------------------------------
@@ -40,7 +40,7 @@ Please see :ref:`howtocthyb` for the details of the parameter setting.
 
 .. note::
 
-   The parameter ``n_cycles{int}`` should be tuned in inverse propotion to the number of MPI processes.
+   The parameter ``n_cycles{int}`` should be tuned in inverse proportion to the number of MPI processes.
    The following result is obtained with 432 MPI processes at ``n_cycles{int} = 10000``
    (70 seconds per DMFT cycle on ISSP system B).
    If we want to compute by using 32 MPI processes at the same accuracy,

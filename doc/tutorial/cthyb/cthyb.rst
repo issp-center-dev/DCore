@@ -6,35 +6,35 @@ How to choose parameters for TRIQS/cthyb
 Basic parameters for QMC
 ------------------------
 
-The accuracy of the TRIQS/cthyb calcuration depends on mainly the following
+The accuracy of the TRIQS/cthyb calculation depends on mainly the following
 three parameters.
 
  * ``n_cycles{int}``
 
-   The number of QMC cycles for comupting any quantities.
+   The number of QMC cycles for computing any quantities.
    The numerical noise can be reduced by increasing this parameter.
  
    When we use the MPI parallelism, the total number of QMC cycle
    ( ``number-of-processes * n_cycles``) affects the accuracy.
    Therefore,
-   **n_cycles in inverse propotion to the number of MPI processes keeps the accuracy**.
+   **n_cycles in inverse proportion to the number of MPI processes keeps the accuracy**.
  
  * ``n_warmup_cycles{int}``
 
    The number of QMC cycles for the thermalization before the above main calculation.
    If it is insufficient, the state to be computed may be different from the
-   equiribrium state.
+   equilibrium state.
 
    **This parameter is independent from the MPI parallelism.**
  
  * ``length_cycle{int}``
 
-   Each QMC cycles have subcycles.
-   The length of this subcycle should be long enough to escape from the auto-correlation.
+   Each QMC cycles have sub-cycles.
+   The length of this sub-cycle should be long enough to escape from the auto-correlation.
 
    **This parameter is independent from the MPI parallelism.**
 
-The computational time is propotional to ``length_cycle*(n_cycles+n_warmup_cycles)``.
+The computational time is proportional to ``length_cycle*(n_cycles+n_warmup_cycles)``.
 The following script is an example to describe the procedure for searching appropriate QMC parameter. 
 
 .. code-block:: bash
@@ -103,8 +103,8 @@ and obtain
    :align: center
 
 From this plot, we can see that both parameter settings are insufficient and
-we have to inclease ``n_cycles`` or ``length_cycle`` or both of them
-(In almose cases, ``n_warmup_cycles`` has minor effect).
+we have to increase ``n_cycles`` or ``length_cycle`` or both of them
+(In almost cases, ``n_warmup_cycles`` has minor effect).
 
    
 High-frequency tail fit
@@ -119,7 +119,7 @@ This high-frequency tail can be fitted by using the following function:
    \frac{a_3}{\omega^3} + \cdots
 
 We will show the procedure to apply this technique.
-The original input file (without tail-fit) is as follwos (dmft.ini):
+The original input file (without tail-fit) is as follows (dmft.ini):
 
 .. code-block:: ini
 
@@ -184,7 +184,6 @@ If we need, we repeat editing the input file and running ``dcore_check`` to tune
 After we finish to tuning parameters, we run ``dcore`` again and obtain the result as (c) in the
 above figure.
 
-
 Multi-band system
 -----------------
 
@@ -207,6 +206,140 @@ in the calculation of the spectrum function.
 
 The reference grid points for the numerical continuation are specified with the parameter
 ``omega_pade`` in the ``[tool]`` block.
-The good choise of ``omega_pade`` is the maximum frequency
+The good choice of ``omega_pade`` is the maximum frequency
 before the self energy becomes noisy.
 For example, we can find that ``omega_pade=4.0`` may be a good choice from (a) of the above figure.  
+
+Legendre filter
+---------------
+
+.. warning::
+
+   Do not use it together with the tail-fit.
+
+This is another technique to reduce the high-frequency noise.
+In this method, we expand the Green's function at the imaginary time with a series of
+the Legendre polynomials, and ignore the higher order polynomials.
+
+This scheme is activated when we specify the input parameter ``n_l``
+(the number of polynomial included) in the ``[system]`` block as
+
+.. code-block:: ini
+
+   [system]
+   beta = 40.0
+   nk = 100
+   n_l = 30
+
+When we use the Legendre filter, we should check that how many polynomials
+have to be included.
+For this purpose, we first perform a calculation with a large number of Legendre
+polynomials (e.g. ``n_l=80``) and check how the coefficient decays.
+
+For examples, we run the bash script as
+
+.. code-block:: bash
+
+   #!/bin/bash
+
+   cat > pre.ini <<EOF
+   [model]
+   seedname = bethe
+   lattice = bethe
+   norb = 1
+   nelec = 1.0
+   t = 1.0
+   kanamori = [(4.0, 0.0, 0.0)]
+
+   [system]
+   beta = 40.0
+   nk = 100
+   n_l = 30
+
+   [impurity_solver]
+   name = TRIQS/cthyb
+   n_warmup_cycles{int} = 10000
+   n_cycles{int} = 10000
+   length_cycle{int} = 100
+
+   [control]
+   max_step = 1
+   EOF
+
+   dcore_pre pre.ini
+
+   n_cycles[0]=3000;   n_warmup_cycles[0]=5000; length_cycle[0]=50
+   n_cycles[1]=10000;  n_warmup_cycles[1]=5000; length_cycle[1]=50
+   n_cycles[2]=30000;  n_warmup_cycles[2]=5000; length_cycle[2]=50
+   n_cycles[3]=100000; n_warmup_cycles[3]=5000; length_cycle[3]=50
+   n_cycles[4]=300000; n_warmup_cycles[4]=5000; length_cycle[4]=50
+   n_cycles[5]=300000; n_warmup_cycles[5]=5000; length_cycle[5]=100
+
+   for i in `seq 0 5`
+   do
+       sed -e "/n_cycles/c n_cycles{int} = ${n_cycles[i]}" \
+           -e "/n_wamup_cycles/c n_warmup_cycles{int} = ${n_wamup_cycles[i]}" \
+           -e "/length_cycle/c length_cycle{int} = ${length_cycle[i]}" \
+       pre.ini > dmft.ini
+       mpiexec -np 4 dcore dmft.ini
+       dcore_check dmft.ini --output bethe.pdf
+       mv bethe_legendre.dat l_cyc${n_cycles[i]}_warm${n_warmup_cycles[i]}_len${length_cycle[i]}.dat
+   done
+
+Then, we use GnuPlot as
+
+.. code-block:: gnuplot
+
+   gnuplot> set xlabel "Order of polynomial"
+   gnuplot> set ylabel "Coefficient"
+   gnuplot> set logscale y
+   gnuplot> plot \
+   "l_cyc3000_warm5000_len50.dat" u 1:(abs($2)) w l lw 3, \
+   "l_cyc10000_warm5000_len50.dat" u 1:(abs($2)) w l lw 3, \
+   "l_cyc30000_warm5000_len50.dat" u 1:(abs($2)) w l lw 3, \
+   "l_cyc100000_warm5000_len50.dat" u 1:(abs($2)) w l lw 3, \
+   "l_cyc300000_warm5000_len50.dat" u 1:(abs($2)) w l lw 3, \
+   "l_cyc300000_warm5000_len100.dat" u 1:(abs($2)) w l lw 3
+
+and obtain
+
+.. image:: legendre.png
+   :width: 500
+   :align: center
+
+Finally, we choose the following setting:
+
+.. code-block:: ini
+
+   [model]
+   seedname = bethe
+   lattice = bethe
+   norb = 1
+   nelec = 1.0
+   t = 1.0
+   kanamori = [(4.0, 0.0, 0.0)]
+
+   [system]
+   beta = 40.0
+   nk = 100
+   n_l = 30
+
+   [impurity_solver]
+   name = TRIQS/cthyb
+   n_warmup_cycles{int} = 5000
+   n_cycles{int} = 300000
+   length_cycle{int} = 100
+
+   [control]
+   max_step = 1
+
+   [tool]
+   omega_check = 30.0
+
+and obtain
+
+.. image:: legendre_sigma.png
+   :width: 500
+   :align: center
+
+   

@@ -1,15 +1,20 @@
-=========== =========== ========== ===========================================================================
-Name        Type        Default    Description                                                                
-=========== =========== ========== ===========================================================================
-fix_mu      Bool        False      Whether or not to fix chemical potential to a given value.                 
-nk          Integer     8          Number of *k* along each line                                              
-nk1         Integer     0          Number of *k* along b_1 (only for wannier90)                               
-with_dc     Bool        False      Whether or not use double counting correction (See below)                  
-nk2         Integer     0          Number of *k* along b_2 (only for wannier90)                               
-mu          Float       0.0        Initial chemical potential.                                                
-nk0         Integer     0          Number of *k* along b_0 (only for wannier90)                               
-n_tau       Integer     10000      Number of imaginary-time points                                            
-n_iw        Integer     2048       Number of Matsubara frequencies                                            
-beta        Float       1.0        Inverse temperature.                                                       
-prec_mu     Float       0.0001     Threshold for calculating chemical potential with the bisection method.    
-=========== =========== ========== ===========================================================================
+==================== =========== ========== ==============================================================================================
+Name                 Type        Default    Description                                                                                   
+==================== =========== ========== ==============================================================================================
+fix_mu               Bool        False      Whether or not to fix chemical potential to a given value.                                    
+nk                   Integer     8          Number of *k* along each line                                                                 
+perform_tail_fit     Bool        False      Whether or not perform the tail-fit.                                                          
+nk1                  Integer     0          Number of *k* along b_1 (only for wannier90)                                                  
+fit_max_w            Float       10.0       Matsubara frequency at which tail fitting should end.                                         
+with_dc              Bool        False      Whether or not use double counting correction (See below)                                     
+nk2                  Integer     0          Number of *k* along b_2 (only for wannier90)                                                  
+mu                   Float       0.0        Initial chemical potential.                                                                   
+nk0                  Integer     0          Number of *k* along b_0 (only for wannier90)                                                  
+n_tau                Integer     10000      Number of imaginary-time points                                                               
+n_iw                 Integer     2048       Number of Matsubara frequencies                                                               
+beta                 Float       1.0        Inverse temperature.                                                                          
+fit_min_w            Float       5.0        Matsubara frequency from which tail fitting should start.                                     
+prec_mu              Float       0.0001     Threshold for calculating chemical potential with the bisection method.                       
+n_l                  Integer     0          The number of the Legendre polynomial for QMC. If not, the solver's default value is used.    
+fit_max_moment       Integer     2          Highest moment to fit in the tail of Sigma_iw.                                                
+==================== =========== ========== ==============================================================================================

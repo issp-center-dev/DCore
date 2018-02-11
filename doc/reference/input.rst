@@ -102,6 +102,7 @@ Input-file format
 -----------------
 
 .. literalinclude:: ../tutorial/nis/nis.ini
+   :language: ini
 
 [model] block
 ~~~~~~~~~~~~~
@@ -304,10 +305,6 @@ dcore and dcore_post read this block.
 
 .. include:: impurity_solver_desc.txt
 
-.. warning::
-
-   Only the Hubbard-I solver is tested in the version 0.1.
-             
 **... and other parameters (Solver dependent)**.
 We have to specify additional parameters with types (e.g. ``n_cycles{int} = 500000``).
 For more details, please see the reference page of

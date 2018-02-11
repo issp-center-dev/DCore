@@ -110,7 +110,6 @@ def dcore_check(filename, fileplot=None):
             sigma_ave[nsigma].data[:, 0, 0] /= norb_tot
             sigma_fit[nsigma].data[:, 0, 0] /= norb_tot
             nsigma += 1
-    del ar
     #
     # Real part
     #
@@ -171,8 +170,53 @@ def dcore_check(filename, fileplot=None):
                                               sol[ish].Sigma_iw[isp].data[iom, iorb, jorb].imag), end="", file=fo)
             print("", file=fo)
     #
+    # Output Legendre polynomial
+    #
+    if p["system"]["n_l"] > 0:
+        #
+        # Output Sigma into a text file
+        #
+        print("\n Output Local Self Energy : ", p["model"]["seedname"] + "_legendre.dat")
+        with open(p["model"]["seedname"] + "_legendre.dat", 'w') as fo:
+            print("# Local self energy at imaginary frequency", file=fo)
+            #
+            # Column information
+            #
+            print("# [Column] Data", file=fo)
+            print("# [1] Order of Legendre polynomials", file=fo)
+            icol = 1
+            for ish in range(nsh):
+                sol[ish].G_l << ar[output_group]['G_l'][str(ish)]
+                spn = solver.SK.spin_block_names[solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['SO']]
+                norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
+                for isp in spn:
+                    for iorb in range(norb):
+                        for jorb in range(norb):
+                            icol += 1
+                            print("# [%d] Re(G_l_{shell=%d, spin=%s, %d, %d})" % (icol, ish, isp, iorb, jorb),
+                                  file=fo)
+                            icol += 1
+                            print("# [%d] Im(G_l_{shell=%d, spin=%s, %d, %d})" % (icol, ish, isp, iorb, jorb),
+                                  file=fo)
+            #
+            # Write data
+            #
+            for il in range(p["system"]["n_l"]):
+                print("%d " % il, end="", file=fo)
+                for ish in range(nsh):
+                    spn = solver.SK.spin_block_names[solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['SO']]
+                    norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
+                    for isp in spn:
+                        for iorb in range(norb):
+                            for jorb in range(norb):
+                                print("%f %f " % (sol[ish].G_l[isp].data[il, iorb, jorb].real,
+                                                  sol[ish].G_l[isp].data[il, iorb, jorb].imag), end="", file=fo)
+                print("", file=fo)
+
+    #
     # Finish
     #
+    del ar
     print("\n  Done\n")
 
 

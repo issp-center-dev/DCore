@@ -65,8 +65,10 @@ def create_parser():
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction (See below)")
     parser.add_option("system", "perform_tail_fit", bool, False, "Whether or not perform the tail-fit.")
     parser.add_option("system", "fit_max_moment", int, 2, "Highest moment to fit in the tail of Sigma_iw.")
-    parser.add_option("system", "fit_min_w", float, False, "Matsubara frequency from which tail fitting should start.")
-    parser.add_option("system", "fit_max_w", float, False, "Matsubara frequency at which tail fitting should end.")
+    parser.add_option("system", "fit_min_w", float, 5.0, "Matsubara frequency from which tail fitting should start.")
+    parser.add_option("system", "fit_max_w", float, 10.0, "Matsubara frequency at which tail fitting should end.")
+    parser.add_option("system", "n_l", int, 0,
+                      "The number of the Legendre polynomial for QMC. If not, the solver's default value is used.")
 
     # [impurity_solver] 
     parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I',
