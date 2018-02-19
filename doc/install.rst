@@ -15,6 +15,16 @@ Prerequisites
 #. Likely, you will also need at least one impurity solver,
    e.g. the `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_.
 
+   .. note::
+
+      If we compute systems with the spin-orbit couling by using
+      `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_ solver,
+      the following CMake options for cthyb is necessary:
+
+      ::
+
+         -DHYBRIDISATION_IS_COMPLEX=ON -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON
+   
 Installation steps 
 ------------------
 
