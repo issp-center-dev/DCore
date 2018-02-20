@@ -236,23 +236,45 @@ class DMFTCoreSolver:
                 sk.set_mu(chemical_potential)
             else:
                 sk.calc_mu(precision=prec_mu)  # find the chemical potential for given density
-            G_iw_all = sk.extract_G_loc(with_dc=with_dc)
+            #
+            # Compute and display density matrix
+            #
+            dm_tot = sk.density_matrix(beta=self._params['system']['beta'])
+            if mpi.is_master_node():
+                print("\nDensity Matrix")
+                for icrsh in range(sk.n_corr_shells):
+                    print("\n  Shell ", icrsh)
+                    for sp in sk.spin_block_names[sk.corr_shells[icrsh]['SO']]:
+                        print("\n    Spin ", sp)
+                        for i1 in range(sk.corr_shells[icrsh]['dim']):
+                            print("          ", end="")
+                            for i2 in range(sk.corr_shells[icrsh]['dim']):
+                                print("{0:.3f} ".format(dm_tot[icrsh][sp][i1, i2]), end="")
+                            print("")
+            #
+            # Extract Local Green's function
+            #
+            g_iw_all = sk.extract_G_loc(with_dc=with_dc)
             for ish in range(nsh):
-                s[ish].G_iw << G_iw_all[ish]                         # calc the local Green function
-                mpi.report("\n    Total charge of Gloc : %.6f" % s[ish].G_iw.total_density())
-
+                s[ish].G_iw << g_iw_all[ish]                         # calc the local Green function
+                mpi.report("\n    Total charge of Gloc_{shell %d} : %.6f" % (ish, s[ish].G_iw.total_density()))
+            #
             # Init the DC term and the real part of Sigma, if no previous runs found:
+            #
             if iteration_number == 1 and not previous_present and with_dc:
+                mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@\n")
                 for ish in range(nsh):
                     dm = s[ish].G_iw.density()
-                    # sk.calc_dc(dm, orb=ish, U_interact = self._U_int, J_hund = self._J_hund, use_dc_formula = dc_type)
+                    #
+                    # Initial guess of Sigma (Hartree-Fock)
+                    #
                     self.calc_dc_matrix(dm, orb=ish, u_mat=self.Umat[self.SK.inequiv_to_corr[ish]])
-                    if self.SO:
-                        s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['ud'][0, 0]
-                    else:
-                        s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['up'][0, 0]
-
+                    for spn, sig in s[ish].Sigma_iw:
+                        for iom in range(len(sig.data)):
+                            sig.data[iom, :, :] = sk.dc_imp[self.SK.inequiv_to_corr[ish]][spn][:, :]
+            #
             # Calculate new G0_iw to input into the solver:
+            #
             for ish in range(nsh):
                 if mpi.is_master_node():
                     # We can do a mixing of Delta in order to stabilize the DMFT iterations:
@@ -284,6 +306,7 @@ class DMFTCoreSolver:
                     s[ish].solve(u_mat=numpy.real(self.Umat[self.SK.inequiv_to_corr[ish]]), verbosity=verbosity)
             else:
                 for ish in range(nsh):
+                    self._solver_params['random_seed'] = 34788 + 928374 * mpi.rank + 1000*ish
                     s[ish].solve(h_int=self._h_int[ish], **self._solver_params)
                     if self._params["system"]["perform_tail_fit"]:
                         tail_fit(Sigma_iw=s[ish].Sigma_iw, G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw,
@@ -335,16 +358,6 @@ class DMFTCoreSolver:
                 del ar
 
             mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
-
-            # Set the new double counting:
-            if with_dc:
-                mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Double-counting correction  @@@@@@@@@@@@@@@@@@@@@@@@\n")
-                for ish in range(nsh):
-                    dm = s[ish].G_iw.density()  # compute the density matrix of the impurity problem
-                    # sk.calc_dc(dm, orb = ish, U_interact = self._U_int, J_hund = self._J_hund, \
-                    # use_dc_formula = dc_type)
-                    self.calc_dc_matrix(dm, orb=ish, u_mat=self.Umat[sk.inequiv_to_corr[ish]])
-                    mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
 
             # Save stuff into the user_data group of hdf5 archive in case of rerun:
             sk.save(['chemical_potential', 'dc_imp', 'dc_energ'])

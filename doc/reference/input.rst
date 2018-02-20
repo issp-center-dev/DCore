@@ -293,11 +293,13 @@ the self energy.
    \Sigma_{i, \alpha \sigma \beta \sigma'}^{\rm dc-imp}
    = \delta_{\sigma \sigma'} \sum_{\gamma \delta \sigma_1}
    U_{\alpha \gamma \beta \delta}
-   \langle c_{\gamma \sigma_1}^\dagger c_{\delta \sigma_1}\rangle
+   \langle c_{\gamma \sigma_1}^\dagger c_{\delta \sigma_1}\rangle_0
    - \sum_{\gamma \delta}
    U_{\alpha \gamma \delta \beta}
-   \langle c_{\gamma \sigma'}^\dagger c_{\delta \sigma}\rangle             
-         
+   \langle c_{\gamma \sigma'}^\dagger c_{\delta \sigma}\rangle_0,
+
+where :math:`\langle \cdots \rangle_0` indicates the expectation value at the initial (Kohn-Sham) state.
+   
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 
