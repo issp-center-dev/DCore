@@ -113,8 +113,7 @@ class DMFTCoreSolver:
 
             self._h_int.append(
                 h_int_slater(spin_names, orb_names, U_matrix=self.Umat[self.SK.inequiv_to_corr[ish]], off_diag=True,
-                             map_operator_structure=map_operator_structure,
-                             H_dump="H" + str(ish) + ".txt", complex=False)  # tentative
+                             map_operator_structure=map_operator_structure, complex=False)  # tentative
                 )
             if params["model"]["density_density"]:
                 self._h_int[ish] = diagonal_part(self._h_int[ish])

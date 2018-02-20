@@ -80,8 +80,7 @@ class Solver:
             else:
                 self.Eff_Atomic_Levels[a] = numpy.zeros([self.Nlm, self.Nlm], numpy.complex_)
 
-    def solve(self, u_mat, verbosity=0, iteration_number=1, test_convergence=0.0001,
-              n_lev=0, remove_split=False):
+    def solve(self, u_mat, verbosity=0, test_convergence=0.0001, n_lev=0, remove_split=False):
         """Calculation of the impurity Greens function using Hubbard-I"""
 
         if self.Converged:
@@ -107,7 +106,7 @@ class Solver:
             for i in range(9):
                 tailtempl[sig][i] *= 0.0
 
-        self.__save_eal('eal.dat', iteration_number)
+        # self.__save_eal('eal.dat', iteration_number)
 
         mpi.report("Starting Fortran solver %(name)s" % self.__dict__)
 

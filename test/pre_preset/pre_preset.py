@@ -16,12 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-
-import sys
-import os
-
 from pytriqs.applications.dcore.dcore_pre import dcore_pre
-
+from pytriqs.utility.h5diff import h5diff
 #
 # Execute dcore_pre.py to generate test.h5
 # Then Check the Diff of test.h5 and the reference output (stan_ref.h5))
@@ -39,10 +35,5 @@ for lattice in ['bethe', 'chain', 'square', 'cubic']:
         print("seedname = " + seedname, file=f)
 
     dcore_pre(input_fname)
-    
-    print("\n Check Diff of {0}.h5 {1}.h5\n".format(seedname, seedname_ref))
-    check = os.system('h5diff -d 1.0e-10 {0}.h5 {1}.h5'.format(seedname, seedname_ref))
-    
-    if check != 0:
-        print("Generated file is different from the reference for lattice = " + lattice)
-        sys.exit(-1)
+
+    h5diff(seedname+".h5", seedname_ref+".h5")

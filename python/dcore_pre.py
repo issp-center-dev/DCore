@@ -460,6 +460,7 @@ def dcore_pre(filename):
         # Convert General-Hk to SumDFT-HDF5 format
         converter = HkConverter(filename=seedname + ".inp", hdf_filename=seedname+".h5")
         converter.convert_dft_input(weights_in_file=weights_in_file)
+    os.remove(seedname + ".inp")
     #
     # Interaction
     #

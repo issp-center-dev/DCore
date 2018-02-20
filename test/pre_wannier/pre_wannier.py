@@ -16,12 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-
-import sys
-import os
-
+from pytriqs.utility.h5diff import h5diff
 from pytriqs.applications.dcore.dcore_pre import dcore_pre
-
 #
 # Execute dcore_pre.py to generate test.h5
 # Then Check the Diff of test.h5 and the reference output (stan_ref.h5))
@@ -42,10 +38,5 @@ with open("nis.ini", 'w') as f:
     print("nk2 = 3", file=f)
 
 dcore_pre("nis.ini")
-    
-print("\n Check Diff of nis.h5 nis_ref.h5\n")
-check = os.system('h5diff -d 1.0e-10 nis.h5 nis_ref.h5')
-    
-if check != 0:
-    print("Generated file and reference file are different.")
-    sys.exit(-1)
+
+h5diff("nis.h5", "nis_ref.h5")
