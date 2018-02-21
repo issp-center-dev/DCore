@@ -17,9 +17,11 @@
 #
 from __future__ import print_function
 from pytriqs.applications.dcore.numdiff import numdiff
-from openmx2dcore import openmx2dcore
+from respack2wan90 import respack2wan90
 #
-openmx2dcore("SrVO3", "srvo3")
+respack2wan90("sr2vo4")
 
-numdiff("srvo3_hr.dat", "srvo3_hr_ref.dat")
-numdiff("srvo3_band.dat", "srvo3_band_ref.dat")
+numdiff("sr2vo4_hr.dat", "sr2vo4_hr_ref.dat")
+numdiff("sr2vo4_ur.dat", "sr2vo4_ur_ref.dat")
+numdiff("sr2vo4_jr.dat", "sr2vo4_jr_ref.dat")
+numdiff("sr2vo4_geom.dat", "sr2vo4_geom_ref.dat")

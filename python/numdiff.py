@@ -77,7 +77,6 @@ def numdiff(file1, file2, threshold=1.0e-6):
 
     if max_diff < threshold:
         print("The difference is sufficiently small.")
-        exit(0)
     else:
         print("The difference is larger than the threshold.")
         exit(1)
