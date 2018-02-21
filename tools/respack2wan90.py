@@ -125,15 +125,22 @@ def ref2geom(filename):
             print("%f %f %f" % (centre[iwan, 0], centre[iwan, 1], centre[iwan, 2]), file=fo)
 
 
-args = sys.argv
+def respack2wan90(seedname):
 
-if len(args) != 2:
-    print("\nUsage:\n")
-    print("  $ respack2wan90.py seedname\n")
-    exit(-1)
+    res2wan("./dir-wan/dat.h_mat_r", seedname + "_hr.dat")
+    res2wan("./dir-intW/dat.Wmat", seedname + "_ur.dat")
+    res2wan("./dir-intJ/dat.Jmat", seedname + "_jr.dat")
 
-res2wan("./dir-wan/dat.h_mat_r", args[1] + "_hr.dat")
-res2wan("./dir-intW/dat.Wmat", args[1] + "_ur.dat")
-res2wan("./dir-intJ/dat.Jmat", args[1] + "_jr.dat")
+    ref2geom(seedname + "_geom.dat")
 
-ref2geom(args[1] + "_geom.dat")
+
+if __name__ == '__main__':
+
+    args = sys.argv
+
+    if len(args) != 2:
+        print("\nUsage:\n")
+        print("  $ respack2wan90.py seedname\n")
+        exit(-1)
+
+    respack2wan90(args[1])
