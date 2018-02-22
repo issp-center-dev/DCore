@@ -1,1 +1,0 @@
-triqs_add_python_test(chain_hubbardI)
