@@ -268,9 +268,10 @@ class DMFTCoreSolver:
                     # Initial guess of Sigma (Hartree-Fock)
                     #
                     self.calc_dc_matrix(dm, orb=ish, u_mat=self.Umat[self.SK.inequiv_to_corr[ish]])
-                    for spn, sig in s[ish].Sigma_iw:
-                        for iom in range(len(sig.data)):
-                            sig.data[iom, :, :] = sk.dc_imp[self.SK.inequiv_to_corr[ish]][spn][:, :]
+                    if self.SO:
+                        s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['ud'][0, 0]
+                    else:
+                        s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['up'][0, 0]
             #
             # Calculate new G0_iw to input into the solver:
             #
