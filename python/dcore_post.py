@@ -433,7 +433,7 @@ def dcore_post(filename):
     #
     # Output gnuplot script
     #
-    if mpi.is_master_node():
+    if mpi.is_master_node() and p["model"]["lattice"] != 'bethe':
         print("\n#############   Generate GnuPlot Script  ########################\n")
         with open(seedname + '_akw.gp', 'w') as f:
             print("set size 0.95, 1.0", file=f)
