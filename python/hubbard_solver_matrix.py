@@ -115,10 +115,19 @@ class Solver:
 
         # call the fortran solver:
         temp = 1.0/self.beta
-        gf, tail, atocc, atmag = gf_hi_fullu(e0f=self.ealmat, ur=u_mat, umn=u_para, ujmn=u_antipara,
-                                             zmsb=zmsb, nmom=self.Nmoments, ns=self.Nspin, temp=temp,
-                                             verbosity=my_verbosity, remove_split=remove_split,
-                                             nlev_cf=n_lev)
+        gf = numpy.zeros((self.Nspin*self.Nlm, self.Nspin*self.Nlm, len(zmsb)), numpy.complex_)
+        tail = [numpy.zeros((self.Nspin*self.Nlm, self.Nspin*self.Nlm), numpy.complex_) for i in range(self.Nmoments)]
+        atocc = 0.0
+        atmag = 0.0
+        if mpi.is_master_node():
+            gf, tail, atocc, atmag = gf_hi_fullu(e0f=self.ealmat, ur=u_mat, umn=u_para, ujmn=u_antipara,
+                                                 zmsb=zmsb, nmom=self.Nmoments, ns=self.Nspin, temp=temp,
+                                                 verbosity=my_verbosity, remove_split=remove_split,
+                                                 nlev_cf=n_lev)
+        gf = mpi.bcast(gf)
+        tail = mpi.bcast(tail)
+        atocc = mpi.bcast(atocc)
+        atmag = mpi.bcast(atmag)
 
         # self.sig = sigma_atomic_fullu(gf=self.gf, e0f=self.eal, zmsb=self.zmsb, ns=self.Nspin, nlm=self.Nlm)
 
@@ -193,9 +202,14 @@ class Solver:
                 tailtempl[sig][i] *= 0.0
 
         temp = 1.0/self.beta
-        gf, tail, atocc, atmag = gf_hi_fullu(e0f=self.ealmat, ur=u_mat, umn=u_para, ujmn=u_antipara,
-                                             zmsb=omega, nmom=self.Nmoments, ns=self.Nspin, temp=temp,
-                                             verbosity=verbosity, remove_split=remove_split, nlev_cf=n_lev)
+        gf = numpy.zeros((self.Nspin*self.Nlm, self.Nspin*self.Nlm, len(omega)), numpy.complex_)
+        tail = [numpy.zeros((self.Nspin*self.Nlm, self.Nspin*self.Nlm), numpy.complex_) for i in range(self.Nmoments)]
+        if mpi.is_master_node():
+            gf, tail, atocc, atmag = gf_hi_fullu(e0f=self.ealmat, ur=u_mat, umn=u_para, ujmn=u_antipara,
+                                                 zmsb=omega, nmom=self.Nmoments, ns=self.Nspin, temp=temp,
+                                                 verbosity=verbosity, remove_split=remove_split, nlev_cf=n_lev)
+        gf = mpi.bcast(gf)
+        tail = mpi.bcast(tail)
 
         # transfer the data to the GF class:
         if self.UseSpinOrbit:
