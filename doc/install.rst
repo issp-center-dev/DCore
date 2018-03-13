@@ -1,9 +1,10 @@
 
 .. highlight:: bash
 
+.. _installation:
+               
 Installation
 ============
-
 
 Prerequisites
 -------------

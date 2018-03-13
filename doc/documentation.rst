@@ -24,6 +24,7 @@ Tutorial
    tutorial/qe
    tutorial/srvo3_openmx/openmx
    tutorial/pb/pb
+   tutorial/pb4/pb4
    tutorial/srvo3_respack/respack
    tutorial/cthyb/alps_cthyb           
    tutorial/cthyb/cthyb           
