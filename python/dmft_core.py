@@ -136,8 +136,6 @@ class DMFTCoreSolver:
             elif self.solver_name == "ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
                 if params['system']['n_l'] > 0:
-                    self._solver_params['measure_g_l'] = True
-                    self._solver_params['measure_g_tau'] = False
                     self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True,
                                          n_iw=n_iw, n_tau=n_tau, n_l=params['system']['n_l']))
                 else:
