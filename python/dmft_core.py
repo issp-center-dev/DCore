@@ -136,10 +136,10 @@ class DMFTCoreSolver:
             elif self.solver_name == "ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
                 if params['system']['n_l'] > 0:
-                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True,
+                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=False,
                                          n_iw=n_iw, n_tau=n_tau, n_l=params['system']['n_l']))
                 else:
-                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=True, n_iw=n_iw, n_tau=n_tau))
+                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=False, n_iw=n_iw, n_tau=n_tau))
             else:
                 raise RuntimeError("Unknown solver "+self.solver_name)
 
