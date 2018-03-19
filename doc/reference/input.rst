@@ -78,13 +78,30 @@ the local self energy at the final step as follows:
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This program compute the total and *k*\ -resolved spectral function from the outputted
-HDF5 file (*seedname*.out.h5).
+This program compute the total DOS (*seedname*_dos.dat) and *k*\ -resolved spectral function
+(*seedname*_akw.dat) from the outputted HDF5 file (*seedname*.out.h5).
 This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` block.
 
-::
+.. code-block:: bash
 
    $ dcore_post input-file
+
+The computed spectral function can be drawn as
+   
+.. code-block:: bash
+
+   $ gnuplot [seedname]_akw.gp
+
+This GnuPlot script displays also the original (DFT) band structure as follows if either
+*seedname*\_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.
+
+.. image:: ../tutorial/srvo3_qe/akw_srvo3.png
+   :width: 500
+   :align: center
+
+"+" indicates the original band structure.
+The original band structure is shifted with the chemical potential specified by
+``mu`` parameter in ``[system]`` block.
 
 List of input and output
 ------------------------
