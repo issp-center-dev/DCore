@@ -13,13 +13,18 @@ Prerequisites
    :ref:`DFT-Tools <triqsdfttools:dft>` toolbox.
    In the following, we will suppose that they are installed in the ``path_to_triqs`` directory.
 
-#. You will also need at least one impurity solver,
-   e.g. the `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_.
+#. You will also need at least one impurity solver.
+   At present, ``DCore`` supports the following program:
+
+   - `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
+
+   - `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
+
+   - `ALPSCore/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_ + `triqs_interface <https://github.com/shinaoka/triqs_interface>`_
 
    .. note::
 
-      If we compute systems with the spin-orbit coupling by using
-      `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_ solver,
+      If you want to treat the spin-orbit coupling in `TRIQS/cthyb` solver,
       the following CMake options are necessary:
 
       ::
