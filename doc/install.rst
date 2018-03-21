@@ -9,8 +9,8 @@ Installation
 Prerequisites
 -------------
 
-#. The :ref:`TRIQS <triqslibs:welcome>` and
-   :ref:`DFT-Tools <triqsdfttools:dft>` toolbox.
+#. The :ref:`TRIQS <triqslibs:welcome>` libarary and
+   :ref:`DFTTools <triqsdfttools:dft>` must be installed in advance.
    In the following, we will suppose that they are installed in the ``path_to_triqs`` directory.
 
 #. You will also need at least one impurity solver.
