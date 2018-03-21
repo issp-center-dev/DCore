@@ -63,7 +63,7 @@ If X window is not available or you prefer plotting in a file, use ``--output`` 
 
    $ dcore_check dmft_bethe.ini --output=convergence.png
 
-The extension can be eps, jpg, etc.
+The extension can be pdf, eps, jpg, png, etc.
 
 .. We can find the following standard output.
 
@@ -150,4 +150,3 @@ The reference data extracted from PRL 101, 166405 (2008) are available
 .. image:: sigma.png
    :width: 600
    :align: center
-

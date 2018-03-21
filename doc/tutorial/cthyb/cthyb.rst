@@ -25,14 +25,14 @@ three parameters.
    If it is insufficient, the state to be computed may be different from the
    equilibrium state.
 
-   **This parameter is independent from the MPI parallelism.**
+   **This parameter is independent of the MPI parallelism.**
  
  * ``length_cycle{int}``
 
    Each QMC cycles have sub-cycles.
    The length of this sub-cycle should be long enough to escape from the auto-correlation.
 
-   **This parameter is independent from the MPI parallelism.**
+   **This parameter is independent of the MPI parallelism.**
 
 The computational time is proportional to ``length_cycle*(n_cycles+n_warmup_cycles)``.
 The following script is an example to describe the procedure for searching appropriate QMC parameter. 
@@ -118,7 +118,7 @@ This high-frequency tail can be fitted by using the following function:
    \Sigma_{\rm tail}(i \omega) \approx \frac{a_1}{\omega} + \frac{a_2}{\omega^2} +
    \frac{a_3}{\omega^3} + \cdots
 
-We will show the procedure to apply this technique.
+We show the procedure for using this technique.
 The original input file (without tail-fit) is as follows (dmft.ini):
 
 .. code-block:: ini
@@ -147,7 +147,7 @@ The original input file (without tail-fit) is as follows (dmft.ini):
    [tool]
    omega_check = 30.0
 
-Then we execute
+We first execute the ordinary DMFT calculation:
 
 .. code-block:: bash
 
@@ -155,15 +155,15 @@ Then we execute
    $ mpiexec -np 4 dcore dmft.ini
    $ dcore_check dmft.ini --output bethe.pdf
 
-Then, by looking the plot in bethe.pdf,
-we chose the energy range where the tail-fit is performed.
+Then, looking at the figure in bethe.pdf,
+we choose the energy range where the tail-fit is performed.
 
 .. _tailfit:
 
 .. image:: tailfit.png
    :align: center
 
-In this case, we choose energy range from 6 to 15 [See (a) in the above figure], and
+In this case, we choose energy range from 6 to 15 [red box in (a) in the above figure], and
 add the following parameters at the ``[system]`` block in the input file
 (not the
 `solver parameter <https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html>`_
@@ -179,9 +179,9 @@ for the tail fit):
    fit_min_w = 6.0
    fit_max_w = 15.0
 
-We run ``dcore_check`` again, and we obtain the result as (b) in the above figure.
-If we need, we repeat editing the input file and running ``dcore_check`` to tune the input parameters.
-After we finish to tuning parameters, we run ``dcore`` again and obtain the result as (c) in the
+We run ``dcore_check`` again, and obtain the result as (b) in the above figure.
+If necessary, we repeat editing the input file and running ``dcore_check`` to refine the energy range.
+After the energy range is fixed, we again perform the QMC calculation by ``dcore``. The final result looks like (c) in the
 above figure.
 
 Multi-band system

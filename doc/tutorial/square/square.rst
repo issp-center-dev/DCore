@@ -53,7 +53,7 @@ If X window is not available or you prefer plotting in a file, use ``--output`` 
 
    $ dcore_check dmft_square.ini --output=check.pdf
 
-The extension can be eps, jpg, etc.
+The extension can be pdf, eps, jpg, png, etc.
 
 .. We can find the following standard output.
 
