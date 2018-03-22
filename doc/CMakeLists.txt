@@ -11,7 +11,7 @@ add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${doc_sources} py_copy
 option(DOC_SPELLING "Activate spellcheck for documentations" OFF)
 if (DOC_SPELLING)
     set(sphinx_spelling_out ${CMAKE_CURRENT_BINARY_DIR}/spelling/output.txt)
-    add_custom_command(OUTPUT ${sphinx_spelling_out} DEPENDS ${doc_sources} py_copy
+    add_custom_command(OUTPUT ${sphinx_spelling_out} DEPENDS ${doc_sources} py_copy spelling_wordlist.txt
                    COMMAND ${CMAKE_BINARY_DIR}/build_pytriqs ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -b spelling ${CMAKE_CURRENT_SOURCE_DIR} spelling)
 endif ()
 add_custom_target(doc_sphinx ALL DEPENDS ${sphinx_top} ${sphinx_spelling_out})
