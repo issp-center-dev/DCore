@@ -201,14 +201,13 @@ because these moves are disabled in the default setting.
 Pade approximation for DOS and spectrum function
 ------------------------------------------------
 
-DCore currently support the Pade approximation for the numerical continuation
-in the calculation of the spectrum function.
+To obtain spectral functions, we need to perform analytical continuation from Matsubara frequency to real frequency.
+Currently, the Pade approximation is the only choice for the analytical continuation.
 
-The reference grid points for the numerical continuation are specified with the parameter
-``omega_pade`` in the ``[tool]`` block.
-The good choice of ``omega_pade`` is the maximum frequency
+There is one control parameter for Pade approximation, ``omega_pade`` in the ``[tool]`` block. It specifies an energy cutoff for Matsubara frequency.
+A reasonable choice of ``omega_pade`` is the maximum frequency
 before the self energy becomes noisy.
-For example, we can find that ``omega_pade=4.0`` may be a good choice from (a) of the above figure.  
+For example, in the case of figure (a) above, we can find that ``omega_pade=4.0`` is reasonable.
 
 Legendre filter
 ---------------
