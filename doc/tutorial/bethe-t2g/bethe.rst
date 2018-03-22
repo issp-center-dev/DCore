@@ -3,10 +3,10 @@ Tutorial with t2g Bethe lattice
 
 :download:`dmft_bethe.ini <dmft_bethe.ini>`
 
-An interesting phenomena in multi-orbital models in spin-freezing phenomena found in
-`P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.101.166405>`_.
-They solved a t2g three-orbital model on a bethe lattice by means of DMFT.
-The so-called spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: :math:`\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}`.
+An interesting phenomena called spin-freezing transition occurs in multi-orbital models
+[`P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.101.166405>`_].
+The spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: :math:`\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}`.
+In this tutorial, we solve the three-orbital model on a Bethe lattice to reproduce the results in the above reference.
 
 .. literalinclude:: dmft_bethe.ini
    :language: ini
@@ -33,7 +33,7 @@ DMFT loop : ``dcore``
 ---------------------
 
 The DMFT loop is performed by ``dcore`` program.
-In this tutorial, we use continuous-time QMC implementaion of ALPSCore/CT-HYB.
+In this tutorial, we use continuous-time QMC implementation of ALPSCore/CT-HYB.
 The runtime of the impurity solver is set to 300 sec.
 You should not use the Hubbard-I solver for a metallic system because the Hubbard-I solver always gives an insulating self-energy.
 One can run the program by
@@ -46,7 +46,7 @@ One can run the program by
 
 We run this sample with 24 MPI processes.
 Each self-consistent step takes around 5 min,
-most of which is spend for solving an impurity problem by QMC.
+most of which is spent for solving an effective impurity problem by QMC.
 40 iterations take around 200 min.
 Results for the self-energy and Green's function in each iteration are accumulated into a h5 file named *seedname*.out.h5 (``bethe.out.h5`` in the present case).
 
