@@ -1,135 +1,26 @@
 .. _inputformat:
 
-Input-file format and usage
-===========================
-
-Usage
------
-
-The following programs can read the same input file.
-
-Pre-processing : ``dcore_pre``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This program generates model HDF5 file (*seedname*.h5).
-It must be executed before the main program, ``dcore``, runs.
-This program reads ``[model]`` and ``[system]`` block.
-
-::
-
-   $ dcore_pre input-file
-
-Main program : ``dcore``
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-This program performs DMFT cycle and output the self energy etc. into a HDF
-file (*seedname*.out.h5).
-This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[control]`` block.
-
-::
-
-   $ dcore input-file
-
-Convergence-check : ``dcore_check``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This program can be used for checking the convergence of the DMFT loop.
-This program reads ``[model]`` and ``[tool]`` block.
-
-::
-
-   $ dcore_check input-file
-
-``dcore_check`` shows the history of the chemical potential and the
-average of the self energy at imaginary frequency,
-
-.. math::
-
-   \Sigma_{\rm Ave} (i \omega_n) = 
-   \left[\sum_i^{\rm shell} \sum_{\alpha \beta}^{N_{\rm orb}^i} \Sigma_{\alpha \beta}(i\omega)\right]
-   /\left[\sum_i^{\rm shell} N_{\rm orb}^{i}\right],
-
-at the last seven iterations.
-
-.. image:: ../tutorial/square/convergence.png
-   :width: 500
-   :align: center
-
-The maximum frequency of this plot is specified with the parameter ``omega_check``
-in the ``[tool]`` block.
-
-Also, this program generates a text file, *seedname*\ ``_sigma.dat``, which contains
-the local self energy at the final step as follows:
-
-::
-
-   # Local self energy at imaginary frequency
-   # [Column] Data
-   # [1] Frequency
-   # [2] Re(Sigma_{shell=0, spin=up, 0, 0})
-   # [3] Im(Sigma_{shell=0, spin=up, 0, 0})
-   # [4] Re(Sigma_{shell=0, spin=down, 0, 0})
-   # [5] Im(Sigma_{shell=0, spin=down, 0, 0})
-   -157.001093 0.994751 0.006358 0.994751 0.006358
-   -156.844013 0.994751 0.006365 0.994751 0.006365
-   -156.686934 0.994751 0.006371 0.994751 0.006371
-   :
-           
-Post-processing : ``dcore_post``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This program compute the total DOS (*seedname*_dos.dat) and *k*\ -resolved spectral function
-(*seedname*_akw.dat) from the outputted HDF5 file (*seedname*.out.h5).
-This program reads ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` block.
-
-.. code-block:: bash
-
-   $ dcore_post input-file
-
-The computed spectral function can be drawn as
-   
-.. code-block:: bash
-
-   $ gnuplot [seedname]_akw.gp
-
-This GnuPlot script displays also the original (DFT) band structure as follows if either
-*seedname*\_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.
-
-.. image:: ../tutorial/srvo3_qe/akw_srvo3.png
-   :width: 500
-   :align: center
-
-"+" indicates the original band structure.
-The original band structure is shifted with the chemical potential specified by
-``mu`` parameter in ``[system]`` block.
-
-List of input and output
-------------------------
-
-================= ================================================== ====================
-Program           Input parameters                                   Output HDF files
-================= ================================================== ====================
-``dcore_pre``     [model], [system]                                  *seedname*.h5
-``dcore``         [model], [system], [impurity-solver], [control]    *seedname*.out.h5
-``dcore_check``   [model], [tool]                                    ---
-``dcore_post``    [model], [system], [impurity-solver], [tool]       ---
-================= ================================================== ====================
-
 Input-file format
------------------
+=================
+
+The input file is construced of five blocks, ``[model]``, ``[system]``, ``[impurity]``, ``[control]`` and ``[tool]``.
+The example of the input file is shown as follows:
 
 .. literalinclude:: ../tutorial/nis/nis.ini
    :language: ini
 
+The details of each block will be described below.
+	      
 [model] block
 ~~~~~~~~~~~~~
 
-dcore_pre, dcore_check and dcore_post read this block.
+``dcore_pre``, ``dcore_check`` and ``dcore_post`` read this block.
 
 .. include:: model_desc.txt
 
-Prepare model for DCore.
-Wannier90 as well as the following preset models:
+A model for DCore is defined in this block.
+You can choose the type of lattice by setting ``lattice``.
+The following preset models are defined:
 
 * chain
 
@@ -138,15 +29,19 @@ Wannier90 as well as the following preset models:
 * cubic
 
 * bethe
+  
   Semicircular DOS with energy ranges [-2t:2t].
 
 * wannier90
+  
   Read hopping parameters from the Wannier90 output.
 
 .. image:: model.png
    :width: 700
    :align: center
 
+Model Hamiltonian is defined as
+   
 .. math::
 
    {\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
@@ -190,8 +85,8 @@ is specified by the parameter ``interaction``.
      kanamori = [(U_1, U'_1, J_1), (U_2, U'_2, J_2), ... ]
 
   For example, if there are two correlated shells that have
-  :math:`(U, U', J) = (4, 2, 1)` and :math:`(U, U', J) = (6, 3, 1.5)`, respectovely,
-  the input parameter becomes
+  :math:`(U, U', J) = (4, 2, 1)` and :math:`(U, U', J) = (6, 3, 1.5)`, respectively,
+  you need to set the input parameters as
 
   ::
 
@@ -200,9 +95,9 @@ is specified by the parameter ``interaction``.
 
 * If ``interaction = slater_f``
 
-  In this case, the interaction matrix is constructed by the effective Slater integrals
+  For example, in this case, the interaction matrix is constructed by the effective Slater integrals
   :math:`F_0, F_2, F_4, F_6`.
-  These Slater integrals amd angular mementum at each correlated shell
+  These Slater integrals and the angular mementum at each correlated shell
   are specified by the parameter ``slater_f`` as follows
 
   ::
@@ -211,7 +106,7 @@ is specified by the parameter ``interaction``.
      slater_f = [(angular_momentum, F_0, F_2, F_4, F6), ... ]
 
   For example, if there are two correlated shells,
-  one has d-orbital with :math:`(F_0, F_2, F_4) = (2, 1, 0.5)` amd
+  one has d-orbital with :math:`(F_0, F_2, F_4) = (2, 1, 0.5)` and
   the other has p-orbital with :math:`(F_0, F_2) = (3, 1.5)`,
   the input parameter becomes
 
@@ -266,7 +161,7 @@ is specified by the parameter ``interaction``.
   Use the output by `RESPACK <https://sites.google.com/view/kazuma7k6r>`_.
   **Under construction.**
 
-If we want to treat only the density-density part
+If you want to treat only the density-density part
 
 .. math::
 
@@ -283,7 +178,7 @@ If we want to treat only the density-density part
    U^{i}_{\alpha \beta \beta \alpha}
    c_{i \alpha \sigma}^\dagger c_{i \beta \sigma}^\dagger c_{i \alpha \sigma} c_{i \beta \sigma},
 
-we specify the parameter ``density-density`` as
+you specify the parameter ``density-density`` as
 
 ::
 
@@ -297,7 +192,7 @@ we specify the parameter ``density-density`` as
 [system] block
 ~~~~~~~~~~~~~~
 
-dcore_pre and dcore read this block.
+``dcore_pre`` and ``dcore`` read this block.
 
 .. include:: system_desc.txt
 

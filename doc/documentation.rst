@@ -34,11 +34,13 @@ Reference manual
 
 .. toctree::
    :maxdepth: 3
-   
-   reference/input
 
+   reference/programs
+   reference/input
+	      
 Reference of python module (for developers)
-      
+-------------------------------------------
+
 .. toctree::
    :maxdepth: 2
 
