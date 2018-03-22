@@ -75,3 +75,4 @@ struct
 init
 rtype
 wannierize
+numpy

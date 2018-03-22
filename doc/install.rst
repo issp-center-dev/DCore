@@ -39,6 +39,16 @@ ALPSCore/CT-HYB is a standalone program with an interface based on text and HDF5
 
       ::
 
+   .. note::
+
+      Both of ALPSCore/CT-HYB and TRIQS/cthyb implement the hybridization-expansion continuous-time quantum Monte Carlo method.
+      The main difference is the reliability of measurement of the single-particle Green's function.
+      ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
+      The non-worm conventional sampling, which is implemented in TRIQS/cthyb,
+      may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).
+      More importantly, the main developer of ALPSCore/CT-HYB, H. Shinaoka, is one of the developers of DCore.
+
+      ::
 
 Installation steps 
 ------------------

@@ -60,7 +60,7 @@ We will wannierize Pb 6p orbitals.
 .. note::
 
    For the following DMFT calculation,
-   the projection of the Wannier function should be the correct order, namely,
+   the projections of the Wannier functions should be given in the correct order, namely,
 
    ::
 
