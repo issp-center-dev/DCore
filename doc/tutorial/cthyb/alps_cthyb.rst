@@ -18,8 +18,8 @@ In DCore calculations, you may specify the following two parameters.
    **This parameter affects the statistical error and run time.**
    **In most cases, this is the only one parameter you have to specify.**
  
-   Total simulation time (in units of second) including thermalizatin process.
-   Please run longer to reduce statistical noize.
+   Total simulation time (in units of second) including thermalization process.
+   Please run longer to reduce statistical noise.
 
  
  * ``thermalization_time{int}``
@@ -28,4 +28,4 @@ In DCore calculations, you may specify the following two parameters.
  
    Length of the thermalization steps in units of second.
    The default value is 10 % of max_time, which is a reasonable choice in most cases.
-   Thus, we recommend to use the default value unless the solver complains about thermization time.
+   Thus, we recommend to use the default value unless the solver complains about thermalization time.

@@ -3,7 +3,7 @@
 Pb with spin-orbit interaction
 ==============================
 
-In this tutrial, we perform the DMFT calculation of Pb with the spin-orbit interaction.
+In this tutorial, we perform the DMFT calculation of Pb with the spin-orbit interaction.
 
 SCF calculation of Quantum ESPRESSO
 -----------------------------------
@@ -51,7 +51,7 @@ Pre-process for Wannier90
 
 Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.
-We will wannieriza Pb 6p orbitals.
+We will wannierize Pb 6p orbitals.
 
 :download:`pb.win <pb.win>`
 
@@ -59,7 +59,7 @@ We will wannieriza Pb 6p orbitals.
 
 .. note::
 
-   For the followin DMFT calculation,
+   For the following DMFT calculation,
    the projection of the Wannier function should be the correct order, namely,
 
    ::

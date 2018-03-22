@@ -9,7 +9,7 @@ Installation
 Prerequisites
 -------------
 
-#. The :ref:`TRIQS <triqslibs:welcome>` libarary and
+#. The :ref:`TRIQS <triqslibs:welcome>` library and
    :ref:`DFTTools <triqsdfttools:dft>` must be installed in advance.
    In the following, we will suppose that they are installed in the ``path_to_triqs`` directory.
 

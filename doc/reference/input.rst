@@ -3,7 +3,7 @@
 Input-file format
 =================
 
-The input file is construced of five blocks, ``[model]``, ``[system]``, ``[impurity]``, ``[control]`` and ``[tool]``.
+The input file is constructed of five blocks, ``[model]``, ``[system]``, ``[impurity]``, ``[control]`` and ``[tool]``.
 The example of the input file is shown as follows:
 
 .. literalinclude:: ../tutorial/nis/nis.ini
@@ -97,7 +97,7 @@ is specified by the parameter ``interaction``.
 
   For example, in this case, the interaction matrix is constructed by the effective Slater integrals
   :math:`F_0, F_2, F_4, F_6`.
-  These Slater integrals and the angular mementum at each correlated shell
+  These Slater integrals and the angular momentum at each correlated shell
   are specified by the parameter ``slater_f`` as follows
 
   ::

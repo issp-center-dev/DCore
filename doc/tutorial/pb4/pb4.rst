@@ -61,7 +61,7 @@ Pre-process for Wannier90
 
 Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.
-We will wannieriza Pb 6p orbitals.
+We will wannierize Pb 6p orbitals.
 
 :download:`pb4.win <pb4.win>`
 
@@ -69,7 +69,7 @@ We will wannieriza Pb 6p orbitals.
 
 .. note::
 
-   For the followin DMFT calculation,
+   For the following DMFT calculation,
    the projection of the Wannier function should be the correct order, namely,
 
    ::
