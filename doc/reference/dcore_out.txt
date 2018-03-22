@@ -1,0 +1,12 @@
+=================== =========== ================================================================================================
+Name                Type        Description                                                                                     
+=================== =========== ================================================================================================
+iterations          Int		The total number of iteration step.
+G_iw		    Group	The local impurity Green’s function in imaginary frequencies.
+Sigma_iw	    Group	The local impurity self-energy in imaginary frequencies.
+chemical_potential  Group	The chemical potential at each iteration step.
+G0-log		    Group	The Weiss field at each iteration step.
+G-log		    Group	The local impurity  Green’s function in imaginary frequencies at each iteration step.
+Sigma-log	    Group	The local impurity self-energy in imaginary frequencies at each iteration step.
+parameters	    Group	The information of input parameters.
+=================== =========== ================================================================================================

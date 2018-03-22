@@ -37,6 +37,7 @@ Reference manual
 
    reference/programs
    reference/input
+   reference/output
 	      
 Reference of python module (for developers)
 -------------------------------------------
