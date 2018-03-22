@@ -3,6 +3,6 @@ Name          Type        Default   Description
 ============= =========== ========= ============================================================================
 delta_mix     Float       0.5       Mixing parameter for hybridization function                                 
 max_step      Integer     100       Maximum steps of DMFT loops                                                 
-restart       Bool        False     Whether or not restart from a previous calculation stored in a HDF file.    
+restart       Bool        False     If true, calculation restarts from a previous calculation stored in a HDF file.    
 sigma_mix     Float       0.5       Mixing parameter for self-energy                                            
 ============= =========== ========= ============================================================================

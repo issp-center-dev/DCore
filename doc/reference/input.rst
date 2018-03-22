@@ -95,7 +95,7 @@ is specified by the parameter ``interaction``.
 
 * If ``interaction = slater_f``
 
-  For example, in this case, the interaction matrix is constructed by the effective Slater integrals
+  In this case, the interaction matrix is constructed by the effective Slater integrals 
   :math:`F_0, F_2, F_4, F_6`.
   These Slater integrals and the angular momentum at each correlated shell
   are specified by the parameter ``slater_f`` as follows
@@ -108,7 +108,7 @@ is specified by the parameter ``interaction``.
   For example, if there are two correlated shells,
   one has d-orbital with :math:`(F_0, F_2, F_4) = (2, 1, 0.5)` and
   the other has p-orbital with :math:`(F_0, F_2) = (3, 1.5)`,
-  the input parameter becomes
+  you need to set the input parameter as
 
   ::
 
@@ -116,12 +116,12 @@ is specified by the parameter ``interaction``.
      slater_f = [(2, 2.0, 1.0, 0.5, 0.0), (1, 3.0, 1.5 0.0, 0.0)]
 
   .. note::
-   
-     Even when we compute the s, p, d orbital, we have to specify all of :math:`F_0, F_2, F_4, F_6`.
+     
+     You must specify all of :math:`F_0, F_2, F_4, F_6`.
      
 * If ``interaction = slater_uj``
       
-  Also in this case, the Slater-type interaction is used.
+  In this case, the Slater-type interaction is used.
   The effective Slater integrals are computed with the following formulae:
 
   * :math:`l = 1`
@@ -198,7 +198,7 @@ you specify the parameter ``density-density`` as
 
 If the parameter ``with_dc`` is specified to ``True``,
 the following part of the self-energy is subtracted to avoid the double-counting error of
-the self energy.
+the self-energy.
 
 .. math::
 
@@ -235,6 +235,6 @@ dcore reads this block.
 [tool] block
 ~~~~~~~~~~~~
 
-dcore_check and dcore_post reads this block.
+dcore_check and dcore_post read this block.
 
 .. include:: tool_desc.txt
