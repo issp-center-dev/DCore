@@ -14,7 +14,7 @@ Authors & Quotation
 **Developers**: H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, T. Kato
 
 **Related papers**:
-This package depends on TRIQS libraries and applications (and ALPSCore libraries in a future version).
+This package depends on TRIQS libraries and applications.
 Please cite relevant papers for these original libraries.
 
 * `TRIQS libraries <https://triqs.ipht.cnrs.fr/1.x/about.html>`_
@@ -24,8 +24,9 @@ In addition to the above two libraries, you may use impurity solvers listed belo
 
 * `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/about.html>`_
 * `TRIQS/hubbardI <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/about.html>`_
+* `ALPSCore/CT-HYB <https://github.com/ALPSCore/CT-HYB/wiki/Citation>`_
 
-These applications are scientific works by triqs's team. In order to help you, they provide a BibTeX entry for each paper in the above cites.
+For some of them, they provide a BibTeX entry for each paper in the above cites.
 
 Disclaimer
 ==========
