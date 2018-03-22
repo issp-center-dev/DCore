@@ -1,12 +1,13 @@
 =================== =========== ================================================================================================
-Name                Type        Description                                                                                     
+Name                Type        Description
 =================== =========== ================================================================================================
-iterations          Int		The total number of iteration step.
-G_iw		    Group	The local impurity Green’s function in imaginary frequencies.
-Sigma_iw	    Group	The local impurity self-energy in imaginary frequencies.
-chemical_potential  Group	The chemical potential at each iteration step.
-G0-log		    Group	The Weiss field at each iteration step.
-G-log		    Group	The local impurity  Green’s function in imaginary frequencies at each iteration step.
-Sigma-log	    Group	The local impurity self-energy in imaginary frequencies at each iteration step.
-parameters	    Group	The information of input parameters.
+iterations          Int		The total number of iteration steps.
+chemical_potential  float	The chemical potential at each iteration step.
+G_iw		    Group	The local Green’s function in imaginary-frequency domain.
+Sigma_iw	    Group	The local self-energy in imaginary-frequency domain.
+Delta_iw	    Group	The hybridization function (Weiss field) in the DMFT.
+G0-log		    Group	The non-interacting local Green's function at each iteration step.
+G-log		    Group	The local Green’s function in imaginary frequencies at each iteration step.
+Sigma-log	    Group	The local self-energy in imaginary frequencies at each iteration step.
+parameters	    Group	All input parameters read from ini file.
 =================== =========== ================================================================================================
