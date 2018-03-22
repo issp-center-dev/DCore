@@ -5,7 +5,7 @@
    :align: center
 
 DCore is a DMFT (Dynamical Mean Field Theory) driver which works together with other
-first-principles program packages.
+first-principles program packages with the help of TRIQS/DFTTools.
 DCore supports input hopping parameters as the wannier90 format.
 It can also perform calculation of simple preset models (such as the Bethe lattice);
 it can be used for the practice of this code.

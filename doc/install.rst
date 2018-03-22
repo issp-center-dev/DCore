@@ -14,7 +14,7 @@ Prerequisites
    In the following, we will suppose that they are installed in the ``path_to_triqs`` directory.
 
 #. You will also need at least one impurity solver.
-   At present, ``DCore`` supports the following program:
+   At present, ``DCore`` supports the following programs:
 
    - `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
 
@@ -25,12 +25,19 @@ Prerequisites
    .. note::
 
       If you want to treat the spin-orbit coupling in `TRIQS/cthyb` solver,
-      the following CMake options are necessary:
+      it must be built with the following CMake options:
 
       ::
 
          -DHYBRIDISATION_IS_COMPLEX=ON -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON
-   
+
+   .. note::
+
+      One must build ALPSCore, TRIQS, TRIQS/DFTTools, and other solvers with the same C++ compiler and the same C++ standard (C++14).
+
+      ::
+
+
 Installation steps 
 ------------------
 
@@ -55,8 +62,9 @@ Installation steps
 Version compatibility 
 --------------------- 
  
-Be careful that the version of the TRIQS library and of the dft tools must be 
-compatible (more information on the :ref:`TRIQS website <triqslibs:welcome>`). 
+The current version of DCore supports TRIQS 1.4, and ALPSCore 2.1 or later.
+Be careful that the version of the TRIQS library and of the dft tools must be
+compatible (more information on the :ref:`TRIQS website <triqslibs:welcome>`).
 If you want to use a version of the dft tools that is not the latest one, go
 into the directory with the sources and look at all available versions:: 
  

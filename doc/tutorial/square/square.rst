@@ -22,12 +22,12 @@ The script ``dcore_pre`` is invoked for this purpose:
 .. Then it outputs model HDF5 file (``square.h5``).
 .. Parameters in [model] and [system] blocks are reads in the input file.
       
-If succeeded, a h5 file named *seedname*.h5 (``square.h5`` in the present case) is generated.
+Then, a h5 file named *seedname*.h5 (``square.h5`` in the present case) will be generated.
 
 DMFT loop : ``dcore``
 ---------------------
 
-The DMFT loop is performed by ``dcore`` program.
+One can perform a DMFT self-consistent calculation with ``dcore`` program.
 In this tutorial, we use the Hubbard-I solver just for simplicity.
 One can run the program by
 
@@ -37,10 +37,10 @@ One can run the program by
 
 .. Then it generates the result HDF5 file.
       
-It takes several minutes. You may run it with MPI to save time.
+It takes several minutes. You may run it with MPI to reduce the computational time.
 Results for the self-energy and Green's function in each iteration are accumulated into a h5 file named *seedname*.out.h5 (``square.out.h5`` in the present case).
 
-One can check convergence of DMFT loop by using ``dcore_check`` program.
+One can check convergence of the self-consistent calculation by using ``dcore_check`` program.
 You can run it with the following command, if X window system is available:
 
 .. code-block:: bash
@@ -80,7 +80,7 @@ The extension can be pdf, eps, jpg, png, etc.
    :width: 500
    :align: center
 
-If those results are not converged, one can repeat the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iterations.
+If those results are not yet converged, one can continue the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iterations.
 
 Spectral function : ``dcore_post``
 ----------------------------------
