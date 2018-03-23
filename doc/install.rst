@@ -57,15 +57,15 @@ Installation steps
 
 #. Download the sources from github :: 
  
-     $ git clone https://github.com/issp-center-dev/DCore.git src
+     $ git clone https://github.com/issp-center-dev/DCore.git dcore.src
  
 #. Create an empty build directory where you will compile the code:: 
  
-     $ mkdir build && cd build 
+     $ mkdir dcore.build && cd dcore.build 
  
 #. In the build directory call cmake specifying where the TRIQS library is installed:: 
  
-     $ cmake -DTRIQS_PATH=path_to_triqs ../src 
+     $ cmake -DTRIQS_PATH=path_to_triqs ../dcore.src 
  
 #. Compile the code, run the tests and install the application:: 
  

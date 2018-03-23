@@ -110,7 +110,49 @@ DMFT calculation
 
 .. literalinclude:: pb.ini
    :language: ini
-                              
+
+
+.. note::
+   
+   In this tutorial, ``Hubbard-I`` solver is selected to calculate fast.
+   However, in actual calculation, ``QMC`` method is more suitable for metallic state.
+   Thus, we recommend that you run the DMFT calculation and check the results by using ``QMC`` solver (``TRIQS/cthyb`` or ``ALPS/cthyb``).
+   In the following, modified parts of ``pb.ini`` to use the ``QMC`` solver are shown.
+
+   - TRIQS/cthyb
+     
+     ::
+      
+	[impurity_solver]
+	name = TRIQS/cthyb
+	n_cycles{int} = 100000
+	n_warmup_cycles{int} = 10000
+	length_cycle{int} = 500
+	move_double{bool} = True
+	verbosity{int} = 10
+
+   - ALPS/cthyb
+     
+     ::
+      
+	[impurity_solver]
+	name = ALPS/cthyb
+	max_time{int} = 1200
+	thermalization_time{int} = 120
+	basis_rotation{int} = 1
+	verbosity{int} = 1
+
+   - Common change in ``[tool]`` box
+   
+     ::
+      
+	[tool]
+	omega_pade = 10.0
+
+   You also notice that simple interaction is selected in this tutorial.
+   When you want to calculate by using more realistic interactions,
+   please try to use **RESPACK** to obtain the interactions.
+      
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
 
