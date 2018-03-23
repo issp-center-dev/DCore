@@ -32,4 +32,5 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DEST
  PATTERN "*.txt"
  PATTERN "*.inv"
  PATTERN "*.bib"
+ PATTERN "*.ini"
  )
