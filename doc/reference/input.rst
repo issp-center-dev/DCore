@@ -65,6 +65,7 @@ is specified by the parameter ``interaction``.
   In this case, the Kanamori-type interaction is used, i.e.
 
   .. math::     
+     :nowrap:
      \begin{align}
      U_{\alpha \alpha \alpha \alpha} &= U,
      \\
