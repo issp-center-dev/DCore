@@ -63,7 +63,7 @@ at the last seven iterations.
 The maximum frequency of this plot is specified with the parameter ``omega_check``
 in the ``[tool]`` block.
 
-Also, this program generates a text file, *seedname*_sigma.dat, which contains
+Also, this program generates a text file, *seedname*\_sigma.dat, which contains
 the local self energy at the final step as follows:
 
 ::
@@ -83,7 +83,7 @@ the local self energy at the final step as follows:
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This program computes the total DOS (*seedname*\_dos.dat) and *k*-resolved spectral function　(*seedname*_akw.dat) from the outputted HDF5 file (*seedname*.out.h5).
+This program computes the total DOS (*seedname*\_dos.dat) and *k*-resolved spectral function　(*seedname*\_akw.dat) from the outputted HDF5 file (*seedname*.out.h5).
 This program reads the parameters defined in the ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` blocks.
 
 .. code-block:: bash
