@@ -63,7 +63,7 @@ at the last seven iterations.
 The maximum frequency of this plot is specified with the parameter ``omega_check``
 in the ``[tool]`` block.
 
-Also, this program generates a text file, *seedname*\ ``_sigma.dat``, which contains
+Also, this program generates a text file, *seedname*_sigma.dat, which contains
 the local self energy at the final step as follows:
 
 ::
@@ -83,7 +83,7 @@ the local self energy at the final step as follows:
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This program computes the total DOS (*seedname*_dos.dat) and *k*\ -resolved spectral function
+This program computes the total DOS (*seedname*_dos.dat) and *k*-resolved spectral function
 (*seedname*_akw.dat) from the outputted HDF5 file (*seedname*.out.h5).
 This program reads the parameters defined in the ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` blocks.
 
@@ -98,7 +98,7 @@ The computed spectral function can be drawn by
    $ gnuplot [seedname]_akw.gp
 
 Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
-*seedname*\_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.
+*seedname*_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.
 
 .. image:: ../tutorial/srvo3_qe/akw_srvo3.png
    :width: 500
