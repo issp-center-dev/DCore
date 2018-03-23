@@ -155,7 +155,7 @@ DMFT setup: dcore_pre
 
    $ dcore_pre nis.ini
 
-Running self-consistent DFT+DMFT : dcore
+Running self-consistent DMFT calculation: dcore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
