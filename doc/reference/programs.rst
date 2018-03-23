@@ -83,8 +83,7 @@ the local self energy at the final step as follows:
 Post-processing : ``dcore_post``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This program computes the total DOS (*seedname*_dos.dat) and *k*-resolved spectral function
-(*seedname*_akw.dat) from the outputted HDF5 file (*seedname*.out.h5).
+This program computes the total DOS (*seedname*_dos.dat) and *k*-resolved spectral function　(*seedname*_akw.dat) from the outputted HDF5 file (*seedname*.out.h5).
 This program reads the parameters defined in the ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` blocks.
 
 .. code-block:: bash
