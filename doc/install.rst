@@ -20,7 +20,7 @@ Prerequisites
 
    - `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
 
-   - `ALPSCore/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_ + `triqs_interface <https://github.com/shinaoka/triqs_interface>`_<br>
+   - `ALPSCore/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_ + `triqs_interface <https://github.com/shinaoka/triqs_interface>`_
 ALPSCore/CT-HYB is a standalone program with an interface based on text and HDF5 files.
 "triqs_interface" is a TRIQS-compatible Python interface of ALPSCore/CT-HYB.
 
@@ -53,7 +53,7 @@ ALPSCore/CT-HYB is a standalone program with an interface based on text and HDF5
 Installation steps 
 ------------------
 
-#. Download the sources from github:: 
+#. Download the sources from github :: 
  
      $ git clone https://github.com/issp-center-dev/DCore.git src
  

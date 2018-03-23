@@ -28,6 +28,11 @@ In addition to the above two libraries, you may use impurity solvers listed belo
 
 For some of them, they provide a BibTeX entry for each paper in the above cites.
 
+GitHub repository
+=================
+
+You can download the source code of **DCore** from https://github.com/issp-center-dev/DCore.
+
 Disclaimer
 ==========
 
