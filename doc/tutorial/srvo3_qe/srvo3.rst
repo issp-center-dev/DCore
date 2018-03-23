@@ -5,7 +5,7 @@ SrVO\ :sub:`3`
 
 .. note::
 
-   This tutorial requires large computational resources or the long simulation time.
+   This tutorial requires large computational resources or long simulation time.
 
 Crystal structure of SrVO\ :sub:`3` (drawn by `VESTA <http://jp-minerals.org/vesta/en/>`_).
 
@@ -95,15 +95,15 @@ The input file is the same as that for the pre-processing run.
 
 .. code-block:: bash
                 
-   $ wannier90 srvo3 
+   $ wannier90.x srvo3 
 
 (Optional) Check wannierization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
 
-If we want to check the quality of the wannierization,
-we plot the original and the wannier-interpolated band structure simultaneously.
+If you want to check the quality of the wannierization,
+you can plot the original and the wannier-interpolated band structure simultaneously.
 
-First, we compute the band structure with the following input file:
+First, compute the band structure with the following input file:
 
 :download:`band_srvo3.in <band_srvo3.in>`
 
@@ -154,7 +154,7 @@ DMFT setup: dcore_pre
 
    $ dcore_pre srvo3.ini
 
-Running self-consistent DFT+DMFT : dcore
+Running self-consistent DMFT calculation: dcore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash

@@ -8,7 +8,7 @@ In this tutorial, we demonstrate the calculation of SrVO\ :sub:`3`.
 
 .. note::
 
-   This tutorial requires large computational resources or the long simulation time.
+   This tutorial requires large computational resources or long simulation time.
 
 SCF computation and Wannier with OpenMX
 ---------------------------------------
@@ -53,7 +53,7 @@ DMFT setup: dcore_pre
 
    $ dcore_pre srvo3.ini
 
-Running self-consistent DFT+DMFT : dcore
+Running self-consistent DMFT calculation: dcore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash

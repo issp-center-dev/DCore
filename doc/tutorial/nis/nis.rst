@@ -111,10 +111,10 @@ The input file is the same as that for the pre-processing run.
 (Optional) Check wannierization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
 
-If we want to check the quality of the wannierization,
-we plot the original and the wannier-interpolated band structure simultaneously.
+If you want to check the quality of the wannierization,
+you can plot the original and the wannier-interpolated band structure simultaneously.
 
-First, we compute the band structure with the following input file:
+First, compute the band structure with the following input file:
 
 :download:`band_nis.in <band_nis.in>`
 
