@@ -155,7 +155,7 @@ DMFT setup: dcore_pre
 
    $ dcore_pre srvo3_respack.ini
 
-Running self-consistent DFT+DMFT : dcore
+Running the DMFT calculation: dcore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
@@ -167,7 +167,7 @@ Post-processing and data analysis: dcore_post
 
 .. code-block :: bash
 
-   $ dcore_post srvo3.ini
+   $ dcore_post srvo3_respack.ini
    $ sed -e "s/every 10/every 3/g" srvo3_akw.gp
    $ gnuplot nis_akw.gp
 
