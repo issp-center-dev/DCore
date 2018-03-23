@@ -106,7 +106,7 @@ The input file is the same as that for the pre-processing run.
 
 .. code-block:: bash
                 
-   $ wannier90 nis
+   $ wannier90.x nis
 
 (Optional) Check wannierization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
