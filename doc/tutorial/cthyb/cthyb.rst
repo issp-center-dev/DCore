@@ -84,7 +84,7 @@ The following script is an example to describe the procedure for searching appro
        mv bethe_sigma.dat cyc${n_cycles[i]}_warm${n_warmup_cycles[i]}_len${length_cycle[i]}.dat
    done
 
-Then, we use GnuPlot as
+Then, we use gnuplot as
 
 .. code-block:: gnuplot
 
