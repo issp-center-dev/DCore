@@ -103,7 +103,7 @@ is specified by the parameter ``interaction``.
   ::
 
      interaction = slater_f
-     slater_f = [(angular_momentum, F_0, F_2, F_4, F6), ... ]
+     slater_f = [(angular_momentum, F_0, F_2, F_4, F_6), ... ]
 
   For example, if there are two correlated shells,
   one has d-orbital with :math:`(F_0, F_2, F_4) = (2, 1, 0.5)` and
