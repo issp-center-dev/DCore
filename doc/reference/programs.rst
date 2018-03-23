@@ -97,7 +97,7 @@ The computed spectral function can be drawn by
    $ gnuplot [seedname]_akw.gp
 
 Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
-*seedname*_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.
+*seedname*\_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.
 
 .. image:: ../tutorial/srvo3_qe/akw_srvo3.png
    :width: 500
