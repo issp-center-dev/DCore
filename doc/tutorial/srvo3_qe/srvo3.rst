@@ -26,12 +26,12 @@ The pseudopotentials are downloaded from
 `O.pbe-n-kjpaw_psl.0.1.upf <http://theossrv1.epfl.ch/uploads/Main/NoBackup/O.pbe-n-kjpaw_psl.0.1.upf>`_.
 
 .. code-block:: bash
-                
-   $ mpirun -np 4 pw.x -in scf_srvo3.in 
+
+   $ mpirun -np 4 pw.x -in scf_srvo3.in
 
 Wannierization
---------------   
-   
+--------------
+
 Generate Bloch orbitals for the Wannier
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -53,8 +53,8 @@ where ``kmesh.pl`` is located in the `utility/` directory of Wannier90.
 Then, run ``pw.x`` as
 
 .. code-block:: bash
-                
-   $ mpirun -np 4 pw.x -in nscf_srvo3.in 
+
+   $ mpirun -np 4 pw.x -in nscf_srvo3.in
 
 Pre-process for Wannier90
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,8 +73,8 @@ This *k* grid is generated as follows:
    $ kmesh.pl 4 4 4 wan
 
 .. code-block:: bash
-                
-   $ wannier90.x -pp srvo3 
+
+   $ wannier90.x -pp srvo3
 
 QE to wannier90 interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,21 +84,21 @@ QE to wannier90 interface
 .. literalinclude:: pw2wan_srvo3.in
 
 .. code-block:: bash
-                
-   $ mpirun -np 4 pw2wan.x -in pw2wan_srvo3.in 
+
+   $ mpirun -np 4 pw2wan.x -in pw2wan_srvo3.in
 
 Wannier90
-~~~~~~~~~   
+~~~~~~~~~
 
 Execute ``wannier90.x`` for the actual wannierization.
 The input file is the same as that for the pre-processing run.
 
 .. code-block:: bash
-                
-   $ wannier90.x srvo3 
+
+   $ wannier90.x srvo3
 
 (Optional) Check wannierization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to check the quality of the wannierization,
 you can plot the original and the wannier-interpolated band structure simultaneously.
@@ -130,8 +130,8 @@ First, compute the band structure with the following input file:
    :align: center
 
 DMFT calculation
-----------------   
-   
+----------------
+
 :download:`srvo3.ini <srvo3.ini>`
 
 .. literalinclude:: srvo3.ini
@@ -146,7 +146,7 @@ Please see :ref:`howtocthyb` for the details of the parameter setting.
    (70 seconds per DMFT cycle on ISSP system B).
    If we want to compute by using 32 MPI processes at the same accuracy,
    ``n_cycles{int}`` should be 10000\*432/32=135000.
-                    
+
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -155,7 +155,7 @@ DMFT setup: dcore_pre
    $ dcore_pre srvo3.ini
 
 Running self-consistent DMFT calculation: dcore
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 

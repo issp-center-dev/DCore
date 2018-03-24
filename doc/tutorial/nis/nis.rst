@@ -19,12 +19,12 @@ The pseudopotentials are downloaded from
 `S.pbe-n-kjpaw_psl.0.1.upf <http://theossrv1.epfl.ch/uploads/Main/NoBackup/S.pbe-n-kjpaw_psl.0.1.upf>`_.
 
 .. code-block:: bash
-                
-   $ mpirun -np 4 pw.x -in scf_nis.in 
+
+   $ mpirun -np 4 pw.x -in scf_nis.in
 
 Wannierization
---------------   
-   
+--------------
+
 Generate Bloch orbitals for the Wannier
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -46,8 +46,8 @@ where ``kmesh.pl`` is located in the `utility/` directory of Wannier90.
 Then, run ``pw.x`` as
 
 .. code-block:: bash
-                
-   $ mpirun -np 4 pw.x -in nscf_nis.in 
+
+   $ mpirun -np 4 pw.x -in nscf_nis.in
 
 Pre-process for Wannier90
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,8 +75,8 @@ It is always required before pw2wannier.x runs.
       Non-correlated_shell_2
       :
       end projections
-      
-   
+
+
 This *k* grid is generated as follows:
 
 .. code-block:: bash
@@ -84,8 +84,8 @@ This *k* grid is generated as follows:
    $ kmesh.pl 4 4 4 wan
 
 .. code-block:: bash
-                
-   $ wannier90.x -pp nis 
+
+   $ wannier90.x -pp nis
 
 QE to wannier90 interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,21 +95,21 @@ QE to wannier90 interface
 .. literalinclude:: pw2wan_nis.in
 
 .. code-block:: bash
-                
-   $ mpirun -np 4 pw2wan.x -in pw2wan_nis.in 
+
+   $ mpirun -np 4 pw2wan.x -in pw2wan_nis.in
 
 Wannier90
-~~~~~~~~~   
+~~~~~~~~~
 
 Execute ``wannier90.x`` for the actual wannierization.
 The input file is the same as that for the pre-processing run.
 
 .. code-block:: bash
-                
+
    $ wannier90.x nis
 
 (Optional) Check wannierization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to check the quality of the wannierization,
 you can plot the original and the wannier-interpolated band structure simultaneously.
@@ -141,13 +141,13 @@ First, compute the band structure with the following input file:
    :align: center
 
 DMFT calculation
-----------------   
-   
+----------------
+
 :download:`nis.ini <nis.ini>`
 
 .. literalinclude:: nis.ini
    :language: ini
-                              
+
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -156,7 +156,7 @@ DMFT setup: dcore_pre
    $ dcore_pre nis.ini
 
 Running self-consistent DMFT calculation: dcore
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 

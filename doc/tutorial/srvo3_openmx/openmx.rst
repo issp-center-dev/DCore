@@ -18,19 +18,19 @@ SCF computation and Wannier with OpenMX
 .. literalinclude:: scf.dat
 
 .. code-block:: bash
-                
+
    $ openmx scf.dat
 
 Then, convert the OpenMX output to the wannier90 format.
 It can be performed with ``openmx2dcore`` utility as:
 
 .. code-block:: bash
-                
+
    $ openmx2dcore.py SrVO3 srvo3
 
 DMFT calculation
-----------------   
-   
+----------------
+
 :download:`srvo3.ini <srvo3_openmx.ini>`
 
 .. literalinclude:: srvo3_openmx.ini
@@ -45,7 +45,7 @@ Please see :ref:`howtocthyb` for the details of the parameter setting.
    (70 seconds per DMFT cycle on ISSP system B).
    If we want to compute by using 32 MPI processes at the same accuracy,
    ``n_cycles{int}`` should be 10000\*432/32=135000.
-                    
+
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -54,7 +54,7 @@ DMFT setup: dcore_pre
    $ dcore_pre srvo3.ini
 
 Running self-consistent DMFT calculation: dcore
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
