@@ -1,5 +1,3 @@
-.. _pbtutorial:
-
 Pb with spin-orbit interaction (multi-atom with QMC)
 ====================================================
 

@@ -35,8 +35,6 @@ Prerequisites
 
       One must build ALPSCore, TRIQS, TRIQS/DFTTools, and other solvers with the same C++ compiler and the same C++ standard (C++14).
 
-      ::
-
    .. note::
 
       ALPSCore/CT-HYB is a standalone program with an interface based on text and HDF5 files.
@@ -49,8 +47,6 @@ Prerequisites
       ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
       The non-worm conventional sampling, which is implemented in TRIQS/cthyb,
       may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).
-
-      ::
 
 Installation steps 
 ------------------

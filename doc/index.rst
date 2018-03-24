@@ -2,10 +2,8 @@
 
 .. module:: pytriqs.applications.dcore
 
-.. _dcore:
-
 DCore
-======
+=====
 
 `DCore <https://github.com/issp-center-dev/DCore>`_ is aimed at model calculations and ab-initio calculations by the dynamical mean-field theory (DMFT).
 This package consists of programs with text-based and hdf5-based interface.

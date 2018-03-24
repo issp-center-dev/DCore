@@ -10,7 +10,7 @@ The example of the input file is shown as follows:
    :language: ini
 
 The details of each block will be described below.
-	      
+
 [model] block
 ~~~~~~~~~~~~~
 

@@ -121,33 +121,33 @@ DMFT calculation
 
    - TRIQS/cthyb
      
-     ::
+      .. code-block:: ini
       
-	[impurity_solver]
-	name = TRIQS/cthyb
-	n_cycles{int} = 100000
-	n_warmup_cycles{int} = 10000
-	length_cycle{int} = 500
-	move_double{bool} = True
-	verbosity{int} = 10
+         [impurity_solver]
+         name = TRIQS/cthyb
+         n_cycles{int} = 100000
+         n_warmup_cycles{int} = 10000
+         length_cycle{int} = 500
+         move_double{bool} = True
+         verbosity{int} = 10
 
    - ALPS/cthyb
      
-     ::
+      .. code-block:: ini
       
-	[impurity_solver]
-	name = ALPS/cthyb
-	max_time{int} = 1200
-	thermalization_time{int} = 120
-	basis_rotation{int} = 1
-	verbosity{int} = 1
+         [impurity_solver]
+         name = ALPS/cthyb
+         max_time{int} = 1200
+         thermalization_time{int} = 120
+         basis_rotation{int} = 1
+         verbosity{int} = 1
 
    - Common change in ``[tool]`` box
    
-     ::
+      .. code-block:: ini
       
-	[tool]
-	omega_pade = 10.0
+         [tool]
+         omega_pade = 10.0
 
    You also notice that simple interaction is selected in this tutorial.
    When you want to calculate by using more realistic interactions,
