@@ -1,0 +1,353 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial with OpenMX &mdash; DCore 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/triqs.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/dcore.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="top" title="DCore 1.0.0 documentation" href="../../contents.html" />
+    <link rel="up" title="Documentation" href="../../documentation.html" />
+    <link rel="next" title="Pb with spin-orbit interaction" href="../pb/pb.html" />
+    <link rel="prev" title="SrVO3" href="../srvo3_qe/srvo3.html" />
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <script src="../../_static/cufon-yui.js" type="text/javascript"></script>
+    <script src="../../_static/spaceman.cufonfonts.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      Cufon.replace('.triqs', { fontFamily: 'spaceman', hover: true }); 
+    </script>
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+
+  </head>
+  <body role="document">
+<div class="pageheader">
+  <ul>
+    
+    <li><a href="../../install.html">Install</a></li>
+    
+    <li><a href="../../documentation.html">Documentation</a></li>
+    
+    <li><a href="../../issues.html">Issues</a></li>
+    
+    <li><a href="../../about.html">About DCore</a></li>
+    
+  </ul>
+  <div>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../../index.html">DCore</a></h1>
+    <span style="font-size: 14px; margin: 0px; padding: 0px;">integrated DMFT software for CORrelated Electrons</span>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pb/pb.html" title="Pb with spin-orbit interaction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../srvo3_qe/srvo3.html" title="SrVO3"
+             accesskey="P">previous</a> |</li>
+    <li><a href="../../index.html">Home</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial with OpenMX</a><ul>
+<li><a class="reference internal" href="#scf-computation-and-wannier-with-openmx">SCF computation and Wannier with OpenMX</a></li>
+<li><a class="reference internal" href="#dmft-calculation">DMFT calculation</a><ul>
+<li><a class="reference internal" href="#dmft-setup-dcore-pre">DMFT setup: dcore_pre</a></li>
+<li><a class="reference internal" href="#running-self-consistent-dmft-calculation-dcore">Running self-consistent DMFT calculation: dcore</a></li>
+<li><a class="reference internal" href="#post-processing-and-data-analysis-dcore-post">Post-processing and data analysis: dcore_post</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../srvo3_qe/srvo3.html"
+                        title="previous chapter">SrVO<sub>3</sub></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../pb/pb.html"
+                        title="next chapter">Pb with spin-orbit interaction</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/tutorial/srvo3_openmx/openmx.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tutorial-with-openmx">
+<h1>Tutorial with OpenMX<a class="headerlink" href="#tutorial-with-openmx" title="Permalink to this headline">¶</a></h1>
+<p>OpenMX is a first-principles program package based on
+the numerical localized basis set and pseudopotentials.
+OpenMX itself can generate hopping parameter in the wannier90 format.
+In this tutorial, we demonstrate the calculation of SrVO<sub>3</sub>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This tutorial requires large computational resources or long simulation time.</p>
+</div>
+<div class="section" id="scf-computation-and-wannier-with-openmx">
+<h2>SCF computation and Wannier with OpenMX<a class="headerlink" href="#scf-computation-and-wannier-with-openmx" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" href="../../_downloads/scf.dat" download=""><code class="xref download docutils literal"><span class="pre">scf.dat</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre>#
+# File Name
+#
+System.CurrrentDirectory         ./    # default=./
+System.Name                      SrVO3
+level.of.stdout                   1    # default=1 (1-3)
+level.of.fileout                  1    # default=1 (0-2)
+data.path                 /mnt/c/Users/kawamuura/program/openmx-eca/DFT_DATA13/
+#
+# Definition of Atomic Species
+#
+Species.Number       4
+&lt;Definition.of.Atomic.Species
+  Sr  Sr10.0-s2p2d1  Sr_PBE13
+   V  V6.0-s2p1d1     V_PBE13
+   O  O7.0-s2p2d1     O_PBE13
+proj  V6.0-s1p1d1     V_PBE13
+Definition.of.Atomic.Species&gt;
+#
+# Atoms
+#
+Atoms.Number         5
+Atoms.SpeciesAndCoordinates.Unit   FRAC # Ang|AU
+&lt;Atoms.SpeciesAndCoordinates
+1  Sr   0.0  0.0  0.0  5.0  5.0
+2   V   0.5  0.5  0.5  6.5  6.5
+3   O   0.5  0.0  0.5  3.0  3.0
+4   O   0.0  0.5  0.5  3.0  3.0
+5   O   0.5  0.5  0.0  3.0  3.0
+Atoms.SpeciesAndCoordinates&gt;
+Atoms.UnitVectors.Unit  AU  # Ang|AU
+&lt;Atoms.UnitVectors
+7.29738  0.00000  0.00000
+0.00000  7.29738  0.00000
+0.00000  0.00000  7.29738
+Atoms.UnitVectors&gt;
+#
+# SCF or Electronic System
+#
+scf.XcType                 GGA-PBE     # LDA|LSDA-CA|LSDA-PW|GGA-PBE
+scf.SpinPolarization        Off         # On|Off|NC
+scf.maxIter                  50        # default=40
+scf.EigenvalueSolver       band        # DC|GDC|Cluster|Band
+scf.Kgrid                  8 8 8       # means n1 x n2 x n3
+scf.Mixing.Type           rmm-diisk    # Simple|Rmm-Diis|Gr-Pulay|Kerker|Rmm-Diisk
+scf.Init.Mixing.Weight     0.20        # default=0.30
+scf.Min.Mixing.Weight      0.001       # default=0.001
+scf.Max.Mixing.Weight      0.500       # default=0.40
+scf.Mixing.History          7          # default=5
+scf.Mixing.StartPulay       7          # default=6
+scf.Mixing.EveryPulay       1          # default=6
+scf.criterion             1.0e-7       # default=1.0e-6 (Hartree)
+orbitalOpt.Force.Skip       on
+#scf.restart                on
+#
+# Band dispersion
+#
+Band.dispersion              on        # on|off, default=off
+Band.Nkpath  4
+&lt;Band.kpath
+15  0.0  0.0  0.0    0.5  0.0  0.0  g  X
+15  0.5  0.0  0.0    0.5  0.5  0.0  X  M
+15  0.5  0.5  0.0    0.0  0.0  0.0  M  g
+15  0.0  0.0  0.0    0.5  0.5  0.5  g  R
+Band.kpath&gt;
+#
+# Wannier
+#
+Wannier.Func.Calc on #default off
+Wannier.Func.Num 3 #no default
+Wannier.Outer.Window.Bottom  -1.5
+Wannier.Outer.Window.Top      7.0
+Wannier.Inner.Window.Bottom  -1.5
+Wannier.Inner.Window.Top      1.2
+Wannier.Initial.Projectors.Unit FRAC
+&lt;Wannier.Initial.Projectors
+proj-dxy 0.5 0.5 0.5  0.0 0.0 1.0  1.0 0.0 0.0
+proj-dxz 0.5 0.5 0.5  0.0 0.0 1.0  1.0 0.0 0.0
+proj-dyz 0.5 0.5 0.5  0.0 0.0 1.0  1.0 0.0 0.0
+Wannier.Initial.Projectors&gt;
+Wannier.Interpolated.Bands             on
+Wannier.Function.Plot                  on         # default off
+Wannier.Function.Plot.SuperCells      1 1 1       # default=0 0 0
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>$ openmx scf.dat
+</pre></div>
+</div>
+<p>Then, convert the OpenMX output to the wannier90 format.
+It can be performed with <code class="docutils literal"><span class="pre">openmx2dcore</span></code> utility as:</p>
+<div class="highlight-bash"><div class="highlight"><pre>$ openmx2dcore.py SrVO3 srvo3
+</pre></div>
+</div>
+</div>
+<div class="section" id="dmft-calculation">
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" href="../../_downloads/srvo3_openmx.ini" download=""><code class="xref download docutils literal"><span class="pre">srvo3.ini</span></code></a></p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[model]</span>
+<span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
+<span class="na">seedname</span> <span class="o">=</span> <span class="s">srvo3</span>
+<span class="na">nelec</span> <span class="o">=</span> <span class="s">1.0</span>
+<span class="na">ncor</span> <span class="o">=</span> <span class="s">1</span>
+<span class="na">norb</span> <span class="o">=</span> <span class="s">3</span>
+<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(3.419, 2.315, 0.530)]</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span>
+
+<span class="k">[system]</span>
+<span class="na">nk0</span> <span class="o">=</span> <span class="s">16</span>
+<span class="na">nk1</span> <span class="o">=</span> <span class="s">16</span>
+<span class="na">nk2</span> <span class="o">=</span> <span class="s">16</span>
+<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
+<span class="na">mu</span> <span class="o">=</span> <span class="s">0.0</span>
+<span class="na">with_dc</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">perform_tail_fit</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">fit_max_moment</span> <span class="o">=</span> <span class="s">8</span>
+<span class="na">fit_min_w</span> <span class="o">=</span> <span class="s">5.0</span>
+<span class="na">fit_max_w</span> <span class="o">=</span> <span class="s">19.0</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
+<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
+<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
+<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">500</span>
+<span class="na">move_double{bool}</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span> <span class="o">=</span> <span class="s">8</span>
+
+<span class="k">[tool]</span>
+<span class="na">broadening</span> <span class="o">=</span> <span class="s">0.1</span>
+<span class="na">nk_line</span> <span class="o">=</span> <span class="s">50</span>
+<span class="na">nnode</span> <span class="o">=</span> <span class="s">5</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5)]</span>
+<span class="na">omega_max</span> <span class="o">=</span><span class="s">2.0</span>
+<span class="na">omega_min</span> <span class="o">=</span><span class="s">-2.0</span>
+<span class="na">Nomega</span> <span class="o">=</span> <span class="s">400</span>
+<span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
+<span class="na">omega_pade</span> <span class="o">=</span> <span class="s">5.0</span>
+</pre></div>
+</div>
+<p>Please see <a class="reference internal" href="../cthyb/cthyb.html#howtocthyb"><span>How to choose parameters for TRIQS/cthyb</span></a> for the details of the parameter setting.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The parameter <code class="docutils literal"><span class="pre">n_cycles{int}</span></code> should be tuned in inverse proportion to the number of MPI processes.
+The following result is obtained with 432 MPI processes at <code class="docutils literal"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">10000</span></code>
+(70 seconds per DMFT cycle on ISSP system B).
+If we want to compute by using 32 MPI processes at the same accuracy,
+<code class="docutils literal"><span class="pre">n_cycles{int}</span></code> should be 10000*432/32=135000.</p>
+</div>
+<div class="section" id="dmft-setup-dcore-pre">
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore_pre srvo3.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-self-consistent-dmft-calculation-dcore">
+<h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore srvo3.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-processing-and-data-analysis-dcore-post">
+<h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre>$ dcore_post srvo3.ini
+$ sed -e <span class="s2">&quot;s/every 10/every 1/g&quot;</span> srvo3_akw.gp
+$ gnuplot nis_akw.gp
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/akw_srvo31.png"><img alt="../../_images/akw_srvo31.png" class="align-center" src="../../_images/akw_srvo31.png" style="width: 500px;" /></a>
+<p>&#8220;+&#8221; indicates the original band structure.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pb/pb.html" title="Pb with spin-orbit interaction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../srvo3_qe/srvo3.html" title="SrVO3"
+             >previous</a> |</li>
+    <li><a href="../../index.html">Home</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

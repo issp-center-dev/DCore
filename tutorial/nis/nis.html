@@ -6,32 +6,33 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>NiS &mdash; DCore 0.1.0 documentation</title>
+    <title>NiS &mdash; DCore 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/triqs.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/dcore.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.1.0',
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="author" title="About these documents" href="../about.html" />
-    <link rel="top" title="DCore 0.1.0 documentation" href="../contents.html" />
-    <link rel="up" title="Tutorial with QuantumESPRESSO and wannier90" href="qe.html" />
-    <link rel="next" title="Tutorial with OpenMX" href="openmx.html" />
-    <link rel="prev" title="SrVO3" href="srvo3.html" />
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="top" title="DCore 1.0.0 documentation" href="../../contents.html" />
+    <link rel="up" title="Tutorial with QuantumESPRESSO and wannier90" href="../qe.html" />
+    <link rel="next" title="SrVO3" href="../srvo3_qe/srvo3.html" />
+    <link rel="prev" title="Tutorial with QuantumESPRESSO and wannier90" href="../qe.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
-    <script src="../_static/cufon-yui.js" type="text/javascript"></script>
-    <script src="../_static/spaceman.cufonfonts.js" type="text/javascript"></script>
+    <script src="../../_static/cufon-yui.js" type="text/javascript"></script>
+    <script src="../../_static/spaceman.cufonfonts.js" type="text/javascript"></script>
     <script type="text/javascript">
       Cufon.replace('.triqs', { fontFamily: 'spaceman', hover: true }); 
     </script>
@@ -47,17 +48,17 @@
 <div class="pageheader">
   <ul>
     
-    <li><a href="../install.html">Install</a></li>
+    <li><a href="../../install.html">Install</a></li>
     
-    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../../documentation.html">Documentation</a></li>
     
-    <li><a href="../issues.html">Issues</a></li>
+    <li><a href="../../issues.html">Issues</a></li>
     
-    <li><a href="../about.html">About DCore</a></li>
+    <li><a href="../../about.html">About DCore</a></li>
     
   </ul>
   <div>
-    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../index.html">DCore</a></h1>
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="../../index.html">DCore</a></h1>
     <span style="font-size: 14px; margin: 0px; padding: 0px;">integrated DMFT software for CORrelated Electrons</span>
   </div>
 </div>
@@ -66,26 +67,26 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
+          <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
+          <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="openmx.html" title="Tutorial with OpenMX"
+          <a href="../srvo3_qe/srvo3.html" title="SrVO3"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="srvo3.html" title="SrVO3"
+          <a href="../qe.html" title="Tutorial with QuantumESPRESSO and wannier90"
              accesskey="P">previous</a> |</li>
-    <li><a href="../index.html">Home</a> &raquo;</li>
+    <li><a href="../../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="qe.html" accesskey="U">Tutorial with QuantumESPRESSO and wannier90</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../qe.html" accesskey="U">Tutorial with QuantumESPRESSO and wannier90</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">NiS</a><ul>
 <li><a class="reference internal" href="#scf-calculation-of-quantum-espresso">SCF calculation of Quantum ESPRESSO</a></li>
@@ -99,7 +100,7 @@
 </li>
 <li><a class="reference internal" href="#dmft-calculation">DMFT calculation</a><ul>
 <li><a class="reference internal" href="#dmft-setup-dcore-pre">DMFT setup: dcore_pre</a></li>
-<li><a class="reference internal" href="#running-self-consistent-dft-dmft-dcore">Running self-consistent DFT+DMFT : dcore</a></li>
+<li><a class="reference internal" href="#running-self-consistent-dmft-calculation-dcore">Running self-consistent DMFT calculation: dcore</a></li>
 <li><a class="reference internal" href="#post-processing-and-data-analysis-dcore-post">Post-processing and data analysis: dcore_post</a></li>
 </ul>
 </li>
@@ -108,21 +109,21 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="srvo3.html"
-                        title="previous chapter">SrVO<sub>3</sub></a></p>
+  <p class="topless"><a href="../qe.html"
+                        title="previous chapter">Tutorial with QuantumESPRESSO and wannier90</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="openmx.html"
-                        title="next chapter">Tutorial with OpenMX</a></p>
+  <p class="topless"><a href="../srvo3_qe/srvo3.html"
+                        title="next chapter">SrVO<sub>3</sub></a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/tutorial/nis.txt"
+      <li><a href="../../_sources/tutorial/nis/nis.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
+    <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
@@ -144,10 +145,10 @@
   <div class="section" id="nis">
 <h1>NiS<a class="headerlink" href="#nis" title="Permalink to this headline">¶</a></h1>
 <p>Crystal structure of NiS (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
-<a class="reference internal image-reference" href="../_images/struct_nis.png"><img alt="../_images/struct_nis.png" class="align-center" src="../_images/struct_nis.png" style="width: 200px;" /></a>
+<a class="reference internal image-reference" href="../../_images/struct_nis.png"><img alt="../../_images/struct_nis.png" class="align-center" src="../../_images/struct_nis.png" style="width: 200px;" /></a>
 <div class="section" id="scf-calculation-of-quantum-espresso">
 <h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference download internal" href="../_downloads/scf_nis.in" download=""><code class="xref download docutils literal"><span class="pre">scf_nis.in</span></code></a></p>
+<p><a class="reference download internal" href="../../_downloads/scf_nis.in" download=""><code class="xref download docutils literal"><span class="pre">scf_nis.in</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
  calculation = &#39;scf&#39;,
   pseudo_dir = &#39;./&#39;,
@@ -191,7 +192,7 @@ K_POINTS automatic
 <h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this headline">¶</a></h3>
 <p>Perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.</p>
-<p><a class="reference download internal" href="../_downloads/nscf_nis.in" download=""><code class="xref download docutils literal"><span class="pre">nscf_nis.in</span></code></a></p>
+<p><a class="reference download internal" href="../../_downloads/nscf_nis.in" download=""><code class="xref download docutils literal"><span class="pre">nscf_nis.in</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
  calculation = &#39;bands&#39;,
   pseudo_dir = &#39;./&#39;,
@@ -301,7 +302,7 @@ K_POINTS crystal
 <h3>Pre-process for Wannier90<a class="headerlink" href="#pre-process-for-wannier90" title="Permalink to this headline">¶</a></h3>
 <p>Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.</p>
-<p><a class="reference download internal" href="../_downloads/nis.win" download=""><code class="xref download docutils literal"><span class="pre">nis.win</span></code></a></p>
+<p><a class="reference download internal" href="../../_downloads/nis.win" download=""><code class="xref download docutils literal"><span class="pre">nis.win</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>num_bands         =   30
 num_wann          =   16
 
@@ -418,6 +419,22 @@ begin kpoints
 end kpoints
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The order of projection is important for the following DMFT calculation.
+If there are both correlated shells and non-correlated shell,
+the correlated shells must appear first, i.e.</p>
+<div class="last highlight-python"><div class="highlight"><pre>begin projections
+Correlated_shell_1
+Correlated_shell_2
+:
+Non-correlated_shell_1
+Non-correlated_shell_2
+:
+end projections
+</pre></div>
+</div>
+</div>
 <p>This <em>k</em> grid is generated as follows:</p>
 <div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
 </pre></div>
@@ -428,7 +445,7 @@ end kpoints
 </div>
 <div class="section" id="qe-to-wannier90-interface">
 <h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference download internal" href="../_downloads/pw2wan_nis.in" download=""><code class="xref download docutils literal"><span class="pre">pw2wan_nis.in</span></code></a></p>
+<p><a class="reference download internal" href="../../_downloads/pw2wan_nis.in" download=""><code class="xref download docutils literal"><span class="pre">pw2wan_nis.in</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>&amp;inputpp 
    outdir = &#39;./&#39;
    prefix = &#39;nis&#39;
@@ -450,16 +467,16 @@ end kpoints
 <h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
 <p>Execute <code class="docutils literal"><span class="pre">wannier90.x</span></code> for the actual wannierization.
 The input file is the same as that for the pre-processing run.</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ wannier90 nis
+<div class="highlight-bash"><div class="highlight"><pre>$ wannier90.x nis
 </pre></div>
 </div>
 </div>
 <div class="section" id="optional-check-wannierization">
 <h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
-<p>If we want to check the quality of the wannierization,
-we plot the original and the wannier-interpolated band structure simultaneously.</p>
-<p>First, we compute the band structure with the following input file:</p>
-<p><a class="reference download internal" href="../_downloads/band_nis.in" download=""><code class="xref download docutils literal"><span class="pre">band_nis.in</span></code></a></p>
+<p>If you want to check the quality of the wannierization,
+you can plot the original and the wannier-interpolated band structure simultaneously.</p>
+<p>First, compute the band structure with the following input file:</p>
+<p><a class="reference download internal" href="../../_downloads/band_nis.in" download=""><code class="xref download docutils literal"><span class="pre">band_nis.in</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
  calculation = &#39;bands&#39;,
   pseudo_dir = &#39;./&#39;,
@@ -592,7 +609,7 @@ K_POINTS crystal
 <div class="highlight-bash"><div class="highlight"><pre>$ mpiexec -np <span class="m">4</span> pw.x -in band_nis.in
 </pre></div>
 </div>
-<p><a class="reference download internal" href="../_downloads/bands_nis.in" download=""><code class="xref download docutils literal"><span class="pre">bands_nis.in</span></code></a></p>
+<p><a class="reference download internal" href="../../_downloads/bands_nis.in" download=""><code class="xref download docutils literal"><span class="pre">bands_nis.in</span></code></a></p>
 <div class="highlight-python"><div class="highlight"><pre>&amp;BANDS
 prefix = &quot;nis&quot;,
 outdir = &quot;./&quot;,
@@ -607,44 +624,45 @@ outdir = &quot;./&quot;,
 <div class="highlight-gnuplot"><div class="highlight"><pre>plot [][3:13] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 10.913 tit &quot;E_F&quot;, &quot;nis_band.dat&quot; u ($1*0.549):2 tit &quot;Wannier&quot; w l
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../_images/band_nis.png"><img alt="../_images/band_nis.png" class="align-center" src="../_images/band_nis.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/band_nis.png"><img alt="../../_images/band_nis.png" class="align-center" src="../../_images/band_nis.png" style="width: 500px;" /></a>
 </div>
 </div>
 <div class="section" id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference download internal" href="../_downloads/nis.ini" download=""><code class="xref download docutils literal"><span class="pre">nis.ini</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
-<span class="n">U</span> <span class="o">=</span> <span class="mf">2.0</span>
-<span class="n">J</span> <span class="o">=</span> <span class="mf">0.0</span>
-<span class="n">lattice</span> <span class="o">=</span> <span class="n">wannier90</span>
-<span class="n">seedname</span> <span class="o">=</span> <span class="n">nis</span>
-<span class="n">nelec</span> <span class="o">=</span> <span class="mf">28.0</span>
-<span class="n">ncor</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">cshell</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
-<span class="n">bvec</span><span class="o">=</span><span class="p">[(</span><span class="mf">1.822263</span><span class="p">,</span> <span class="mf">1.052084</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.104168</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.172476</span><span class="p">)]</span>
+<p><a class="reference download internal" href="../../_downloads/nis.ini" download=""><code class="xref download docutils literal"><span class="pre">nis.ini</span></code></a></p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[model]</span>
+<span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
+<span class="na">seedname</span> <span class="o">=</span> <span class="s">nis</span>
+<span class="na">nelec</span> <span class="o">=</span> <span class="s">28.0</span>
+<span class="na">ncor</span> <span class="o">=</span> <span class="s">2</span>
+<span class="na">norb</span> <span class="o">=</span> <span class="s">5, 5</span>
+<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(3.0, 1.5, 0.75), (3.0, 1.5, 0.75)]</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.822263, 1.052084, 0.0),(0.0, 2.104168, 0.0),(0.0, 0.0, 1.172476)]</span>
 
-<span class="p">[</span><span class="n">system</span><span class="p">]</span>
-<span class="n">nk0</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">nk1</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">nk2</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">beta</span> <span class="o">=</span> <span class="mf">40.0</span>
-<span class="n">dc_type</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">[system]</span>
+<span class="na">nk0</span> <span class="o">=</span> <span class="s">4</span>
+<span class="na">nk1</span> <span class="o">=</span> <span class="s">4</span>
+<span class="na">nk2</span> <span class="o">=</span> <span class="s">4</span>
+<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
+<span class="na">mu</span> <span class="o">=</span> <span class="s">10.928</span>
+<span class="na">with_dc</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">n_iw</span> <span class="o">=</span> <span class="s">1000</span>
 
-<span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">TRIQS</span><span class="o">/</span><span class="n">hubbard</span><span class="o">-</span><span class="n">I</span>
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/hubbard-I</span>
 
-<span class="p">[</span><span class="n">control</span><span class="p">]</span>
-<span class="n">max_step</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">restart</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">[control]</span>
+<span class="na">max_step</span> <span class="o">=</span> <span class="s">15</span>
+<span class="na">restart</span> <span class="o">=</span> <span class="s">True</span>
 
-<span class="p">[</span><span class="n">tool</span><span class="p">]</span>
-<span class="n">broadening</span> <span class="o">=</span> <span class="mf">0.1</span>
-<span class="n">nk_line</span> <span class="o">=</span> <span class="mi">50</span>
-<span class="n">nnode</span> <span class="o">=</span> <span class="mi">8</span>
-<span class="n">knode</span><span class="o">=</span><span class="p">[(</span><span class="n">G</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">M</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">K</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">G</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">),(</span><span class="n">A</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">L</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">H</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.3333333333</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="n">A</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)]</span>
-<span class="n">omega_max</span> <span class="o">=</span><span class="mf">3.0</span>
-<span class="n">omega_min</span> <span class="o">=-</span><span class="mf">10.0</span>
-<span class="n">Nomega</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="k">[tool]</span>
+<span class="na">broadening</span> <span class="o">=</span> <span class="s">0.1</span>
+<span class="na">nk_line</span> <span class="o">=</span> <span class="s">50</span>
+<span class="na">nnode</span> <span class="o">=</span> <span class="s">8</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(M,0.5,0.0,0.0),(K,0.3333333333,0.3333333333,0.0),(G,0.0,0.0,0.0),(A,0.0,0.0,0.5),(L,0.5,0.0,0.5),(H,0.3333333333,0.3333333333,0.5),(A,0.0,0.0,0.5)]</span>
+<span class="na">omega_max</span> <span class="o">=</span><span class="s">3.0</span>
+<span class="na">omega_min</span> <span class="o">=</span><span class="s">-10.0</span>
+<span class="na">Nomega</span> <span class="o">=</span> <span class="s">500</span>
 </pre></div>
 </div>
 <div class="section" id="dmft-setup-dcore-pre">
@@ -653,8 +671,8 @@ outdir = &quot;./&quot;,
 </pre></div>
 </div>
 </div>
-<div class="section" id="running-self-consistent-dft-dmft-dcore">
-<h3>Running self-consistent DFT+DMFT : dcore<a class="headerlink" href="#running-self-consistent-dft-dmft-dcore" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="running-self-consistent-dmft-calculation-dcore">
+<h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash"><div class="highlight"><pre>$ dcore nis.ini
 </pre></div>
 </div>
@@ -665,7 +683,7 @@ outdir = &quot;./&quot;,
 $ gnuplot nis_akw.gp
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../_images/akw_nis.png"><img alt="../_images/akw_nis.png" class="align-center" src="../_images/akw_nis.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/akw_nis.png"><img alt="../../_images/akw_nis.png" class="align-center" src="../../_images/akw_nis.png" style="width: 500px;" /></a>
 <p>&#8220;+&#8221; indicates the original band structure.</p>
 </div>
 </div>
@@ -681,21 +699,21 @@ $ gnuplot nis_akw.gp
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
+          <a href="../../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
+          <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="openmx.html" title="Tutorial with OpenMX"
+          <a href="../srvo3_qe/srvo3.html" title="SrVO3"
              >next</a> |</li>
         <li class="right" >
-          <a href="srvo3.html" title="SrVO3"
+          <a href="../qe.html" title="Tutorial with QuantumESPRESSO and wannier90"
              >previous</a> |</li>
-    <li><a href="../index.html">Home</a> &raquo;</li>
+    <li><a href="../../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="qe.html" >Tutorial with QuantumESPRESSO and wannier90</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../qe.html" >Tutorial with QuantumESPRESSO and wannier90</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
