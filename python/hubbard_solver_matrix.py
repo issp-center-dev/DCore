@@ -228,19 +228,19 @@ class Solver:
 
         def glist():
             return [GfReFreq(indices=ind, window=(ommin, ommax), n_points=n_om) for blc, ind in self.gf_struct]
-        self.G_iw = BlockGf(name_list=self.a_list, block_list=glist(), make_copies=False)
+        self.G_w = BlockGf(name_list=self.a_list, block_list=glist(), make_copies=False)
 
-        self.__copy_gf(self.G_iw, g_trans, tailtempl)
+        self.__copy_gf(self.G_w, g_trans, tailtempl)
 
         # Self energy:
-        self.G0_iw = self.G_iw.copy()
-        self.Sigma_iw = self.G_iw.copy()
-        self.G0_iw <<= Omega + 1j*broadening
+        self.G0_w = self.G_w.copy()
+        self.Sigma_w = self.G_w.copy()
+        self.G0_w <<= Omega + 1j*broadening
 
         eal0 = [self.ealmat[isp*nlmtot:(isp+1)*nlmtot, isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot)]
-        self.G0_iw -= eal0
-        self.Sigma_iw <<= self.G0_iw - inverse(self.G_iw)
-        self.Sigma_iw.note = 'ReFreq'          # This is important for the put_Sigma routine!!!
+        self.G0_w -= eal0
+        self.Sigma_w <<= self.G0_w - inverse(self.G_w)
+        self.Sigma_w.note = 'ReFreq'          # This is important for the put_Sigma routine!!!
 
         # sigmamat = sigma_atomic_fullu(gf = gf, e0f = self.ealmat, zmsb = omega, nlm = self.Nlm, ns = self.Nspin)
 

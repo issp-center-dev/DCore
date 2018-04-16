@@ -89,7 +89,7 @@ class DMFTCoreTools:
                 # Run the solver to get GF and self-energy on the real axis
                 sol[ish].gf_realomega(ommin=self._omega_min, ommax=self._omega_max, n_om=self._Nomega,
                                       u_mat=numpy.real(core.Umat[ish]))
-                sigma_w.append(sol[ish].Sigma_iw)
+                sigma_w.append(sol[ish].Sigma_w)
         elif core.solver_name == "TRIQS/cthyb" or core.solver_name == "ALPS/cthyb":
             # Read info from HDF file
             ar = HDFArchive(self._seedname+'.out.h5', 'r')
@@ -170,9 +170,11 @@ class DMFTCoreTools:
         mpi.report("\n#############  Momentum Distribution  ################\n")
         with_dc = int(self._params['system']['with_dc'])
         beta = self._params['system']['beta']
+        nsh = self.SKT.n_inequiv_shells
+
         # Read info from HDF file
         ar = HDFArchive(self._seedname + '.out.h5', 'r')
-        for ish in range(self.SKT.n_inequiv_shells):
+        for ish in range(nsh):
             self._solver.S[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
         things_to_read = ['n_k', 'n_orbitals', 'proj_mat',
                           'hopping', 'n_parproj', 'proj_mat_all']
@@ -182,6 +184,7 @@ class DMFTCoreTools:
             return value_read
         mu = self.SKT.chemical_potential
         spn = self.SKT.spin_block_names[self.SKT.SO]
+        self.SKT.set_Sigma([self._solver.S[ish].Sigma_iw for ish in range(nsh)])  # set Sigma into the SumK class
 
         den = [{isp: numpy.zeros([self.SKT.n_orbitals[ik, 0], self.SKT.n_orbitals[ik, 0]], numpy.complex_)
                 for isp in spn}
@@ -496,8 +499,8 @@ def dcore_post(filename):
     #
     mpi.barrier()
     dct = DMFTCoreTools(seedname, p, n_k, xk)
-    dct.momentum_distribution()
     dct.post()
+    dct.momentum_distribution()
     #
     # Output gnuplot script
     #
