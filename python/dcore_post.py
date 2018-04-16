@@ -163,6 +163,73 @@ class DMFTCoreTools:
                     print("", file=f)
             print("\n    Output {0}".format(self._seedname + '_akw.dat'))
 
+    def momentum_distribution(self):
+        """
+        Calculate Momentum distribution
+        """
+        mpi.report("\n#############  Momentum Distribution  ################\n")
+        with_dc = int(self._params['system']['with_dc'])
+        beta = self._params['system']['beta']
+        # Read info from HDF file
+        ar = HDFArchive(self._seedname + '.out.h5', 'r')
+        for ish in range(self.SKT.n_inequiv_shells):
+            self._solver.S[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
+        things_to_read = ['n_k', 'n_orbitals', 'proj_mat',
+                          'hopping', 'n_parproj', 'proj_mat_all']
+        value_read = self.SKT.read_input_from_hdf(
+            subgrp=self.SKT.bands_data, things_to_read=things_to_read)
+        if not value_read:
+            return value_read
+        mu = self.SKT.chemical_potential
+        spn = self.SKT.spin_block_names[self.SKT.SO]
+
+        den = [{isp: numpy.zeros([self.SKT.n_orbitals[ik, 0], self.SKT.n_orbitals[ik, 0]], numpy.complex_)
+                for isp in spn}
+               for ik in range(self.SKT.n_k)]
+
+        ikarray = numpy.array(range(self.SKT.n_k))
+        for ik in mpi.slice_array(ikarray):
+            G_latt = self.SKT.lattice_gf(
+                ik=ik, mu=mu, iw_or_w="iw", beta=beta, with_Sigma=True, with_dc=with_dc)
+            den[ik] = G_latt.density()
+        #
+        # Collect density matrix across processes
+        #
+        for ik in range(self.SKT.n_k):
+            for isp in spn:
+                den[ik][isp] = mpi.all_reduce(mpi.world, den[ik][isp], lambda x, y: x + y)
+        mpi.barrier()
+        #
+        # Output to file
+        #
+        print("\n Output Momentum distribution : ", self._seedname + "_momdist.dat")
+        with open(self._seedname + "_momdist.dat", 'w') as fo:
+            print("# Momentum distribution", file=fo)
+            #
+            # Column information
+            #
+            print("# [Column] Data", file=fo)
+            print("# [1] Distance along k-path", file=fo)
+            icol = 1
+            for isp in spn:
+                for iorb in range(self.SKT.n_orbitals[0, 0]):
+                    for jorb in range(self.SKT.n_orbitals[0, 0]):
+                        icol += 1
+                        print("# [%d] Re(MomDist_{spin=%s, %d, %d})" % (icol, isp, iorb, jorb), file=fo)
+                        icol += 1
+                        print("# [%d] Im(MomDist_{spin=%s, %d, %d})" % (icol, isp, iorb, jorb), file=fo)
+            #
+            # Write data
+            #
+            for ik in range(self.SKT.n_k):
+                print("%f " % self._xk[ik], end="", file=fo)
+                for isp in spn:
+                    for iorb in range(self.SKT.n_orbitals[0, 0]):
+                        for jorb in range(self.SKT.n_orbitals[0, 0]):
+                            print("%f %f " % (den[ik][isp][iorb, jorb].real,
+                                              den[ik][isp][iorb, jorb].imag), end="", file=fo)
+                print("", file=fo)
+
 
 def __print_paramter(p, param_name):
     """
@@ -429,6 +496,7 @@ def dcore_post(filename):
     #
     mpi.barrier()
     dct = DMFTCoreTools(seedname, p, n_k, xk)
+    dct.momentum_distribution()
     dct.post()
     #
     # Output gnuplot script
