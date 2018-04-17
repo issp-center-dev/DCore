@@ -23,3 +23,4 @@ dcore_post('dmft.ini')
 
 numdiff("test_akw.dat", "test_akw_ref.dat")
 numdiff("test_dos.dat", "test_dos_ref.dat")
+numdiff("test_momdist.dat", "test_momdist_ref.dat")
