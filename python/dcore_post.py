@@ -57,6 +57,41 @@ class DMFTCoreTools:
         self.SKT = SumkDFTTools(hdf_file=self._seedname + '.h5', use_dft_blocks=False)
         self._solver = DMFTCoreSolver(seedname, params)
 
+    def print_dos(self, dos, dosproj_orb, filename):
+        """
+        Print DOS to file
+        """
+        skt = self.SKT
+        nsh = skt.n_inequiv_shells
+        #
+        om_mesh = numpy.linspace(self._omega_min, self._omega_max, self._Nomega)
+        if mpi.is_master_node():
+            with open(filename, 'w') as f:
+                #
+                # Description of columns
+                #
+                print("# [1] Energy", file=f)
+                ii = 1
+                for isp in skt.spin_block_names[skt.SO]:
+                    ii += 1
+                    print("# [%d] Total DOS of spin %s" % (ii, isp), file=f)
+                for ish in range(nsh):
+                    for isp in skt.spin_block_names[skt.SO]:
+                        for iorb in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
+                            ii += 1
+                            print("# [%d] PDOS of shell%d,spin %s,band%d" % (ii, ish, isp, iorb), file=f)
+                #
+                for iom in range(self._Nomega):
+                    print("%f" % om_mesh[iom], file=f, end="")
+                    for isp in skt.spin_block_names[skt.SO]:
+                        print(" %f" % dos[isp][iom], file=f, end="")
+                    for ish in range(nsh):
+                        for isp in skt.spin_block_names[skt.SO]:
+                            for iorb in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
+                                print(" %f" % dosproj_orb[ish][isp][iom, iorb, iorb].real, end="", file=f)
+                    print("", file=f)
+            print("\n    Output {0}".format(filename))
+
     def post(self):
         """
         Calculate DOS (Density Of State) and energy dispersions.
@@ -120,36 +155,12 @@ class DMFTCoreTools:
         dos, dosproj, dosproj_orb = skt.dos_wannier_basis(broadening=self._broadening,
                                                           mesh=[self._omega_min, self._omega_max, self._Nomega],
                                                           with_Sigma=True, with_dc=with_dc, save_to_file=False)
-        #
-        # Print DOS to file
-        #
-        om_mesh = numpy.linspace(self._omega_min, self._omega_max, self._Nomega)
-        if mpi.is_master_node():
-            with open(self._seedname + '_dos.dat', 'w') as f:
-                #
-                # Description of columns
-                #
-                print("# [1] Energy", file=f)
-                ii = 1
-                for isp in skt.spin_block_names[skt.SO]:
-                    ii += 1
-                    print("# [%d] Total DOS of spin %s" % (ii, isp), file=f)
-                for ish in range(nsh):
-                    for isp in skt.spin_block_names[skt.SO]:
-                        for iorb in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
-                            ii += 1
-                            print("# [%d] PDOS of shell%d,spin %s,band%d" % (ii, ish, isp, iorb), file=f)
-                #
-                for iom in range(self._Nomega):
-                    print("%f" % om_mesh[iom], file=f, end="")
-                    for isp in skt.spin_block_names[skt.SO]:
-                        print(" %f" % dos[isp][iom], file=f, end="")
-                    for ish in range(nsh):
-                        for isp in skt.spin_block_names[skt.SO]:
-                            for iorb in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
-                                print(" %f" % dosproj_orb[ish][isp][iom, iorb, iorb].real, end="", file=f)
-                    print("", file=f)
-            print("\n    Output {0}".format(self._seedname + '_dos.dat'))
+        dos0, dosproj0, dosproj_orb0 = skt.dos_wannier_basis(broadening=self._broadening,
+                                                             mu=self._params['system']['mu'],
+                                                             mesh=[self._omega_min, self._omega_max, self._Nomega],
+                                                             with_Sigma=False, with_dc=False, save_to_file=False)
+        self.print_dos(dos, dosproj_orb, self._seedname+'_dos.dat')
+        self.print_dos(dos0, dosproj_orb0, self._seedname+'_dos0.dat')
         #
         # Band structure
         #
@@ -221,45 +232,46 @@ class DMFTCoreTools:
         #
         # Output momentum distribution to file
         #
-        print("\n Output Momentum distribution : ", self._seedname + "_momdist.dat")
-        with open(self._seedname + "_momdist.dat", 'w') as fo:
-            print("# Momentum distribution", file=fo)
-            #
-            # Column information
-            #
-            print("# [Column] Data", file=fo)
-            print("# [1] Distance along k-path", file=fo)
-            icol = 1
-            for isp in spn:
-                for iorb in range(self.SKT.n_orbitals[0, 0]):
-                    for jorb in range(self.SKT.n_orbitals[0, 0]):
-                        icol += 1
-                        print("# [%d] Re(MomDist_{spin=%s, %d, %d})" % (icol, isp, iorb, jorb), file=fo)
-                        icol += 1
-                        print("# [%d] Im(MomDist_{spin=%s, %d, %d})" % (icol, isp, iorb, jorb), file=fo)
-            #
-            # Write data
-            #
-            for ik in range(skt.n_k):
-                print("%f " % self._xk[ik], end="", file=fo)
-                for isp in range(2-skt.SO):
-                    for iorb in range(skt.n_orbitals[0, 0]):
-                        for jorb in range(skt.n_orbitals[0, 0]):
-                            print("%f %f " % (den[ik, isp, iorb, jorb].real,
-                                              den[ik, isp, iorb, jorb].imag), end="", file=fo)
-                print("", file=fo)
-        #
-        # Output eigenvalue to a file
-        #
-        with open(self._seedname + "_eig0.dat", 'w') as fo:
-            offset = 0.0
-            for isp in spn:
-                for iorb in range(skt.n_orbitals[0, 0]):
-                    for ik in range(skt.n_k):
-                        print("%f %f" % (self._xk[ik]+offset, ev[ik, 0, iorb]), file=fo)
+        if mpi.is_master_node():
+            print("\n Output Momentum distribution : ", self._seedname + "_momdist.dat")
+            with open(self._seedname + "_momdist.dat", 'w') as fo:
+                print("# Momentum distribution", file=fo)
+                #
+                # Column information
+                #
+                print("# [Column] Data", file=fo)
+                print("# [1] Distance along k-path", file=fo)
+                icol = 1
+                for isp in spn:
+                    for iorb in range(self.SKT.n_orbitals[0, 0]):
+                        for jorb in range(self.SKT.n_orbitals[0, 0]):
+                            icol += 1
+                            print("# [%d] Re(MomDist_{spin=%s, %d, %d})" % (icol, isp, iorb, jorb), file=fo)
+                            icol += 1
+                            print("# [%d] Im(MomDist_{spin=%s, %d, %d})" % (icol, isp, iorb, jorb), file=fo)
+                #
+                # Write data
+                #
+                for ik in range(skt.n_k):
+                    print("%f " % self._xk[ik], end="", file=fo)
+                    for isp in range(2-skt.SO):
+                        for iorb in range(skt.n_orbitals[0, 0]):
+                            for jorb in range(skt.n_orbitals[0, 0]):
+                                print("%f %f " % (den[ik, isp, iorb, jorb].real,
+                                                  den[ik, isp, iorb, jorb].imag), end="", file=fo)
                     print("", file=fo)
-                offset = self._xk[skt.n_k-1]*1.1
-                print("", file=fo)
+            #
+            # Output eigenvalue to a file
+            #
+            with open(self._seedname + "_akw0.dat", 'w') as fo:
+                offset = 0.0
+                for isp in spn:
+                    for iorb in range(skt.n_orbitals[0, 0]):
+                        for ik in range(skt.n_k):
+                            print("%f %f" % (self._xk[ik]+offset, ev[ik, 0, iorb]), file=fo)
+                        print("", file=fo)
+                    offset = self._xk[skt.n_k-1]*1.1
+                    print("", file=fo)
 
 
 def __print_paramter(p, param_name):
@@ -555,7 +567,7 @@ def dcore_post(filename):
             print("set ylabel \"Energy\"", file=f)
             print("set cblabel \"A(k,w)\"", file=f)
             print("splot \"{0}_akw.dat\", \\".format(seedname), file=f)
-            print("\"{0}_eig0.dat\" u 1:($2-{1}):(0) every 5 w p lc 5".format(
+            print("\"{0}_akw0.dat\" u 1:($2-{1}):(0) every 5 w p lc 5".format(
                     seedname, p['system']['mu']), file=f)
             print("pause -1", file=f)
         print("    Usage:")
