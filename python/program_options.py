@@ -48,6 +48,8 @@ def create_parser():
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
     parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
+    parser.add_option("model", "non_colinear", bool, False,
+                      "Set True for the case that non-colinear DMFT from the COLINEAR DFT calculation.")
 
     # [system]
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")

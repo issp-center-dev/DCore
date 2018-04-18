@@ -126,18 +126,28 @@ class DMFTCoreTools:
         om_mesh = numpy.linspace(self._omega_min, self._omega_max, self._Nomega)
         if mpi.is_master_node():
             with open(self._seedname + '_dos.dat', 'w') as f:
-                print("# Energy DOS Partial-DOS", file=f)
+                #
+                # Description of columns
+                #
+                print("# [1] Energy", file=f)
+                ii = 1
+                for isp in skt.spin_block_names[skt.SO]:
+                    ii += 1
+                    print("# [%d] Total DOS of spin %s" % (ii, isp), file=f)
+                for ish in range(nsh):
+                    for isp in skt.spin_block_names[skt.SO]:
+                        for iorb in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
+                            ii += 1
+                            print("# [%d] PDOS of shell%d,spin %s,band%d" % (ii, ish, isp, iorb), file=f)
+                #
                 for iom in range(self._Nomega):
-                    if core.SO:
-                        print("{0} {1}".format(om_mesh[iom], dos['ud'][iom]), file=f, end="")
-                    else:
-                        print("{0} {1}".format(om_mesh[iom], 2.0*dos['down'][iom]), file=f, end="")
+                    print("%f" % om_mesh[iom], file=f, end="")
+                    for isp in skt.spin_block_names[skt.SO]:
+                        print(" %f" % dos[isp][iom], file=f, end="")
                     for ish in range(nsh):
-                        for i in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
-                            if core.SO:
-                                print(" {0}".format(dosproj_orb[ish]['ud'][iom, i, i].real), end="", file=f)
-                            else:
-                                print(" {0}".format(2.0*dosproj_orb[ish]['down'][iom, i, i].real), end="", file=f)
+                        for isp in skt.spin_block_names[skt.SO]:
+                            for iorb in range(skt.corr_shells[skt.inequiv_to_corr[ish]]['dim']):
+                                print(" %f" % dosproj_orb[ish][isp][iom, iorb, iorb].real, end="", file=f)
                     print("", file=f)
             print("\n    Output {0}".format(self._seedname + '_dos.dat'))
         #
@@ -154,12 +164,13 @@ class DMFTCoreTools:
         mesh = [x.real for x in skt.Sigma_imp_w[0].mesh]
         if mpi.is_master_node():
             with open(self._seedname + '_akw.dat', 'w') as f:
-                for ik in range(self._n_k):
-                    for iom in range(self._Nomega):
-                        if core.SO:
-                            print("{0} {1} {2}".format(self._xk[ik], mesh[iom], akw['ud'][ik, iom]), file=f)
-                        else:
-                            print("{0} {1} {2}".format(self._xk[ik], mesh[iom], 2.0*akw['down'][ik, iom]), file=f)
+                offset = 0.0
+                for isp in skt.spin_block_names[skt.SO]:
+                    for ik in range(self._n_k):
+                        for iom in range(self._Nomega):
+                            print("%f %f %f" % (self._xk[ik]+offset, mesh[iom], akw[isp][ik, iom]), file=f)
+                        print("", file=f)
+                    offset = self._xk[self._n_k-1] * 1.1
                     print("", file=f)
             print("\n    Output {0}".format(self._seedname + '_akw.dat'))
 
@@ -170,7 +181,8 @@ class DMFTCoreTools:
         mpi.report("\n#############  Momentum Distribution  ################\n")
         with_dc = int(self._params['system']['with_dc'])
         beta = self._params['system']['beta']
-        nsh = self.SKT.n_inequiv_shells
+        skt = self.SKT
+        nsh = skt.n_inequiv_shells
 
         # Read info from HDF file
         ar = HDFArchive(self._seedname + '.out.h5', 'r')
@@ -178,32 +190,36 @@ class DMFTCoreTools:
             self._solver.S[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
         things_to_read = ['n_k', 'n_orbitals', 'proj_mat',
                           'hopping', 'n_parproj', 'proj_mat_all']
-        value_read = self.SKT.read_input_from_hdf(
-            subgrp=self.SKT.bands_data, things_to_read=things_to_read)
+        value_read = skt.read_input_from_hdf(
+            subgrp=skt.bands_data, things_to_read=things_to_read)
         if not value_read:
             return value_read
-        mu = self.SKT.chemical_potential
-        spn = self.SKT.spin_block_names[self.SKT.SO]
-        self.SKT.set_Sigma([self._solver.S[ish].Sigma_iw for ish in range(nsh)])  # set Sigma into the SumK class
+        mu = skt.chemical_potential
+        spn = skt.spin_block_names[self.SKT.SO]
+        skt.set_Sigma([self._solver.S[ish].Sigma_iw for ish in range(nsh)])  # set Sigma into the SumK class
 
-        den = [{isp: numpy.zeros([self.SKT.n_orbitals[ik, 0], self.SKT.n_orbitals[ik, 0]], numpy.complex_)
-                for isp in spn}
-               for ik in range(self.SKT.n_k)]
+        den = numpy.zeros([skt.n_k, 2-skt.SO, skt.n_orbitals[0, 0], skt.n_orbitals[0, 0]], numpy.complex_)
+        ev = numpy.zeros([skt.n_k, 1, skt.n_orbitals[0, 0]], numpy.float_)
 
-        ikarray = numpy.array(range(self.SKT.n_k))
+        ikarray = numpy.array(range(skt.n_k))
         for ik in mpi.slice_array(ikarray):
-            G_latt = self.SKT.lattice_gf(
+            g_latt = skt.lattice_gf(
                 ik=ik, mu=mu, iw_or_w="iw", beta=beta, with_Sigma=True, with_dc=with_dc)
-            den[ik] = G_latt.density()
+            den0 = g_latt.density()
+            for isp in range(len(spn)):
+                den[ik, isp, :, :] = den0[spn[isp]][:, :]
+                #
+                # eigenvalue
+                #
+            ev[ik, :, :] = numpy.linalg.eigvalsh(skt.hopping[ik, :, :, :])
         #
         # Collect density matrix across processes
         #
-        for ik in range(self.SKT.n_k):
-            for isp in spn:
-                den[ik][isp] = mpi.all_reduce(mpi.world, den[ik][isp], lambda x, y: x + y)
+        den = mpi.all_reduce(mpi.world, den, lambda x, y: x + y)
+        ev = mpi.all_reduce(mpi.world, ev, lambda x, y: x + y)
         mpi.barrier()
         #
-        # Output to file
+        # Output momentum distribution to file
         #
         print("\n Output Momentum distribution : ", self._seedname + "_momdist.dat")
         with open(self._seedname + "_momdist.dat", 'w') as fo:
@@ -224,13 +240,25 @@ class DMFTCoreTools:
             #
             # Write data
             #
-            for ik in range(self.SKT.n_k):
+            for ik in range(skt.n_k):
                 print("%f " % self._xk[ik], end="", file=fo)
-                for isp in spn:
-                    for iorb in range(self.SKT.n_orbitals[0, 0]):
-                        for jorb in range(self.SKT.n_orbitals[0, 0]):
-                            print("%f %f " % (den[ik][isp][iorb, jorb].real,
-                                              den[ik][isp][iorb, jorb].imag), end="", file=fo)
+                for isp in range(2-skt.SO):
+                    for iorb in range(skt.n_orbitals[0, 0]):
+                        for jorb in range(skt.n_orbitals[0, 0]):
+                            print("%f %f " % (den[ik, isp, iorb, jorb].real,
+                                              den[ik, isp, iorb, jorb].imag), end="", file=fo)
+                print("", file=fo)
+        #
+        # Output eigenvalue to a file
+        #
+        with open(self._seedname + "_eig0.dat", 'w') as fo:
+            offset = 0.0
+            for isp in spn:
+                for iorb in range(skt.n_orbitals[0, 0]):
+                    for ik in range(skt.n_k):
+                        print("%f %f" % (self._xk[ik]+offset, ev[ik, 0, iorb]), file=fo)
+                    print("", file=fo)
+                offset = self._xk[skt.n_k-1]*1.1
                 print("", file=fo)
 
 
@@ -509,23 +537,26 @@ def dcore_post(filename):
         with open(seedname + '_akw.gp', 'w') as f:
             print("set size 0.95, 1.0", file=f)
             print("set xtics (\\", file=f)
-            for inode in range(nnode-1):
-                print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
-            print("  \"{0}\"  {1} \\".format(klabel[nnode-1], xk_label[nnode-1]), file=f)
+            if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
+                for inode in range(nnode-1):
+                    print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
+                print("  \"{0}\"  {1} \\".format(klabel[nnode-1], xk_label[nnode-1]), file=f)
+            else:
+                for inode in range(nnode):
+                    print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
+                offset = xk_label[nnode-1]*1.1
+                for inode in range(nnode-1):
+                    print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]+offset), file=f)
+                print("  \"{0}\"  {1} \\".format(klabel[nnode-1], xk_label[nnode-1]+offset), file=f)
             print("  )", file=f)
             print("set pm3d map", file=f)
             print("#set pm3d interpolate 5, 5", file=f)
             print("unset key", file=f)
             print("set ylabel \"Energy\"", file=f)
             print("set cblabel \"A(k,w)\"", file=f)
-            if p["model"]["lattice"] == 'wannier90':
-                print("splot \"{0}_akw.dat\", \\".format(seedname), file=f)
-                print("\"{0}_band.dat\" u 1:($2-{1}):(0) every 10 w p lc 5, \\".format(
+            print("splot \"{0}_akw.dat\", \\".format(seedname), file=f)
+            print("\"{0}_eig0.dat\" u 1:($2-{1}):(0) every 5 w p lc 5".format(
                     seedname, p['system']['mu']), file=f)
-                print("\"./dir-wan/dat.iband\" u ($1*{0}):($2-{1}):(0) every 10 w p lc 5".format(
-                    xk_label[nnode - 1], p['system']['mu']), file=f)
-            else:
-                print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)
         print("    Usage:")
         print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))

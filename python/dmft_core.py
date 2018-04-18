@@ -76,7 +76,6 @@ class DMFTCoreSolver:
         self.SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
         u_file = HDFArchive(seedname+'.h5', 'r')
         self.Umat = u_file["DCore"]["Umat"]
-        self.SO = params['model']['spin_orbit']
 
         # Construct an impurity solver
         beta = float(params['system']['beta'])
@@ -94,13 +93,13 @@ class DMFTCoreSolver:
         for ish in range(self.SK.n_inequiv_shells):
 
             n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim']
-            if self.SK.SO == 1:
+            if self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['SO'] == 1:
                 n_orb /= 2
             spin_names = ["up", "down"]
             orb_names = [i for i in range(n_orb)]
 
             map_operator_structure = {}
-            if self.SO:
+            if self.SK.SO:
                 for i in range(n_orb):
                     map_operator_structure[('up', i)] = ('ud', i)
                     map_operator_structure[('down', i)] = ('ud', i+n_orb)
@@ -132,7 +131,7 @@ class DMFTCoreSolver:
                     self.S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
             elif self.solver_name == "TRIQS/hubbard-I":
                 from hubbard_solver_matrix import Solver
-                self.S.append(Solver(beta=beta, norb=n_orb, n_msb=n_iw, use_spin_orbit=self.SO))
+                self.S.append(Solver(beta=beta, norb=n_orb, n_msb=n_iw, use_spin_orbit=self.SK.SO))
             elif self.solver_name == "ALPS/cthyb":
                 from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
                 if params['system']['n_l'] > 0:
@@ -266,7 +265,7 @@ class DMFTCoreSolver:
                     # Initial guess of Sigma (Hartree-Fock)
                     #
                     self.calc_dc_matrix(dm, orb=ish, u_mat=self.Umat[self.SK.inequiv_to_corr[ish]])
-                    if self.SO:
+                    if self.SK.SO:
                         s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['ud'][0, 0]
                     else:
                         s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['up'][0, 0]

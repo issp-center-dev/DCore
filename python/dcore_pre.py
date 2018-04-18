@@ -99,6 +99,61 @@ def __generate_wannier90_model(params, f):
         print("{0} {1} {2} {3} 0 0".format(i, equiv[i], 0, norb[i]), file=f)
 
 
+def para2noncol(params):
+    """
+    Duplicate orbitals when we perform non-colinear DMFT from the colinear DFT calculation.
+    """
+    ncor = params["model"]['ncor']
+    norb_list = re.findall(r'\d+', params["model"]["norb"])
+    norb = [int(norb_list[icor]) for icor in range(ncor)]
+    #
+    # Read Wannier90 file
+    #
+    w90 = Wannier90Converter(seedname=params["model"]["seedname"])
+    nr, rvec, rdeg, nwan, hamr = w90.read_wannier90hr(params["model"]["seedname"] + "_col_hr.dat")
+    #
+    # Non correlated shell
+    #
+    ncor += 1
+    norb_tot = sum(norb)
+    norb.append(nwan - norb_tot)
+    #
+    # Output new wannier90 file
+    #
+    with open(params["model"]["seedname"] + "_hr.dat", 'w') as f:
+
+        print("Converted from Para to Non-collinear", file=f)
+        print(nwan*2, file=f)
+        print(nr, file=f)
+        for ir in range(nr):
+            print("%5d" % rdeg[ir], end="", file=f)
+            if ir % 15 == 14:
+                print("", file=f)
+        if nr % 15 != 0:
+            print("", file=f)
+        #
+        # Hopping
+        #
+        for ir in range(nr):
+            iorb2 = 0
+            for icor in range(ncor):
+                for ispin in range(2):
+                    for iorb in range(norb[icor]):
+                        iorb2 += 1
+                        jorb2 = 0
+                        for jcor in range(ncor):
+                            for jspin in range(2):
+                                for jorb in range(norb[jcor]):
+                                    jorb2 += 1
+                                    if ispin == jspin:
+                                        hamr2 = hamr[ir][jorb, iorb]
+                                    else:
+                                        hamr2 = 0.0 + 0.0j
+                                    print("%5d%5d%5d%5d%5d%12.6f%12.6f" %
+                                          (rvec[ir, 0], rvec[ir, 1], rvec[ir, 2], jorb2, iorb2,
+                                           hamr2.real, hamr2.imag), file=f)
+
+
 def __generate_lattice_model(params, f):
     """
     Compute hopping etc. for A(k,w) of preset models
@@ -449,6 +504,14 @@ def dcore_pre(filename):
     print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
     seedname = p["model"]["seedname"]
     if p["model"]["lattice"] == 'wannier90':
+        #
+        # non_colinear flag is used only for the case that COLINEAR DFT calculation
+        #
+        if p["model"]["spin_orbit"]:
+            p["model"]["non_colinear"] = False
+        #
+        if p["model"]["non_colinear"]:
+            para2noncol(p)
         with open(seedname+'.inp', 'w') as f:
             __generate_wannier90_model(p, f)
         # Convert General-Hk to SumDFT-HDF5 format
@@ -468,7 +531,7 @@ def dcore_pre(filename):
     #
     # Spin-Orbit case
     #
-    if p["model"]["spin_orbit"]:
+    if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
         f = HDFArchive(seedname + '.h5', 'a')
         f["dft_input"]["SP"] = 1
         f["dft_input"]["SO"] = 1
