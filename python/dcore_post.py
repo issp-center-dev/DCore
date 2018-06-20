@@ -132,7 +132,7 @@ class DMFTCoreTools:
             if mpi.is_master_node():
                 print("    Iteration {0}".format(iteration_number))
             for ish in range(nsh):
-                sol[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
+                sol[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(iteration_number)][str(ish)]
                 # set BlockGf sigma_w
                 block_names = list(sol[ish].Sigma_iw.indices)
 
@@ -198,7 +198,7 @@ class DMFTCoreTools:
         # Read info from HDF file
         ar = HDFArchive(self._seedname + '.out.h5', 'r')
         for ish in range(nsh):
-            self._solver.S[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ish)]
+            self._solver.S[ish].Sigma_iw << ar['dmft_out']['Sigma_iw'][str(ar['dmft_out']['iterations'])][str(ish)]
         things_to_read = ['n_k', 'n_orbitals', 'proj_mat',
                           'hopping', 'n_parproj', 'proj_mat_all']
         value_read = skt.read_input_from_hdf(
@@ -210,24 +210,28 @@ class DMFTCoreTools:
         skt.set_Sigma([self._solver.S[ish].Sigma_iw for ish in range(nsh)])  # set Sigma into the SumK class
 
         den = numpy.zeros([skt.n_k, 2-skt.SO, skt.n_orbitals[0, 0], skt.n_orbitals[0, 0]], numpy.complex_)
-        ev = numpy.zeros([skt.n_k, 1, skt.n_orbitals[0, 0]], numpy.float_)
+        ev0 = numpy.zeros([skt.n_k, 1, skt.n_orbitals[0, 0]], numpy.float_)
+        #  ev = numpy.zeros([skt.n_k, len(spn), skt.n_orbitals[0, 0]], numpy.float_)
 
         ikarray = numpy.array(range(skt.n_k))
         for ik in mpi.slice_array(ikarray):
             g_latt = skt.lattice_gf(
                 ik=ik, mu=mu, iw_or_w="iw", beta=beta, with_Sigma=True, with_dc=with_dc)
             den0 = g_latt.density()
+            g_latt.invert()
             for isp in range(len(spn)):
                 den[ik, isp, :, :] = den0[spn[isp]][:, :]
                 #
                 # eigenvalue
                 #
-            ev[ik, :, :] = numpy.linalg.eigvalsh(skt.hopping[ik, :, :, :])
+                #  ev[ik, isp, :] =  numpy.linalg.eigvalsh(g_latt[spn[isp]].data[len(g_latt[spn[isp]].mesh)/2, :, :])
+            ev0[ik, :, :] = numpy.linalg.eigvalsh(skt.hopping[ik, :, :, :])
         #
         # Collect density matrix across processes
         #
         den = mpi.all_reduce(mpi.world, den, lambda x, y: x + y)
-        ev = mpi.all_reduce(mpi.world, ev, lambda x, y: x + y)
+        ev0 = mpi.all_reduce(mpi.world, ev0, lambda x, y: x + y)
+        # ev = mpi.all_reduce(mpi.world, ev, lambda x, y: x + y)
         mpi.barrier()
         #
         # Output momentum distribution to file
@@ -268,7 +272,8 @@ class DMFTCoreTools:
                 for isp in spn:
                     for iorb in range(skt.n_orbitals[0, 0]):
                         for ik in range(skt.n_k):
-                            print("%f %f" % (self._xk[ik]+offset, ev[ik, 0, iorb]), file=fo)
+                            print("%f %f" % (self._xk[ik]+offset, ev0[ik, 0, iorb]), file=fo)
+                            #  print("%f %f %f" % (self._xk[ik]+offset, ev0[ik, 0, iorb], ev[ik, 0, iorb]), file=fo)
                         print("", file=fo)
                     offset = self._xk[skt.n_k-1]*1.1
                     print("", file=fo)

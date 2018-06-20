@@ -284,6 +284,9 @@ def __generate_umat(p):
     # ####  The format of this block is not fixed  ####
     #
     ncor = p["model"]['ncor']
+    kanamori = numpy.zeros((ncor, 3), numpy.float_)
+    slater_f = numpy.zeros((ncor, 4), numpy.float_)
+    slater_l = numpy.zeros(ncor, numpy.int_)
     #
     # Read interaction from input file
     #
@@ -299,7 +302,6 @@ def __generate_umat(p):
             sys.exit(-1)
 
         kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
-        kanamori = numpy.zeros((ncor, 3), numpy.float_)
         if len(kanamori_list) != ncor:
             print("\nError! The length of \"kanamori\" is wrong.")
             sys.exit(-1)
@@ -324,8 +326,6 @@ def __generate_umat(p):
 
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_uj"])
-        slater_f = numpy.zeros((ncor, 4), numpy.float_)
-        slater_l = numpy.zeros(ncor, numpy.int_)
         if len(f_list) != ncor:
             print("\nError! The length of \"slater_uj\" is wrong.")
             sys.exit(-1)

@@ -21,7 +21,6 @@ import argparse
 from dmft_core import DMFTCoreSolver
 from pytriqs.applications.dft.sumk_dft_tools import *
 from matplotlib.gridspec import GridSpec
-import numpy
 
 from program_options import *
 
@@ -72,7 +71,7 @@ def dcore_check(filename, fileplot=None):
     ar = HDFArchive(output_file, 'r')
     iteration_number = ar[output_group]['iterations']
     perform_tail_fit = p["system"]["perform_tail_fit"] and \
-                       not ar[output_group]['parameters']["system"]["perform_tail_fit"]
+        not ar[output_group]['parameters']["system"]["perform_tail_fit"]
     nsh = solver.SK.n_inequiv_shells
     print("  Total number of Iteration: {0}".format(iteration_number))
     print("\n  Iter  Chemical-potential")
@@ -96,7 +95,7 @@ def dcore_check(filename, fileplot=None):
             for ish in range(nsh):
                 spn = solver.SK.spin_block_names[solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['SO']]
                 norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
-                sol[ish].Sigma_iw << ar[output_group]['Sigma-log'][str(itr)][str(ish)]
+                sol[ish].Sigma_iw << ar[output_group]['Sigma_iw'][str(itr)][str(ish)]
                 sigma_iw_fit = sol[ish].Sigma_iw.copy()
                 if perform_tail_fit:
                     tail_fit(sigma_iw_fit, fit_max_moment=p["system"]["fit_max_moment"],

@@ -151,12 +151,9 @@ class DMFTCoreSolver:
         with_dc = self._params['system']['with_dc']
 
         fix_mu = self._params['system']['fix_mu']
-        if fix_mu:
-            mu = self._params['system']['mu']
         self.SK.chemical_potential = self._params['system']['mu']
 
         sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
-        delta_mix = self._params['control']['delta_mix']  # Mixing factor of Delta as input for the AIM
 
         prec_mu = self._params['system']['prec_mu']
 
@@ -183,7 +180,7 @@ class DMFTCoreSolver:
                                 raise RuntimeError("No previous runs to be loaded from " + output_file + "!")
                             print("Loading Sigma_iw... ")
                             for ish in range(nsh):
-                                s[ish].Sigma_iw << ar['Sigma_iw'][str(ish)]
+                                s[ish].Sigma_iw << ar['Sigma_iw'][str(ar['iterations'])][str(ish)]
                         else:
                             del f[output_group]
                             f.create_group(output_group)
@@ -193,8 +190,7 @@ class DMFTCoreSolver:
                     #
                     # Sub group for something
                     #
-                    for gname in ['Sigma_iw', 'G0-log', 'G-log', 'Sigma-log', 'G_iw', 'G_l',
-                                  'chemical_potential', 'Delta_iw']:
+                    for gname in ['Sigma_iw', 'G_l', 'chemical_potential']:
                         if not (gname in f[output_group]):
                             f[output_group].create_group(gname)
             except Exception as e:
@@ -227,7 +223,7 @@ class DMFTCoreSolver:
 
             sk.set_Sigma([s[ish].Sigma_iw for ish in range(nsh)])   # set Sigma into the SumK class
             if fix_mu:
-                chemical_potential = mu
+                chemical_potential = self._params['system']['mu']
                 chemical_potential = mpi.bcast(chemical_potential)
                 sk.set_mu(chemical_potential)
             else:
@@ -270,22 +266,10 @@ class DMFTCoreSolver:
                     else:
                         s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['up'][0, 0]
             #
-            # Calculate new G0_iw to input into the solver:
+            # Calculate new G0_iw as an input of solver:
             #
             for ish in range(nsh):
-                if mpi.is_master_node():
-                    # We can do a mixing of Delta in order to stabilize the DMFT iterations:
-                    s[ish].G0_iw << s[ish].Sigma_iw + inverse(s[ish].G_iw)
-                    ar = HDFArchive(output_file, 'a')
-                    if iteration_number > previous_runs+1 or previous_present:
-                        delta_new = (delta_mix * delta(s[ish].G0_iw))\
-                            + (1.0-delta_mix) * ar[output_group]['Delta_iw'][str(ish)]
-                        s[ish].G0_iw << s[ish].G0_iw + delta(s[ish].G0_iw) - delta_new
-                    ar[output_group]['Delta_iw'][str(ish)] = delta(s[ish].G0_iw)
-                    s[ish].G0_iw << inverse(s[ish].G0_iw)
-                    del ar
-
-                s[ish].G0_iw << mpi.bcast(s[ish].G0_iw)
+                s[ish].G0_iw << dyson(Sigma_iw=s[ish].Sigma_iw, G_iw=s[ish].G_iw)
 
             mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
 
@@ -311,8 +295,9 @@ class DMFTCoreSolver:
                                  fit_min_w=self._params["system"]["fit_min_w"],
                                  fit_max_w=self._params["system"]["fit_max_w"])
                     if self._params['system']['n_l'] > 0:
-                        for name, g in s[ish].G_l: s[ish].G_iw[name] << LegendreToMatsubara(g)
-                        s[ish].Sigma_iw = dyson(G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw)
+                        for name, g in s[ish].G_l:
+                            s[ish].G_iw[name] << LegendreToMatsubara(g)
+                        s[ish].Sigma_iw << dyson(G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw)
 
             # Solved. Now do post-processing:
             for ish in range(nsh):
@@ -324,12 +309,10 @@ class DMFTCoreSolver:
                     ar = HDFArchive(output_file, 'a')
                     for ish in range(nsh):
                         s[ish].Sigma_iw << sigma_mix * s[ish].Sigma_iw \
-                                    + (1.0-sigma_mix) * ar[output_group]['Sigma_iw'][str(ish)]
-                        s[ish].G_iw << sigma_mix * s[ish].G_iw \
-                            + (1.0-sigma_mix) * ar[output_group]['G_iw'][str(ish)]
+                                    + (1.0-sigma_mix) * ar[output_group]['Sigma_iw'][str(iteration_number-1)][str(ish)]
+
                     del ar
                 for ish in range(nsh):
-                    s[ish].G_iw << mpi.bcast(s[ish].G_iw)
                     s[ish].Sigma_iw << mpi.bcast(s[ish].Sigma_iw)
 
             # Write Sigma and G to the hdf5 archive:
@@ -338,20 +321,14 @@ class DMFTCoreSolver:
                 ar[output_group]['iterations'] = iteration_number
                 ar[output_group]['chemical_potential'][str(iteration_number)] = sk.chemical_potential
                 for ish in range(nsh):
-                    ar[output_group]['G_iw'][str(ish)] = s[ish].G_iw
-                    ar[output_group]['Sigma_iw'][str(ish)] = s[ish].Sigma_iw
                     if self._params['system']['n_l'] > 0:
                         ar[output_group]['G_l'][str(ish)] = s[ish].G_l
                     #
-                    # Save the history of G0, G, Sigma
+                    # Save the history of Sigma
                     #
-                    for gname in ['G0-log', 'G-log', 'Sigma-log']:
-                        if not (str(iteration_number) in ar[output_group][gname]):
-                            ar[output_group][gname].create_group(str(iteration_number))
-
-                    ar[output_group]['G0-log'][str(iteration_number)][str(ish)] = s[ish].G0_iw
-                    ar[output_group]['G-log'][str(iteration_number)][str(ish)] = s[ish].G_iw
-                    ar[output_group]['Sigma-log'][str(iteration_number)][str(ish)] = s[ish].Sigma_iw
+                    if not (str(iteration_number) in ar[output_group]['Sigma_iw']):
+                        ar[output_group]['Sigma_iw'].create_group(str(iteration_number))
+                    ar[output_group]['Sigma_iw'][str(iteration_number)][str(ish)] = s[ish].Sigma_iw
                 del ar
 
             mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
