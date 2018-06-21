@@ -461,8 +461,22 @@ def __generate_umat(p):
             start += norb[icor]
     #
     for icor in range(ncor):
-        u_mat[icor][:, :].imag = 0.0
-    f["DCore"]["Umat"] = u_mat
+        u_mat[icor][:, :, :, :].imag = 0.0
+    #
+    # Spin & Orb
+    #
+    u_mat2 = [numpy.zeros((norb[icor]*2, norb[icor]*2, norb[icor]*2, norb[icor]*2), numpy.complex_)
+              for icor in range(ncor)]
+    for icor in range(ncor):
+        no = norb[icor]
+        for i1 in range(2):
+            for i2 in range(2):
+                for i3 in range(2):
+                    for i4 in range(2):
+                        if i1 == i3 and i2 == i4:
+                            u_mat2[icor][i1*no:(i1+1)*no, i2*no:(i2+1)*no, i3*no:(i3+1)*no, i4*no:(i4+1)*no]\
+                                = u_mat[icor][:, :, :, :]
+    f["DCore"]["Umat"] = u_mat2
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
     del f
 

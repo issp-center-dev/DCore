@@ -23,6 +23,7 @@ import time
 import __builtin__
 from pytriqs.operators.util import *
 from pytriqs.applications.dft.sumk_dft import *
+from pytriqs.operators import *
 
 from program_options import *
 
@@ -88,34 +89,8 @@ class DMFTCoreSolver:
             if not mpi.is_master_node():
                 del self._solver_params['verbosity']
 
-        self._h_int = []
         self.S = []
         for ish in range(self.SK.n_inequiv_shells):
-
-            n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim']
-            if self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['SO'] == 1:
-                n_orb /= 2
-            spin_names = ["up", "down"]
-            orb_names = [i for i in range(n_orb)]
-
-            map_operator_structure = {}
-            if self.SK.SO:
-                for i in range(n_orb):
-                    map_operator_structure[('up', i)] = ('ud', i)
-                    map_operator_structure[('down', i)] = ('ud', i+n_orb)
-            else:
-                for i in range(n_orb):
-                    map_operator_structure[('up', i)] = ('up', i)
-                    map_operator_structure[('down', i)] = ('down', i)
-
-            # Construct Hamiltonian
-
-            self._h_int.append(
-                h_int_slater(spin_names, orb_names, U_matrix=self.Umat[self.SK.inequiv_to_corr[ish]], off_diag=True,
-                             map_operator_structure=map_operator_structure, complex=False)  # tentative
-                )
-            if params["model"]["density_density"]:
-                self._h_int[ish] = diagonal_part(self._h_int[ish])
 
             # Use GF structure determined by DFT blocks
             gf_struct = self.SK.gf_struct_solver[ish]
@@ -130,6 +105,8 @@ class DMFTCoreSolver:
                 else:
                     self.S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
             elif self.solver_name == "TRIQS/hubbard-I":
+                n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim'] / (self.SK.SO + 1)
+
                 from hubbard_solver_matrix import Solver
                 self.S.append(Solver(beta=beta, norb=n_orb, n_msb=n_iw, use_spin_orbit=self.SK.SO))
             elif self.solver_name == "ALPS/cthyb":
@@ -283,12 +260,21 @@ class DMFTCoreSolver:
                 # calculate non-interacting atomic level positions:
                 eal = sk.eff_atomic_levels()
                 for ish in range(nsh):
+                    norb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim'] / (self.SK.SO + 1)
+                    umat2 = numpy.zeros((norb, norb, norb, norb), numpy.complex_)
+                    umat2[:, :, :, :] = self.Umat[self.SK.inequiv_to_corr[ish]][0:norb, 0:norb, 0:norb, 0:norb]
+
                     s[ish].set_atomic_levels(eal=eal[ish])
-                    s[ish].solve(u_mat=numpy.real(self.Umat[self.SK.inequiv_to_corr[ish]]), verbosity=verbosity)
+                    s[ish].solve(u_mat=numpy.real(umat2), verbosity=verbosity)
             else:
                 for ish in range(nsh):
+
+                    h_int = self.h_int_general(ish=ish)
+                    if self._params["model"]["density_density"]:
+                        h_int = diagonal_part(h_int)
+
                     self._solver_params['random_seed'] = 34788 + 928374 * mpi.rank + 1000*ish
-                    s[ish].solve(h_int=self._h_int[ish], **self._solver_params)
+                    s[ish].solve(h_int=h_int, **self._solver_params)
                     if self._params["system"]["perform_tail_fit"]:
                         tail_fit(Sigma_iw=s[ish].Sigma_iw, G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw,
                                  fit_max_moment=self._params["system"]["fit_max_moment"],
@@ -397,12 +383,12 @@ class DMFTCoreSolver:
                             #
                             for sp2 in spn:
                                 self.SK.dc_imp[icrsh][sp1][i1, i2] += \
-                                    numpy.sum(u_mat[i1, :, i2, :] * dens_mat[sp2][:, :])
+                                    numpy.sum(u_mat[i1, 0:dim, i2, 0:dim] * dens_mat[sp2][:, :])
                             #
                             # Exchange
                             #
                             self.SK.dc_imp[icrsh][sp1][i1, i2] += \
-                                - numpy.sum(u_mat[i1, :, :, i2] * dens_mat[sp1][:, :])
+                                - numpy.sum(u_mat[i1, 0:dim, 0:dim, i2] * dens_mat[sp1][:, :])
             else:
                 self.SK.dc_imp[icrsh]["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
                 for s1 in range(2):
@@ -413,13 +399,13 @@ class DMFTCoreSolver:
                                 # Hartree
                                 #
                                 self.SK.dc_imp[icrsh]["ud"][i1+s1*dim, i2+s1*dim] += numpy.sum(
-                                    u_mat[i1, :, i2, :] * dens_mat["ud"][s2*dim:s2*dim+dim, s2*dim:s2*dim+dim]
+                                    u_mat[i1, 0:dim, i2, 0:dim] * dens_mat["ud"][s2*dim:s2*dim+dim, s2*dim:s2*dim+dim]
                                 )
                                 #
                                 # Exchange
                                 #
                                 self.SK.dc_imp[icrsh]["ud"][i1 + s1 * dim, i2 + s2 * dim] += numpy.sum(
-                                    u_mat[i1, :, :, i2]
+                                    u_mat[i1, 0:dim, 0:dim, i2]
                                     * dens_mat["ud"][s2 * dim:s2 * dim + dim, s1 * dim:s1 * dim + dim]
                                 )
 
@@ -432,3 +418,29 @@ class DMFTCoreSolver:
                     for i2 in range(dim_tot):
                         print("{0:.3f} ".format(self.SK.dc_imp[self.SK.inequiv_to_corr[orb]][sp1][i1, i2]), end="")
                     print("")
+
+    def h_int_general(self, ish):
+
+        n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim']
+
+        if self.SK.SO:
+            index_name = [("", 0)] * n_orb
+            for i in range(n_orb):
+                index_name[i] = ('ud', i)
+        else:
+            index_name = [("", 0)] * (n_orb*2)
+            for i in range(n_orb):
+                index_name[i] = ('up', i)
+                index_name[i+n_orb] = ('down', i)
+            n_orb *= 2
+
+        ham = Operator()
+        for i1 in range(n_orb):
+            for i2 in range(n_orb):
+                for i3 in range(n_orb):
+                    for i4 in range(n_orb):
+                        ham += 0.5 * self.Umat[ish][i1, i2, i3, i4] \
+                               * c_dag(*index_name[i1]) * c_dag(*index_name[i2]) \
+                               * c(*index_name[i4]) * c(*index_name[i3])
+
+        return ham

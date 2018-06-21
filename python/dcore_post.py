@@ -120,10 +120,14 @@ class DMFTCoreTools:
             # set atomic levels:
             eal = skt.eff_atomic_levels()
             for ish in range(nsh):
+                norb = skt.corr_shells[skt.inequiv_to_corr[ish]]['dim'] / (skt.SO + 1)
+                umat2 = numpy.zeros((norb, norb, norb, norb), numpy.complex_)
+                umat2[:, :, :, :] = core.Umat[skt.inequiv_to_corr[ish]][0:norb, 0:norb, 0:norb, 0:norb]
+
                 sol[ish].set_atomic_levels(eal=eal[ish])
                 # Run the solver to get GF and self-energy on the real axis
                 sol[ish].gf_realomega(ommin=self._omega_min, ommax=self._omega_max, n_om=self._Nomega,
-                                      u_mat=numpy.real(core.Umat[ish]))
+                                      u_mat=numpy.real(umat2))
                 sigma_w.append(sol[ish].Sigma_w)
         elif core.solver_name == "TRIQS/cthyb" or core.solver_name == "ALPS/cthyb":
             # Read info from HDF file
