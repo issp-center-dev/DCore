@@ -24,7 +24,7 @@ import __builtin__
 from pytriqs.operators.util import *
 from pytriqs.applications.dft.sumk_dft import *
 from pytriqs.operators import *
-
+import numpy
 from program_options import *
 
 
@@ -252,13 +252,13 @@ class DMFTCoreSolver:
 
             mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Solve the impurity problem  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
+            eal = sk.eff_atomic_levels()
             if self.solver_name == "TRIQS/hubbard-I":
                 if 'verbosity' in self._solver_params.keys():
                     verbosity = self._solver_params["verbosity"]
                 else:
                     verbosity = 0
                 # calculate non-interacting atomic level positions:
-                eal = sk.eff_atomic_levels()
                 for ish in range(nsh):
                     norb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim'] / (self.SK.SO + 1)
                     umat2 = numpy.zeros((norb, norb, norb, norb), numpy.complex_)
@@ -269,9 +269,12 @@ class DMFTCoreSolver:
             else:
                 for ish in range(nsh):
 
-                    h_int = self.h_int_general(ish=ish)
+                    eigvec, umat2 = self.diag_eal(ish=ish, eal=eal[ish])
+                    h_int = self.h_int_general(ish=ish, u_mat=umat2)
                     if self._params["model"]["density_density"]:
                         h_int = diagonal_part(h_int)
+                    for bname, gf in s[ish].G0_iw:
+                        gf.from_L_G_R(eigvec[bname].transpose().conjugate(), gf, eigvec[bname])
 
                     self._solver_params['random_seed'] = 34788 + 928374 * mpi.rank + 1000*ish
                     s[ish].solve(h_int=h_int, **self._solver_params)
@@ -284,6 +287,10 @@ class DMFTCoreSolver:
                         for name, g in s[ish].G_l:
                             s[ish].G_iw[name] << LegendreToMatsubara(g)
                         s[ish].Sigma_iw << dyson(G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw)
+                    for bname, gf in s[ish].Sigma_iw:
+                        gf.from_L_G_R(eigvec[bname], gf, eigvec[bname].transpose().conjugate())
+                    for bname, gf in s[ish].G_l:
+                        gf.from_L_G_R(eigvec[bname], gf, eigvec[bname].transpose().conjugate())
 
             # Solved. Now do post-processing:
             for ish in range(nsh):
@@ -419,7 +426,7 @@ class DMFTCoreSolver:
                         print("{0:.3f} ".format(self.SK.dc_imp[self.SK.inequiv_to_corr[orb]][sp1][i1, i2]), end="")
                     print("")
 
-    def h_int_general(self, ish):
+    def h_int_general(self, ish, u_mat):
 
         n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim']
 
@@ -439,8 +446,30 @@ class DMFTCoreSolver:
             for i2 in range(n_orb):
                 for i3 in range(n_orb):
                     for i4 in range(n_orb):
-                        ham += 0.5 * self.Umat[ish][i1, i2, i3, i4] \
+                        ham += 0.5 * u_mat[i1, i2, i3, i4] \
                                * c_dag(*index_name[i1]) * c_dag(*index_name[i2]) \
                                * c(*index_name[i4]) * c(*index_name[i3])
 
         return ham
+
+    def diag_eal(self, ish, eal):
+
+        eigvec = copy.deepcopy(eal)
+        spn = self.SK.spin_block_names[self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['SO']]
+        for sp in spn:
+            eigval, eigvec[sp] = numpy.linalg.eigh(eal[sp])
+            # eigvec[sp] = numpy.identity(len(eigval), numpy.complex_)  # debug
+
+        if self.SK.SO:
+            rot = eigvec['ud']
+        else:
+            n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim']
+            rot = numpy.zeros((n_orb*2, n_orb*2), numpy.complex_)
+            rot[0:n_orb, 0:n_orb] = eigvec['up']
+            rot[n_orb:2*n_orb, n_orb:2*n_orb] = eigvec['down']
+
+        u_mat2 = copy.deepcopy(self.Umat[self.SK.inequiv_to_corr[ish]])
+        numpy.einsum("ijkl,im,jn,ko,lp", u_mat2,
+                     numpy.conj(rot), numpy.conj(rot), rot, rot)
+
+        return eigvec, u_mat2
