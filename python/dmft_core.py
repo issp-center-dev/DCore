@@ -252,7 +252,6 @@ class DMFTCoreSolver:
 
             mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Solve the impurity problem  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
-            eal = sk.eff_atomic_levels()
             if self.solver_name == "TRIQS/hubbard-I":
                 if 'verbosity' in self._solver_params.keys():
                     verbosity = self._solver_params["verbosity"]
@@ -264,12 +263,16 @@ class DMFTCoreSolver:
                     umat2 = numpy.zeros((norb, norb, norb, norb), numpy.complex_)
                     umat2[:, :, :, :] = self.Umat[self.SK.inequiv_to_corr[ish]][0:norb, 0:norb, 0:norb, 0:norb]
 
+                    eal = sk.eff_atomic_levels()
                     s[ish].set_atomic_levels(eal=eal[ish])
                     s[ish].solve(u_mat=numpy.real(umat2), verbosity=verbosity)
             else:
                 for ish in range(nsh):
 
-                    eigvec, umat2 = self.diag_eal(ish=ish, eal=eal[ish])
+                    h0_loc = {}
+                    for bname, gf in s[ish].G0_iw:
+                        h0_loc[bname] = gf.tail[2]
+                    eigvec, umat2 = self.diag_eal(ish=ish, eal=h0_loc)
                     h_int = self.h_int_general(ish=ish, u_mat=umat2)
                     if self._params["model"]["density_density"]:
                         h_int = diagonal_part(h_int)
@@ -468,8 +471,6 @@ class DMFTCoreSolver:
             rot[0:n_orb, 0:n_orb] = eigvec['up']
             rot[n_orb:2*n_orb, n_orb:2*n_orb] = eigvec['down']
 
-        u_mat2 = copy.deepcopy(self.Umat[self.SK.inequiv_to_corr[ish]])
-        numpy.einsum("ijkl,im,jn,ko,lp", u_mat2,
-                     numpy.conj(rot), numpy.conj(rot), rot, rot)
-
+        u_mat2 = numpy.einsum("ijkl,im,jn,ko,lp", self.Umat[self.SK.inequiv_to_corr[ish]],
+                              numpy.conj(rot), numpy.conj(rot), rot, rot)
         return eigvec, u_mat2
