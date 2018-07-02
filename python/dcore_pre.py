@@ -152,7 +152,7 @@ def para2noncol(params):
                                     jorb1 += 1
                                     jorb2 += 1
                                     if ispin == jspin:
-                                        hamr2 = hamr[ir][jorb1, iorb1]
+                                        hamr2 = hamr[ir][jorb1-1, iorb1-1]
                                     else:
                                         hamr2 = 0.0 + 0.0j
                                     print("%5d%5d%5d%5d%5d%12.6f%12.6f" %
