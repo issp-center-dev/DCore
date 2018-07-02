@@ -135,18 +135,24 @@ def para2noncol(params):
         # Hopping
         #
         for ir in range(nr):
+            iorb1 = 0
             iorb2 = 0
             for icor in range(ncor):
                 for ispin in range(2):
+                    iorb1 -= ispin * norb[icor]
                     for iorb in range(norb[icor]):
+                        iorb1 += 1
                         iorb2 += 1
+                        jorb1 = 0
                         jorb2 = 0
                         for jcor in range(ncor):
                             for jspin in range(2):
+                                jorb1 -= jspin * norb[jcor]
                                 for jorb in range(norb[jcor]):
+                                    jorb1 += 1
                                     jorb2 += 1
                                     if ispin == jspin:
-                                        hamr2 = hamr[ir][jorb, iorb]
+                                        hamr2 = hamr[ir][jorb1, iorb1]
                                     else:
                                         hamr2 = 0.0 + 0.0j
                                     print("%5d%5d%5d%5d%5d%12.6f%12.6f" %
@@ -390,7 +396,7 @@ def __generate_umat(p):
 
     corr_shells = f["dft_input"]["corr_shells"]
     norb = [corr_shells[icor]["dim"] for icor in range(ncor)]
-    if p["model"]["spin_orbit"]:
+    if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
         for icor in range(ncor):
             norb[icor] /= 2
 
