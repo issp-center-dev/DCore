@@ -105,7 +105,7 @@ def para2noncol(params):
     """
     ncor = params["model"]['ncor']
     norb_list = re.findall(r'\d+', params["model"]["norb"])
-    norb = [int(norb_list[icor]) for icor in range(ncor)]
+    norb = [int(norb_list[icor]) / 2 for icor in range(ncor)]
     #
     # Read Wannier90 file
     #
