@@ -447,7 +447,7 @@ def dcore_post(filename):
     # Nodes for k-point path
     # knode=(label, k0, k1, k2) in the fractional coordinate
     #
-    knode_list = re.findall(r'\(\w\d?,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["tool"]["knode"])
+    knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["tool"]["knode"])
     knode = numpy.zeros((p["tool"]['nnode'], 3), numpy.float_)
     klabel = ['G'] * p["tool"]['nnode']
     try:
