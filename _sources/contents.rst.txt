@@ -7,5 +7,6 @@ Table of contents
    index
    install
    documentation
+   presentation
    issues
    about
