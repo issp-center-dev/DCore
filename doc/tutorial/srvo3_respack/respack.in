@@ -15,19 +15,19 @@ dzx 0.2 0.5 0.5 0.5
 N_sym_points = 6
 /
 0.000000 0.000000 0.000000
-0.000000 0.500000 0.000000
+0.500000 0.000000 0.000000
 0.500000 0.500000 0.000000
 0.000000 0.000000 0.000000
 0.500000 0.500000 0.500000
-0.000000 0.500000 0.000000
+0.500000 0.000000 0.000000
 &PARAM_VISUALIZATION
 flg_vis_wannier = 1
 ix_vis_min = 0
-ix_vis_max = 0
+ix_vis_max = 1
 iy_vis_min = 0
-iy_vis_max = 0
+iy_vis_max = 1
 iz_vis_min = 0
-iz_vis_max = 0
+iz_vis_max = 1
 /
 &PARAM_CALC_INT
 calc_ifreq = 1

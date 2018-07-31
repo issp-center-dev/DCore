@@ -22,7 +22,11 @@ SCF calculation of Quantum ESPRESSO
 
 The pseudopotentials are downloaded from
 
-http://www.quantum-simulation.org/potentials/sg15_oncv/sg15_oncv_upf_2015-10-07.tar.gz
+http://www.quantum-simulation.org/potentials/sg15_oncv/upf/O_ONCV_PBE-1.0.upf
+
+http://www.quantum-simulation.org/potentials/sg15_oncv/upf/Sr_ONCV_PBE-1.0.upf
+
+http://www.quantum-simulation.org/potentials/sg15_oncv/upf/V_ONCV_PBE-1.0.upf
 
 They are part of
 `The SG15 Optimized Norm-Conserving Vanderbilt (ONCV) pseudopotentials <http://www.quantum-simulation.org/potentials/sg15_oncv/>`_.
@@ -78,13 +82,13 @@ you can plot the original and the wannier-interpolated band structure simultaneo
 
 First, compute the band structure with the following input file:
 
-:download:`band_srvo3.in <../srvo3_qe/band_srvo3.in>`
+:download:`band_srvo3_r.in <band_srvo3_r.in>`
 
-.. literalinclude:: ../srvo3_qe/band_srvo3.in
+.. literalinclude:: band_srvo3_r.in
 
 .. code-block:: bash
 
-   $ mpiexec -np 4 pw.x -in band_srvo3.in
+   $ mpiexec -np 4 pw.x -in band_srvo3_r.in
 
 :download:`bands_srvo3.in <../srvo3_qe/bands_srvo3.in>`
 
