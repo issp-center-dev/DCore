@@ -1,33 +1,31 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Pb with spin-orbit interaction &mdash; DCore 1.0.0 documentation</title>
-    
+    <title>Pb with spin-orbit interaction &#8212; DCore 1.0.0 documentation</title>
     <link rel="stylesheet" href="../../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/dcore.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
         VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
-    <link rel="top" title="DCore 1.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="Documentation" href="../../documentation.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Pb with spin-orbit interaction (multi-atom with QMC)" href="../pb4/pb4.html" />
     <link rel="prev" title="Tutorial with OpenMX" href="../srvo3_openmx/openmx.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
@@ -44,7 +42,7 @@
     </style>
 
   </head>
-  <body role="document">
+  <body>
 <div class="pageheader">
   <ul>
     
@@ -80,7 +78,7 @@
              accesskey="P">previous</a> |</li>
     <li><a href="../../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" accesskey="U">Documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -115,21 +113,18 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../../_sources/tutorial/pb/pb.txt"
+      <li><a href="../../_sources/tutorial/pb/pb.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -146,40 +141,40 @@
 <div class="section" id="scf-calculation-of-quantum-espresso">
 <h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" href="../../_downloads/scf_pb.in" download=""><code class="xref download docutils literal"><span class="pre">scf_pb.in</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
- calculation = &#39;scf&#39;
-      outdir = &#39;./&#39;
-  pseudo_dir = &#39;./&#39;
-      prefix = &#39;pb&#39;
-/
-&amp;SYSTEM
-        nbnd = 30
-       ibrav = 0
-         nat = 1
-        ntyp = 1
-     ecutwfc = 40.000000
-     ecutrho = 320.000000
-occupations = &#39;tetrahedra_opt&#39;
-noncolin = .true.
-lspinorb = .true.
-/
-&amp;ELECTRONS
-/
-CELL_PARAMETERS angstrom
- 2.470100 2.470100 0.000000
- 2.470100 0.000000 -2.470100
- 0.000000 2.470100 -2.470100
-ATOMIC_SPECIES
- Pb 207.200000 Pb.rel-pbe-dn-kjpaw_psl.0.2.2.UPF
-ATOMIC_POSITIONS crystal
- Pb 0.000000 0.000000 0.000000
-K_POINTS automatic
- 8 8 8 0 0 0
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;pb&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+        <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">30</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">1</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">40.000000</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">320.000000</span>
+<span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span>
+<span class="n">noncolin</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="n">lspinorb</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+<span class="o">/</span>
+<span class="n">CELL_PARAMETERS</span> <span class="n">angstrom</span>
+ <span class="mf">2.470100</span> <span class="mf">2.470100</span> <span class="mf">0.000000</span>
+ <span class="mf">2.470100</span> <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">2.470100</span>
+ <span class="mf">0.000000</span> <span class="mf">2.470100</span> <span class="o">-</span><span class="mf">2.470100</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Pb</span> <span class="mf">207.200000</span> <span class="n">Pb</span><span class="o">.</span><span class="n">rel</span><span class="o">-</span><span class="n">pbe</span><span class="o">-</span><span class="n">dn</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="mf">2.</span><span class="n">UPF</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Pb</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+<span class="n">K_POINTS</span> <span class="n">automatic</span>
+ <span class="mi">8</span> <span class="mi">8</span> <span class="mi">8</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>
 </pre></div>
 </div>
 <p>The pseudopotential is included in
 <a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/rel-pbe.0.3.1.tgz">rel-pbe.0.3.1.tgz</a>.</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in scf_pb.in
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in scf_pb.in
 </pre></div>
 </div>
 </div>
@@ -190,107 +185,107 @@ K_POINTS automatic
 <p>Perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.</p>
 <p><a class="reference download internal" href="../../_downloads/nscf_pb.in" download=""><code class="xref download docutils literal"><span class="pre">nscf_pb.in</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre>&amp;CONTROL
- calculation = &#39;bands&#39;
-      outdir = &#39;./&#39;
-  pseudo_dir = &#39;./&#39;
-      prefix = &#39;pb&#39;
-/
-&amp;SYSTEM
-        nbnd = 40
-       ibrav = 0
-         nat = 1
-        ntyp = 1
-     ecutwfc = 40.000000
-     ecutrho = 320.000000
-noncolin = .true.
-lspinorb = .true.
-/
-&amp;ELECTRONS
-/
-CELL_PARAMETERS angstrom
- 2.470100 2.470100 0.000000
- 2.470100 0.000000 -2.470100
- 0.000000 2.470100 -2.470100
-ATOMIC_SPECIES
- Pb 207.200000 Pb.rel-pbe-dn-kjpaw_psl.0.2.2.UPF
-ATOMIC_POSITIONS crystal
- Pb 0.000000 0.000000 0.000000
-K_POINTS crystal
-64
-  0.00000000  0.00000000  0.00000000  1.562500e-02
-  0.00000000  0.00000000  0.25000000  1.562500e-02
-  0.00000000  0.00000000  0.50000000  1.562500e-02
-  0.00000000  0.00000000  0.75000000  1.562500e-02
-  0.00000000  0.25000000  0.00000000  1.562500e-02
-  0.00000000  0.25000000  0.25000000  1.562500e-02
-  0.00000000  0.25000000  0.50000000  1.562500e-02
-  0.00000000  0.25000000  0.75000000  1.562500e-02
-  0.00000000  0.50000000  0.00000000  1.562500e-02
-  0.00000000  0.50000000  0.25000000  1.562500e-02
-  0.00000000  0.50000000  0.50000000  1.562500e-02
-  0.00000000  0.50000000  0.75000000  1.562500e-02
-  0.00000000  0.75000000  0.00000000  1.562500e-02
-  0.00000000  0.75000000  0.25000000  1.562500e-02
-  0.00000000  0.75000000  0.50000000  1.562500e-02
-  0.00000000  0.75000000  0.75000000  1.562500e-02
-  0.25000000  0.00000000  0.00000000  1.562500e-02
-  0.25000000  0.00000000  0.25000000  1.562500e-02
-  0.25000000  0.00000000  0.50000000  1.562500e-02
-  0.25000000  0.00000000  0.75000000  1.562500e-02
-  0.25000000  0.25000000  0.00000000  1.562500e-02
-  0.25000000  0.25000000  0.25000000  1.562500e-02
-  0.25000000  0.25000000  0.50000000  1.562500e-02
-  0.25000000  0.25000000  0.75000000  1.562500e-02
-  0.25000000  0.50000000  0.00000000  1.562500e-02
-  0.25000000  0.50000000  0.25000000  1.562500e-02
-  0.25000000  0.50000000  0.50000000  1.562500e-02
-  0.25000000  0.50000000  0.75000000  1.562500e-02
-  0.25000000  0.75000000  0.00000000  1.562500e-02
-  0.25000000  0.75000000  0.25000000  1.562500e-02
-  0.25000000  0.75000000  0.50000000  1.562500e-02
-  0.25000000  0.75000000  0.75000000  1.562500e-02
-  0.50000000  0.00000000  0.00000000  1.562500e-02
-  0.50000000  0.00000000  0.25000000  1.562500e-02
-  0.50000000  0.00000000  0.50000000  1.562500e-02
-  0.50000000  0.00000000  0.75000000  1.562500e-02
-  0.50000000  0.25000000  0.00000000  1.562500e-02
-  0.50000000  0.25000000  0.25000000  1.562500e-02
-  0.50000000  0.25000000  0.50000000  1.562500e-02
-  0.50000000  0.25000000  0.75000000  1.562500e-02
-  0.50000000  0.50000000  0.00000000  1.562500e-02
-  0.50000000  0.50000000  0.25000000  1.562500e-02
-  0.50000000  0.50000000  0.50000000  1.562500e-02
-  0.50000000  0.50000000  0.75000000  1.562500e-02
-  0.50000000  0.75000000  0.00000000  1.562500e-02
-  0.50000000  0.75000000  0.25000000  1.562500e-02
-  0.50000000  0.75000000  0.50000000  1.562500e-02
-  0.50000000  0.75000000  0.75000000  1.562500e-02
-  0.75000000  0.00000000  0.00000000  1.562500e-02
-  0.75000000  0.00000000  0.25000000  1.562500e-02
-  0.75000000  0.00000000  0.50000000  1.562500e-02
-  0.75000000  0.00000000  0.75000000  1.562500e-02
-  0.75000000  0.25000000  0.00000000  1.562500e-02
-  0.75000000  0.25000000  0.25000000  1.562500e-02
-  0.75000000  0.25000000  0.50000000  1.562500e-02
-  0.75000000  0.25000000  0.75000000  1.562500e-02
-  0.75000000  0.50000000  0.00000000  1.562500e-02
-  0.75000000  0.50000000  0.25000000  1.562500e-02
-  0.75000000  0.50000000  0.50000000  1.562500e-02
-  0.75000000  0.50000000  0.75000000  1.562500e-02
-  0.75000000  0.75000000  0.00000000  1.562500e-02
-  0.75000000  0.75000000  0.25000000  1.562500e-02
-  0.75000000  0.75000000  0.50000000  1.562500e-02
-  0.75000000  0.75000000  0.75000000  1.562500e-02
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;pb&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+        <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">40</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">1</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">40.000000</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">320.000000</span>
+<span class="n">noncolin</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="n">lspinorb</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+<span class="o">/</span>
+<span class="n">CELL_PARAMETERS</span> <span class="n">angstrom</span>
+ <span class="mf">2.470100</span> <span class="mf">2.470100</span> <span class="mf">0.000000</span>
+ <span class="mf">2.470100</span> <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">2.470100</span>
+ <span class="mf">0.000000</span> <span class="mf">2.470100</span> <span class="o">-</span><span class="mf">2.470100</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Pb</span> <span class="mf">207.200000</span> <span class="n">Pb</span><span class="o">.</span><span class="n">rel</span><span class="o">-</span><span class="n">pbe</span><span class="o">-</span><span class="n">dn</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="mf">2.</span><span class="n">UPF</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Pb</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+<span class="n">K_POINTS</span> <span class="n">crystal</span>
+<span class="mi">64</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
 </pre></div>
 </div>
 <p>This <em>k</em>-grid is generated as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> 4
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">kmesh.pl</span></code> is located in the <cite>utility/</cite> directory of Wannier90.</p>
 <p>Then, run <code class="docutils literal"><span class="pre">pw.x</span></code> as</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw.x -in nscf_pb.in
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in nscf_pb.in
 </pre></div>
 </div>
 </div>
@@ -300,7 +295,7 @@ K_POINTS crystal
 It is always required before pw2wannier.x runs.
 We will wannierize Pb 6p orbitals.</p>
 <p><a class="reference download internal" href="../../_downloads/pb.win" download=""><code class="xref download docutils literal"><span class="pre">pb.win</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre>num_bands         =  40 
+<div class="highlight-default"><div class="highlight"><pre><span></span>num_bands         =  40 
 num_wann          =   6
 spinors = .true.
 
@@ -415,40 +410,40 @@ end kpoints
 <p class="first admonition-title">Note</p>
 <p>For the following DMFT calculation,
 the projections of the Wannier functions should be given in the correct order, namely,</p>
-<div class="last highlight-python"><div class="highlight"><pre>begin projections
-First_shell(u)
-First_shell(d)
-Second_shell(u)
-Second_shell(d)
-:
-end projections
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">begin</span> <span class="n">projections</span>
+<span class="n">First_shell</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">First_shell</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">Second_shell</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">Second_shell</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="p">:</span>
+<span class="n">end</span> <span class="n">projections</span>
 </pre></div>
 </div>
 </div>
 <p>The <em>k</em> grid is generated as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
 </pre></div>
 </div>
-<div class="highlight-bash"><div class="highlight"><pre>$ wannier90.x -pp pb
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ wannier90.x -pp pb
 </pre></div>
 </div>
 </div>
 <div class="section" id="qe-to-wannier90-interface">
 <h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference download internal" href="../../_downloads/pw2wan_pb.in" download=""><code class="xref download docutils literal"><span class="pre">pw2wan_pb.in</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre>&amp;inputpp 
-   outdir = &#39;./&#39;
-   prefix = &#39;pb&#39;
-   seedname = &#39;pb&#39;
-   spin_component = &#39;none&#39;
-   write_mmn = .true.
-   write_amn = .true.
-   wan_mode = &#39;standalone&#39;
-   write_spn = .true.
-/
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">inputpp</span> 
+   <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+   <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;pb&#39;</span>
+   <span class="n">seedname</span> <span class="o">=</span> <span class="s1">&#39;pb&#39;</span>
+   <span class="n">spin_component</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+   <span class="n">write_mmn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+   <span class="n">write_amn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+   <span class="n">wan_mode</span> <span class="o">=</span> <span class="s1">&#39;standalone&#39;</span>
+   <span class="n">write_spn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="o">/</span>
 </pre></div>
 </div>
-<div class="highlight-bash"><div class="highlight"><pre>$ mpirun -np <span class="m">4</span> pw2wan.x -in pw2wan_pb.in
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw2wan.x -in pw2wan_pb.in
 </pre></div>
 </div>
 </div>
@@ -456,7 +451,7 @@ end projections
 <h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
 <p>Execute <code class="docutils literal"><span class="pre">wannier90.x</span></code> for the actual wannierization.
 The input file is the same as that for the pre-processing run.</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ wannier90.x pb
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ wannier90.x pb
 </pre></div>
 </div>
 </div>
@@ -464,7 +459,7 @@ The input file is the same as that for the pre-processing run.</p>
 <div class="section" id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" href="../../_downloads/pb.ini" download=""><code class="xref download docutils literal"><span class="pre">pb.ini</span></code></a></p>
-<div class="highlight-ini"><div class="highlight"><pre><span class="k">[model]</span>
+<div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[model]</span>
 <span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
 <span class="na">seedname</span> <span class="o">=</span> <span class="s">pb</span>
 <span class="na">nelec</span> <span class="o">=</span> <span class="s">2.0</span>
@@ -508,7 +503,7 @@ In the following, modified parts of <code class="docutils literal"><span class="
 <ul>
 <li><p class="first">TRIQS/cthyb</p>
 <blockquote>
-<div><div class="highlight-ini"><div class="highlight"><pre><span class="k">[impurity_solver]</span>
+<div><div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
 <span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
 <span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">100000</span>
 <span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
@@ -521,7 +516,7 @@ In the following, modified parts of <code class="docutils literal"><span class="
 </li>
 <li><p class="first">ALPS/cthyb</p>
 <blockquote>
-<div><div class="highlight-ini"><div class="highlight"><pre><span class="k">[impurity_solver]</span>
+<div><div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
 <span class="na">name</span> <span class="o">=</span> <span class="s">ALPS/cthyb</span>
 <span class="na">max_time{int}</span> <span class="o">=</span> <span class="s">1200</span>
 <span class="na">thermalization_time{int}</span> <span class="o">=</span> <span class="s">120</span>
@@ -533,7 +528,7 @@ In the following, modified parts of <code class="docutils literal"><span class="
 </li>
 <li><p class="first">Common change in <code class="docutils literal"><span class="pre">[tool]</span></code> box</p>
 <blockquote>
-<div><div class="highlight-ini"><div class="highlight"><pre><span class="k">[tool]</span>
+<div><div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[tool]</span>
 <span class="na">omega_pade</span> <span class="o">=</span> <span class="s">10.0</span>
 </pre></div>
 </div>
@@ -546,24 +541,24 @@ please try to use <strong>RESPACK</strong> to obtain the interactions.</p>
 </div>
 <div class="section" id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ dcore_pre pb.ini
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ dcore_pre pb.ini
 </pre></div>
 </div>
 </div>
 <div class="section" id="running-self-consistent-dft-dmft-dcore">
 <h3>Running self-consistent DFT+DMFT : dcore<a class="headerlink" href="#running-self-consistent-dft-dmft-dcore" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ dcore pb.ini
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ dcore pb.ini
 </pre></div>
 </div>
 </div>
 <div class="section" id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ dcore_post pb.ini
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ dcore_post pb.ini
 $ gnuplot pb_akw.gp
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/akw_pb.png"><img alt="../../_images/akw_pb.png" class="align-center" src="../../_images/akw_pb.png" style="width: 500px;" /></a>
-<p>&#8220;+&#8221; indicates the original band structure.</p>
+<p>“+” indicates the original band structure.</p>
 </div>
 </div>
 </div>
@@ -591,11 +586,11 @@ $ gnuplot pb_akw.gp
              >previous</a> |</li>
     <li><a href="../../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2017, The University of Tokyo.
+        &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

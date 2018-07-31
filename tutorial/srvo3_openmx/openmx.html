@@ -1,33 +1,31 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Tutorial with OpenMX &mdash; DCore 1.0.0 documentation</title>
-    
+    <title>Tutorial with OpenMX &#8212; DCore 1.0.0 documentation</title>
     <link rel="stylesheet" href="../../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/dcore.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
         VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
-    <link rel="top" title="DCore 1.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="Documentation" href="../../documentation.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Pb with spin-orbit interaction" href="../pb/pb.html" />
     <link rel="prev" title="SrVO3" href="../srvo3_qe/srvo3.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
@@ -44,7 +42,7 @@
     </style>
 
   </head>
-  <body role="document">
+  <body>
 <div class="pageheader">
   <ul>
     
@@ -80,7 +78,7 @@
              accesskey="P">previous</a> |</li>
     <li><a href="../../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" accesskey="U">Documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -108,21 +106,18 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../../_sources/tutorial/srvo3_openmx/openmx.txt"
+      <li><a href="../../_sources/tutorial/srvo3_openmx/openmx.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -146,104 +141,104 @@ In this tutorial, we demonstrate the calculation of SrVO<sub>3</sub>.</p>
 <div class="section" id="scf-computation-and-wannier-with-openmx">
 <h2>SCF computation and Wannier with OpenMX<a class="headerlink" href="#scf-computation-and-wannier-with-openmx" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" href="../../_downloads/scf.dat" download=""><code class="xref download docutils literal"><span class="pre">scf.dat</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre>#
-# File Name
-#
-System.CurrrentDirectory         ./    # default=./
-System.Name                      SrVO3
-level.of.stdout                   1    # default=1 (1-3)
-level.of.fileout                  1    # default=1 (0-2)
-data.path                 /mnt/c/Users/kawamuura/program/openmx-eca/DFT_DATA13/
-#
-# Definition of Atomic Species
-#
-Species.Number       4
-&lt;Definition.of.Atomic.Species
-  Sr  Sr10.0-s2p2d1  Sr_PBE13
-   V  V6.0-s2p1d1     V_PBE13
-   O  O7.0-s2p2d1     O_PBE13
-proj  V6.0-s1p1d1     V_PBE13
-Definition.of.Atomic.Species&gt;
-#
-# Atoms
-#
-Atoms.Number         5
-Atoms.SpeciesAndCoordinates.Unit   FRAC # Ang|AU
-&lt;Atoms.SpeciesAndCoordinates
-1  Sr   0.0  0.0  0.0  5.0  5.0
-2   V   0.5  0.5  0.5  6.5  6.5
-3   O   0.5  0.0  0.5  3.0  3.0
-4   O   0.0  0.5  0.5  3.0  3.0
-5   O   0.5  0.5  0.0  3.0  3.0
-Atoms.SpeciesAndCoordinates&gt;
-Atoms.UnitVectors.Unit  AU  # Ang|AU
-&lt;Atoms.UnitVectors
-7.29738  0.00000  0.00000
-0.00000  7.29738  0.00000
-0.00000  0.00000  7.29738
-Atoms.UnitVectors&gt;
-#
-# SCF or Electronic System
-#
-scf.XcType                 GGA-PBE     # LDA|LSDA-CA|LSDA-PW|GGA-PBE
-scf.SpinPolarization        Off         # On|Off|NC
-scf.maxIter                  50        # default=40
-scf.EigenvalueSolver       band        # DC|GDC|Cluster|Band
-scf.Kgrid                  8 8 8       # means n1 x n2 x n3
-scf.Mixing.Type           rmm-diisk    # Simple|Rmm-Diis|Gr-Pulay|Kerker|Rmm-Diisk
-scf.Init.Mixing.Weight     0.20        # default=0.30
-scf.Min.Mixing.Weight      0.001       # default=0.001
-scf.Max.Mixing.Weight      0.500       # default=0.40
-scf.Mixing.History          7          # default=5
-scf.Mixing.StartPulay       7          # default=6
-scf.Mixing.EveryPulay       1          # default=6
-scf.criterion             1.0e-7       # default=1.0e-6 (Hartree)
-orbitalOpt.Force.Skip       on
-#scf.restart                on
-#
-# Band dispersion
-#
-Band.dispersion              on        # on|off, default=off
-Band.Nkpath  4
-&lt;Band.kpath
-15  0.0  0.0  0.0    0.5  0.0  0.0  g  X
-15  0.5  0.0  0.0    0.5  0.5  0.0  X  M
-15  0.5  0.5  0.0    0.0  0.0  0.0  M  g
-15  0.0  0.0  0.0    0.5  0.5  0.5  g  R
-Band.kpath&gt;
-#
-# Wannier
-#
-Wannier.Func.Calc on #default off
-Wannier.Func.Num 3 #no default
-Wannier.Outer.Window.Bottom  -1.5
-Wannier.Outer.Window.Top      7.0
-Wannier.Inner.Window.Bottom  -1.5
-Wannier.Inner.Window.Top      1.2
-Wannier.Initial.Projectors.Unit FRAC
-&lt;Wannier.Initial.Projectors
-proj-dxy 0.5 0.5 0.5  0.0 0.0 1.0  1.0 0.0 0.0
-proj-dxz 0.5 0.5 0.5  0.0 0.0 1.0  1.0 0.0 0.0
-proj-dyz 0.5 0.5 0.5  0.0 0.0 1.0  1.0 0.0 0.0
-Wannier.Initial.Projectors&gt;
-Wannier.Interpolated.Bands             on
-Wannier.Function.Plot                  on         # default off
-Wannier.Function.Plot.SuperCells      1 1 1       # default=0 0 0
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#</span>
+<span class="c1"># File Name</span>
+<span class="c1">#</span>
+<span class="n">System</span><span class="o">.</span><span class="n">CurrrentDirectory</span>         <span class="o">./</span>    <span class="c1"># default=./</span>
+<span class="n">System</span><span class="o">.</span><span class="n">Name</span>                      <span class="n">SrVO3</span>
+<span class="n">level</span><span class="o">.</span><span class="n">of</span><span class="o">.</span><span class="n">stdout</span>                   <span class="mi">1</span>    <span class="c1"># default=1 (1-3)</span>
+<span class="n">level</span><span class="o">.</span><span class="n">of</span><span class="o">.</span><span class="n">fileout</span>                  <span class="mi">1</span>    <span class="c1"># default=1 (0-2)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">path</span>                 <span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">c</span><span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">kawamuura</span><span class="o">/</span><span class="n">program</span><span class="o">/</span><span class="n">openmx</span><span class="o">-</span><span class="n">eca</span><span class="o">/</span><span class="n">DFT_DATA13</span><span class="o">/</span>
+<span class="c1">#</span>
+<span class="c1"># Definition of Atomic Species</span>
+<span class="c1">#</span>
+<span class="n">Species</span><span class="o">.</span><span class="n">Number</span>       <span class="mi">4</span>
+<span class="o">&lt;</span><span class="n">Definition</span><span class="o">.</span><span class="n">of</span><span class="o">.</span><span class="n">Atomic</span><span class="o">.</span><span class="n">Species</span>
+  <span class="n">Sr</span>  <span class="n">Sr10</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">s2p2d1</span>  <span class="n">Sr_PBE13</span>
+   <span class="n">V</span>  <span class="n">V6</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">s2p1d1</span>     <span class="n">V_PBE13</span>
+   <span class="n">O</span>  <span class="n">O7</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">s2p2d1</span>     <span class="n">O_PBE13</span>
+<span class="n">proj</span>  <span class="n">V6</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">s1p1d1</span>     <span class="n">V_PBE13</span>
+<span class="n">Definition</span><span class="o">.</span><span class="n">of</span><span class="o">.</span><span class="n">Atomic</span><span class="o">.</span><span class="n">Species</span><span class="o">&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># Atoms</span>
+<span class="c1">#</span>
+<span class="n">Atoms</span><span class="o">.</span><span class="n">Number</span>         <span class="mi">5</span>
+<span class="n">Atoms</span><span class="o">.</span><span class="n">SpeciesAndCoordinates</span><span class="o">.</span><span class="n">Unit</span>   <span class="n">FRAC</span> <span class="c1"># Ang|AU</span>
+<span class="o">&lt;</span><span class="n">Atoms</span><span class="o">.</span><span class="n">SpeciesAndCoordinates</span>
+<span class="mi">1</span>  <span class="n">Sr</span>   <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">5.0</span>  <span class="mf">5.0</span>
+<span class="mi">2</span>   <span class="n">V</span>   <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">6.5</span>  <span class="mf">6.5</span>
+<span class="mi">3</span>   <span class="n">O</span>   <span class="mf">0.5</span>  <span class="mf">0.0</span>  <span class="mf">0.5</span>  <span class="mf">3.0</span>  <span class="mf">3.0</span>
+<span class="mi">4</span>   <span class="n">O</span>   <span class="mf">0.0</span>  <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">3.0</span>  <span class="mf">3.0</span>
+<span class="mi">5</span>   <span class="n">O</span>   <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">0.0</span>  <span class="mf">3.0</span>  <span class="mf">3.0</span>
+<span class="n">Atoms</span><span class="o">.</span><span class="n">SpeciesAndCoordinates</span><span class="o">&gt;</span>
+<span class="n">Atoms</span><span class="o">.</span><span class="n">UnitVectors</span><span class="o">.</span><span class="n">Unit</span>  <span class="n">AU</span>  <span class="c1"># Ang|AU</span>
+<span class="o">&lt;</span><span class="n">Atoms</span><span class="o">.</span><span class="n">UnitVectors</span>
+<span class="mf">7.29738</span>  <span class="mf">0.00000</span>  <span class="mf">0.00000</span>
+<span class="mf">0.00000</span>  <span class="mf">7.29738</span>  <span class="mf">0.00000</span>
+<span class="mf">0.00000</span>  <span class="mf">0.00000</span>  <span class="mf">7.29738</span>
+<span class="n">Atoms</span><span class="o">.</span><span class="n">UnitVectors</span><span class="o">&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># SCF or Electronic System</span>
+<span class="c1">#</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">XcType</span>                 <span class="n">GGA</span><span class="o">-</span><span class="n">PBE</span>     <span class="c1"># LDA|LSDA-CA|LSDA-PW|GGA-PBE</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">SpinPolarization</span>        <span class="n">Off</span>         <span class="c1"># On|Off|NC</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">maxIter</span>                  <span class="mi">50</span>        <span class="c1"># default=40</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">EigenvalueSolver</span>       <span class="n">band</span>        <span class="c1"># DC|GDC|Cluster|Band</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">Kgrid</span>                  <span class="mi">8</span> <span class="mi">8</span> <span class="mi">8</span>       <span class="c1"># means n1 x n2 x n3</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">Mixing</span><span class="o">.</span><span class="n">Type</span>           <span class="n">rmm</span><span class="o">-</span><span class="n">diisk</span>    <span class="c1"># Simple|Rmm-Diis|Gr-Pulay|Kerker|Rmm-Diisk</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">Init</span><span class="o">.</span><span class="n">Mixing</span><span class="o">.</span><span class="n">Weight</span>     <span class="mf">0.20</span>        <span class="c1"># default=0.30</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">Min</span><span class="o">.</span><span class="n">Mixing</span><span class="o">.</span><span class="n">Weight</span>      <span class="mf">0.001</span>       <span class="c1"># default=0.001</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">Max</span><span class="o">.</span><span class="n">Mixing</span><span class="o">.</span><span class="n">Weight</span>      <span class="mf">0.500</span>       <span class="c1"># default=0.40</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">Mixing</span><span class="o">.</span><span class="n">History</span>          <span class="mi">7</span>          <span class="c1"># default=5</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">Mixing</span><span class="o">.</span><span class="n">StartPulay</span>       <span class="mi">7</span>          <span class="c1"># default=6</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">Mixing</span><span class="o">.</span><span class="n">EveryPulay</span>       <span class="mi">1</span>          <span class="c1"># default=6</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">criterion</span>             <span class="mf">1.0e-7</span>       <span class="c1"># default=1.0e-6 (Hartree)</span>
+<span class="n">orbitalOpt</span><span class="o">.</span><span class="n">Force</span><span class="o">.</span><span class="n">Skip</span>       <span class="n">on</span>
+<span class="c1">#scf.restart                on</span>
+<span class="c1">#</span>
+<span class="c1"># Band dispersion</span>
+<span class="c1">#</span>
+<span class="n">Band</span><span class="o">.</span><span class="n">dispersion</span>              <span class="n">on</span>        <span class="c1"># on|off, default=off</span>
+<span class="n">Band</span><span class="o">.</span><span class="n">Nkpath</span>  <span class="mi">4</span>
+<span class="o">&lt;</span><span class="n">Band</span><span class="o">.</span><span class="n">kpath</span>
+<span class="mi">15</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>    <span class="mf">0.5</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="n">g</span>  <span class="n">X</span>
+<span class="mi">15</span>  <span class="mf">0.5</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>    <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">0.0</span>  <span class="n">X</span>  <span class="n">M</span>
+<span class="mi">15</span>  <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">0.0</span>    <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="n">M</span>  <span class="n">g</span>
+<span class="mi">15</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>    <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="n">g</span>  <span class="n">R</span>
+<span class="n">Band</span><span class="o">.</span><span class="n">kpath</span><span class="o">&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># Wannier</span>
+<span class="c1">#</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Func</span><span class="o">.</span><span class="n">Calc</span> <span class="n">on</span> <span class="c1">#default off</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Func</span><span class="o">.</span><span class="n">Num</span> <span class="mi">3</span> <span class="c1">#no default</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Outer</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="n">Bottom</span>  <span class="o">-</span><span class="mf">1.5</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Outer</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="n">Top</span>      <span class="mf">7.0</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Inner</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="n">Bottom</span>  <span class="o">-</span><span class="mf">1.5</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Inner</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="n">Top</span>      <span class="mf">1.2</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Initial</span><span class="o">.</span><span class="n">Projectors</span><span class="o">.</span><span class="n">Unit</span> <span class="n">FRAC</span>
+<span class="o">&lt;</span><span class="n">Wannier</span><span class="o">.</span><span class="n">Initial</span><span class="o">.</span><span class="n">Projectors</span>
+<span class="n">proj</span><span class="o">-</span><span class="n">dxy</span> <span class="mf">0.5</span> <span class="mf">0.5</span> <span class="mf">0.5</span>  <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">1.0</span>  <span class="mf">1.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+<span class="n">proj</span><span class="o">-</span><span class="n">dxz</span> <span class="mf">0.5</span> <span class="mf">0.5</span> <span class="mf">0.5</span>  <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">1.0</span>  <span class="mf">1.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+<span class="n">proj</span><span class="o">-</span><span class="n">dyz</span> <span class="mf">0.5</span> <span class="mf">0.5</span> <span class="mf">0.5</span>  <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">1.0</span>  <span class="mf">1.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Initial</span><span class="o">.</span><span class="n">Projectors</span><span class="o">&gt;</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Interpolated</span><span class="o">.</span><span class="n">Bands</span>             <span class="n">on</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Function</span><span class="o">.</span><span class="n">Plot</span>                  <span class="n">on</span>         <span class="c1"># default off</span>
+<span class="n">Wannier</span><span class="o">.</span><span class="n">Function</span><span class="o">.</span><span class="n">Plot</span><span class="o">.</span><span class="n">SuperCells</span>      <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span>       <span class="c1"># default=0 0 0</span>
 </pre></div>
 </div>
-<div class="highlight-bash"><div class="highlight"><pre>$ openmx scf.dat
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ openmx scf.dat
 </pre></div>
 </div>
 <p>Then, convert the OpenMX output to the wannier90 format.
 It can be performed with <code class="docutils literal"><span class="pre">openmx2dcore</span></code> utility as:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ openmx2dcore.py SrVO3 srvo3
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ openmx2dcore.py SrVO3 srvo3
 </pre></div>
 </div>
 </div>
 <div class="section" id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" href="../../_downloads/srvo3_openmx.ini" download=""><code class="xref download docutils literal"><span class="pre">srvo3.ini</span></code></a></p>
-<div class="highlight-ini"><div class="highlight"><pre><span class="k">[model]</span>
+<div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[model]</span>
 <span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
 <span class="na">seedname</span> <span class="o">=</span> <span class="s">srvo3</span>
 <span class="na">nelec</span> <span class="o">=</span> <span class="s">1.0</span>
@@ -286,7 +281,7 @@ It can be performed with <code class="docutils literal"><span class="pre">openmx
 <span class="na">omega_pade</span> <span class="o">=</span> <span class="s">5.0</span>
 </pre></div>
 </div>
-<p>Please see <a class="reference internal" href="../cthyb/cthyb.html#howtocthyb"><span>How to choose parameters for TRIQS/cthyb</span></a> for the details of the parameter setting.</p>
+<p>Please see <a class="reference internal" href="../cthyb/cthyb.html#howtocthyb"><span class="std std-ref">How to choose parameters for TRIQS/cthyb</span></a> for the details of the parameter setting.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The parameter <code class="docutils literal"><span class="pre">n_cycles{int}</span></code> should be tuned in inverse proportion to the number of MPI processes.
@@ -297,25 +292,25 @@ If we want to compute by using 32 MPI processes at the same accuracy,
 </div>
 <div class="section" id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ dcore_pre srvo3.ini
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ dcore_pre srvo3.ini
 </pre></div>
 </div>
 </div>
 <div class="section" id="running-self-consistent-dmft-calculation-dcore">
 <h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ dcore srvo3.ini
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ dcore srvo3.ini
 </pre></div>
 </div>
 </div>
 <div class="section" id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre>$ dcore_post srvo3.ini
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ dcore_post srvo3.ini
 $ sed -e <span class="s2">&quot;s/every 10/every 1/g&quot;</span> srvo3_akw.gp
 $ gnuplot nis_akw.gp
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/akw_srvo31.png"><img alt="../../_images/akw_srvo31.png" class="align-center" src="../../_images/akw_srvo31.png" style="width: 500px;" /></a>
-<p>&#8220;+&#8221; indicates the original band structure.</p>
+<p>“+” indicates the original band structure.</p>
 </div>
 </div>
 </div>
@@ -343,11 +338,11 @@ $ gnuplot nis_akw.gp
              >previous</a> |</li>
     <li><a href="../../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2017, The University of Tokyo.
+        &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

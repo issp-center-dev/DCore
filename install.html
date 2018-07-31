@@ -1,32 +1,31 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Installation &mdash; DCore 1.0.0 documentation</title>
-    
+    <title>Installation &#8212; DCore 1.0.0 documentation</title>
     <link rel="stylesheet" href="_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/dcore.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="about.html" />
-    <link rel="top" title="DCore 1.0.0 documentation" href="contents.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Documentation" href="documentation.html" />
     <link rel="prev" title="DCore" href="index.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
@@ -43,7 +42,7 @@
     </style>
 
   </head>
-  <body role="document">
+  <body>
 <div class="pageheader">
   <ul>
     
@@ -102,21 +101,18 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/install.txt"
+      <li><a href="_sources/install.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -132,8 +128,8 @@
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p class="first">The <a class="reference external" href="http://triqs.ipht.cnrs.fr/1.x/index.html#welcome" title="(in TRIQS v1.4)"><span class="xref std std-ref">TRIQS</span></a> library and
-<a class="reference external" href="https://triqs.ipht.cnrs.fr/1.x/applications/dft_tools/index.html#dft" title="(in TRIQS DFTTools v1.4)"><span class="xref std std-ref">DFTTools</span></a> must be installed in advance.
+<li><p class="first">The <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.51)"><span class="xref std std-ref">TRIQS</span></a> library and
+<a class="reference external" href="https://triqs.github.io/dft_tools/master/index.html#dft" title="(in TRIQS DFTTools v1.5.39)"><span class="xref std std-ref">DFTTools</span></a> must be installed in advance.
 In the following, we will suppose that they are installed in the <code class="docutils literal"><span class="pre">path_to_triqs</span></code> directory.</p>
 </li>
 <li><p class="first">You will also need at least one impurity solver.
@@ -147,7 +143,7 @@ At present, <code class="docutils literal"><span class="pre">DCore</span></code>
 <p class="first admonition-title">Note</p>
 <p>If you want to treat the spin-orbit coupling in <cite>TRIQS/cthyb</cite> solver,
 it must be built with the following CMake options:</p>
-<div class="last highlight-bash"><div class="highlight"><pre>-DHYBRIDISATION_IS_COMPLEX<span class="o">=</span>ON -DLOCAL_HAMILTONIAN_IS_COMPLEX<span class="o">=</span>ON
+<div class="last highlight-bash"><div class="highlight"><pre><span></span>-DHYBRIDISATION_IS_COMPLEX<span class="o">=</span>ON -DLOCAL_HAMILTONIAN_IS_COMPLEX<span class="o">=</span>ON
 </pre></div>
 </div>
 </div>
@@ -158,11 +154,11 @@ it must be built with the following CMake options:</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>ALPSCore/CT-HYB is a standalone program with an interface based on text and HDF5 files.
-&#8220;triqs_interface&#8221; is a TRIQS-compatible Python interface of ALPSCore/CT-HYB.
+“triqs_interface” is a TRIQS-compatible Python interface of ALPSCore/CT-HYB.
 This allows to use this impurity solver transparently from DCore (built with TRIQS python architecture).
 The main developer of ALPSCore/CT-HYB, H. Shinaoka, is one of the developers of DCore.</p>
 <p class="last">Both of ALPSCore/CT-HYB and TRIQS/cthyb implement the hybridization-expansion continuous-time quantum Monte Carlo method.
-The main difference is the reliability of measurement of the single-particle Green&#8217;s function.
+The main difference is the reliability of measurement of the single-particle Green’s function.
 ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
 The non-worm conventional sampling, which is implemented in TRIQS/cthyb,
 may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).</p>
@@ -174,22 +170,22 @@ may give wrong results in some situations (e.g. SOI coupling with orbital-diagon
 <h2>Installation steps<a class="headerlink" href="#installation-steps" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
 <li><p class="first">Download the sources from github</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ git clone https://github.com/issp-center-dev/DCore.git dcore.src
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ git clone https://github.com/issp-center-dev/DCore.git dcore.src
 </pre></div>
 </div>
 </li>
 <li><p class="first">Create an empty build directory where you will compile the code:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ mkdir dcore.build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> dcore.build
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ mkdir dcore.build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> dcore.build
 </pre></div>
 </div>
 </li>
 <li><p class="first">In the build directory call cmake specifying where the TRIQS library is installed:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ cmake -DTRIQS_PATH<span class="o">=</span>path_to_triqs ../dcore.src
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ cmake -DTRIQS_PATH<span class="o">=</span>path_to_triqs ../dcore.src
 </pre></div>
 </div>
 </li>
 <li><p class="first">Compile the code, run the tests and install the application:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ make
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ make
 $ make <span class="nb">test</span>
 $ make install
 </pre></div>
@@ -201,14 +197,14 @@ $ make install
 <h2>Version compatibility<a class="headerlink" href="#version-compatibility" title="Permalink to this headline">¶</a></h2>
 <p>The current version of DCore supports TRIQS 1.4, and ALPSCore 2.1 or later.
 Be careful that the version of the TRIQS library and of the dft tools must be
-compatible (more information on the <a class="reference external" href="http://triqs.ipht.cnrs.fr/1.x/index.html#welcome" title="(in TRIQS v1.4)"><span class="xref std std-ref">TRIQS website</span></a>).
+compatible (more information on the <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.51)"><span class="xref std std-ref">TRIQS website</span></a>).
 If you want to use a version of the dft tools that is not the latest one, go
 into the directory with the sources and look at all available versions:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ <span class="nb">cd</span> src <span class="o">&amp;&amp;</span> git tag
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> src <span class="o">&amp;&amp;</span> git tag
 </pre></div>
 </div>
 <p>Checkout the version of the code that you want, for instance:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ git co 1.4
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ git co <span class="m">1</span>.4
 </pre></div>
 </div>
 <p>Then follow the steps 2 to 5 described above to compile the code.</p>
@@ -241,7 +237,7 @@ into the directory with the sources and look at all available versions:</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2017, The University of Tokyo.
+        &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

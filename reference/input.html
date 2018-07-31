@@ -1,33 +1,31 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Input-file format &mdash; DCore 1.0.0 documentation</title>
-    
+    <title>Input-file format &#8212; DCore 1.0.0 documentation</title>
     <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/dcore.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
         VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../about.html" />
-    <link rel="top" title="DCore 1.0.0 documentation" href="../contents.html" />
-    <link rel="up" title="Documentation" href="../documentation.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Output-file format" href="output.html" />
     <link rel="prev" title="Programs" href="programs.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
@@ -44,7 +42,7 @@
     </style>
 
   </head>
-  <body role="document">
+  <body>
 <div class="pageheader">
   <ul>
     
@@ -80,7 +78,7 @@
              accesskey="P">previous</a> |</li>
     <li><a href="../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../documentation.html" accesskey="U">Documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -106,21 +104,18 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/reference/input.txt"
+      <li><a href="../_sources/reference/input.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -135,7 +130,7 @@
 <span id="inputformat"></span><h1>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h1>
 <p>The input file is constructed of five blocks, <code class="docutils literal"><span class="pre">[model]</span></code>, <code class="docutils literal"><span class="pre">[system]</span></code>, <code class="docutils literal"><span class="pre">[impurity]</span></code>, <code class="docutils literal"><span class="pre">[control]</span></code> and <code class="docutils literal"><span class="pre">[tool]</span></code>.
 The example of the input file is shown as follows:</p>
-<div class="highlight-ini"><div class="highlight"><pre><span class="k">[model]</span>
+<div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[model]</span>
 <span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
 <span class="na">seedname</span> <span class="o">=</span> <span class="s">nis</span>
 <span class="na">nelec</span> <span class="o">=</span> <span class="s">28.0</span>
@@ -192,7 +187,7 @@ The example of the input file is shown as follows:</p>
 <tr class="row-even"><td>interaction</td>
 <td>String</td>
 <td>kanamori</td>
-<td>The type of interaction. You can select the type of interaction from &#8220;slater_uj&#8221;, &#8220;slater_f&#8221;, &#8220;kanamori&#8221;, &#8220;respack&#8221; (See below).</td>
+<td>The type of interaction. You can select the type of interaction from “slater_uj”, “slater_f”, “kanamori”, “respack” (See below).</td>
 </tr>
 <tr class="row-odd"><td>norb</td>
 <td>String</td>
@@ -217,17 +212,17 @@ The example of the input file is shown as follows:</p>
 <tr class="row-odd"><td>spin_orbit</td>
 <td>Bool</td>
 <td>False</td>
-<td>If true, spin-orbit coupling is considered (See <a class="reference internal" href="../tutorial/pb/pb.html#pbtutorial"><span>Pb with spin-orbit interaction</span></a>).</td>
+<td>If true, spin-orbit coupling is considered (See <a class="reference internal" href="../tutorial/pb/pb.html#pbtutorial"><span class="std std-ref">Pb with spin-orbit interaction</span></a>).</td>
 </tr>
 <tr class="row-even"><td>kanamori</td>
 <td>String</td>
 <td>None</td>
-<td>U (Diagonal Coulomb pot.), U&#8217; (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).</td>
+<td>U (Diagonal Coulomb pot.), U’ (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).</td>
 </tr>
 <tr class="row-odd"><td>lattice</td>
 <td>String</td>
 <td>chain</td>
-<td>The type of lattice. You can select the type of lattice from &#8220;chain&#8221;, &#8220;square&#8221;, &#8220;cubic&#8221;, &#8220;bethe&#8221;, and &#8220;wannier90&#8221;.</td>
+<td>The type of lattice. You can select the type of lattice from “chain”, “square”, “cubic”, “bethe”, and “wannier90”.</td>
 </tr>
 <tr class="row-even"><td>nelec</td>
 <td>Float</td>
@@ -244,7 +239,7 @@ The example of the input file is shown as follows:</p>
 <td>[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]</td>
 <td>Reciprocal lattice vectors</td>
 </tr>
-<tr class="row-odd"><td>t&#8217;</td>
+<tr class="row-odd"><td>t’</td>
 <td>Float</td>
 <td>0.0</td>
 <td>Transfer integral (Second nearest)</td>
@@ -306,14 +301,14 @@ U_{\alpha \beta \beta \alpha} &amp;= J \qquad (\alpha \neq \beta),
 U_{\alpha \alpha \beta \beta} &amp;= J \qquad (\alpha \neq \beta),
 \end{align}\end{split}\]</div>
 <p>where <span class="math">\(U, U', J\)</span> at each correlated shell are specified by the parameter <code class="docutils literal"><span class="pre">kanamori</span></code> as</p>
-<div class="highlight-python"><div class="highlight"><pre>interaction = kanamori
-kanamori = [(U_1, U&#39;_1, J_1), (U_2, U&#39;_2, J_2), ... ]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">kanamori</span>
+<span class="n">kanamori</span> <span class="o">=</span> <span class="p">[(</span><span class="n">U_1</span><span class="p">,</span> <span class="sa">U</span><span class="s1">&#39;_1, J_1), (U_2, U&#39;</span><span class="n">_2</span><span class="p">,</span> <span class="n">J_2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
 </pre></div>
 </div>
 <p>For example, if there are two correlated shells that have
 <span class="math">\((U, U', J) = (4, 2, 1)\)</span> and <span class="math">\((U, U', J) = (6, 3, 1.5)\)</span>, respectively,
 you need to set the input parameters as</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">interaction</span> <span class="o">=</span> <span class="n">kanamori</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">kanamori</span>
 <span class="n">kanamori</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">6.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)]</span>
 </pre></div>
 </div>
@@ -323,7 +318,7 @@ you need to set the input parameters as</p>
 <span class="math">\(F_0, F_2, F_4, F_6\)</span>.
 These Slater integrals and the angular momentum at each correlated shell
 are specified by the parameter <code class="docutils literal"><span class="pre">slater_f</span></code> as follows</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_f</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_f</span>
 <span class="n">slater_f</span> <span class="o">=</span> <span class="p">[(</span><span class="n">angular_momentum</span><span class="p">,</span> <span class="n">F_0</span><span class="p">,</span> <span class="n">F_2</span><span class="p">,</span> <span class="n">F_4</span><span class="p">,</span> <span class="n">F_6</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
 </pre></div>
 </div>
@@ -331,8 +326,8 @@ are specified by the parameter <code class="docutils literal"><span class="pre">
 one has d-orbital with <span class="math">\((F_0, F_2, F_4) = (2, 1, 0.5)\)</span> and
 the other has p-orbital with <span class="math">\((F_0, F_2) = (3, 1.5)\)</span>,
 you need to set the input parameter as</p>
-<div class="highlight-python"><div class="highlight"><pre>interaction = slater_f
-slater_f = [(2, 2.0, 1.0, 0.5, 0.0), (1, 3.0, 1.5 0.0, 0.0)]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_f</span>
+<span class="n">slater_f</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.5</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -365,7 +360,7 @@ F_6 = \frac{1001 F_2}{2025}\]</div>
 </ul>
 <p>The <span class="math">\(U\)</span>, <span class="math">\(J\)</span> and the angular momentum at each correlated shell
 are specified by the parameter <code class="docutils literal"><span class="pre">slater_uj</span></code> as</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_uj</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_uj</span>
 <span class="n">slater_uj</span> <span class="o">=</span> <span class="p">[(</span><span class="n">angular_momentum1</span><span class="p">,</span> <span class="n">U1</span><span class="p">,</span> <span class="n">J1</span><span class="p">),</span> <span class="p">(</span><span class="n">angular_momentum2</span><span class="p">,</span> <span class="n">U2</span><span class="p">,</span> <span class="n">J2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
 </pre></div>
 </div>
@@ -390,7 +385,7 @@ c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \beta \sigma'} c_{i
 U^{i}_{\alpha \beta \beta \alpha}
 c_{i \alpha \sigma}^\dagger c_{i \beta \sigma}^\dagger c_{i \alpha \sigma} c_{i \beta \sigma},\]</div>
 <p>you specify the parameter <code class="docutils literal"><span class="pre">density-density</span></code> as</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">density</span><span class="o">-</span><span class="n">density</span> <span class="o">=</span> <span class="bp">True</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">density</span><span class="o">-</span><span class="n">density</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -490,7 +485,7 @@ the double-counting correction.</p>
 <tr class="row-even"><td>n_l</td>
 <td>Integer</td>
 <td>0</td>
-<td>The number of the Legendre polynomial for QMC. If not, the solver&#8217;s default value is used.</td>
+<td>The number of the Legendre polynomial for QMC. If not, the solver’s default value is used.</td>
 </tr>
 <tr class="row-odd"><td>fit_max_moment</td>
 <td>Integer</td>
@@ -537,7 +532,7 @@ U_{\alpha \gamma \delta \beta}
 </tr>
 </tbody>
 </table>
-<p><strong>... and other parameters (Solver dependent)</strong>.
+<p><strong>… and other parameters (Solver dependent)</strong>.
 We have to specify additional parameters with types (e.g. <code class="docutils literal"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">500000</span></code>).
 For more details, please see the reference page of
 <a class="reference external" href="https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html#solve-parameters">TRIQS/cthyb</a>,
@@ -680,11 +675,11 @@ For more details, please see the reference page of
              >previous</a> |</li>
     <li><a href="../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2017, The University of Tokyo.
+        &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

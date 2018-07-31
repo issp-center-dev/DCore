@@ -1,33 +1,31 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Programs &mdash; DCore 1.0.0 documentation</title>
-    
+    <title>Programs &#8212; DCore 1.0.0 documentation</title>
     <link rel="stylesheet" href="../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/dcore.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
         VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../about.html" />
-    <link rel="top" title="DCore 1.0.0 documentation" href="../contents.html" />
-    <link rel="up" title="Documentation" href="../documentation.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Input-file format" href="input.html" />
     <link rel="prev" title="How to choose parameters for TRIQS/cthyb" href="../tutorial/cthyb/cthyb.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
@@ -44,7 +42,7 @@
     </style>
 
   </head>
-  <body role="document">
+  <body>
 <div class="pageheader">
   <ul>
     
@@ -80,7 +78,7 @@
              accesskey="P">previous</a> |</li>
     <li><a href="../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../documentation.html" accesskey="U">Documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -105,21 +103,18 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/reference/programs.txt"
+      <li><a href="../_sources/reference/programs.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -158,11 +153,11 @@ For details of input parameters defined in each block, see the next section.</p>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">dcore_check</span></code></td>
 <td>[model], [tool]</td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">dcore_post</span></code></td>
 <td>[model], [system], [impurity-solver], [tool]</td>
-<td>&#8212;</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>
@@ -170,7 +165,7 @@ For details of input parameters defined in each block, see the next section.</p>
 <h2>Pre-processing : <code class="docutils literal"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-processing-dcore-pre" title="Permalink to this headline">¶</a></h2>
 <p>This program generates model HDF5 file (<em>seedname</em>.h5) by reading parameters defined in <code class="docutils literal"><span class="pre">[model]</span></code> and <code class="docutils literal"><span class="pre">[system]</span></code> blocks.
 You need to execute this program before running the main program, <code class="docutils literal"><span class="pre">dcore</span></code>.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ dcore_pre input-file
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ dcore_pre input-file
 </pre></div>
 </div>
 </div>
@@ -178,14 +173,14 @@ You need to execute this program before running the main program, <code class="d
 <h2>Main program : <code class="docutils literal"><span class="pre">dcore</span></code><a class="headerlink" href="#main-program-dcore" title="Permalink to this headline">¶</a></h2>
 <p>This program performs DMFT cycle and output the self energy etc. into a HDF5
 file (<em>seedname</em>.out.h5) by reading parameters defined in <code class="docutils literal"><span class="pre">[model]</span></code>, <code class="docutils literal"><span class="pre">[system]</span></code>, <code class="docutils literal"><span class="pre">[impurity-solver]</span></code> and <code class="docutils literal"><span class="pre">[control]</span></code> blocks.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ dcore input-file
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ dcore input-file
 </pre></div>
 </div>
 </div>
 <div class="section" id="convergence-check-dcore-check">
 <h2>Convergence-check : <code class="docutils literal"><span class="pre">dcore_check</span></code><a class="headerlink" href="#convergence-check-dcore-check" title="Permalink to this headline">¶</a></h2>
 <p>This program is used to check the convergence of the DMFT loop by reading parameters defined in <code class="docutils literal"><span class="pre">[model]</span></code> and <code class="docutils literal"><span class="pre">[tool]</span></code> blocks.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ dcore_check input-file
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ dcore_check input-file
 </pre></div>
 </div>
 <p><code class="docutils literal"><span class="pre">dcore_check</span></code> shows the history of the calculation of the chemical potential and the average of the self energy for imaginary frequencies,</p>
@@ -199,17 +194,17 @@ file (<em>seedname</em>.out.h5) by reading parameters defined in <code class="do
 in the <code class="docutils literal"><span class="pre">[tool]</span></code> block.</p>
 <p>Also, this program generates a text file, <em>seedname</em>_sigma.dat, which contains
 the local self energy at the final step as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre># Local self energy at imaginary frequency
-# [Column] Data
-# [1] Frequency
-# [2] Re(Sigma_{shell=0, spin=up, 0, 0})
-# [3] Im(Sigma_{shell=0, spin=up, 0, 0})
-# [4] Re(Sigma_{shell=0, spin=down, 0, 0})
-# [5] Im(Sigma_{shell=0, spin=down, 0, 0})
--157.001093 0.994751 0.006358 0.994751 0.006358
--156.844013 0.994751 0.006365 0.994751 0.006365
--156.686934 0.994751 0.006371 0.994751 0.006371
-:
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Local self energy at imaginary frequency</span>
+<span class="c1"># [Column] Data</span>
+<span class="c1"># [1] Frequency</span>
+<span class="c1"># [2] Re(Sigma_{shell=0, spin=up, 0, 0})</span>
+<span class="c1"># [3] Im(Sigma_{shell=0, spin=up, 0, 0})</span>
+<span class="c1"># [4] Re(Sigma_{shell=0, spin=down, 0, 0})</span>
+<span class="c1"># [5] Im(Sigma_{shell=0, spin=down, 0, 0})</span>
+<span class="o">-</span><span class="mf">157.001093</span> <span class="mf">0.994751</span> <span class="mf">0.006358</span> <span class="mf">0.994751</span> <span class="mf">0.006358</span>
+<span class="o">-</span><span class="mf">156.844013</span> <span class="mf">0.994751</span> <span class="mf">0.006365</span> <span class="mf">0.994751</span> <span class="mf">0.006365</span>
+<span class="o">-</span><span class="mf">156.686934</span> <span class="mf">0.994751</span> <span class="mf">0.006371</span> <span class="mf">0.994751</span> <span class="mf">0.006371</span>
+<span class="p">:</span>
 </pre></div>
 </div>
 </div>
@@ -217,17 +212,17 @@ the local self energy at the final step as follows:</p>
 <h2>Post-processing : <code class="docutils literal"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this headline">¶</a></h2>
 <p>This program computes the total DOS (<em>seedname</em>_dos.dat) and <em>k</em>-resolved spectral function　(<em>seedname</em>_akw.dat) from the outputted HDF5 file (<em>seedname</em>.out.h5).
 This program reads the parameters defined in the <code class="docutils literal"><span class="pre">[model]</span></code>, <code class="docutils literal"><span class="pre">[system]</span></code>, <code class="docutils literal"><span class="pre">[impurity-solver]</span></code> and <code class="docutils literal"><span class="pre">[tool]</span></code> blocks.</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ dcore_post input-file
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ dcore_post input-file
 </pre></div>
 </div>
 <p>The computed spectral function can be drawn by</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ gnuplot <span class="o">[</span>seedname<span class="o">]</span>_akw.gp
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ gnuplot <span class="o">[</span>seedname<span class="o">]</span>_akw.gp
 </pre></div>
 </div>
 <p>Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
 <em>seedname</em>_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.</p>
 <a class="reference internal image-reference" href="../_images/akw_srvo3.png"><img alt="../_images/akw_srvo3.png" class="align-center" src="../_images/akw_srvo3.png" style="width: 500px;" /></a>
-<p>&#8220;+&#8221; indicates the original band structure.
+<p>“+” indicates the original band structure.
 The original band structure is shifted by the chemical potential specified by <code class="docutils literal"><span class="pre">mu</span></code> in <code class="docutils literal"><span class="pre">[system]</span></code> block.</p>
 </div>
 </div>
@@ -255,11 +250,11 @@ The original band structure is shifted by the chemical potential specified by <c
              >previous</a> |</li>
     <li><a href="../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >Documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2017, The University of Tokyo.
+        &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

@@ -1,33 +1,31 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>How to choose parameters for TRIQS/cthyb &mdash; DCore 1.0.0 documentation</title>
-    
+    <title>How to choose parameters for TRIQS/cthyb &#8212; DCore 1.0.0 documentation</title>
     <link rel="stylesheet" href="../../_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/dcore.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
         VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
-    <link rel="top" title="DCore 1.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="Documentation" href="../../documentation.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Programs" href="../../reference/programs.html" />
     <link rel="prev" title="How to choose parameters for ALPS/cthyb" href="alps_cthyb.html" />
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
@@ -44,7 +42,7 @@
     </style>
 
   </head>
-  <body role="document">
+  <body>
 <div class="pageheader">
   <ul>
     
@@ -80,7 +78,7 @@
              accesskey="P">previous</a> |</li>
     <li><a href="../../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../documentation.html" accesskey="U">Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" accesskey="U">Documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -106,21 +104,18 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../../_sources/tutorial/cthyb/cthyb.txt"
+      <li><a href="../../_sources/tutorial/cthyb/cthyb.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -162,7 +157,7 @@ The length of this sub-cycle should be long enough to escape from the auto-corre
 </div></blockquote>
 <p>The computational time is proportional to <code class="docutils literal"><span class="pre">length_cycle*(n_cycles+n_warmup_cycles)</span></code>.
 The following script is an example to describe the procedure for searching appropriate QMC parameter.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="ch">#!/bin/bash</span>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
 cat &gt; pre.ini <span class="s">&lt;&lt;EOF</span>
 <span class="s">[model]</span>
@@ -189,14 +184,14 @@ cat &gt; pre.ini <span class="s">&lt;&lt;EOF</span>
 
 dcore_pre pre.ini
 
-n_cycles<span class="o">[</span>0<span class="o">]=</span>3000<span class="p">;</span>   n_warmup_cycles<span class="o">[</span>0<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>0<span class="o">]=</span>50
-n_cycles<span class="o">[</span>1<span class="o">]=</span>10000<span class="p">;</span>  n_warmup_cycles<span class="o">[</span>1<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>1<span class="o">]=</span>50
-n_cycles<span class="o">[</span>2<span class="o">]=</span>30000<span class="p">;</span>  n_warmup_cycles<span class="o">[</span>2<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>2<span class="o">]=</span>50
-n_cycles<span class="o">[</span>3<span class="o">]=</span>100000<span class="p">;</span> n_warmup_cycles<span class="o">[</span>3<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>3<span class="o">]=</span>50
-n_cycles<span class="o">[</span>4<span class="o">]=</span>300000<span class="p">;</span> n_warmup_cycles<span class="o">[</span>4<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>4<span class="o">]=</span>50
-n_cycles<span class="o">[</span>5<span class="o">]=</span>300000<span class="p">;</span> n_warmup_cycles<span class="o">[</span>5<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>5<span class="o">]=</span>100
+n_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">3000</span><span class="p">;</span>   n_warmup_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">10000</span><span class="p">;</span>  n_warmup_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">30000</span><span class="p">;</span>  n_warmup_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">100000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">100</span>
 
-<span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">0</span> 5<span class="sb">`</span>
+<span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">0</span> <span class="m">5</span><span class="sb">`</span>
 <span class="k">do</span>
     sed -e <span class="s2">&quot;/n_cycles/c n_cycles{int} = </span><span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
         -e <span class="s2">&quot;/n_wamup_cycles/c n_warmup_cycles{int} = </span><span class="si">${</span><span class="nv">n_wamup_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
@@ -209,7 +204,7 @@ n_cycles<span class="o">[</span>5<span class="o">]=</span>300000<span class="p">
 </pre></div>
 </div>
 <p>Then, we use gnuplot as</p>
-<div class="highlight-gnuplot"><div class="highlight"><pre>gnuplot&gt; plot [0:10][-0.6:0] \
+<div class="highlight-gnuplot"><div class="highlight"><pre><span></span>gnuplot&gt; plot [0:10][-0.6:0] \
 &quot;cyc3000_warm5000_len50.dat&quot; u 1:3 w l lw 3, \
 &quot;cyc10000_warm5000_len50.dat&quot; u 1:3 w l lw 3, \
 &quot;cyc30000_warm5000_len50.dat&quot; u 1:3 w l lw 3, \
@@ -233,7 +228,7 @@ This high-frequency tail can be fitted by using the following function:</p>
 \frac{a_3}{\omega^3} + \cdots\]</div>
 <p>We show the procedure for using this technique.
 The original input file (without tail-fit) is as follows (dmft.ini):</p>
-<div class="highlight-ini"><div class="highlight"><pre><span class="k">[model]</span>
+<div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[model]</span>
 <span class="na">seedname</span> <span class="o">=</span> <span class="s">bethe</span>
 <span class="na">lattice</span> <span class="o">=</span> <span class="s">bethe</span>
 <span class="na">norb</span> <span class="o">=</span> <span class="s">1</span>
@@ -259,7 +254,7 @@ The original input file (without tail-fit) is as follows (dmft.ini):</p>
 </pre></div>
 </div>
 <p>We first execute the ordinary DMFT calculation:</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ dcore_pre dmft.ini
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ dcore_pre dmft.ini
 $ mpiexec -np <span class="m">4</span> dcore dmft.ini
 $ dcore_check dmft.ini --output bethe.pdf
 </pre></div>
@@ -272,7 +267,7 @@ add the following parameters at the <code class="docutils literal"><span class="
 (not the
 <a class="reference external" href="https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html">solver parameter</a>
 for the tail fit):</p>
-<div class="highlight-ini"><div class="highlight"><pre><span class="k">[system]</span>
+<div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[system]</span>
 <span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
 <span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
 <span class="na">perform_tail_fit</span> <span class="o">=</span> <span class="s">True</span>
@@ -290,7 +285,7 @@ above figure.</p>
 <h2>Multi-band system<a class="headerlink" href="#multi-band-system" title="Permalink to this headline">¶</a></h2>
 <p>For the multi-band systems, <strong>we have to include the two-pairs insertion/removal move</strong>
 in the QMC cycles as</p>
-<div class="highlight-ini"><div class="highlight"><pre><span class="k">[impurity_solver]</span>
+<div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
 <span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
 <span class="na">move_double{bool}</span> <span class="o">=</span> <span class="s">True</span>
 </pre></div>
@@ -313,11 +308,11 @@ For example, in the case of figure (a) above, we can find that <code class="docu
 <p class="last">Do not use it together with the tail-fit.</p>
 </div>
 <p>This is another technique to reduce the high-frequency noise.
-In this method, we expand the Green&#8217;s function at the imaginary time with a series of
+In this method, we expand the Green’s function at the imaginary time with a series of
 the Legendre polynomials, and ignore the higher order polynomials.</p>
 <p>This scheme is activated when we specify the input parameter <code class="docutils literal"><span class="pre">n_l</span></code>
 (the number of polynomial included) in the <code class="docutils literal"><span class="pre">[system]</span></code> block as</p>
-<div class="highlight-ini"><div class="highlight"><pre><span class="k">[system]</span>
+<div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[system]</span>
 <span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
 <span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
 <span class="na">n_l</span> <span class="o">=</span> <span class="s">30</span>
@@ -328,7 +323,7 @@ have to be included.
 For this purpose, we first perform a calculation with a large number of Legendre
 polynomials (e.g. <code class="docutils literal"><span class="pre">n_l=80</span></code>) and check how the coefficient decays.</p>
 <p>For examples, we run the bash script as</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="ch">#!/bin/bash</span>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
 cat &gt; pre.ini <span class="s">&lt;&lt;EOF</span>
 <span class="s">[model]</span>
@@ -356,14 +351,14 @@ cat &gt; pre.ini <span class="s">&lt;&lt;EOF</span>
 
 dcore_pre pre.ini
 
-n_cycles<span class="o">[</span>0<span class="o">]=</span>3000<span class="p">;</span>   n_warmup_cycles<span class="o">[</span>0<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>0<span class="o">]=</span>50
-n_cycles<span class="o">[</span>1<span class="o">]=</span>10000<span class="p">;</span>  n_warmup_cycles<span class="o">[</span>1<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>1<span class="o">]=</span>50
-n_cycles<span class="o">[</span>2<span class="o">]=</span>30000<span class="p">;</span>  n_warmup_cycles<span class="o">[</span>2<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>2<span class="o">]=</span>50
-n_cycles<span class="o">[</span>3<span class="o">]=</span>100000<span class="p">;</span> n_warmup_cycles<span class="o">[</span>3<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>3<span class="o">]=</span>50
-n_cycles<span class="o">[</span>4<span class="o">]=</span>300000<span class="p">;</span> n_warmup_cycles<span class="o">[</span>4<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>4<span class="o">]=</span>50
-n_cycles<span class="o">[</span>5<span class="o">]=</span>300000<span class="p">;</span> n_warmup_cycles<span class="o">[</span>5<span class="o">]=</span>5000<span class="p">;</span> length_cycle<span class="o">[</span>5<span class="o">]=</span>100
+n_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">3000</span><span class="p">;</span>   n_warmup_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">10000</span><span class="p">;</span>  n_warmup_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">30000</span><span class="p">;</span>  n_warmup_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">100000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">100</span>
 
-<span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">0</span> 5<span class="sb">`</span>
+<span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">0</span> <span class="m">5</span><span class="sb">`</span>
 <span class="k">do</span>
     sed -e <span class="s2">&quot;/n_cycles/c n_cycles{int} = </span><span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
         -e <span class="s2">&quot;/n_wamup_cycles/c n_warmup_cycles{int} = </span><span class="si">${</span><span class="nv">n_wamup_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
@@ -376,7 +371,7 @@ n_cycles<span class="o">[</span>5<span class="o">]=</span>300000<span class="p">
 </pre></div>
 </div>
 <p>Then, we use GnuPlot as</p>
-<div class="highlight-gnuplot"><div class="highlight"><pre>gnuplot&gt; set xlabel &quot;Order of polynomial&quot;
+<div class="highlight-gnuplot"><div class="highlight"><pre><span></span>gnuplot&gt; set xlabel &quot;Order of polynomial&quot;
 gnuplot&gt; set ylabel &quot;Coefficient&quot;
 gnuplot&gt; set logscale y
 gnuplot&gt; plot \
@@ -391,7 +386,7 @@ gnuplot&gt; plot \
 <p>and obtain</p>
 <a class="reference internal image-reference" href="../../_images/legendre.png"><img alt="../../_images/legendre.png" class="align-center" src="../../_images/legendre.png" style="width: 500px;" /></a>
 <p>Finally, we choose the following setting:</p>
-<div class="highlight-ini"><div class="highlight"><pre><span class="k">[model]</span>
+<div class="highlight-ini"><div class="highlight"><pre><span></span><span class="k">[model]</span>
 <span class="na">seedname</span> <span class="o">=</span> <span class="s">bethe</span>
 <span class="na">lattice</span> <span class="o">=</span> <span class="s">bethe</span>
 <span class="na">norb</span> <span class="o">=</span> <span class="s">1</span>
@@ -445,11 +440,11 @@ gnuplot&gt; plot \
              >previous</a> |</li>
     <li><a href="../../index.html">Home</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >Documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2017, The University of Tokyo.
+        &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>
