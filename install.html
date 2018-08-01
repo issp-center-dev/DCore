@@ -4,21 +4,13 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Installation &#8212; DCore 1.0.0 documentation</title>
     <link rel="stylesheet" href="_static/triqs.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/dcore.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -41,8 +33,7 @@
       
     </style>
 
-  </head>
-  <body>
+  </head><body>
 <div class="pageheader">
   <ul>
     
@@ -89,7 +80,6 @@
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#installation-steps">Installation steps</a></li>
-<li><a class="reference internal" href="#version-compatibility">Version compatibility</a></li>
 </ul>
 </li>
 </ul>
@@ -109,12 +99,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -130,12 +122,57 @@
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p class="first">The <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.51)"><span class="xref std std-ref">TRIQS</span></a> library and
-<a class="reference external" href="https://triqs.github.io/dft_tools/master/index.html#dft" title="(in TRIQS DFTTools v1.5.39)"><span class="xref std std-ref">DFTTools</span></a> must be installed in advance.
-In the following, we will suppose that they are installed in the <code class="docutils literal"><span class="pre">path_to_triqs</span></code> directory.</p>
+<li><p class="first"><strong>[mandatory]</strong> <code class="docutils literal notranslate"><span class="pre">DCore</span></code> is implemented using <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.51)"><span class="xref std std-ref">TRIQS</span></a> library.
+You first need to install <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> library prior to installing all other programs.
+In the following, we suppose that <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> is installed in directory <em>path_to_triqs</em>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> supports <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> version <strong>1.4.2</strong> (the current version 2.0 is not supported).
+Since the installation manual in <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.51)"><span class="xref std std-ref">TRIQS</span></a> is not compatible with <strong>1.4.2</strong>, we briefly describe below how to install it.</p>
+<ol class="last arabic">
+<li><p class="first">You can download the zip file or tar file from <a class="reference external" href="https://github.com/TRIQS/triqs/releases/tag/1.4.2">https://github.com/TRIQS/triqs/releases/tag/1.4.2</a>.
+Alternatively, you can clone the repository and checkout <strong>1.4.x</strong> branch (advanced).
+We suppose that source files are located in <em>path_to_triqs_src</em> directory.</p>
 </li>
-<li><p class="first">You will also need at least one impurity solver.
-At present, <code class="docutils literal"><span class="pre">DCore</span></code> supports the following programs:</p>
+<li><p class="first">In an empty directory, type the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DCMAKE_INSTALL_PREFIX<span class="o">=</span>path_to_triqs path_to_triqs_src
+$ make
+$ make <span class="nb">test</span>
+$ make install
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li><p class="first"><strong>[mandatory]</strong>
+You also need <a class="reference external" href="https://triqs.github.io/dft_tools/master/index.html#dft" title="(in TRIQS DFTTools v1.5.39)"><span class="xref std std-ref">DFTTools</span></a>, which runs on the <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> library.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The current version in the GitHub repository is not compatible with <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> version 1.4.2.
+You need to get old code that is compatible with 1.4.2.</p>
+<ol class="last arabic">
+<li><p class="first">Clone the repository, and checkout commit <strong>d005756</strong>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone git@github.com:TRIQS/dft_tools.git
+$ <span class="nb">cd</span> dft_tools
+$ git checkout d005756
+</pre></div>
+</div>
+</li>
+<li><p class="first">To build the source files, make an empty directory, move into it, and then type the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DCMAKE_INSTALL_PREFIX<span class="o">=</span>path_to_triqs<span class="se">\</span>
+  -DTRIQS_PATH<span class="o">=</span>path_to_triqs path_to_dft_tools
+$ make
+$ make <span class="nb">test</span>
+$ make install
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li><p class="first"><strong>[optional]</strong> You will also need at least one impurity solver.
+At present, <code class="docutils literal notranslate"><span class="pre">DCore</span></code> supports the following programs:</p>
 <ul class="simple">
 <li><a class="reference external" href="https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/">Hubbard-I solver</a></li>
 <li><a class="reference external" href="https://triqs.ipht.cnrs.fr/applications/cthyb/index.html">TRIQS/cthyb</a></li>
@@ -145,7 +182,7 @@ At present, <code class="docutils literal"><span class="pre">DCore</span></code>
 <p class="first admonition-title">Note</p>
 <p>If you want to treat the spin-orbit coupling in <cite>TRIQS/cthyb</cite> solver,
 it must be built with the following CMake options:</p>
-<div class="last highlight-bash"><div class="highlight"><pre><span></span>-DHYBRIDISATION_IS_COMPLEX<span class="o">=</span>ON -DLOCAL_HAMILTONIAN_IS_COMPLEX<span class="o">=</span>ON
+<div class="last highlight-bash notranslate"><div class="highlight"><pre><span></span>-DHYBRIDISATION_IS_COMPLEX<span class="o">=</span>ON -DLOCAL_HAMILTONIAN_IS_COMPLEX<span class="o">=</span>ON
 </pre></div>
 </div>
 </div>
@@ -172,44 +209,28 @@ may give wrong results in some situations (e.g. SOI coupling with orbital-diagon
 <h2>Installation steps<a class="headerlink" href="#installation-steps" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
 <li><p class="first">Download the sources from github</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ git clone https://github.com/issp-center-dev/DCore.git dcore.src
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/issp-center-dev/DCore.git dcore.src
 </pre></div>
 </div>
 </li>
 <li><p class="first">Create an empty build directory where you will compile the code:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ mkdir dcore.build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> dcore.build
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mkdir dcore.build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> dcore.build
 </pre></div>
 </div>
 </li>
 <li><p class="first">In the build directory call cmake specifying where the TRIQS library is installed:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ cmake -DTRIQS_PATH<span class="o">=</span>path_to_triqs ../dcore.src
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DTRIQS_PATH<span class="o">=</span>path_to_triqs ../dcore.src
 </pre></div>
 </div>
 </li>
 <li><p class="first">Compile the code, run the tests and install the application:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ make
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make
 $ make <span class="nb">test</span>
 $ make install
 </pre></div>
 </div>
 </li>
 </ol>
-</div>
-<div class="section" id="version-compatibility">
-<h2>Version compatibility<a class="headerlink" href="#version-compatibility" title="Permalink to this headline">¶</a></h2>
-<p>The current version of DCore supports TRIQS 1.4, and ALPSCore 2.1 or later.
-Be careful that the version of the TRIQS library and of the dft tools must be
-compatible (more information on the <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.51)"><span class="xref std std-ref">TRIQS website</span></a>).
-If you want to use a version of the dft tools that is not the latest one, go
-into the directory with the sources and look at all available versions:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> src <span class="o">&amp;&amp;</span> git tag
-</pre></div>
-</div>
-<p>Checkout the version of the code that you want, for instance:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ git co <span class="m">1</span>.4
-</pre></div>
-</div>
-<p>Then follow the steps 2 to 5 described above to compile the code.</p>
 </div>
 </div>
 
