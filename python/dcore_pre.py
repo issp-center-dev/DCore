@@ -425,9 +425,9 @@ def __generate_umat(p):
             #
             if slater_l[icor]*2+1 != norb[icor]:
                 if slater_l[icor] == 2 and norb[icor] == 2:
-                    u_mat = eg_submatrix(umat_full)
+                    u_mat[icor] = eg_submatrix(umat_full)
                 elif slater_l[icor] == 2 and norb[icor] == 3:
-                    u_mat = t2g_submatrix(umat_full)
+                    u_mat[icor] = t2g_submatrix(umat_full)
                 else:
                     print("Error ! Unsupported pair of l and norb : ", slater_l[icor], norb[icor])
                     sys.exit(-1)
