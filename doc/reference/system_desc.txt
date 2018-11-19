@@ -1,12 +1,12 @@
 ==================== =========== ========== ==============================================================================================
 Name                 Type        Default    Description                                                                                   
 ==================== =========== ========== ==============================================================================================
-fix_mu               Bool        False      If true, the chemical potential is fixed to a given value.                                    
+fix_mu               Bool        False      Whether or not to fix chemical potential to a given value.                                    
 nk                   Integer     8          Number of *k* along each line                                                                 
-perform_tail_fit     Bool        False      If true, the tail-fit is performed.                                                          
+perform_tail_fit     Bool        False      Whether or not perform the tail-fit.                                                          
 nk1                  Integer     0          Number of *k* along b_1 (only for wannier90)                                                  
 fit_max_w            Float       10.0       Matsubara frequency at which tail fitting should end.                                         
-with_dc              Bool        False      If true, double counting correction is used (See below).                                     
+with_dc              Bool        False      Whether or not use double counting correction (See below)                                     
 nk2                  Integer     0          Number of *k* along b_2 (only for wannier90)                                                  
 mu                   Float       0.0        Initial chemical potential.                                                                   
 nk0                  Integer     0          Number of *k* along b_0 (only for wannier90)                                                  

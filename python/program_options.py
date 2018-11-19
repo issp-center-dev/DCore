@@ -29,16 +29,16 @@ def create_parser():
     # [model]
     parser.add_option("model", "t", float, 1.0, "Transfer integral (Nearest neighbor)")
     parser.add_option("model", "t'", float, 0.0, "Transfer integral (Second nearest)")
-    parser.add_option("model", "ncor", int, 1, "Number of correlation shell (Only wannier90).")
+    parser.add_option("model", "ncor", int, 1, "Number of correlated shells in a unit cell (Only wannier90).")
     parser.add_option("model", "lattice", str, "chain",
                       'Chosen from "chain", "square", "cubic", "bethe", and "wannier90"')
     parser.add_option("model", "nelec", float, 1.0, "Number of electrons per unit cell.")
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "norb", str, "1",
-                      "Number of orbitals at each correlated shell. Separated by commas or spaces.")
+                      "Number of orbitals at each correlated shell (*ncor* integers separated by commas or spaces.)")
     parser.add_option("model", "equiv", str, "None",
-                      "Equivalence of each correlation shell. Please, be careful to use it (See below).")
-    parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors")
+                      "Equivalence of each correlated shell. Please, be careful to use it (See below).")
+    parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0), (0.0,1.0,0.0), (0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
     parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case (See :ref:`pbtutorial`).")
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')

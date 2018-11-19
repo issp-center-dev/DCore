@@ -8,7 +8,7 @@ omega_max       Float       1.0                                   Max value of r
 omega_min       Float       -1.0                                  Minimum value of real frequency                           
 nnode           Integer     2                                     Number of node for the *k* path                           
 Nomega          Integer     100                                   Number of real frequencies                                
-omega_pade      Float       5.0                                   Cutoff frequency for the Pade approximation             
+omega_pade      Float       5.0                                   Cutoff frequencies for the Pade approximation             
 eta             Float       0.0                                   Imaginary frequency shift for the Pade approximation      
 omega_check     Float       5.0                                   Maximum frequency for dcore_check.                        
 =============== =========== ===================================== ==========================================================
