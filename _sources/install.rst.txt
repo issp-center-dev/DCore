@@ -19,7 +19,8 @@ Prerequisites
      Since the installation manual in :ref:`TRIQS <triqslibs:welcome>` is not compatible with **1.4.2**, we briefly describe below how to install it.
 
      #. You can download the zip file or tar file from https://github.com/TRIQS/triqs/releases/tag/1.4.2.
-        Alternatively, you can clone the repository and checkout **1.4.x** branch (advanced).
+        The version **1.4.2** is not compatible with the latest version of h5py (>=2.8.0).
+        If you encounter any problem, you can clone the repository and checkout **1.4.x** branch, which contains bug fixes.
         We suppose that source files are located in *path_to_triqs_src* directory.
 
      #. In an empty directory, type the following command:

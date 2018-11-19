@@ -122,16 +122,17 @@
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p class="first"><strong>[mandatory]</strong> <code class="docutils literal notranslate"><span class="pre">DCore</span></code> is implemented using <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.51)"><span class="xref std std-ref">TRIQS</span></a> library.
+<li><p class="first"><strong>[mandatory]</strong> <code class="docutils literal notranslate"><span class="pre">DCore</span></code> is implemented using <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.103)"><span class="xref std std-ref">TRIQS</span></a> library.
 You first need to install <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> library prior to installing all other programs.
 In the following, we suppose that <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> is installed in directory <em>path_to_triqs</em>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> supports <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> version <strong>1.4.2</strong> (the current version 2.0 is not supported).
-Since the installation manual in <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.51)"><span class="xref std std-ref">TRIQS</span></a> is not compatible with <strong>1.4.2</strong>, we briefly describe below how to install it.</p>
+Since the installation manual in <a class="reference external" href="https://triqs.github.io/triqs/master/index.html#welcome" title="(in TRIQS v2.0.103)"><span class="xref std std-ref">TRIQS</span></a> is not compatible with <strong>1.4.2</strong>, we briefly describe below how to install it.</p>
 <ol class="last arabic">
 <li><p class="first">You can download the zip file or tar file from <a class="reference external" href="https://github.com/TRIQS/triqs/releases/tag/1.4.2">https://github.com/TRIQS/triqs/releases/tag/1.4.2</a>.
-Alternatively, you can clone the repository and checkout <strong>1.4.x</strong> branch (advanced).
+The version <strong>1.4.2</strong> is not compatible with the latest version of h5py (&gt;=2.8.0).
+If you encounter any problem, you can clone the repository and checkout <strong>1.4.x</strong> branch, which contains bug fixes.
 We suppose that source files are located in <em>path_to_triqs_src</em> directory.</p>
 </li>
 <li><p class="first">In an empty directory, type the following command:</p>
@@ -146,7 +147,7 @@ $ make install
 </div>
 </li>
 <li><p class="first"><strong>[mandatory]</strong>
-You also need <a class="reference external" href="https://triqs.github.io/dft_tools/master/index.html#dft" title="(in TRIQS DFTTools v1.5.39)"><span class="xref std std-ref">DFTTools</span></a>, which runs on the <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> library.</p>
+You also need <a class="reference external" href="https://triqs.github.io/dft_tools/master/index.html#dft" title="(in TRIQS DFTTools v1.5.44)"><span class="xref std std-ref">DFTTools</span></a>, which runs on the <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> library.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>The current version in the GitHub repository is not compatible with <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> version 1.4.2.

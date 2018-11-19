@@ -166,10 +166,10 @@ The example of the input file is shown as follows:</p>
 <p><code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> read this block.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="9%" />
-<col width="5%" />
-<col width="23%" />
-<col width="62%" />
+<col width="11%" />
+<col width="6%" />
+<col width="28%" />
+<col width="55%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -179,75 +179,85 @@ The example of the input file is shown as follows:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>interaction</td>
+<tr class="row-even"><td>non_colinear</td>
+<td>Bool</td>
+<td>False</td>
+<td>Set True for the case that non-colinear DMFT from the COLINEAR DFT calculation.</td>
+</tr>
+<tr class="row-odd"><td>interaction</td>
 <td>String</td>
 <td>kanamori</td>
-<td>The type of interaction. You can select the type of interaction from “slater_uj”, “slater_f”, “kanamori”, “respack” (See below).</td>
+<td>Chosen from “slater_uj”, “slater_f”, “kanamori”, “respack” (See below)</td>
 </tr>
-<tr class="row-odd"><td>norb</td>
+<tr class="row-even"><td>norb</td>
 <td>String</td>
 <td>1</td>
-<td>Number of orbitals at each correlated shell. Separated by commas or spaces.</td>
+<td>Number of orbitals at each correlated shell (<em>ncor</em> integers separated by commas or spaces.)</td>
 </tr>
-<tr class="row-even"><td>slater_f</td>
+<tr class="row-odd"><td>slater_f</td>
 <td>String</td>
 <td>None</td>
 <td>Angular momentum, Slater integrals F (See below).</td>
 </tr>
-<tr class="row-odd"><td>seedname</td>
+<tr class="row-even"><td>seedname</td>
 <td>String</td>
 <td>dcore</td>
 <td>Name of the system. The model HDF5 file will be seedname.h5.</td>
 </tr>
-<tr class="row-even"><td>density_density</td>
+<tr class="row-odd"><td>density_density</td>
 <td>Bool</td>
 <td>False</td>
 <td>If true, only the density-density part of the interaction is used (See below).</td>
 </tr>
-<tr class="row-odd"><td>spin_orbit</td>
+<tr class="row-even"><td>spin_orbit</td>
 <td>Bool</td>
 <td>False</td>
-<td>If true, spin-orbit coupling is considered (See <a class="reference internal" href="../tutorial/pb/pb.html#pbtutorial"><span class="std std-ref">Pb with spin-orbit interaction</span></a>).</td>
+<td>Whether the spin-orbit case (See <a class="reference internal" href="../tutorial/pb/pb.html#pbtutorial"><span class="std std-ref">Pb with spin-orbit interaction</span></a>).</td>
 </tr>
-<tr class="row-even"><td>kanamori</td>
+<tr class="row-odd"><td>kanamori</td>
 <td>String</td>
 <td>None</td>
 <td>U (Diagonal Coulomb pot.), U’ (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).</td>
 </tr>
-<tr class="row-odd"><td>lattice</td>
+<tr class="row-even"><td>lattice</td>
 <td>String</td>
 <td>chain</td>
-<td>The type of lattice. You can select the type of lattice from “chain”, “square”, “cubic”, “bethe”, and “wannier90”.</td>
+<td>Chosen from “chain”, “square”, “cubic”, “bethe”, and “wannier90”</td>
 </tr>
-<tr class="row-even"><td>nelec</td>
+<tr class="row-odd"><td>nelec</td>
 <td>Float</td>
 <td>1.0</td>
 <td>Number of electrons per unit cell.</td>
 </tr>
-<tr class="row-odd"><td>t</td>
+<tr class="row-even"><td>t</td>
 <td>Float</td>
 <td>1.0</td>
 <td>Transfer integral (Nearest neighbor)</td>
 </tr>
-<tr class="row-even"><td>bvec</td>
+<tr class="row-odd"><td>bvec</td>
 <td>String</td>
-<td>[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]</td>
-<td>Reciprocal lattice vectors</td>
+<td>[(1.0,0.0,0.0), (0.0,1.0,0.0), (0.0,0.0,1.0)]</td>
+<td>Reciprocal lattice vectors in arbitrary unit.</td>
 </tr>
-<tr class="row-odd"><td>t’</td>
+<tr class="row-even"><td>t’</td>
 <td>Float</td>
 <td>0.0</td>
 <td>Transfer integral (Second nearest)</td>
 </tr>
-<tr class="row-even"><td>slater_uj</td>
+<tr class="row-odd"><td>slater_uj</td>
 <td>String</td>
 <td>None</td>
 <td>Angular momentum, Slater integrals in U and J (See below).</td>
 </tr>
-<tr class="row-odd"><td>ncor</td>
+<tr class="row-even"><td>ncor</td>
 <td>Integer</td>
 <td>1</td>
-<td>Number of correlation shell (Only used in wannier90).</td>
+<td>Number of correlated shells in a unit cell (Only wannier90).</td>
+</tr>
+<tr class="row-odd"><td>equiv</td>
+<td>String</td>
+<td>None</td>
+<td>Equivalence of each correlated shell. Please, be careful to use it (See below).</td>
 </tr>
 </tbody>
 </table>
@@ -410,7 +420,7 @@ the double-counting correction.</p>
 <tr class="row-even"><td>fix_mu</td>
 <td>Bool</td>
 <td>False</td>
-<td>If true, the chemical potential is fixed to a given value.</td>
+<td>Whether or not to fix chemical potential to a given value.</td>
 </tr>
 <tr class="row-odd"><td>nk</td>
 <td>Integer</td>
@@ -420,7 +430,7 @@ the double-counting correction.</p>
 <tr class="row-even"><td>perform_tail_fit</td>
 <td>Bool</td>
 <td>False</td>
-<td>If true, the tail-fit is performed.</td>
+<td>Whether or not perform the tail-fit.</td>
 </tr>
 <tr class="row-odd"><td>nk1</td>
 <td>Integer</td>
@@ -435,7 +445,7 @@ the double-counting correction.</p>
 <tr class="row-odd"><td>with_dc</td>
 <td>Bool</td>
 <td>False</td>
-<td>If true, double counting correction is used (See below).</td>
+<td>Whether or not use double counting correction (See below)</td>
 </tr>
 <tr class="row-even"><td>nk2</td>
 <td>Integer</td>
@@ -541,7 +551,7 @@ For more details, please see the reference page of
 <col width="12%" />
 <col width="10%" />
 <col width="8%" />
-<col width="71%" />
+<col width="70%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -551,22 +561,17 @@ For more details, please see the reference page of
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>delta_mix</td>
-<td>Float</td>
-<td>0.5</td>
-<td>Mixing parameter for hybridization function</td>
-</tr>
-<tr class="row-odd"><td>max_step</td>
+<tr class="row-even"><td>max_step</td>
 <td>Integer</td>
 <td>100</td>
 <td>Maximum steps of DMFT loops</td>
 </tr>
-<tr class="row-even"><td>restart</td>
+<tr class="row-odd"><td>restart</td>
 <td>Bool</td>
 <td>False</td>
-<td>If true, calculation restarts from a previous calculation stored in a HDF file.</td>
+<td>Whether or not restart from a previous calculation stored in a HDF file.</td>
 </tr>
-<tr class="row-odd"><td>sigma_mix</td>
+<tr class="row-even"><td>sigma_mix</td>
 <td>Float</td>
 <td>0.5</td>
 <td>Mixing parameter for self-energy</td>
@@ -630,7 +635,7 @@ For more details, please see the reference page of
 <tr class="row-odd"><td>omega_pade</td>
 <td>Float</td>
 <td>5.0</td>
-<td>Cutoff frequency for the Pade approximation</td>
+<td>Cutoff frequencies for the Pade approximation</td>
 </tr>
 <tr class="row-even"><td>eta</td>
 <td>Float</td>
