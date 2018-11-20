@@ -448,16 +448,22 @@ def dcore_post(filename):
     # knode=(label, k0, k1, k2) in the fractional coordinate
     #
     knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["tool"]["knode"])
-    knode = numpy.zeros((p["tool"]['nnode'], 3), numpy.float_)
-    klabel = ['G'] * p["tool"]['nnode']
+    # knode = numpy.zeros((p["tool"]['nnode'], 3), numpy.float_)
+    # klabel = ['G'] * p["tool"]['nnode']
+    knode = []
+    klabel = []
     try:
-        for i, _list in enumerate(knode_list):
+        # for i, _list in enumerate(knode_list):
+        for _list in knode_list:
             _knode = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
-            klabel[i] = _knode[0]
-            for j in range(3):
-                knode[i, j] = float(_knode[j+1])
+            # klabel[i] = _knode[0]
+            # for j in range(3):
+            #     knode[i, j] = float(_knode[j+1])
+            klabel.append(_knode[0])
+            knode.append(map(float, _knode[1:4]))
     except RuntimeError:
         raise RuntimeError("Error ! Format of knode is wrong.")
+    knode = numpy.array(knode)  # convert from list to numpy.ndarray
     #
     # Reciprocal lattice vectors
     # bvec=[(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
@@ -486,7 +492,9 @@ def dcore_post(filename):
     # Construct parameters for the A(k,w)
     #
     mpi.report("\n################  Constructing k-path  ##################")
-    nnode = p["tool"]["nnode"]
+    # nnode = p["tool"]["nnode"]
+    # TODO: warning if p["tool"]["nnode"] is given
+    nnode = len(klabel)
     nk_line = p["tool"]["nk_line"]
     n_k = (nnode - 1)*nk_line + 1
     if mpi.is_master_node():

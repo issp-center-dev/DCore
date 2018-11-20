@@ -84,7 +84,7 @@ def create_parser():
                       "Whether or not restart from a previous calculation stored in a HDF file.")
 
     # [tool] 
-    parser.add_option("tool", "nnode", int, 2, "Number of node for the *k* path")
+    parser.add_option("tool", "nnode", int, 2, "[NOT USED] Number of node for the *k* path")
     parser.add_option("tool", "nk_line", int, 8, "Number of *k* along each line")
     parser.add_option("tool", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]",
                       "The name and the fractional coordinate of each k-node.")
