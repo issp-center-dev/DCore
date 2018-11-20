@@ -24,6 +24,7 @@ from dmft_core import DMFTCoreSolver
 from program_options import create_parser
 from pytriqs.applications.dft.sumk_dft_tools import *
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
+from warnings import warn
 
 
 class DMFTCoreTools:
@@ -493,7 +494,9 @@ def dcore_post(filename):
     #
     mpi.report("\n################  Constructing k-path  ##################")
     # nnode = p["tool"]["nnode"]
-    # TODO: warning if p["tool"]["nnode"] is given
+    if p["tool"]["nnode"]:
+        # for old-version users
+        warn("Parameter 'nnode' is not used anymore")
     nnode = len(klabel)
     nk_line = p["tool"]["nk_line"]
     n_k = (nnode - 1)*nk_line + 1
