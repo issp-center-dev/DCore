@@ -59,6 +59,19 @@ def create_solver_params(ini_dict):
 
     return solver_params
 
+def symmetrize_spin(G):
+    """
+    Enforce time-reversal symmetry
+    """
+    # get spin labels, e.g., ['up', 'down']
+    bnames = list(G.indices)
+    assert len(bnames) == 2
+
+    # average over spins
+    G_ave = (G[bnames[0]] + G[bnames[1]])/2.
+    G[bnames[0]] = G_ave.copy()
+    G[bnames[1]] = G_ave.copy()
+
 
 class DMFTCoreSolver:
     def __init__(self, seedname, params):
@@ -151,7 +164,7 @@ class DMFTCoreSolver:
                             ar = f[output_group]
                             if 'iterations' not in ar:
                                 raise RuntimeError("Failed to restart the previous simulation!")
-    
+
                             previous_runs = ar['iterations']
                             if ar['iterations'] <= 0:
                                 raise RuntimeError("No previous runs to be loaded from " + output_file + "!")
@@ -298,6 +311,18 @@ class DMFTCoreSolver:
             # Solved. Now do post-processing:
             for ish in range(nsh):
                 mpi.report("\nTotal charge of impurity problem : %.6f" % s[ish].G_iw.total_density())
+
+            # Symmetrize over spin components
+            if self._params["model"]["time_reversal"]:
+                mpi.report("Average over spin components is taken")
+
+                if self._params["model"]["spin_orbit"]:
+                    # TODO
+                    raise Exception("Spin-symmetrization in the case with the spin-orbit coupling is not implemented")
+
+                for ish in range(nsh):
+                    symmetrize_spin(s[ish].G_iw)
+                    symmetrize_spin(s[ish].Sigma_iw)
 
             # Now mix Sigma and G with factor sigma_mix, if wanted:
             if iteration_number > 1 or previous_present:
