@@ -38,7 +38,7 @@ def create_parser():
                       "Number of orbitals at each correlated shell (*ncor* integers separated by commas or spaces.)")
     parser.add_option("model", "equiv", str, "None",
                       "Equivalence of each correlated shell. Please, be careful to use it (See below).")
-    parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0), (0.0,1.0,0.0), (0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
+    parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
     parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case (See :ref:`pbtutorial`).")
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
