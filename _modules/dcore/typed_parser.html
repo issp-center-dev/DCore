@@ -108,12 +108,18 @@
 <span class="c1">#</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">configparser</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">ConfigParser</span> <span class="k">as</span> <span class="nn">configparser</span>
 
+<span class="k">class</span> <span class="nc">OptionStatus</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">VALID</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">DEPRECATED</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">RETIRED</span> <span class="o">=</span> <span class="mi">2</span>
 
 <span class="k">def</span> <span class="nf">cast</span><span class="p">(</span><span class="n">value_type</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">value_type</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
@@ -147,13 +153,14 @@
         <span class="c1"># Names of sections in which we accept options that are not predefined by add_option().</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__allow_undefined_options</span> <span class="o">=</span> <span class="p">[]</span></div>
 
-<div class="viewcode-block" id="TypedParser.add_option"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.add_option">[docs]</a>    <span class="k">def</span> <span class="nf">add_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+<div class="viewcode-block" id="TypedParser.add_option"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.add_option">[docs]</a>    <span class="k">def</span> <span class="nf">add_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">OptionStatus</span><span class="o">.</span><span class="n">VALID</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param section: section name</span>
 <span class="sd">        :param option: option name</span>
 <span class="sd">        :param dtype: data type</span>
 <span class="sd">        :param default: default value</span>
 <span class="sd">        :param string: short description</span>
+<span class="sd">        :param status: VALID, DEPRECATED, or RETIRED</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Do not add option after an input file has been read!&quot;</span><span class="p">)</span>
@@ -164,7 +171,10 @@
         <span class="k">if</span> <span class="n">section</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">section</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">option</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">dtype</span><span class="p">(</span><span class="n">default</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">option</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dtype&#39;</span> <span class="p">:</span> <span class="n">dtype</span><span class="p">,</span>
+                                               <span class="s1">&#39;description&#39;</span> <span class="p">:</span> <span class="n">string</span><span class="p">,</span>
+                                               <span class="s1">&#39;default&#39;</span> <span class="p">:</span> <span class="n">dtype</span><span class="p">(</span><span class="n">default</span><span class="p">),</span>
+                                               <span class="s1">&#39;status&#39;</span> <span class="p">:</span> <span class="n">status</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">option</span><span class="p">]</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">(</span><span class="n">default</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TypedParser.allow_undefined_options"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.allow_undefined_options">[docs]</a>    <span class="k">def</span> <span class="nf">allow_undefined_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">):</span>
@@ -204,9 +214,13 @@
                 <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__config_parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">sect</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span> <span class="ow">and</span> <span class="n">opt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">]:</span>
                     <span class="c1"># if an option is pre-defined.</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">OptionStatus</span><span class="o">.</span><span class="n">DEPRECATED</span><span class="p">:</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Parameter </span><span class="si">{0}</span><span class="s2"> [</span><span class="si">{1}</span><span class="s2">] is deprecated.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">sect</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">OptionStatus</span><span class="o">.</span><span class="n">RETIRED</span><span class="p">:</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Parameter </span><span class="si">{0}</span><span class="s2"> [</span><span class="si">{1}</span><span class="s2">] is not used anymore.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">sect</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="s1">&#39;dtype&#39;</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># if an option is not pre-defined, use the value in the input file</span>
+                    <span class="c1"># if an option is not pre-defined, use the value given in the input file</span>
                     <span class="k">if</span> <span class="n">sect</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allow_undefined_options</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">__results</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -226,19 +240,19 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the type of a given option</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="s1">&#39;dtype&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="TypedParser.get_description"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.get_description">[docs]</a>    <span class="k">def</span> <span class="nf">get_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the description of a given option</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="s1">&#39;description&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="TypedParser.get_default_value"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.get_default_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sect</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the default value of a given option</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__definitions</span><span class="p">[</span><span class="n">sect</span><span class="p">][</span><span class="n">opt</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="TypedParser.get_predefined_sections"><a class="viewcode-back" href="../../reference/TypedParser.html#dcore.typed_parser.TypedParser.get_predefined_sections">[docs]</a>    <span class="k">def</span> <span class="nf">get_predefined_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

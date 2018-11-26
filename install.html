@@ -78,6 +78,7 @@
   <h3><a href="contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#download">Download</a></li>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#installation-steps">Installation steps</a></li>
 </ul>
@@ -119,6 +120,26 @@
             
   <div class="section" id="installation">
 <span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="download">
+<h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
+<p>You can download the source files in two ways.</p>
+<ul>
+<li><p class="first"><strong>[Release version]</strong></p>
+<p>Go to the <a class="reference external" href="https://github.com/issp-center-dev/DCore/releases">release page</a> and download the latest tar or zip file.
+You can unpack, for example, the tar file by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ tar zxvf v1.x.x.tar.gz
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>[Develop version]</strong></p>
+<p>Newly implemented features are available in the source code in GitHub repository. You can clone the repository by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/issp-center-dev/DCore.git dcore.src
+</pre></div>
+</div>
+<p>The master branch basically corresponds to the latest released package, and the develop branch includes new features. Note that the develop branch may not be well tested and contains some bugs.</p>
+</li>
+</ul>
+</div>
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
@@ -182,7 +203,7 @@ At present, <code class="docutils literal notranslate"><span class="pre">DCore</
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>If you want to treat the spin-orbit coupling in <cite>TRIQS/cthyb</cite> solver,
+<p>If you want to treat the spin-orbit coupling in <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code> solver,
 it must be built with the following CMake options:</p>
 <div class="last highlight-bash notranslate"><div class="highlight"><pre><span></span>-DHYBRIDISATION_IS_COMPLEX<span class="o">=</span>ON -DLOCAL_HAMILTONIAN_IS_COMPLEX<span class="o">=</span>ON
 </pre></div>
@@ -195,13 +216,13 @@ it must be built with the following CMake options:</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>ALPSCore/CT-HYB is a standalone program with an interface based on text and HDF5 files.
-“triqs_interface” is a TRIQS-compatible Python interface of ALPSCore/CT-HYB.
+“triqs_interface” is a TRIQS-compatible Python interface of <code class="docutils literal notranslate"><span class="pre">ALPSCore/CT-HYB</span></code>.
 This allows to use this impurity solver transparently from DCore (built with TRIQS python architecture).
-The main developer of ALPSCore/CT-HYB, H. Shinaoka, is one of the developers of DCore.</p>
-<p class="last">Both of ALPSCore/CT-HYB and TRIQS/cthyb implement the hybridization-expansion continuous-time quantum Monte Carlo method.
+The main developer of <code class="docutils literal notranslate"><span class="pre">ALPSCore/CT-HYB</span></code>, H. Shinaoka, is one of the developers of DCore.</p>
+<p class="last">Both of <code class="docutils literal notranslate"><span class="pre">ALPSCore/CT-HYB</span></code> and <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code> implement the hybridization-expansion continuous-time quantum Monte Carlo method.
 The main difference is the reliability of measurement of the single-particle Green’s function.
 ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
-The non-worm conventional sampling, which is implemented in TRIQS/cthyb,
+The non-worm conventional sampling, which is implemented in <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code>,
 may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).</p>
 </div>
 </li>
@@ -210,27 +231,97 @@ may give wrong results in some situations (e.g. SOI coupling with orbital-diagon
 <div class="section" id="installation-steps">
 <h2>Installation steps<a class="headerlink" href="#installation-steps" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p class="first">Download the sources from github</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/issp-center-dev/DCore.git dcore.src
-</pre></div>
-</div>
-</li>
-<li><p class="first">Create an empty build directory where you will compile the code:</p>
+<li><p class="first">Create an empty directory where you will compile the code</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mkdir dcore.build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> dcore.build
 </pre></div>
 </div>
 </li>
-<li><p class="first">In the build directory call cmake specifying where the TRIQS library is installed:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DTRIQS_PATH<span class="o">=</span>path_to_triqs ../dcore.src
+<li><p class="first">In the build directory, call cmake command with an option to specify the path to TRIQS library</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DTRIQS_PATH<span class="o">=</span>path_to_triqs path_to_dcore_src
+</pre></div>
+</div>
+<p>Here, <em>path_to_triqs</em> refers to your <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> install directory, and <em>path_to_dcore_src</em> refers to the <code class="docutils literal notranslate"><span class="pre">DCore</span></code> source directory.
+If the cmake command succeeded, you will see the following message</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>-- Build files have been written to: /.../dcore.build
 </pre></div>
 </div>
 </li>
-<li><p class="first">Compile the code, run the tests and install the application:</p>
+<li><p class="first">Compile the code by</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make
-$ make <span class="nb">test</span>
-$ make install
 </pre></div>
 </div>
+</li>
+<li><p class="first">We recommend that you run the tests to check if the compiling is properly finished. Type</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
+</pre></div>
+</div>
+<p>The test results look like</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Running tests...
+Test project /Users/k-yoshimi/CLionProjects/DCore/build
+      Start  <span class="m">1</span>: typed_parser
+ <span class="m">1</span>/21 Test  <span class="c1">#1: typed_parser .....................   Passed    0.62 sec</span>
+      Start  <span class="m">2</span>: openmx
+ <span class="m">2</span>/21 Test  <span class="c1">#2: openmx ...........................   Passed    0.66 sec</span>
+      Start  <span class="m">3</span>: respack
+ <span class="m">3</span>/21 Test  <span class="c1">#3: respack ..........................   Passed    0.64 sec</span>
+      Start  <span class="m">4</span>: pre_preset
+ <span class="m">4</span>/21 Test  <span class="c1">#4: pre_preset .......................   Passed    0.91 sec</span>
+      Start  <span class="m">5</span>: pre_wannier
+ <span class="m">5</span>/21 Test  <span class="c1">#5: pre_wannier ......................   Passed    2.42 sec</span>
+      Start  <span class="m">6</span>: pre_wannier_so
+ <span class="m">6</span>/21 Test  <span class="c1">#6: pre_wannier_so ...................   Passed    0.77 sec</span>
+      Start  <span class="m">7</span>: pre_respack
+ <span class="m">7</span>/21 Test  <span class="c1">#7: pre_respack ......................   Passed    0.86 sec</span>
+      Start  <span class="m">8</span>: pre_respack_so
+ <span class="m">8</span>/21 Test  <span class="c1">#8: pre_respack_so ...................   Passed    0.75 sec</span>
+      Start  <span class="m">9</span>: main_chain_hubbardI
+ <span class="m">9</span>/21 Test  <span class="c1">#9: main_chain_hubbardI ..............   Passed    2.92 sec</span>
+      Start <span class="m">10</span>: main_chain_hubbardI_so
+<span class="m">10</span>/21 Test <span class="c1">#10: main_chain_hubbardI_so ...........   Passed    3.51 sec</span>
+      Start <span class="m">11</span>: main_chain_triqsqmc
+<span class="m">11</span>/21 Test <span class="c1">#11: main_chain_triqsqmc ..............***Failed    0.70 sec</span>
+      Start <span class="m">12</span>: main_chain_triqsqmc_so
+<span class="m">12</span>/21 Test <span class="c1">#12: main_chain_triqsqmc_so ...........***Failed    0.68 sec</span>
+      Start <span class="m">13</span>: check_chain_hubbardI
+<span class="m">13</span>/21 Test <span class="c1">#13: check_chain_hubbardI .............   Passed    1.49 sec</span>
+      Start <span class="m">14</span>: check_chain_hubbardI_so
+<span class="m">14</span>/21 Test <span class="c1">#14: check_chain_hubbardI_so ..........   Passed    1.48 sec</span>
+      Start <span class="m">15</span>: check_chain_triqsqmc
+<span class="m">15</span>/21 Test <span class="c1">#15: check_chain_triqsqmc .............***Failed    0.74 sec</span>
+      Start <span class="m">16</span>: check_chain_triqsqmc_so
+<span class="m">16</span>/21 Test <span class="c1">#16: check_chain_triqsqmc_so ..........***Failed    0.76 sec</span>
+      Start <span class="m">17</span>: check_chain_alpsqmc
+<span class="m">17</span>/21 Test <span class="c1">#17: check_chain_alpsqmc ..............***Failed    0.73 sec</span>
+      Start <span class="m">18</span>: post_chain_hubbardI
+<span class="m">18</span>/21 Test <span class="c1">#18: post_chain_hubbardI ..............   Passed    2.28 sec</span>
+      Start <span class="m">19</span>: post_chain_hubbardI_so
+<span class="m">19</span>/21 Test <span class="c1">#19: post_chain_hubbardI_so ...........   Passed    2.18 sec</span>
+      Start <span class="m">20</span>: post_chain_triqsqmc
+<span class="m">20</span>/21 Test <span class="c1">#20: post_chain_triqsqmc ..............***Failed    0.71 sec</span>
+      Start <span class="m">21</span>: post_chain_triqsqmc_so
+<span class="m">21</span>/21 Test <span class="c1">#21: post_chain_triqsqmc_so ...........***Failed    0.72 sec</span>
+
+<span class="m">67</span>% tests passed, <span class="m">7</span> tests failed out of <span class="m">21</span>
+
+Total Test <span class="nb">time</span> <span class="o">(</span>real<span class="o">)</span> <span class="o">=</span>  <span class="m">26</span>.56 sec
+
+The following tests FAILED:
+    <span class="m">11</span> - main_chain_triqsqmc <span class="o">(</span>Failed<span class="o">)</span>
+    <span class="m">12</span> - main_chain_triqsqmc_so <span class="o">(</span>Failed<span class="o">)</span>
+    <span class="m">15</span> - check_chain_triqsqmc <span class="o">(</span>Failed<span class="o">)</span>
+    <span class="m">16</span> - check_chain_triqsqmc_so <span class="o">(</span>Failed<span class="o">)</span>
+    <span class="m">17</span> - check_chain_alpsqmc <span class="o">(</span>Failed<span class="o">)</span>
+    <span class="m">20</span> - post_chain_triqsqmc <span class="o">(</span>Failed<span class="o">)</span>
+    <span class="m">21</span> - post_chain_triqsqmc_so <span class="o">(</span>Failed<span class="o">)</span>
+</pre></div>
+</div>
+<p>In the above example, all tests related to QMC are failed, because only the Hubbard-I solver is installed. The tests from 1 to 8 should be passed regardless of impurity solvers you installed.</p>
+</li>
+<li><p class="first">Finally, install by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make install
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> is installed in the directory <em>path_to_triqs</em>.</p>
 </li>
 </ol>
 </div>
