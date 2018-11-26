@@ -121,19 +121,24 @@ Prerequisites
 Installation steps
 ------------------
 
-#. Create an empty build directory where you will compile the code
+#. Create an empty directory where you will compile the code
 
    ::
 
      $ mkdir dcore.build && cd dcore.build
 
-#. In the build directory call cmake specifying where the TRIQS library is installed
+#. In the build directory, call cmake command with an option to specify the path to TRIQS library
 
    ::
 
      $ cmake -DTRIQS_PATH=path_to_triqs path_to_dcore_src
 
    Here, *path_to_triqs* refers to your ``TRIQS`` install directory, and *path_to_dcore_src* refers to the ``DCore`` source directory.
+   If the cmake command succeeded, you will see the following message
+
+   ::
+
+     -- Build files have been written to: /.../dcore.build
 
 #. Compile the code by
 
@@ -141,7 +146,7 @@ Installation steps
 
      $ make
 
-#. We recommend that you run the tests to check the compiling is properly finished. Type
+#. We recommend that you run the tests to check if the compiling is properly finished. Type
 
    ::
 
@@ -209,7 +214,7 @@ Installation steps
      	 20 - post_chain_triqsqmc (Failed)
      	 21 - post_chain_triqsqmc_so (Failed)
 
-   In this system, only Hubbard-I solver is installed, and all tests related to QMC are failed. The tests from 1 to 8 should be passed regardless of impurity solvers you installed.
+   In the above example, all tests related to QMC are failed, because only the Hubbard-I solver is installed. The tests from 1 to 8 should be passed regardless of impurity solvers you installed.
 
 #. Finally, install by
 
