@@ -40,6 +40,7 @@ def create_parser():
                       "Equivalence of each correlated shell. Please, be careful to use it (See below).")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
     parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case (See :ref:`pbtutorial`).")
+    parser.add_option("model", "time_reversal", bool, False, "If true, an average over spin components are taken.")
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
@@ -72,18 +73,18 @@ def create_parser():
     parser.add_option("system", "n_l", int, 0,
                       "The number of the Legendre polynomial for QMC. If not, the solver's default value is used.")
 
-    # [impurity_solver] 
+    # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I',
                       "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
     parser.allow_undefined_options("impurity_solver")
 
-    # [control] 
+    # [control]
     parser.add_option("control", "max_step", int, 100, "Maximum steps of DMFT loops")
     parser.add_option("control", "sigma_mix", float, 0.5, "Mixing parameter for self-energy")
     parser.add_option("control", "restart", bool, False,
                       "Whether or not restart from a previous calculation stored in a HDF file.")
 
-    # [tool] 
+    # [tool]
     parser.add_option("tool", "nnode", int, 0, "[NOT USED] Number of node for the *k* path", OptionStatus.RETIRED)
     parser.add_option("tool", "nk_line", int, 8, "Number of *k* along each line")
     parser.add_option("tool", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]",
