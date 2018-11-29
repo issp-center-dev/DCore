@@ -66,7 +66,7 @@ This program locates in the ``util/qe2respack/`` directory of RESPACK.
 Execute ``calc_wannier`` (in ``src/wannier/`` of RESPACK) for the actual wannierization.
 with the following input file:
 
-:download:`nscf_respack.in <respack.in>`
+:download:`respack.in <respack.in>`
 
 .. literalinclude:: respack.in
 
