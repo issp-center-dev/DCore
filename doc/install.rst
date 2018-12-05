@@ -134,7 +134,8 @@ Installation steps
      $ cmake -DTRIQS_PATH=path_to_triqs path_to_dcore_src
 
    Here, *path_to_triqs* refers to your ``TRIQS`` install directory, and *path_to_dcore_src* refers to the ``DCore`` source directory.
-   If the cmake command succeeded, you will see the following message
+   If you want to install DCore to somewhere other than the triqs directory, please set CMAKE_INSTALL_PREFIX to your install directory.
+   If the cmake command succeeded, you will see the following message.
 
    ::
 

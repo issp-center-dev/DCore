@@ -24,8 +24,11 @@ if(${GIT_RESULT} EQUAL 0)
   message(STATUS "Hash: ${DCORE_GIT_HASH}")
 endif(${GIT_RESULT} EQUAL 0)
 
-# We want to be installed in the TRIQS tree
-set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
+# DCore will be installed in the TRIQS tree by default.
+if(NOT CMAKE_INSTALL_PREFIX)
+    message("Using default install prefix: ${TRIQS_PATH}")
+    set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
+endif()
 
 add_subdirectory(python)
 add_subdirectory(shells)
