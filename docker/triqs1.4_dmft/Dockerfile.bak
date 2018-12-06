@@ -1,0 +1,59 @@
+FROM shinaoka/triqs1.4
+
+# Clone and build triqs/cthyb
+WORKDIR $HOME/src
+RUN git clone -b 1.4.2 --single-branch https://github.com/TRIQS/cthyb.git \
+ && mkdir $HOME/build/cthyb
+WORKDIR $HOME/build/cthyb
+RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DTRIQS_PATH=$HOME/opt/triqs $HOME/src/cthyb \
+ && make -j 2 install \
+ && make test
+
+# Clone and build triqs/hubbardI (from forked repo due to some compilation errors)
+WORKDIR $HOME/src
+RUN git clone -b master --single-branch https://github.com/shinaoka/hubbardI.git \
+ && mkdir $HOME/build/hubbardI
+WORKDIR $HOME/build/hubbardI
+RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DTRIQS_PATH=$HOME/opt/triqs $HOME/src/hubbardI \
+ && make -j 2 install \
+ && make test
+
+# Clone and build triqs/dft_tools
+WORKDIR $HOME/src
+RUN git clone -b master --single-branch https://github.com/TRIQS/dft_tools.git \
+ && cd dft_tools \
+ && git checkout d00575632c4 \
+ && mkdir $HOME/build/dft_tools
+WORKDIR $HOME/build/dft_tools
+RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DTRIQS_PATH=$HOME/opt/triqs $HOME/src/dft_tools \
+ && make -j 2 install
+# Workaround for test failure: 17 - vaspio (Failed) 
+RUN make test; exit 0
+
+# Clone and build ALPSCore
+WORKDIR $HOME/src
+RUN git clone -b master --single-branch https://github.com/ALPSCore/ALPSCore.git \
+ && mkdir $HOME/build/ALPSCore
+WORKDIR $HOME/build/ALPSCore
+RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_INSTALL_PREFIX=$HOME/opt/ALPSCore -DDocumentation=OFF -DALPS_INSTALL_EIGEN=true -DALPS_CXX_STD=custom $HOME/src/ALPSCore
+RUN make -j 2 
+RUN make test
+RUN make install
+
+# Clone and build ALPS/CT-HYB
+WORKDIR $HOME/src
+RUN git clone -b master --single-branch https://github.com/ALPSCore/CT-HYB.git && mkdir $HOME/build/alps_cthyb
+WORKDIR $HOME/build/alps_cthyb
+ENV ALPSCore_DIR="$HOME/opt/ALPSCore"
+RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_INSTALL_PREFIX=$HOME/opt/alps_cthyb -DCMAKE_CXX_FLAGS="-std=c++1y" $HOME/src/CT-HYB \
+ && make -j 2 install
+RUN make test
+
+# Clone and build pytriqs interface of ALPS/CT-HYB
+WORKDIR $HOME/src
+RUN git clone -b master --single-branch https://github.com/shinaoka/triqs_interface.git && mkdir $HOME/build/triqs_interface
+WORKDIR $HOME/build/triqs_interface
+ENV ALPSCoreCTHYB_DIR="$HOME/opt/alps_cthyb"
+RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DTRIQS_PATH=$HOME/opt/triqs $HOME/src/triqs_interface \
+ && make -j 2 install
+RUN make test

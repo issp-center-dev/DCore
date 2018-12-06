@@ -1,0 +1,6 @@
+version: '2'
+services:
+  dcore:
+    build: .
+    container_name: dcore_container
+    tty: true
