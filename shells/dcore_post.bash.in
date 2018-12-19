@@ -1,3 +1,5 @@
 #!/bin/bash
 
-@TRIQS_PATH@/bin/pytriqs -m pytriqs.applications.dcore.dcore_post $@
+export PYTHONPATH=@DCORE_SITE_PACKAGES@:$PYTHONPATH
+
+@TRIQS_PATH@/bin/pytriqs -m dcore.dcore_post $@

@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-from pytriqs.applications.dcore.numdiff import numdiff
+from dcore.numdiff import numdiff
 from openmx2dcore import openmx2dcore
 #
 openmx2dcore("SrVO3", "srvo3")

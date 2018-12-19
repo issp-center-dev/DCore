@@ -16,8 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-from pytriqs.applications.dcore.numdiff import numdiff
-from pytriqs.applications.dcore.dcore_post import dcore_post
+from dcore.numdiff import numdiff
+from dcore.dcore_post import dcore_post
 
 dcore_post('dmft.ini')
 
