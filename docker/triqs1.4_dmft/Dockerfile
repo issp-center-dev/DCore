@@ -15,7 +15,7 @@ RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DTRIQS_PATH=$HOME/opt/triqs $HOME/src/dft
 
 # Clone and build triqs/hubbardI (from forked repo due to some compilation errors)
 WORKDIR $HOME/src
-RUN git clone -b master --single-branch https://github.com/shinaoka/hubbardI.git \
+RUN git clone -b master --single-branch https://github.com/TRIQS/hubbardI.git \
  && mkdir $HOME/build/hubbardI
 WORKDIR $HOME/build/hubbardI
 RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DTRIQS_PATH=$HOME/opt/triqs $HOME/src/hubbardI \
