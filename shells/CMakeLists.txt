@@ -1,3 +1,4 @@
+set(DCORE_SITE_PACKAGES "${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages")
 
 configure_file(dcore_pre.bash.in dcore_pre)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dcore_pre DESTINATION bin

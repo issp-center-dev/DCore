@@ -5,9 +5,8 @@ WORKDIR $HOME/src
 RUN git clone -b master --single-branch https://github.com/ALPSCore/ALPSCore.git \
  && mkdir $HOME/build/ALPSCore
 WORKDIR $HOME/build/ALPSCore
-RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_INSTALL_PREFIX=$HOME/opt/ALPSCore -DDocumentation=OFF -DALPS_INSTALL_EIGEN=true -DALPS_CXX_STD=custom $HOME/src/ALPSCore
+RUN cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_INSTALL_PREFIX=$HOME/opt/ALPSCore -DDocumentation=OFF -DTesting=OFF -DALPS_INSTALL_EIGEN=true -DALPS_CXX_STD=custom $HOME/src/ALPSCore
 RUN make -j 2 \
-&& make test \
 && make install \
 && make clean
 

@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-from pytriqs.applications.dcore.numdiff import numdiff
+from dcore.numdiff import numdiff
 from respack2wan90 import respack2wan90
 #
 respack2wan90("sr2vo4")

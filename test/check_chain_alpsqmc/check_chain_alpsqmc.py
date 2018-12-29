@@ -16,8 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-from pytriqs.applications.dcore.numdiff import numdiff
-from pytriqs.applications.dcore.dcore_check import dcore_check
+from dcore.numdiff import numdiff
+from dcore.dcore_check import dcore_check
 
 dcore_check("dmft.ini", "test.pdf")
 

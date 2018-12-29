@@ -15,7 +15,7 @@ enable_testing()
 find_package(TRIQS REQUIRED)
 
 if (NOT ${TRIQS_WITH_PYTHON_SUPPORT})
- MESSAGE(FATAL_ERROR "dft_tools require Python support in TRIQS")
+ MESSAGE(FATAL_ERROR "DCore require Python support in TRIQS")
 endif()
 
 # Get hash
@@ -24,8 +24,7 @@ if(${GIT_RESULT} EQUAL 0)
   message(STATUS "Hash: ${DCORE_GIT_HASH}")
 endif(${GIT_RESULT} EQUAL 0)
 
-# We want to be installed in the TRIQS tree
-set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
+message(STATUS "Installing DCore into ${CMAKE_INSTALL_PREFIX}...")
 
 add_subdirectory(python)
 add_subdirectory(shells)

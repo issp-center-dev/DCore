@@ -16,9 +16,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-from pytriqs.utility.h5diff import h5diff
-from pytriqs.applications.dcore.dcore import dcore
+from dcore.tools import h5diff
+from dcore.dcore import dcore
 
 dcore('dmft.ini')
 
-h5diff("test.out.h5", "test_ref.out.h5")
+h5diff("test.out.h5", "test_ref.out.h5", "dmft_out/Sigma_iw")
