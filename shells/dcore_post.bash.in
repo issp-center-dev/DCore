@@ -2,4 +2,4 @@
 
 export PYTHONPATH=@DCORE_SITE_PACKAGES@:$PYTHONPATH
 
-@TRIQS_PATH@/bin/pytriqs -m dcore.dcore_post $@
+@PYTHON_INTERPRETER@ -m dcore.dcore_post $@

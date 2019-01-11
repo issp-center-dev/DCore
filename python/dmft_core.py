@@ -17,16 +17,25 @@
 #
 from __future__ import print_function
 
+# here, any module depending on pytriqs.mpi or mpi4py should not be imported.
 import sys
 import re
 import time
 import __builtin__
-from pytriqs.operators.util import *
-from pytriqs.applications.dft.sumk_dft import *
-from pytriqs.operators import *
 import numpy
-from program_options import *
+import copy
 
+from .program_options import *
+
+from . import sumkdft
+
+from tools import *
+
+import impurity_solvers
+
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
 def __gettype(name):
     t = getattr(__builtin__, name)
@@ -45,12 +54,12 @@ def create_solver_params(ini_dict):
     """
     solver_params = {}
     for k, v in ini_dict.items():
-        if k == 'name':
-            continue
-
         r = re.compile('^(.*)\{(.*)\}$')
         try:
             m = r.search(k)
+            if m is None:
+                continue
+
             param_name, param_type_str = m.group(1), m.group(2)
             param_type = __gettype(param_type_str)
         except RuntimeError:
@@ -59,443 +68,634 @@ def create_solver_params(ini_dict):
 
     return solver_params
 
-def symmetrize_spin(G):
+
+class ShellQuantity(object):
     """
-    Enforce time-reversal symmetry
+
+    Stores local quantities defined at a correlated shell
+    All Gf-like objects are initialized to zero.
+    All quantities are represented in LOCAL COORDINATE SYSTEM.
+
     """
-    # get spin labels, e.g., ['up', 'down']
-    bnames = list(G.indices)
-    assert len(bnames) == 2
 
-    # average over spins
-    G_ave = (G[bnames[0]] + G[bnames[1]])/2.
-    G[bnames[0]] = G_ave.copy()
-    G[bnames[1]] = G_ave.copy()
+    def __init__(self, gf_struct, beta, n_iw, n_tau):
+        # Self-energy
+        self.Sigma_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
+        for name, g in self.Sigma_iw:
+            g.zero()
+
+        # Lattice Green's function projected onto an impurity
+        #self.Gloc_iw = self.Sigma_iw.copy()
+
+        # Impurity Green's function
+        #self.Gimp_iw = self.Sigma_iw.copy()
 
 
-class DMFTCoreSolver:
-    def __init__(self, seedname, params):
-        """
-        Initialize solver at each inequivalent correlation shell
+def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau, Sigma_iw, Gloc_iw, mesh, ish):
+    """
 
-        Parameters
-        ----------
-        seedname : string
-            seedname
-        params : dict
-            Input parameters
-        """
+    Solve an impurity model
+
+    If mesh is not None, Sigma_w will be computed. Otherwise, None will be returned as Sigma_w.
+
+    """
+
+
+    Solver = impurity_solvers.solver_classes[solver_name]
+
+    raise_if_mpi_imported()
+
+    sol = Solver(beta, gf_struct, Umat, n_iw, n_tau)
+
+    if not mesh is None and not Solver.is_gf_realomega_available():
+        raise RuntimeError("Error: requested real-frequency quantities for an imaginary-time solver.")
+
+    G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
+    sol.set_G0_iw(G0_iw)
+
+    # Compute rotation matrix to the diagonal basis if supported
+    rot = compute_diag_basis(G0_iw) if basis_rot else None
+    s_params = copy.deepcopy(solver_params)
+    s_params['random_seed_offset'] = 1000 * ish
+    s_params['work_dir'] = 'work/imp_shell'+str(ish)
+
+    if not mesh is None:
+        s_params['calc_Sigma_w'] = True
+        s_params['mesh'] = mesh
+
+
+    # Solve the model
+    sol.solve(rot, mpirun_command, s_params)
+
+    # Read & save local quantities
+    # Change from DCore v1:
+    #      Local impurity Green's function is saved as "Gimp_iw" in DCore v2.
+    #      This is intended to distinguish the local impurity Green's function from the one computed by SumkDFT.
+
+    return sol.get_Sigma_iw(), sol.get_Gimp_iw(), sol.get_Sigma_w()
+
+
+
+class DMFTCoreSolver(object):
+    def __init__(self, seedname, params, output_file='', output_group='dmft_out', read_only=False):
+        # Set up
+        self._seedname = seedname
         self._params = copy.deepcopy(params)
-        # Construct a SumKDFT object
-        self.SK = SumkDFT(hdf_file=seedname+'.h5', use_dft_blocks=False, h_field=0.0)
-        u_file = HDFArchive(seedname+'.h5', 'r')
-        self.Umat = u_file["DCore"]["Umat"]
+        self._output_file = seedname+'.out.h5' if output_file is '' else output_file
+        self._output_group = output_group
+        self._use_spin_orbit = False
 
-        # Construct an impurity solver
-        beta = float(params['system']['beta'])
-        n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
-        n_tau = int(params['system']['n_tau'])  # Number of tau points
-        self.solver_name = params['impurity_solver']['name']
+        self._beta = float(params['system']['beta'])
+        self._n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
+        self._n_tau = int(params['system']['n_tau'])  # Number of tau points
 
-        self._solver_params = create_solver_params(params['impurity_solver'])
-        if 'verbosity' in self._solver_params.keys():
-            if not mpi.is_master_node():
-                del self._solver_params['verbosity']
+        # MPI commands
+        self._mpirun_command = params['mpi']['command'].replace('#', str(params['mpi']['num_processes']))
 
-        self.S = []
-        for ish in range(self.SK.n_inequiv_shells):
+        self._read_only = read_only
+        if read_only:
+            assert params['control']['restart']
 
-            # Use GF structure determined by DFT blocks
-            gf_struct = self.SK.gf_struct_solver[ish]
+        #
+        # Read dft input data
+        #
+        self._sk = sumkdft.SumkDFTCompat(hdf_file=seedname+'.h5')
+        sk = self._sk
 
-            if self.solver_name == "TRIQS/cthyb":
-                from pytriqs.applications.impurity_solvers.cthyb import Solver
-                if params['system']['n_l'] > 0:
-                    self._solver_params['measure_g_l'] = True
-                    self._solver_params['measure_g_tau'] = False
-                    self.S.append(Solver(beta=beta, gf_struct=gf_struct,
-                                         n_iw=n_iw, n_tau=n_tau, n_l=params['system']['n_l']))
-                else:
-                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, n_iw=n_iw, n_tau=n_tau))
-            elif self.solver_name == "TRIQS/hubbard-I":
-                n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim'] / (self.SK.SO + 1)
+        self._use_spin_orbit = sk.SO != 0
 
-                from hubbard_solver_matrix import Solver
-                self.S.append(Solver(beta=beta, norb=n_orb, n_msb=n_iw, use_spin_orbit=self.SK.SO))
-            elif self.solver_name == "ALPS/cthyb":
-                from pytriqs.applications.impurity_solvers.alps_cthyb import Solver
-                if params['system']['n_l'] > 0:
-                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=False,
-                                         n_iw=n_iw, n_tau=n_tau, n_l=params['system']['n_l']))
-                else:
-                    self.S.append(Solver(beta=beta, gf_struct=gf_struct, assume_real=False, n_iw=n_iw, n_tau=n_tau))
-            else:
-                raise RuntimeError("Unknown solver "+self.solver_name)
+        # Number of inequivalent shell
+        self._n_inequiv_shells = sk.n_inequiv_shells
 
-    # Make read-only getter
-    @property
-    def Solver(self):
-        return self.S
+        # Number of correlated shell
+        self._n_corr_shells = sk.n_corr_shells
 
-    def solve(self, max_step, output_file, output_group='dmft_output'):
-        with_dc = self._params['system']['with_dc']
+        # Dimension of an inequivalent shell or a correlated shell
+        # 'dim' is the dimension of either 'ud', 'up' or 'down' sectors for a correlated shell
+        # For 'ud', dim is the size of spin times orbital.
+        self._dim_corr_sh = [sk.corr_shells[icrsh]['dim'] for icrsh in range(self._n_corr_shells)]
+        self._dim_sh = [self._dim_corr_sh[sk.inequiv_to_corr[ish]] for ish in range(self._n_inequiv_shells)]
 
-        fix_mu = self._params['system']['fix_mu']
-        self.SK.chemical_potential = self._params['system']['mu']
+        if self._use_spin_orbit:
+            self._spin_block_names = ['ud']
+        else:
+            self._spin_block_names = ['up', 'down']
 
-        sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
+        # Structure of local Green's function at inequivalent shells
+        self._gf_struct = []
+        for ish in range(self._n_inequiv_shells):
+            self._gf_struct.append(dict([(spn, numpy.arange(self._dim_sh[ish])) for spn in self._spin_block_names]))
 
-        prec_mu = self._params['system']['prec_mu']
+        with HDFArchive(seedname+'.h5', 'r') as h:
+            self._Umat = h["DCore"]["Umat"]
 
-        previous_runs = 0
-        nsh = self.SK.n_inequiv_shells
+        # local quantities at ineuivalent shells
+        self._sh_quant = [ShellQuantity(self._gf_struct[ish], self._beta, self._n_iw, self._n_tau) for ish in range(self._n_inequiv_shells)]
 
-        # Just for convenience
-        sk = self.SK
-        s = self.S
+        # DC correction at correlated shells
+        self._dc_imp = []
+        for icrsh in range(self._n_corr_shells):
+            dc = {}
+            for spn in self._spin_block_names:
+                dc[spn] = numpy.zeros((self._dim_corr_sh[icrsh], self._dim_corr_sh[icrsh]), dtype=complex)
+            self._dc_imp.append(dc)
+        self._dc_energ = 0.0
+
+        #
+        # Read or set up seedname.out.h5
+        #
+        if self._params['control']['restart']:
+            self._read_output_file__restart()
+            assert self._previous_runs >= 1
+        else:
+            self._prepare_output_file__from_scratch()
+            assert self._previous_runs == 0
+
+        self._solver_params = create_solver_params(self._params['impurity_solver'])
+
+
+        self._sanity_check()
+
+
+    def _read_output_file__restart(self):
+        """
+        Read data from & set up an output HDF5 file.
+        """
+
+        assert self._params['control']['restart']
+
+        output_file, output_group = self._output_file, self._output_group
 
         # Set up a HDF file for output
-        error = 0
-        if mpi.is_master_node():
-            try:
-                with HDFArchive(output_file, 'a') as f:
-                    if output_group in f:
-                        if self._params['control']['restart']:
-                            ar = f[output_group]
-                            if 'iterations' not in ar:
-                                raise RuntimeError("Failed to restart the previous simulation!")
+        with HDFArchive(output_file, 'r') as f:
+            ar = f[output_group]
+            if 'iterations' not in ar:
+                raise RuntimeError("Failed to restart the previous simulation!")
 
-                            previous_runs = ar['iterations']
-                            if ar['iterations'] <= 0:
-                                raise RuntimeError("No previous runs to be loaded from " + output_file + "!")
-                            print("Loading Sigma_iw... ")
-                            for ish in range(nsh):
-                                s[ish].Sigma_iw << ar['Sigma_iw'][str(ar['iterations'])][str(ish)]
-                        else:
-                            del f[output_group]
-                            f.create_group(output_group)
-                    else:
-                        f.create_group(output_group)
-                    f[output_group]['parameters'] = self._params
-                    #
-                    # Sub group for something
-                    #
-                    for gname in ['Sigma_iw', 'G_l', 'chemical_potential']:
-                        if not (gname in f[output_group]):
-                            f[output_group].create_group(gname)
-            except Exception as e:
-                error = 1
-                print("Error occurred in IO of a HDF file: " + str(e))
-        error = mpi.bcast(error)
-        if error != 0:
-            return
+            self._previous_runs = ar['iterations']
+            if ar['iterations'] <= 0:
+                raise RuntimeError("No previous runs to be loaded from " + output_file + "!")
 
-        previous_runs = mpi.bcast(previous_runs)
-        previous_present = previous_runs > 0
-        if previous_present:
-            if mpi.is_master_node():
-                sk.chemical_potential, sk.dc_imp, sk.dc_energ = sk.load(['chemical_potential', 'dc_imp', 'dc_energ'])
-                print("Broadcasting Sigma_iw, chemical_potential, dc_imp, dc_energ... ")
-            for ish in range(nsh):
-                s[ish].Sigma_iw << mpi.bcast(s[ish].Sigma_iw)
-                sk.chemical_potential = mpi.bcast(sk.chemical_potential)
-                sk.dc_imp = mpi.bcast(sk.dc_imp)
-                sk.dc_energ = mpi.bcast(sk.dc_energ)
+            iterations = ar['iterations']
+
+            print("Loading Sigma_iw... ")
+            for ish in range(self._n_inequiv_shells):
+                self._sh_quant[ish].Sigma_iw << ar['Sigma_iw'][str(iterations)][str(ish)]
+
+            print("Loading dc_imp and dc_energ... ")
+            self._dc_imp = ar['dc_imp'][str(iterations)]
+            self._dc_energ = ar['dc_energ'][str(iterations)]
+            self._chemical_potential = ar['chemical_potential'][str(iterations)]
+
+    def _prepare_output_file__from_scratch(self):
+        """
+        Set up an output HDF5 file.
+        """
+
+        assert not self._params['control']['restart']
+
+        self._chemical_potential = self._params['system']['mu']
+
+        output_file, output_group = self._output_file, self._output_group
+
+        # Set up a HDF file for output
+        with HDFArchive(output_file, 'a') as f:
+            if output_group in f:
+                del f[output_group]
+
+            f.create_group(output_group)
+            f[output_group]['parameters'] = self._params
+
+            #
+            # Sub group for something
+            #
+            for gname in ['Sigma_iw', 'chemical_potential', 'dc_imp', 'dc_energ']:
+                if not (gname in f[output_group]):
+                    f[output_group].create_group(gname)
+
+        self._previous_runs = 0
+
+        #Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
+        #print("")
+        #print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
+        #print("")
+        #self.calc_dc_imp(dm_corr_sh, set_initial_Sigma_iw=True)
+
+    def _sanity_check(self):
+        """
+        Sanity checks
+        """
+
+        if not numpy.allclose(self._sk.corr_to_inequiv, self._sk.inequiv_to_corr):
+            raise RuntimeError("corr_to_inequiv must be equal to inequiv_to_corr!")
+
+        raise_if_mpi_imported()
+
+    def _make_sumkdft_params(self):
+        return {
+            'beta'          : self._params['system']['beta'],
+            'prec_mu'       : self._params['system']['prec_mu'],
+            'with_dc'       : self._params['system']['with_dc'],
+            'Sigma_iw_sh'   : [s.Sigma_iw for s in self._sh_quant],
+            'dc_imp'        : self._dc_imp,
+            'dc_energ'      : self._dc_energ,
+        }
+
+    def calc_Gloc(self):
+        """
+        Compute the lattice/local Green's function using SumkDFT.
+
+        Return a list of Gloc_iw and density matrices for inequivalent shells
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'Gloc'
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft', self._mpirun_command, params)
+
+        if (not self._params['system']['fix_mu']) and (not self._read_only):
+            self._chemical_potential = r['mu']
+
+        return r['Gloc_iw_sh'], r['dm_corr_sh']
+
+    def calc_dos(self, Sigma_w_sh, mesh, broadening):
+        """
+
+        Compute dos in real frequency.
+
+        :param Sigma_w_sh: list
+           List of real-frequency self-energy
+
+        :param broadening: float
+           Broadening factor
+
+        :return: tuple
+           Results are 'dos', 'dosproj', 'dosproj_orb'.
+
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'dos'
+        params['mu'] = self._chemical_potential
+        params['Sigma_w_sh'] = Sigma_w_sh
+        params['mesh'] = mesh
+        params['broadening'] = broadening
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos', self._mpirun_command, params)
+        return r['dos'], r['dosproj'], r['dosproj_orb']
+
+    def calc_dos0(self, mesh, broadening):
+        """
+
+        Compute dos in real frequency.
+
+        :param broadening: float
+           Broadening factor
+
+        :return: tuple
+           Results are 'dos0', 'dosproj0', 'dosproj_orb0'.
+
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'dos0'
+        params['mu'] = self._params['system']['mu']
+        params['mesh'] = mesh
+        params['broadening'] = broadening
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos0', self._mpirun_command, params)
+        return r['dos0'], r['dosproj0'], r['dosproj_orb0']
+
+    def calc_spaghettis(self, Sigma_w_sh, mesh, broadening):
+        """
+
+        Compute A(k, omega)
+
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'spaghettis'
+        params['mu'] = self._chemical_potential
+        params['Sigma_w_sh'] = Sigma_w_sh
+        params['mesh'] = mesh
+        params['broadening'] = broadening
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_spaghettis', self._mpirun_command, params)
+        return r['akw']
+
+    def calc_momentum_distribution(self):
+        """
+
+        Compute momentum distributions and eigen values of H(k)
+        Data are taken from bands_data.
+
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'momentum_distribution'
+        params['mu'] = self._chemical_potential
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_momentum_distribution', self._mpirun_command, params)
+        return r['den'], r['ev0']
+
+    def calc_Sigma_w(self, mesh):
+        """
+        Compute Sigma_w for computing band structure
+        For an imaginary-time solver, a list of Nones will be returned.
+
+        :param mesh: (float, float, int)
+            real-frequency mesh (min, max, num_points)
+        
+        :return: list of Sigma_w
+
+        """
+
+        solver_name = self._params['impurity_solver']['name']
+        Solver = impurity_solvers.solver_classes[solver_name]
+        if Solver.is_gf_realomega_available():
+            Gloc_iw_sh, _ = self.calc_Gloc()
+            _, _, sigma_w = self.solve_impurity_models(Gloc_iw_sh, mesh)
+            return sigma_w
+        else:
+            return [None] * self.n_inequiv_shells
+
+
+    def print_density_matrix(self, dm_corr_sh):
+        print("\nDensity Matrix")
+        for icrsh in range(self._n_corr_shells):
+            print("\n  Shell ", icrsh)
+            for sp in self._spin_block_names:
+                print("\n    Spin ", sp)
+                for i1 in range(self._sk.corr_shells[icrsh]['dim']):
+                    print("          ", end="")
+                    for i2 in range(self._sk.corr_shells[icrsh]['dim']):
+                        print("{0:.3f} ".format(dm_corr_sh[icrsh][sp][i1, i2]), end="")
+                    print("")
+
+
+    def solve_impurity_models(self, Gloc_iw_sh, mesh=None):
+        """
+
+        Solve impurity models for all inequivalent shells
+
+        :param Gloc_iw_sh:
+        :param mesh: (float, float, int)
+            (om_min, om_max, n_om)
+        :return:
+        """
+
+        solver_name = self._params['impurity_solver']['name']
+        Sigma_iw_sh = []
+        Gimp_iw_sh = []
+        Sigma_w_sh = []
+        for ish in range(self._n_inequiv_shells):
+            print("Solving impurity model for inequivalent shell " + str(ish) + " ...")
+            Sigma_iw, Gimp_iw, Sigma_w = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
+                             self._params["impurity_solver"]["basis_rotation"], self._Umat[ish], self._gf_struct[ish],
+                                 self._beta, self._n_iw, self._n_tau,
+                                 self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish)
+            Sigma_iw_sh.append(Sigma_iw)
+            if not mesh is None:
+                Sigma_w_sh.append(Sigma_w)
+            Gimp_iw_sh.append(Gimp_iw)
+
+        # FIXME: DON'T CHANGE THE NUMBER OF RETURNED VALUES. USE DICT INSTEAD.
+        if mesh is None:
+            return Sigma_iw_sh, Gimp_iw_sh
+        else:
+            return Sigma_iw_sh, Gimp_iw_sh, Sigma_w_sh
+
+    def calc_dc_imp(self, dm_corr_sh, set_initial_Sigma_iw=True):
+        """
+
+        Compute Double-counting term (Hartree-Fock term)
+        FIXME: PULL THIS OUT OF THIS CLASS
+
+        """
+
+        # Loop over inequivalent shells
+        self._dc_imp = []
+        for ish in range(self._n_inequiv_shells):
+            u_mat = self._Umat[self._sk.inequiv_to_corr[ish]]
+
+            # dim_tot is the dimension of spin x orbit for SO = 1 or that of orbital for SO=0
+            dim_tot = self._dim_sh[ish]
+            num_orb = int(u_mat.shape[0] / 2)
+
+            dens_mat = dm_corr_sh[self._sk.inequiv_to_corr[ish]]
+
+            print("")
+            print("    DC for inequivalent shell {0}".format(ish))
+            print("\n      2-index U:".format(ish))
+            for i1 in range(num_orb):
+                print("          ", end="")
+                for i2 in range(num_orb):
+                    print("{0:.3f} ".format(u_mat[i1, i2, i1, i2]), end="")
+                print("")
+            print("\n      2-index J:".format(ish))
+            for i1 in range(num_orb):
+                print("          ", end="")
+                for i2 in range(num_orb):
+                    print("{0:.3f} ".format(u_mat[i1, i2, i2, i1]), end="")
+                print("")
+
+            print("\n      Local Density Matrix:".format(ish))
+            for sp1 in self._spin_block_names:
+                print("        Spin {0}".format(sp1))
+                for i1 in range(num_orb):
+                    print("          ", end="")
+                    for i2 in range(num_orb):
+                        print("{0:.3f} ".format(dens_mat[sp1][i1, i2]), end="")
+                    print("")
+
+            if self._use_spin_orbit:
+                dc_imp_sh = {}
+                dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+                for s1, i1, s2, i2 in product(range(2), range(num_orb), range(2), range(num_orb)):
+                    #
+                    # Hartree
+                    #
+                    dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s1 * num_orb] += numpy.sum(
+                        u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb,
+                                                              s2 * num_orb:s2 * num_orb + num_orb]
+                    )
+                    #
+                    # Exchange
+                    #
+                    dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] += numpy.sum(
+                        u_mat[i1, 0:num_orb, 0:num_orb, i2]
+                        * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
+                    )
+                if set_initial_Sigma_iw:
+                    self._sh_quant[ish].Sigma_iw << dc_imp_sh['ud'][0, 0]
+                self._dc_imp.append(dc_imp_sh)
+            else:
+                dc_imp_sh = {}
+                for sp1 in self._spin_block_names:
+                    dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
+                    for i1, i2 in product(range(num_orb), repeat=2):
+                        #
+                        # Hartree
+                        #
+                        for sp2 in self._spin_block_names:
+                            dc_imp_sh[sp1][i1, i2] += \
+                                numpy.sum(u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat[sp2][:, :])
+                        #
+                        # Exchange
+                        #
+                        dc_imp_sh[sp1][i1, i2] += \
+                            - numpy.sum(u_mat[i1, 0:num_orb, 0:num_orb, i2] * dens_mat[sp1][:, :])
+                if set_initial_Sigma_iw:
+                    self._sh_quant[ish].Sigma_iw << dc_imp_sh['up'][0, 0]
+                self._dc_imp.append(dc_imp_sh)
+
+            if set_initial_Sigma_iw:
+                print("\n      DC Self Energy:")
+                for sp1 in self._spin_block_names:
+                    print("        Spin {0}".format(sp1))
+                    for i1 in range(dim_tot):
+                        print("          ", end="")
+                        for i2 in range(dim_tot):
+                            print("{0:.3f} ".format(self._sh_quant[ish].Sigma_iw[sp1].data[0, i1, i2]), end="")
+                        print("")
+                print("")
+
+
+    def do_steps(self, max_step):
+        """
+
+        Do more steps
+
+        :param max_step: int
+            Number of steps
+
+        """
+
+        assert not self._read_only
+
+        previous_present = self._previous_runs > 0
+        with_dc = self._params['system']['with_dc']
+        sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
+        output_group = self._output_group
 
         t0 = time.time()
-        for iteration_number in range(previous_runs+1, previous_runs+max_step+1):
+        for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             sys.stdout.flush()
-            mpi.report("\n#####################################################################",
-                       "########################  Iteration = %5d  ########################" % iteration_number,
-                       "#####################################################################\n")
+            print("")
+            print("#####################################################################")
+            print("########################  Iteration = %5d  ########################"%iteration_number)
+            print("#####################################################################")
+            print("")
+            print("")
+            print("@@@@@@@@@@@@@@@@@@@@@@@@  Chemical potential and G0_imp  @@@@@@@@@@@@@@@@@@@@@@@@")
+            print("")
 
-            mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Chemical potential and G0_imp  @@@@@@@@@@@@@@@@@@@@@@@@\n")
+            # Compute Gloc_iw where the chemical potential is adjusted if needed
+            Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
+            self.print_density_matrix(dm_corr_sh)
 
-            sk.set_Sigma([s[ish].Sigma_iw for ish in range(nsh)])   # set Sigma into the SumK class
-            if fix_mu:
-                chemical_potential = self._params['system']['mu']
-                chemical_potential = mpi.bcast(chemical_potential)
-                sk.set_mu(chemical_potential)
-            else:
-                sk.calc_mu(precision=prec_mu)  # find the chemical potential for given density
-            #
-            # Compute and display density matrix
-            #
-            dm_tot = sk.density_matrix(beta=self._params['system']['beta'])
-            if mpi.is_master_node():
-                print("\nDensity Matrix")
-                for icrsh in range(sk.n_corr_shells):
-                    print("\n  Shell ", icrsh)
-                    for sp in sk.spin_block_names[sk.corr_shells[icrsh]['SO']]:
-                        print("\n    Spin ", sp)
-                        for i1 in range(sk.corr_shells[icrsh]['dim']):
-                            print("          ", end="")
-                            for i2 in range(sk.corr_shells[icrsh]['dim']):
-                                print("{0:.3f} ".format(dm_tot[icrsh][sp][i1, i2]), end="")
-                            print("")
-            #
-            # Extract Local Green's function
-            #
-            g_iw_all = sk.extract_G_loc(with_dc=with_dc)
-            for ish in range(nsh):
-                s[ish].G_iw << g_iw_all[ish]                         # calc the local Green function
-                mpi.report("\n    Total charge of Gloc_{shell %d} : %.6f" % (ish, s[ish].G_iw.total_density()))
-            #
-            # Init the DC term and the real part of Sigma, if no previous runs found:
-            #
+            for ish in range(self._n_inequiv_shells):
+                print("\n    Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
+
+            # Compute DC corrections and initial guess to self-energy
             if iteration_number == 1 and not previous_present and with_dc:
-                mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@\n")
-                for ish in range(nsh):
-                    dm = s[ish].G_iw.density()
-                    #
-                    # Initial guess of Sigma (Hartree-Fock)
-                    #
-                    self.calc_dc_matrix(dm, orb=ish, u_mat=self.Umat[self.SK.inequiv_to_corr[ish]])
-                    if self.SK.SO:
-                        s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['ud'][0, 0]
-                    else:
-                        s[ish].Sigma_iw << sk.dc_imp[self.SK.inequiv_to_corr[ish]]['up'][0, 0]
-            #
-            # Calculate new G0_iw as an input of solver:
-            #
-            for ish in range(nsh):
-                s[ish].G0_iw << dyson(Sigma_iw=s[ish].Sigma_iw, G_iw=s[ish].G_iw)
+                print("")
+                print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
+                print("")
+                self.calc_dc_imp(dm_corr_sh, set_initial_Sigma_iw=True)
 
-            mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
+            print("\nWall Time : %.1f sec" % (time.time() - t0))
 
-            mpi.report("\n@@@@@@@@@@@@@@@@@@@@@@@@  Solve the impurity problem  @@@@@@@@@@@@@@@@@@@@@@@@\n")
-
-            if self.solver_name == "TRIQS/hubbard-I":
-                if 'verbosity' in self._solver_params.keys():
-                    verbosity = self._solver_params["verbosity"]
-                else:
-                    verbosity = 0
-                # calculate non-interacting atomic level positions:
-                for ish in range(nsh):
-                    norb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim'] / (self.SK.SO + 1)
-                    umat2 = numpy.zeros((norb, norb, norb, norb), numpy.complex_)
-                    umat2[:, :, :, :] = self.Umat[self.SK.inequiv_to_corr[ish]][0:norb, 0:norb, 0:norb, 0:norb]
-
-                    eal = sk.eff_atomic_levels()
-                    s[ish].set_atomic_levels(eal=eal[ish])
-                    s[ish].solve(u_mat=numpy.real(umat2), verbosity=verbosity)
-            else:
-                for ish in range(nsh):
-
-                    h0_loc = {}
-                    for bname, gf in s[ish].G0_iw:
-                        h0_loc[bname] = gf.tail[2]
-                    eigvec, umat2 = self.diag_eal(ish=ish, eal=h0_loc)
-                    h_int = self.h_int_general(ish=ish, u_mat=umat2)
-                    if self._params["model"]["density_density"]:
-                        h_int = diagonal_part(h_int)
-                    for bname, gf in s[ish].G0_iw:
-                        gf.from_L_G_R(eigvec[bname].transpose().conjugate(), gf, eigvec[bname])
-
-                    self._solver_params['random_seed'] = 34788 + 928374 * mpi.rank + 1000*ish
-                    s[ish].solve(h_int=h_int, **self._solver_params)
-                    if self._params["system"]["perform_tail_fit"]:
-                        tail_fit(Sigma_iw=s[ish].Sigma_iw, G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw,
-                                 fit_max_moment=self._params["system"]["fit_max_moment"],
-                                 fit_min_w=self._params["system"]["fit_min_w"],
-                                 fit_max_w=self._params["system"]["fit_max_w"])
-                    if self._params['system']['n_l'] > 0:
-                        for name, g in s[ish].G_l:
-                            s[ish].G_iw[name] << LegendreToMatsubara(g)
-                        s[ish].Sigma_iw << dyson(G0_iw=s[ish].G0_iw, G_iw=s[ish].G_iw)
-                    for bname, gf in s[ish].Sigma_iw:
-                        gf.from_L_G_R(eigvec[bname], gf, eigvec[bname].transpose().conjugate())
-                    for bname, gf in s[ish].G_l:
-                        gf.from_L_G_R(eigvec[bname], gf, eigvec[bname].transpose().conjugate())
+            sys.stdout.flush()
+            new_Sigma_iw, new_Gimp_iw = self.solve_impurity_models(Gloc_iw_sh)
+            sys.stdout.flush()
 
             # Solved. Now do post-processing:
-            for ish in range(nsh):
-                mpi.report("\nTotal charge of impurity problem : %.6f" % s[ish].G_iw.total_density())
+            for ish in range(self._n_inequiv_shells):
+                print("\nTotal charge of impurity problem : %.6f" % new_Gimp_iw[ish].total_density())
 
             # Symmetrize over spin components
             if self._params["model"]["time_reversal"]:
-                mpi.report("Average over spin components is taken")
+                print("Averaging self-energy and impurity Green's function over spin components...")
 
                 if self._params["model"]["spin_orbit"]:
                     # TODO
                     raise Exception("Spin-symmetrization in the case with the spin-orbit coupling is not implemented")
 
-                for ish in range(nsh):
-                    symmetrize_spin(s[ish].G_iw)
-                    symmetrize_spin(s[ish].Sigma_iw)
+                for ish in range(self._n_inequiv_shells):
+                    symmetrize_spin(new_Gimp_iw[ish])
+                    symmetrize_spin(new_Sigma_iw[ish])
 
-            # Now mix Sigma and G with factor sigma_mix, if wanted:
+            # Update Sigma_iw and Gimp_iw.
+            # Mix Sigma if requested.
             if iteration_number > 1 or previous_present:
-                if mpi.is_master_node():
-                    ar = HDFArchive(output_file, 'a')
-                    for ish in range(nsh):
-                        s[ish].Sigma_iw << sigma_mix * s[ish].Sigma_iw \
-                                    + (1.0-sigma_mix) * ar[output_group]['Sigma_iw'][str(iteration_number-1)][str(ish)]
+                for ish in range(self._n_inequiv_shells):
+                    self._sh_quant[ish].Sigma_iw << sigma_mix * new_Sigma_iw[ish] \
+                                + (1.0-sigma_mix) * self._sh_quant[ish].Sigma_iw
+            else:
+                for ish in range(self._n_inequiv_shells):
+                    self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
 
-                    del ar
-                for ish in range(nsh):
-                    s[ish].Sigma_iw << mpi.bcast(s[ish].Sigma_iw)
-
-            # Write Sigma and G to the hdf5 archive:
-            if mpi.is_master_node():
-                ar = HDFArchive(output_file, 'a')
+            # Write data to the hdf5 archive:
+            with HDFArchive(self._output_file, 'a') as ar:
                 ar[output_group]['iterations'] = iteration_number
-                ar[output_group]['chemical_potential'][str(iteration_number)] = sk.chemical_potential
-                for ish in range(nsh):
-                    if self._params['system']['n_l'] > 0:
-                        ar[output_group]['G_l'][str(ish)] = s[ish].G_l
+                ar[output_group]['chemical_potential'][str(iteration_number)] = self._chemical_potential
+                ar[output_group]['dc_imp'][str(iteration_number)] = self._dc_imp
+                ar[output_group]['dc_energ'][str(iteration_number)] = self._dc_energ
+                for ish in range(self._n_inequiv_shells):
                     #
                     # Save the history of Sigma
                     #
                     if not (str(iteration_number) in ar[output_group]['Sigma_iw']):
                         ar[output_group]['Sigma_iw'].create_group(str(iteration_number))
-                    ar[output_group]['Sigma_iw'][str(iteration_number)][str(ish)] = s[ish].Sigma_iw
-                del ar
+                    ar[output_group]['Sigma_iw'][str(iteration_number)][str(ish)] = self._sh_quant[ish].Sigma_iw
 
-            mpi.report("\nWall Time : %.1f sec" % (time.time() - t0))
+            sys.stdout.flush()
 
-            # Save stuff into the user_data group of hdf5 archive in case of rerun:
-            sk.save(['chemical_potential', 'dc_imp', 'dc_energ'])
+        self._previous_runs += max_step
 
-    def calc_dc_matrix(self, dens_mat, u_mat, orb=0):
-        """
-        Compute double counting term with U-matrix
+    def chemical_potential(self, iteration_number):
+        with HDFArchive(self._output_file, 'r') as ar:
+            return ar[self._output_group]['chemical_potential'][str(iteration_number)]
 
-        Parameters
-        ----------
-        dens_mat : gf_struct_solver like
-            Density matrix for the specified correlated shell.
-        u_mat : float numpy array [:, :, :, :]
-            4-index interaction matrix
-        orb : int, optional
-            Index of an inequivalent shell.
-        """
-        dim_tot = self.SK.corr_shells[self.SK.inequiv_to_corr[orb]]['dim']
-        spn = self.SK.spin_block_names[self.SK.corr_shells[self.SK.inequiv_to_corr[orb]]['SO']]
-        if self.SK.corr_shells[self.SK.inequiv_to_corr[orb]]['SO'] == 0:
-            dim = dim_tot
+    @property
+    def n_inequiv_shells(self):
+        return self._n_inequiv_shells
+
+    @property
+    def inequiv_to_corr(self):
+        return self._sk.inequiv_to_corr
+
+    @property
+    def iteration_number(self):
+        return self._previous_runs
+
+    @property
+    def spin_block_names(self):
+        return self._spin_block_names
+
+    @property
+    def use_spin_orbit(self):
+        return self._use_spin_orbit
+
+    def inequiv_shell_info(self, ish):
+        info = {}
+        if self._use_spin_orbit:
+            info['num_orb'] = int(self._dim_sh[ish]/2)
         else:
-            dim = dim_tot / 2
+            info['num_orb'] = self._dim_sh[ish]
 
-        if mpi.is_master_node():
-            print("    DC for inequivalent shell {0}".format(orb))
-            print("\n      2-index U:".format(orb))
-            for i1 in range(dim):
-                print("          ", end="")
-                for i2 in range(dim):
-                    print("{0:.3f} ".format(u_mat[i1, i2, i1, i2]), end="")
-                print("")
-            print("\n      2-index J:".format(orb))
-            for i1 in range(dim):
-                print("          ", end="")
-                for i2 in range(dim):
-                    print("{0:.3f} ".format(u_mat[i1, i2, i2, i1]), end="")
-                print("")
+        info['block_dim'] = self._dim_sh[ish]
 
-            print("\n      Local Density Matrix:".format(orb))
-            for sp1 in spn:
-                print("        Spin {0}".format(sp1))
-                for i1 in range(dim_tot):
-                    print("          ", end="")
-                    for i2 in range(dim_tot):
-                        print("{0:.3f} ".format(dens_mat[sp1][i1, i2]), end="")
-                    print("")
+        return info
 
-        for icrsh in range(self.SK.n_corr_shells):
+    def corr_shell_info(self, ish):
+        return self.inequiv_shell_info(ish)
 
-            # ish is the index of the inequivalent shell corresponding to icrsh
-            ish = self.SK.corr_to_inequiv[icrsh]
-            if ish != orb:
-                continue  # ignore this orbital
+    def Sigma_iw_sh(self, iteration_number):
+        Sigma_iw_sh = []
+        with HDFArchive(self._output_file, 'r') as ar:
+            for ish in range(self._n_inequiv_shells):
+                Sigma_iw_sh.append(ar[self._output_group]['Sigma_iw'][str(iteration_number)][str(ish)])
+        return Sigma_iw_sh
 
-            if self.SK.corr_shells[icrsh]['SO'] == 0:
-                for sp1 in spn:
-                    self.SK.dc_imp[icrsh][sp1] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-                    for i1 in range(dim):
-                        for i2 in range(dim):
-                            #
-                            # Hartree
-                            #
-                            for sp2 in spn:
-                                self.SK.dc_imp[icrsh][sp1][i1, i2] += \
-                                    numpy.sum(u_mat[i1, 0:dim, i2, 0:dim] * dens_mat[sp2][:, :])
-                            #
-                            # Exchange
-                            #
-                            self.SK.dc_imp[icrsh][sp1][i1, i2] += \
-                                - numpy.sum(u_mat[i1, 0:dim, 0:dim, i2] * dens_mat[sp1][:, :])
-            else:
-                self.SK.dc_imp[icrsh]["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-                for s1 in range(2):
-                    for i1 in range(dim):
-                        for s2 in range(2):
-                            for i2 in range(dim):
-                                #
-                                # Hartree
-                                #
-                                self.SK.dc_imp[icrsh]["ud"][i1+s1*dim, i2+s1*dim] += numpy.sum(
-                                    u_mat[i1, 0:dim, i2, 0:dim] * dens_mat["ud"][s2*dim:s2*dim+dim, s2*dim:s2*dim+dim]
-                                )
-                                #
-                                # Exchange
-                                #
-                                self.SK.dc_imp[icrsh]["ud"][i1 + s1 * dim, i2 + s2 * dim] += numpy.sum(
-                                    u_mat[i1, 0:dim, 0:dim, i2]
-                                    * dens_mat["ud"][s2 * dim:s2 * dim + dim, s1 * dim:s1 * dim + dim]
-                                )
+    #@property
+    #def sumkdft_compat(self):
+        #return self._sk
 
-        if mpi.is_master_node():
-            print("\n      DC Self Energy:".format(orb))
-            for sp1 in spn:
-                print("        Spin {0}".format(sp1))
-                for i1 in range(dim_tot):
-                    print("          ", end="")
-                    for i2 in range(dim_tot):
-                        print("{0:.3f} ".format(self.SK.dc_imp[self.SK.inequiv_to_corr[orb]][sp1][i1, i2]), end="")
-                    print("")
 
-    def h_int_general(self, ish, u_mat):
-
-        n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim']
-
-        if self.SK.SO:
-            index_name = [("", 0)] * n_orb
-            for i in range(n_orb):
-                index_name[i] = ('ud', i)
-        else:
-            index_name = [("", 0)] * (n_orb*2)
-            for i in range(n_orb):
-                index_name[i] = ('up', i)
-                index_name[i+n_orb] = ('down', i)
-            n_orb *= 2
-
-        ham = Operator()
-        for i1 in range(n_orb):
-            for i2 in range(n_orb):
-                for i3 in range(n_orb):
-                    for i4 in range(n_orb):
-                        ham += 0.5 * u_mat[i1, i2, i3, i4] \
-                               * c_dag(*index_name[i1]) * c_dag(*index_name[i2]) \
-                               * c(*index_name[i4]) * c(*index_name[i3])
-
-        return ham
-
-    def diag_eal(self, ish, eal):
-
-        eigvec = copy.deepcopy(eal)
-        spn = self.SK.spin_block_names[self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['SO']]
-        for sp in spn:
-            eigval, eigvec[sp] = numpy.linalg.eigh(eal[sp])
-            # eigvec[sp] = numpy.identity(len(eigval), numpy.complex_)  # debug
-
-        if self.SK.SO:
-            rot = eigvec['ud']
-        else:
-            n_orb = self.SK.corr_shells[self.SK.inequiv_to_corr[ish]]['dim']
-            rot = numpy.zeros((n_orb*2, n_orb*2), numpy.complex_)
-            rot[0:n_orb, 0:n_orb] = eigvec['up']
-            rot[n_orb:2*n_orb, n_orb:2*n_orb] = eigvec['down']
-
-        u_mat2 = numpy.einsum("ijkl,im,jn,ko,lp", self.Umat[self.SK.inequiv_to_corr[ish]],
-                              numpy.conj(rot), numpy.conj(rot), rot, rot)
-        return eigvec, u_mat2

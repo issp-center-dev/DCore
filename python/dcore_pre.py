@@ -29,6 +29,7 @@ from program_options import create_parser
 import pytriqs.utility.mpi as mpi
 from pytriqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 
+from .tools import *
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
@@ -474,14 +475,7 @@ def __generate_umat(p):
     u_mat2 = [numpy.zeros((norb[icor]*2, norb[icor]*2, norb[icor]*2, norb[icor]*2), numpy.complex_)
               for icor in range(ncor)]
     for icor in range(ncor):
-        no = norb[icor]
-        for i1 in range(2):
-            for i2 in range(2):
-                for i3 in range(2):
-                    for i4 in range(2):
-                        if i1 == i3 and i2 == i4:
-                            u_mat2[icor][i1*no:(i1+1)*no, i2*no:(i2+1)*no, i3*no:(i3+1)*no, i4*no:(i4+1)*no]\
-                                = u_mat[icor][:, :, :, :]
+        u_mat2[icor] = to_spin_full_U_matrix(u_mat[icor])
     f["DCore"]["Umat"] = u_mat2
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
     del f

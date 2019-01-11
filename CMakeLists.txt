@@ -18,6 +18,9 @@ if (NOT ${TRIQS_WITH_PYTHON_SUPPORT})
  MESSAGE(FATAL_ERROR "DCore require Python support in TRIQS")
 endif()
 
+set(PYTHON_INTERPRETER ${TRIQS_PYTHON_INTERPRETER})
+message(STATUS "Using Python interpreter at ${PYTHON_INTERPRETER}")
+
 # Get hash
 triqs_get_git_hash(${CMAKE_SOURCE_DIR} "DCORE")
 if(${GIT_RESULT} EQUAL 0)

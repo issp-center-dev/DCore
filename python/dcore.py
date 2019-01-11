@@ -19,13 +19,12 @@
 from __future__ import print_function
 import sys
 import argparse
-from pytriqs.applications.dft.sumk_dft import *
-from dmft_core import DMFTCoreSolver
+from .dmft_core import DMFTCoreSolver
 
-from program_options import *
+from .program_options import *
 
 
-def dcore(filename):
+def dcore(filename, np):
     """
     Main routine of DCore
 
@@ -42,12 +41,13 @@ def dcore(filename):
     pars.read(filename)
     params = pars.as_dict()
 
+    params["mpi"]["num_processes"] = np
+
     solver = DMFTCoreSolver(params["model"]["seedname"], params)
 
-    solver.solve(max_step=params["control"]["max_step"], output_file=params["model"]["seedname"]+'.out.h5',
-                 output_group='dmft_out')
+    solver.do_steps(max_step=params["control"]["max_step"])
 
-    mpi.report("\n########################  Done  ########################\n")
+    print("\n########################  Done  ########################\n")
 
 
 if __name__ == '__main__':
@@ -55,7 +55,7 @@ if __name__ == '__main__':
         prog='dcore.py',
         description='.',
         epilog='end',
-        usage='$ dcore input.ini',
+        usage='$ dcore input.ini --np 4',
         add_help=True)
 
     parser.add_argument('path_input_file',
@@ -63,10 +63,11 @@ if __name__ == '__main__':
                         default=None,
                         type=str,
                         help="input file name.")
+    parser.add_argument('--np', default=1, help='Number of MPI processes')
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
         print("Input file is not exist.")
         sys.exit(-1)
 
-    dcore(args.path_input_file)
+    dcore(args.path_input_file, int(args.np))

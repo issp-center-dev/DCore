@@ -16,11 +16,26 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-from dcore.numdiff import numdiff
-from dcore.dcore_post import dcore_post
 
-dcore_post('dmft.ini')
+from .base import PytriqsMPISolver
 
-for prefix in ["test_akw", "test_dos", "test_momdist", "test_akw0", "test_dos0"]:
-    numdiff(prefix + ".dat", "./ref/" + prefix + ".dat")
+class TRIQSHubbardISolver(PytriqsMPISolver):
 
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+        """
+
+        Initialize the solver.
+
+        """
+
+        super(TRIQSHubbardISolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+
+    def _impl_module_name(self):
+        return "dcore.impurity_solvers.triqs_hubbard_I_impl"
+
+    def name(self):
+        return "TRIQS/hubbard-I"
+
+    @classmethod
+    def is_gf_realomega_available(cls):
+        return True

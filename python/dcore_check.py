@@ -17,9 +17,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
+
 import argparse
+from itertools import *
+
+from pytriqs.gf.local import *
+
 from dmft_core import DMFTCoreSolver
-from pytriqs.applications.dft.sumk_dft_tools import *
 from matplotlib.gridspec import GridSpec
 
 from program_options import *
@@ -37,8 +41,7 @@ def dcore_check(filename, fileplot=None):
     fileplot : string
         Output file name. File format is determined by the extension (pdf, eps, jpg, etc).
     """
-    if mpi.is_master_node():
-        print("\n  @ Reading {0} ...".format(filename))
+    print("\n  @ Reading {0} ...".format(filename))
     #
     # Construct a parser with default values
     #
@@ -49,13 +52,11 @@ def dcore_check(filename, fileplot=None):
     pars.read(filename)
     p = pars.as_dict()
     #
-    solver = DMFTCoreSolver(p["model"]["seedname"], p)
     #
 
     # Just for convenience
-    sol = solver.S
-    output_file = p["model"]["seedname"]+'.out.h5'
-    output_group = 'dmft_out'
+    #output_file = p["model"]["seedname"]+'.out.h5'
+    #output_group = 'dmft_out'
     beta = p["system"]["beta"]
     omega_check = p['tool']['omega_check']
     gs = GridSpec(2, 1)
@@ -65,49 +66,49 @@ def dcore_check(filename, fileplot=None):
         matplotlib.use('Agg')  # do not plot on x11
     from pytriqs.plot.mpl_interface import oplot, plt
     plt.figure(figsize=(8, 10))
+
+
+    #
+    # Load DMFT data
+    #
+    p['control']['restart'] = True
+    solver = DMFTCoreSolver(p["model"]["seedname"], p)
+    iteration_number = solver.iteration_number
+    nsh = solver.n_inequiv_shells
+    spn = solver.spin_block_names
+    shell_info = [solver.inequiv_shell_info(ish) for ish in range(nsh)]
+
     #
     # Chemical potential
     #
-    ar = HDFArchive(output_file, 'r')
-    iteration_number = ar[output_group]['iterations']
-    perform_tail_fit = p["system"]["perform_tail_fit"] and \
-        not ar[output_group]['parameters']["system"]["perform_tail_fit"]
-    nsh = solver.SK.n_inequiv_shells
     print("  Total number of Iteration: {0}".format(iteration_number))
     print("\n  Iter  Chemical-potential")
     for itr in range(1, iteration_number+1):
-        print("  {0} {1}".format(itr, ar[output_group]['chemical_potential'][str(itr)]))
+        print("  {0} {1}".format(itr, solver.chemical_potential(itr)))
+
     #
     # Read Sigma and average it
     #
     sigma_ave = []
-    sigma_fit = []
     nsigma = 0
-    itr_sigma = [0]*7
+    num_itr_plot = 7
+    itr_sigma = [0]*num_itr_plot
     for itr in range(1, iteration_number+1):
-        if itr > iteration_number - 7:
+        if itr > iteration_number - num_itr_plot:
+            Sigma_iw_sh = solver.Sigma_iw_sh(itr)
+
             itr_sigma[nsigma] = itr
             sigma_ave.append(GfImFreq(indices=[0], beta=beta, n_points=p["system"]["n_iw"]))
-            sigma_fit.append(GfImFreq(indices=[0], beta=beta, n_points=p["system"]["n_iw"]))
             sigma_ave[nsigma].data[:, 0, 0] = 0.0
-            sigma_fit[nsigma].data[:, 0, 0] = 0.0
             norb_tot = 0
             for ish in range(nsh):
-                spn = solver.SK.spin_block_names[solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['SO']]
-                norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
-                sol[ish].Sigma_iw << ar[output_group]['Sigma_iw'][str(itr)][str(ish)]
-                sigma_iw_fit = sol[ish].Sigma_iw.copy()
-                if perform_tail_fit:
-                    tail_fit(sigma_iw_fit, fit_max_moment=p["system"]["fit_max_moment"],
-                             fit_min_w=p["system"]["fit_min_w"], fit_max_w=p["system"]["fit_max_w"])
+                norb = shell_info[ish]['block_dim']
                 for isp in spn:
                     for iorb in range(norb):
                         norb_tot += 1
                         for jorb in range(norb):
-                            sigma_ave[nsigma].data[:, 0, 0] += sol[ish].Sigma_iw[isp].data[:, iorb, jorb]
-                            sigma_fit[nsigma].data[:, 0, 0] += sigma_iw_fit[isp].data[:, iorb, jorb]
+                            sigma_ave[nsigma].data[:, 0, 0] += Sigma_iw_sh[ish][isp].data[:, iorb, jorb]
             sigma_ave[nsigma].data[:, 0, 0] /= norb_tot
-            sigma_fit[nsigma].data[:, 0, 0] /= norb_tot
             nsigma += 1
     #
     # Real part
@@ -115,8 +116,6 @@ def dcore_check(filename, fileplot=None):
     plt.subplot(gs[0])
     for itr in range(nsigma):
         oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, omega_check), name='Sigma-%s' % itr_sigma[itr])
-        if perform_tail_fit:
-            oplot(sigma_fit[itr], '-o', mode='R', x_window=(0.0, omega_check), name='S_fit-%s' % itr_sigma[itr])
     plt.legend(loc=0)
     #
     # Imaginary part
@@ -124,8 +123,6 @@ def dcore_check(filename, fileplot=None):
     plt.subplot(gs[1])
     for itr in range(nsigma):
         oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, omega_check), name='Sigma-%s' % itr_sigma[itr])
-        if perform_tail_fit:
-            oplot(sigma_fit[itr], '-o', mode='I', x_window=(0.0, omega_check), name='S_fit-%s' % itr_sigma[itr])
     plt.legend(loc=0)
 
     plt.show()
@@ -144,8 +141,7 @@ def dcore_check(filename, fileplot=None):
         print("# [1] Frequency", file=fo)
         icol = 1
         for ish in range(nsh):
-            spn = solver.SK.spin_block_names[solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['SO']]
-            norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
+            norb = shell_info[ish]['block_dim']
             for isp in spn:
                 for iorb in range(norb):
                     for jorb in range(norb):
@@ -156,21 +152,20 @@ def dcore_check(filename, fileplot=None):
         #
         # Write data
         #
-        omega = [x for x in sol[0].Sigma_iw.mesh]
+        Sigma_iw_tmp = solver.Sigma_iw_sh(iteration_number)
+        omega = [x for x in Sigma_iw_sh[0].mesh]
         for iom in range(len(omega)):
             print("%f " % omega[iom].imag, end="", file=fo)
             for ish in range(nsh):
-                spn = solver.SK.spin_block_names[solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['SO']]
-                norb = solver.SK.corr_shells[solver.SK.inequiv_to_corr[ish]]['dim']
-                for isp in spn:
-                    for iorb in range(norb):
-                        for jorb in range(norb):
-                            print("%f %f " % (sol[ish].Sigma_iw[isp].data[iom, iorb, jorb].real,
-                                              sol[ish].Sigma_iw[isp].data[iom, iorb, jorb].imag), end="", file=fo)
+                norb = shell_info[ish]['block_dim']
+                for isp, iorb, jorb in product(spn, range(norb), range(norb)):
+                    print("%f %f " % (Sigma_iw_tmp[ish][isp].data[iom, iorb, jorb].real,
+                                      Sigma_iw_tmp[ish][isp].data[iom, iorb, jorb].imag), end="", file=fo)
             print("", file=fo)
     #
     # Output Legendre polynomial
     #
+    """
     if p["system"]["n_l"] > 0:
         #
         # Output Sigma into a text file
@@ -211,11 +206,11 @@ def dcore_check(filename, fileplot=None):
                                 print("%f %f " % (sol[ish].G_l[isp].data[il, iorb, jorb].real,
                                                   sol[ish].G_l[isp].data[il, iorb, jorb].imag), end="", file=fo)
                 print("", file=fo)
+    """
 
     #
     # Finish
     #
-    del ar
     print("\n  Done\n")
 
 
@@ -243,5 +238,4 @@ if __name__ == '__main__':
     if os.path.isfile(args.path_input_file) is False:
         print("Input file is not exist.")
         sys.exit(-1)
-    if mpi.is_master_node():
-        dcore_check(args.path_input_file, args.output)
+    dcore_check(args.path_input_file, args.output)

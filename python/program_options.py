@@ -26,6 +26,10 @@ def create_parser():
     """
     parser = TypedParser()
 
+    # [mpi]
+    #parser.add_option("mpi", "num_processes", int, 1, "Number of processes")
+    parser.add_option("mpi", "command", str, "mpirun -np #", "Command for executing a MPI job. # will be relaced by the number of processes.")
+
     # [model]
     parser.add_option("model", "t", float, 1.0, "Transfer integral (Nearest neighbor)")
     parser.add_option("model", "t'", float, 0.0, "Transfer integral (Second nearest)")
@@ -44,7 +48,8 @@ def create_parser():
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
-                      "If true, only the density-density part of the interaction is used (See below).")
+                      "If true, only the density-density part of the interaction is used (See below).",
+                      OptionStatus.RETIRED)
     parser.add_option("model", "kanamori", str, "None",
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
@@ -63,7 +68,7 @@ def create_parser():
     parser.add_option("system", "nk1", int, 0, "Number of *k* along b_1 (only for wannier90)")
     parser.add_option("system", "nk2", int, 0, "Number of *k* along b_2 (only for wannier90)")
     parser.add_option("system", "prec_mu", float, 0.0001,
-                      "Threshold for calculating chemical potential with the bisection method.")
+                      "Threshold for calculating chjlemical potential with the bisection method.")
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction (See below)")
     parser.add_option("system", "perform_tail_fit", bool, False, "Whether or not perform the tail-fit.")
@@ -71,11 +76,14 @@ def create_parser():
     parser.add_option("system", "fit_min_w", float, 5.0, "Matsubara frequency from which tail fitting should start.")
     parser.add_option("system", "fit_max_w", float, 10.0, "Matsubara frequency at which tail fitting should end.")
     parser.add_option("system", "n_l", int, 0,
-                      "The number of the Legendre polynomial for QMC. If not, the solver's default value is used.")
+                      "The number of the Legendre polynomial for QMC. If not, the solver's default value is used.",
+                      OptionStatus.RETIRED)
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I',
                       "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
+    parser.add_option("impurity_solver", "basis_rotation", bool, True,
+                      "If True, impurity models are solved in the basis that diagonalizes the local non-interacting Hamiltonian.")
     parser.allow_undefined_options("impurity_solver")
 
     # [control]

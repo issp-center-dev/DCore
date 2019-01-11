@@ -1,4 +1,4 @@
-set(DCORE_SITE_PACKAGES "${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages")
+set(DCORE_SITE_PACKAGES "${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages:${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST_ROOT}:${TRIQS_PATH}/libexec/venv/${TRIQS_PYTHON_LIB_DEST_ROOT}")
 
 configure_file(dcore_pre.bash.in dcore_pre)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dcore_pre DESTINATION bin

@@ -21,8 +21,7 @@ from dcore.dcore_post import dcore_post
 
 dcore_post('dmft.ini')
 
-numdiff("test_akw.dat", "test_akw_ref.dat")
-numdiff("test_dos.dat", "test_dos_ref.dat")
-numdiff("test_momdist.dat", "test_momdist_ref.dat")
-numdiff("test_akw0.dat", "test_akw0_ref.dat")
-numdiff("test_dos0.dat", "test_dos0_ref.dat")
+for prefix in ["test_akw", "test_dos", "test_akw0", "test_dos0"]:
+    #for prefix in ["test_akw", "test_dos", "test_momdist", "test_akw0", "test_dos0"]:
+    numdiff(prefix + ".dat", "./ref/" + prefix + ".dat", 1e-4)
+
