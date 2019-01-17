@@ -134,7 +134,8 @@ Installation steps
      $ cmake -DTRIQS_PATH=path_to_triqs path_to_dcore_src
 
    Here, *path_to_triqs* refers to your ``TRIQS`` install directory, and *path_to_dcore_src* refers to the ``DCore`` source directory.
-   If the cmake command succeeded, you will see the following message
+   If you want to install ``DCore`` to somewhere other than the triqs directory, please add the option ``-DCMAKE_INSTALL_PREFIX=install_path``, where *install_path* is your install directory.
+   If the cmake command succeeded, you will see the following message.
 
    ::
 
@@ -157,64 +158,54 @@ Installation steps
    ::
 
      Running tests...
-     Test project /Users/k-yoshimi/CLionProjects/DCore/build
+     Test project /home/otsuki/gitclones/dcore.build
            Start  1: typed_parser
-      1/21 Test  #1: typed_parser .....................   Passed    0.62 sec
+      1/20 Test  #1: typed_parser .....................   Passed    0.27 sec
            Start  2: openmx
-      2/21 Test  #2: openmx ...........................   Passed    0.66 sec
+      2/20 Test  #2: openmx ...........................   Passed    0.25 sec
            Start  3: respack
-      3/21 Test  #3: respack ..........................   Passed    0.64 sec
+      3/20 Test  #3: respack ..........................   Passed    0.20 sec
            Start  4: pre_preset
-      4/21 Test  #4: pre_preset .......................   Passed    0.91 sec
+      4/20 Test  #4: pre_preset .......................   Passed    0.56 sec
            Start  5: pre_wannier
-      5/21 Test  #5: pre_wannier ......................   Passed    2.42 sec
+      5/20 Test  #5: pre_wannier ......................   Passed    1.63 sec
            Start  6: pre_wannier_so
-      6/21 Test  #6: pre_wannier_so ...................   Passed    0.77 sec
+      6/20 Test  #6: pre_wannier_so ...................   Passed    0.27 sec
            Start  7: pre_respack
-      7/21 Test  #7: pre_respack ......................   Passed    0.86 sec
+      7/20 Test  #7: pre_respack ......................   Passed    0.25 sec
            Start  8: pre_respack_so
-      8/21 Test  #8: pre_respack_so ...................   Passed    0.75 sec
+      8/20 Test  #8: pre_respack_so ...................   Passed    0.26 sec
            Start  9: main_chain_hubbardI
-      9/21 Test  #9: main_chain_hubbardI ..............   Passed    2.92 sec
+      9/20 Test  #9: main_chain_hubbardI ..............   Passed    1.66 sec
            Start 10: main_chain_hubbardI_so
-     10/21 Test #10: main_chain_hubbardI_so ...........   Passed    3.51 sec
+     10/20 Test #10: main_chain_hubbardI_so ...........   Passed    1.93 sec
            Start 11: main_chain_triqsqmc
-     11/21 Test #11: main_chain_triqsqmc ..............***Failed    0.70 sec
+     11/20 Test #11: main_chain_triqsqmc ..............   Passed   19.04 sec
            Start 12: main_chain_triqsqmc_so
-     12/21 Test #12: main_chain_triqsqmc_so ...........***Failed    0.68 sec
+     12/20 Test #12: main_chain_triqsqmc_so ...........   Passed   31.01 sec
            Start 13: check_chain_hubbardI
-     13/21 Test #13: check_chain_hubbardI .............   Passed    1.49 sec
+     13/20 Test #13: check_chain_hubbardI .............   Passed    0.73 sec
            Start 14: check_chain_hubbardI_so
-     14/21 Test #14: check_chain_hubbardI_so ..........   Passed    1.48 sec
+     14/20 Test #14: check_chain_hubbardI_so ..........   Passed    0.77 sec
            Start 15: check_chain_triqsqmc
-     15/21 Test #15: check_chain_triqsqmc .............***Failed    0.74 sec
+     15/20 Test #15: check_chain_triqsqmc .............   Passed    0.75 sec
            Start 16: check_chain_triqsqmc_so
-     16/21 Test #16: check_chain_triqsqmc_so ..........***Failed    0.76 sec
-           Start 17: check_chain_alpsqmc
-     17/21 Test #17: check_chain_alpsqmc ..............***Failed    0.73 sec
-           Start 18: post_chain_hubbardI
-     18/21 Test #18: post_chain_hubbardI ..............   Passed    2.28 sec
-           Start 19: post_chain_hubbardI_so
-     19/21 Test #19: post_chain_hubbardI_so ...........   Passed    2.18 sec
-           Start 20: post_chain_triqsqmc
-     20/21 Test #20: post_chain_triqsqmc ..............***Failed    0.71 sec
-           Start 21: post_chain_triqsqmc_so
-     21/21 Test #21: post_chain_triqsqmc_so ...........***Failed    0.72 sec
+     16/20 Test #16: check_chain_triqsqmc_so ..........   Passed    0.79 sec
+           Start 17: post_chain_hubbardI
+     17/20 Test #17: post_chain_hubbardI ..............   Passed    2.70 sec
+           Start 18: post_chain_hubbardI_so
+     18/20 Test #18: post_chain_hubbardI_so ...........   Passed    2.16 sec
+           Start 19: post_chain_triqsqmc
+     19/20 Test #19: post_chain_triqsqmc ..............   Passed    2.40 sec
+           Start 20: post_chain_triqsqmc_so
+     20/20 Test #20: post_chain_triqsqmc_so ...........   Passed    2.14 sec
 
-     67% tests passed, 7 tests failed out of 21
+     100% tests passed, 0 tests failed out of 20
 
-     Total Test time (real) =  26.56 sec
+     Total Test time (real) =  69.77 sec
 
-     The following tests FAILED:
-     	 11 - main_chain_triqsqmc (Failed)
-     	 12 - main_chain_triqsqmc_so (Failed)
-     	 15 - check_chain_triqsqmc (Failed)
-     	 16 - check_chain_triqsqmc_so (Failed)
-     	 17 - check_chain_alpsqmc (Failed)
-     	 20 - post_chain_triqsqmc (Failed)
-     	 21 - post_chain_triqsqmc_so (Failed)
 
-   In the above example, all tests related to QMC are failed, because only the Hubbard-I solver is installed. The tests from 1 to 8 should be passed regardless of impurity solvers you installed.
+   Some tests (from 9 to 20) may be failed, if some impurity solvers are not installed. The tests from 1 to 8 should be passed regardless of impurity solvers you installed.
 
 #. Finally, install by
 
@@ -222,7 +213,7 @@ Installation steps
 
      $ make install
 
-   ``DCore`` is installed in the directory *path_to_triqs*.
+   ``DCore`` is installed in the directory *path_to_triqs* (or *install_path* if specified).
 
 .. Version compatibility
 .. ---------------------

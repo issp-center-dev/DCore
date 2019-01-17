@@ -168,7 +168,7 @@ The example of the input file is shown as follows:</p>
 <colgroup>
 <col width="11%" />
 <col width="6%" />
-<col width="28%" />
+<col width="27%" />
 <col width="55%" />
 </colgroup>
 <thead valign="bottom">
@@ -204,57 +204,62 @@ The example of the input file is shown as follows:</p>
 <td>dcore</td>
 <td>Name of the system. The model HDF5 file will be seedname.h5.</td>
 </tr>
-<tr class="row-odd"><td>density_density</td>
+<tr class="row-odd"><td>time_reversal</td>
+<td>Bool</td>
+<td>False</td>
+<td>If true, an average over spin components are taken.</td>
+</tr>
+<tr class="row-even"><td>density_density</td>
 <td>Bool</td>
 <td>False</td>
 <td>If true, only the density-density part of the interaction is used (See below).</td>
 </tr>
-<tr class="row-even"><td>spin_orbit</td>
+<tr class="row-odd"><td>spin_orbit</td>
 <td>Bool</td>
 <td>False</td>
 <td>Whether the spin-orbit case (See <a class="reference internal" href="../tutorial/pb/pb.html#pbtutorial"><span class="std std-ref">Pb with spin-orbit interaction</span></a>).</td>
 </tr>
-<tr class="row-odd"><td>kanamori</td>
+<tr class="row-even"><td>kanamori</td>
 <td>String</td>
 <td>None</td>
 <td>U (Diagonal Coulomb pot.), U’ (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).</td>
 </tr>
-<tr class="row-even"><td>lattice</td>
+<tr class="row-odd"><td>lattice</td>
 <td>String</td>
 <td>chain</td>
 <td>Chosen from “chain”, “square”, “cubic”, “bethe”, and “wannier90”</td>
 </tr>
-<tr class="row-odd"><td>nelec</td>
+<tr class="row-even"><td>nelec</td>
 <td>Float</td>
 <td>1.0</td>
 <td>Number of electrons per unit cell.</td>
 </tr>
-<tr class="row-even"><td>t</td>
+<tr class="row-odd"><td>t</td>
 <td>Float</td>
 <td>1.0</td>
 <td>Transfer integral (Nearest neighbor)</td>
 </tr>
-<tr class="row-odd"><td>bvec</td>
+<tr class="row-even"><td>bvec</td>
 <td>String</td>
-<td>[(1.0,0.0,0.0), (0.0,1.0,0.0), (0.0,0.0,1.0)]</td>
+<td>[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]</td>
 <td>Reciprocal lattice vectors in arbitrary unit.</td>
 </tr>
-<tr class="row-even"><td>t’</td>
+<tr class="row-odd"><td>t’</td>
 <td>Float</td>
 <td>0.0</td>
 <td>Transfer integral (Second nearest)</td>
 </tr>
-<tr class="row-odd"><td>slater_uj</td>
+<tr class="row-even"><td>slater_uj</td>
 <td>String</td>
 <td>None</td>
 <td>Angular momentum, Slater integrals in U and J (See below).</td>
 </tr>
-<tr class="row-even"><td>ncor</td>
+<tr class="row-odd"><td>ncor</td>
 <td>Integer</td>
 <td>1</td>
 <td>Number of correlated shells in a unit cell (Only wannier90).</td>
 </tr>
-<tr class="row-odd"><td>equiv</td>
+<tr class="row-even"><td>equiv</td>
 <td>String</td>
 <td>None</td>
 <td>Equivalence of each correlated shell. Please, be careful to use it (See below).</td>
@@ -624,8 +629,8 @@ For more details, please see the reference page of
 </tr>
 <tr class="row-odd"><td>nnode</td>
 <td>Integer</td>
-<td>2</td>
-<td>Number of node for the <em>k</em> path</td>
+<td>0</td>
+<td>[NOT USED] Number of node for the <em>k</em> path</td>
 </tr>
 <tr class="row-even"><td>Nomega</td>
 <td>Integer</td>

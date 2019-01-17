@@ -150,6 +150,19 @@
 
     <span class="k">return</span> <span class="n">solver_params</span>
 
+<span class="k">def</span> <span class="nf">symmetrize_spin</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enforce time-reversal symmetry</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get spin labels, e.g., [&#39;up&#39;, &#39;down&#39;]</span>
+    <span class="n">bnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">bnames</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+
+    <span class="c1"># average over spins</span>
+    <span class="n">G_ave</span> <span class="o">=</span> <span class="p">(</span><span class="n">G</span><span class="p">[</span><span class="n">bnames</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">G</span><span class="p">[</span><span class="n">bnames</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">G</span><span class="p">[</span><span class="n">bnames</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">G_ave</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">G</span><span class="p">[</span><span class="n">bnames</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">G_ave</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
 
 <div class="viewcode-block" id="DMFTCoreSolver"><a class="viewcode-back" href="../../reference/DMFTCoreSolver.html#dcore.dmft_core.DMFTCoreSolver">[docs]</a><span class="k">class</span> <span class="nc">DMFTCoreSolver</span><span class="p">:</span>
 <div class="viewcode-block" id="DMFTCoreSolver.__init__"><a class="viewcode-back" href="../../reference/DMFTCoreSolver.html#dcore.dmft_core.DMFTCoreSolver.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seedname</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
@@ -242,7 +255,7 @@
                             <span class="n">ar</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">output_group</span><span class="p">]</span>
                             <span class="k">if</span> <span class="s1">&#39;iterations&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ar</span><span class="p">:</span>
                                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Failed to restart the previous simulation!&quot;</span><span class="p">)</span>
-    
+
                             <span class="n">previous_runs</span> <span class="o">=</span> <span class="n">ar</span><span class="p">[</span><span class="s1">&#39;iterations&#39;</span><span class="p">]</span>
                             <span class="k">if</span> <span class="n">ar</span><span class="p">[</span><span class="s1">&#39;iterations&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No previous runs to be loaded from &quot;</span> <span class="o">+</span> <span class="n">output_file</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="p">)</span>
@@ -389,6 +402,18 @@
             <span class="c1"># Solved. Now do post-processing:</span>
             <span class="k">for</span> <span class="n">ish</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsh</span><span class="p">):</span>
                 <span class="n">mpi</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total charge of impurity problem : </span><span class="si">%.6f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">s</span><span class="p">[</span><span class="n">ish</span><span class="p">]</span><span class="o">.</span><span class="n">G_iw</span><span class="o">.</span><span class="n">total_density</span><span class="p">())</span>
+
+            <span class="c1"># Symmetrize over spin components</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">][</span><span class="s2">&quot;time_reversal&quot;</span><span class="p">]:</span>
+                <span class="n">mpi</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">&quot;Average over spin components is taken&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">][</span><span class="s2">&quot;spin_orbit&quot;</span><span class="p">]:</span>
+                    <span class="c1"># TODO</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Spin-symmetrization in the case with the spin-orbit coupling is not implemented&quot;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">ish</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsh</span><span class="p">):</span>
+                    <span class="n">symmetrize_spin</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">ish</span><span class="p">]</span><span class="o">.</span><span class="n">G_iw</span><span class="p">)</span>
+                    <span class="n">symmetrize_spin</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">ish</span><span class="p">]</span><span class="o">.</span><span class="n">Sigma_iw</span><span class="p">)</span>
 
             <span class="c1"># Now mix Sigma and G with factor sigma_mix, if wanted:</span>
             <span class="k">if</span> <span class="n">iteration_number</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">previous_present</span><span class="p">:</span>

@@ -241,7 +241,8 @@ may give wrong results in some situations (e.g. SOI coupling with orbital-diagon
 </pre></div>
 </div>
 <p>Here, <em>path_to_triqs</em> refers to your <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> install directory, and <em>path_to_dcore_src</em> refers to the <code class="docutils literal notranslate"><span class="pre">DCore</span></code> source directory.
-If the cmake command succeeded, you will see the following message</p>
+If you want to install <code class="docutils literal notranslate"><span class="pre">DCore</span></code> to somewhere other than the triqs directory, please add the option <code class="docutils literal notranslate"><span class="pre">-DCMAKE_INSTALL_PREFIX=install_path</span></code>, where <em>install_path</em> is your install directory.
+If the cmake command succeeded, you will see the following message.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>-- Build files have been written to: /.../dcore.build
 </pre></div>
 </div>
@@ -257,71 +258,60 @@ If the cmake command succeeded, you will see the following message</p>
 </div>
 <p>The test results look like</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Running tests...
-Test project /Users/k-yoshimi/CLionProjects/DCore/build
+Test project /home/otsuki/gitclones/dcore.build
       Start  <span class="m">1</span>: typed_parser
- <span class="m">1</span>/21 Test  <span class="c1">#1: typed_parser .....................   Passed    0.62 sec</span>
+ <span class="m">1</span>/20 Test  <span class="c1">#1: typed_parser .....................   Passed    0.27 sec</span>
       Start  <span class="m">2</span>: openmx
- <span class="m">2</span>/21 Test  <span class="c1">#2: openmx ...........................   Passed    0.66 sec</span>
+ <span class="m">2</span>/20 Test  <span class="c1">#2: openmx ...........................   Passed    0.25 sec</span>
       Start  <span class="m">3</span>: respack
- <span class="m">3</span>/21 Test  <span class="c1">#3: respack ..........................   Passed    0.64 sec</span>
+ <span class="m">3</span>/20 Test  <span class="c1">#3: respack ..........................   Passed    0.20 sec</span>
       Start  <span class="m">4</span>: pre_preset
- <span class="m">4</span>/21 Test  <span class="c1">#4: pre_preset .......................   Passed    0.91 sec</span>
+ <span class="m">4</span>/20 Test  <span class="c1">#4: pre_preset .......................   Passed    0.56 sec</span>
       Start  <span class="m">5</span>: pre_wannier
- <span class="m">5</span>/21 Test  <span class="c1">#5: pre_wannier ......................   Passed    2.42 sec</span>
+ <span class="m">5</span>/20 Test  <span class="c1">#5: pre_wannier ......................   Passed    1.63 sec</span>
       Start  <span class="m">6</span>: pre_wannier_so
- <span class="m">6</span>/21 Test  <span class="c1">#6: pre_wannier_so ...................   Passed    0.77 sec</span>
+ <span class="m">6</span>/20 Test  <span class="c1">#6: pre_wannier_so ...................   Passed    0.27 sec</span>
       Start  <span class="m">7</span>: pre_respack
- <span class="m">7</span>/21 Test  <span class="c1">#7: pre_respack ......................   Passed    0.86 sec</span>
+ <span class="m">7</span>/20 Test  <span class="c1">#7: pre_respack ......................   Passed    0.25 sec</span>
       Start  <span class="m">8</span>: pre_respack_so
- <span class="m">8</span>/21 Test  <span class="c1">#8: pre_respack_so ...................   Passed    0.75 sec</span>
+ <span class="m">8</span>/20 Test  <span class="c1">#8: pre_respack_so ...................   Passed    0.26 sec</span>
       Start  <span class="m">9</span>: main_chain_hubbardI
- <span class="m">9</span>/21 Test  <span class="c1">#9: main_chain_hubbardI ..............   Passed    2.92 sec</span>
+ <span class="m">9</span>/20 Test  <span class="c1">#9: main_chain_hubbardI ..............   Passed    1.66 sec</span>
       Start <span class="m">10</span>: main_chain_hubbardI_so
-<span class="m">10</span>/21 Test <span class="c1">#10: main_chain_hubbardI_so ...........   Passed    3.51 sec</span>
+<span class="m">10</span>/20 Test <span class="c1">#10: main_chain_hubbardI_so ...........   Passed    1.93 sec</span>
       Start <span class="m">11</span>: main_chain_triqsqmc
-<span class="m">11</span>/21 Test <span class="c1">#11: main_chain_triqsqmc ..............***Failed    0.70 sec</span>
+<span class="m">11</span>/20 Test <span class="c1">#11: main_chain_triqsqmc ..............   Passed   19.04 sec</span>
       Start <span class="m">12</span>: main_chain_triqsqmc_so
-<span class="m">12</span>/21 Test <span class="c1">#12: main_chain_triqsqmc_so ...........***Failed    0.68 sec</span>
+<span class="m">12</span>/20 Test <span class="c1">#12: main_chain_triqsqmc_so ...........   Passed   31.01 sec</span>
       Start <span class="m">13</span>: check_chain_hubbardI
-<span class="m">13</span>/21 Test <span class="c1">#13: check_chain_hubbardI .............   Passed    1.49 sec</span>
+<span class="m">13</span>/20 Test <span class="c1">#13: check_chain_hubbardI .............   Passed    0.73 sec</span>
       Start <span class="m">14</span>: check_chain_hubbardI_so
-<span class="m">14</span>/21 Test <span class="c1">#14: check_chain_hubbardI_so ..........   Passed    1.48 sec</span>
+<span class="m">14</span>/20 Test <span class="c1">#14: check_chain_hubbardI_so ..........   Passed    0.77 sec</span>
       Start <span class="m">15</span>: check_chain_triqsqmc
-<span class="m">15</span>/21 Test <span class="c1">#15: check_chain_triqsqmc .............***Failed    0.74 sec</span>
+<span class="m">15</span>/20 Test <span class="c1">#15: check_chain_triqsqmc .............   Passed    0.75 sec</span>
       Start <span class="m">16</span>: check_chain_triqsqmc_so
-<span class="m">16</span>/21 Test <span class="c1">#16: check_chain_triqsqmc_so ..........***Failed    0.76 sec</span>
-      Start <span class="m">17</span>: check_chain_alpsqmc
-<span class="m">17</span>/21 Test <span class="c1">#17: check_chain_alpsqmc ..............***Failed    0.73 sec</span>
-      Start <span class="m">18</span>: post_chain_hubbardI
-<span class="m">18</span>/21 Test <span class="c1">#18: post_chain_hubbardI ..............   Passed    2.28 sec</span>
-      Start <span class="m">19</span>: post_chain_hubbardI_so
-<span class="m">19</span>/21 Test <span class="c1">#19: post_chain_hubbardI_so ...........   Passed    2.18 sec</span>
-      Start <span class="m">20</span>: post_chain_triqsqmc
-<span class="m">20</span>/21 Test <span class="c1">#20: post_chain_triqsqmc ..............***Failed    0.71 sec</span>
-      Start <span class="m">21</span>: post_chain_triqsqmc_so
-<span class="m">21</span>/21 Test <span class="c1">#21: post_chain_triqsqmc_so ...........***Failed    0.72 sec</span>
+<span class="m">16</span>/20 Test <span class="c1">#16: check_chain_triqsqmc_so ..........   Passed    0.79 sec</span>
+      Start <span class="m">17</span>: post_chain_hubbardI
+<span class="m">17</span>/20 Test <span class="c1">#17: post_chain_hubbardI ..............   Passed    2.70 sec</span>
+      Start <span class="m">18</span>: post_chain_hubbardI_so
+<span class="m">18</span>/20 Test <span class="c1">#18: post_chain_hubbardI_so ...........   Passed    2.16 sec</span>
+      Start <span class="m">19</span>: post_chain_triqsqmc
+<span class="m">19</span>/20 Test <span class="c1">#19: post_chain_triqsqmc ..............   Passed    2.40 sec</span>
+      Start <span class="m">20</span>: post_chain_triqsqmc_so
+<span class="m">20</span>/20 Test <span class="c1">#20: post_chain_triqsqmc_so ...........   Passed    2.14 sec</span>
 
-<span class="m">67</span>% tests passed, <span class="m">7</span> tests failed out of <span class="m">21</span>
+<span class="m">100</span>% tests passed, <span class="m">0</span> tests failed out of <span class="m">20</span>
 
-Total Test <span class="nb">time</span> <span class="o">(</span>real<span class="o">)</span> <span class="o">=</span>  <span class="m">26</span>.56 sec
-
-The following tests FAILED:
-    <span class="m">11</span> - main_chain_triqsqmc <span class="o">(</span>Failed<span class="o">)</span>
-    <span class="m">12</span> - main_chain_triqsqmc_so <span class="o">(</span>Failed<span class="o">)</span>
-    <span class="m">15</span> - check_chain_triqsqmc <span class="o">(</span>Failed<span class="o">)</span>
-    <span class="m">16</span> - check_chain_triqsqmc_so <span class="o">(</span>Failed<span class="o">)</span>
-    <span class="m">17</span> - check_chain_alpsqmc <span class="o">(</span>Failed<span class="o">)</span>
-    <span class="m">20</span> - post_chain_triqsqmc <span class="o">(</span>Failed<span class="o">)</span>
-    <span class="m">21</span> - post_chain_triqsqmc_so <span class="o">(</span>Failed<span class="o">)</span>
+Total Test <span class="nb">time</span> <span class="o">(</span>real<span class="o">)</span> <span class="o">=</span>  <span class="m">69</span>.77 sec
 </pre></div>
 </div>
-<p>In the above example, all tests related to QMC are failed, because only the Hubbard-I solver is installed. The tests from 1 to 8 should be passed regardless of impurity solvers you installed.</p>
+<p>Some tests (from 9 to 20) may be failed, if some impurity solvers are not installed. The tests from 1 to 8 should be passed regardless of impurity solvers you installed.</p>
 </li>
 <li><p class="first">Finally, install by</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make install
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> is installed in the directory <em>path_to_triqs</em>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> is installed in the directory <em>path_to_triqs</em> (or <em>install_path</em> if specified).</p>
 </li>
 </ol>
 </div>

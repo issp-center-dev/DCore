@@ -1,6 +1,6 @@
 .. index:: DFTTools
 
-.. module:: pytriqs.applications.dcore
+.. module:: dcore
 
 DCore
 =====
