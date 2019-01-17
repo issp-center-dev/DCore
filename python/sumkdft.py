@@ -132,6 +132,7 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
     #from pytriqs.applications.dft.sumk_dft import SumkDFT
     #from pytriqs.applications.dft.sumk_dft_tools import SumkDFTTools
     from .sumkdft_post import SumkDFTDCorePost
+    import pytriqs.utility.mpi as mpi
 
     with HDFArchive(input_file, 'r') as h:
         params = h['params']
@@ -191,9 +192,10 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
     else:
         raise RuntimeError("Unknown calc_mode: " + str(params['calc_mode']))
 
-    with HDFArchive(output_file, 'w') as h:
-        for k, v in results.items():
-            h[k] = v
+    if mpi.is_master_node():
+        with HDFArchive(output_file, 'w') as h:
+            for k, v in results.items():
+                h[k] = v
 
 if __name__ == '__main__':
 

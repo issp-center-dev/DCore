@@ -120,7 +120,7 @@ class TypedParser(object):
                 self.__results[sect] = {}
 
             for opt in self.__config_parser.options(sect):
-                value = self.__config_parser.get(sect, opt)
+                value = self.__config_parser.get(sect, opt).strip('\'').strip('"')
                 if sect in self.__definitions and opt in self.__definitions[sect]:
                     # if an option is pre-defined.
                     if self.__definitions[sect][opt]['status'] == OptionStatus.DEPRECATED:
