@@ -158,9 +158,8 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         sk.set_dc(dc_imp, dc_energ)
 
     # Set/compute chemical potential
-    if 'mu' in params:
-        sk.set_mu(params['mu'])
-    else:
+    sk.set_mu(params['mu'])
+    if params['adjust_mu']:
         # find the chemical potential for given density
         sk.calc_mu(params['prec_mu'])
         results['mu'] = sk.chemical_potential

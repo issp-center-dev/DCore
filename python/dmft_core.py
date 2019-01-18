@@ -323,6 +323,8 @@ class DMFTCoreSolver(object):
             'Sigma_iw_sh'   : [s.Sigma_iw for s in self._sh_quant],
             'dc_imp'        : self._dc_imp,
             'dc_energ'      : self._dc_energ,
+            'mu'            : self._chemical_potential,
+            'adjust_mu'     : False,
         }
 
     def calc_Gloc(self):
@@ -336,11 +338,11 @@ class DMFTCoreSolver(object):
 
         params = self._make_sumkdft_params()
         params['calc_mode'] = 'Gloc'
-        if self._params['system']['fix_mu'] or self._read_only:
-            params['mu'] = self._chemical_potential
+        if (not self._params['system']['fix_mu']) and (not self._read_only):
+            params['adjust_mu'] = True
         r = sumkdft.run(self._seedname+'.h5', './work/sumkdft', self._mpirun_command, params)
 
-        if (not self._params['system']['fix_mu']) and (not self._read_only):
+        if params['adjust_mu']:
             self._chemical_potential = r['mu']
 
         # Sanity check
