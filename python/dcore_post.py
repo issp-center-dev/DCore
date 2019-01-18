@@ -115,7 +115,7 @@ class DMFTCoreTools:
         For cthyb (both TRIQS and ALPS), self-energy is read from hdf5 file.
         """
 
-        print("\n#############  Compute Green' Function in the Real Frequency  ################\n")
+        print("\n#############  Compute Green's Function in the Real Frequency  ################\n")
 
         #
         # Real-frequency self-energy
@@ -267,15 +267,20 @@ def __generate_wannier90_model(mpirun_command, params, n_k, kvec):
         Projection onto each correlated orbitals
     """
 
-    with HDFArchive('w90in.h5', 'w') as h:
+    work_dir = 'work'
+    if not os.path.isdir(work_dir):
+        os.makedirs(work_dir)
+
+    with HDFArchive(work_dir + '/w90in.h5', 'w') as h:
         for k in ['seedname', 'ncor', 'norb']:
             h[k] = params[k]
         h['n_k'] = n_k
         h['kvec'] = kvec
 
-    launch_mpi_subprocesses(mpirun_command, [sys.executable, '-m', 'dcore.wannier90_model', 'w90in.h5', 'w90out.h5'])
+    with open(work_dir+'/w90output', 'w') as output:
+        launch_mpi_subprocesses(mpirun_command, [sys.executable, '-m', 'dcore.wannier90_model', work_dir+'/w90in.h5', work_dir+'/w90out.h5'], output)
 
-    with HDFArchive('w90out.h5', 'r') as h:
+    with HDFArchive(work_dir + '/w90out.h5', 'r') as h:
         hopping = h['hopping']
         n_orbitals = h['n_orbitals']
         proj_mat = h['proj_mat']

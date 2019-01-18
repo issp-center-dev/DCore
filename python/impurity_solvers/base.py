@@ -259,7 +259,8 @@ class PytriqsMPISolver(SolverBase):
 
             if 'calc_Sigma_w' in params and params['calc_Sigma_w']:
                 h['calc_Sigma_w'] = True
-                h['mesh'] = params['mesh']
+                for k in ['omega_min', 'omega_max', 'n_omega']:
+                    h[k] = params[k]
             else:
                 h['calc_Sigma_w'] = False
 
@@ -279,7 +280,7 @@ class PytriqsMPISolver(SolverBase):
             self._Sigma_iw << h['Sigma_iw']
             self._Gimp_iw << h['Gimp_iw']
             if 'Sigma_w' in h:
-                self._Sigma_w << h['Sigma_w']
+                self._Sigma_w = h['Sigma_w']
 
     def name(self):
         return "PytriqsMPISolver"

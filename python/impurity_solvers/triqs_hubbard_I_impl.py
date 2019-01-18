@@ -84,10 +84,8 @@ class HubbardISolver(SolverBase):
                 self.Eff_Atomic_Levels[a] = numpy.zeros([self.Nlm, self.Nlm], numpy.complex_)
 
     def solve(self, **params):
-        #
+
         u_mat_spin_full = params['u_mat']
-
-
         u_mat = numpy.zeros((self.n_orb, self.n_orb, self.n_orb, self.n_orb), numpy.complex)
         u_mat[:, :, :, :] = u_mat_spin_full[0:self.n_orb, 0:self.n_orb, 0:self.n_orb, 0:self.n_orb]
 
@@ -191,8 +189,11 @@ class HubbardISolver(SolverBase):
             return reduce(lambda x1, y1: x1 and y1, [f(g1, g2) for (i1, g1), (i2, g2) in izip(gf1, gf2)])
 
 
-    def gf_realomega(self, mesh, u_mat, verbosity=0, broadening=0.01, n_lev=0, remove_split=False):
+    def gf_realomega(self, mesh, u_mat_spin_full, verbosity=0, broadening=0.01, n_lev=0, remove_split=False):
         """Calculates the GF and spectral function on the real axis."""
+
+        u_mat = numpy.zeros((self.n_orb, self.n_orb, self.n_orb, self.n_orb), numpy.complex)
+        u_mat[:, :, :, :] = u_mat_spin_full[0:self.n_orb, 0:self.n_orb, 0:self.n_orb, 0:self.n_orb]
 
         ommin, ommax, n_om = mesh
 
@@ -321,16 +322,19 @@ def main(input_file, output_file):
     params['u_mat'] =  u_mat
     S.solve(h_int=h_int, **params)
 
-    if params['calc_Sigma_w']:
-        S.gf_realomega(params['omeags'], u_mat)
+    calc_Sigma_w = 'calc_Sigma_w' in params and params['calc_Sigma_w']
+
+    if calc_Sigma_w:
+        mesh = (params['omega_min'], params['omega_max'], params['n_omega'])
+        S.gf_realomega(mesh, u_mat)
 
     # Save results
     if mpi.is_master_node():
         with HDFArchive(os.path.abspath(output_file), 'w') as h:
             h['Sigma_iw'] = S.get_Sigma_iw()
             h['Gimp_iw'] = S.get_Gimp_iw()
-            if params['calc_Sigma_w']:
-                h['Sigma_w'] = S.get_Sigma_w()
+            if calc_Sigma_w:
+                h['Sigma_w'] = S.Sigma_w
 
 
 

@@ -134,7 +134,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
 
     if not mesh is None:
         s_params['calc_Sigma_w'] = True
-        s_params['mesh'] = mesh
+        s_params['omega_min'], s_params['omega_max'], s_params['n_omega'] = mesh
 
 
     # Solve the model
@@ -324,6 +324,8 @@ class DMFTCoreSolver(object):
 
         params = self._make_sumkdft_params()
         params['calc_mode'] = 'Gloc'
+        if self._params['system']['fix_mu'] or self._read_only:
+            params['mu'] = self._chemical_potential
         r = sumkdft.run(self._seedname+'.h5', './work/sumkdft', self._mpirun_command, params)
 
         if (not self._params['system']['fix_mu']) and (not self._read_only):
