@@ -158,7 +158,6 @@ def symmetrize_spin(G):
     G[bnames[0]] = G_ave.copy()
     G[bnames[1]] = G_ave.copy()
 
-
 def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
     """
 

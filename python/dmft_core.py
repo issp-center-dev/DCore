@@ -43,6 +43,19 @@ def __gettype(name):
         return t
     raise ValueError(name)
 
+def is_hermite_conjugate(Sigma_iw):
+    """
+    Check if Sigma(iw_n) or G(iwn_n) is Hermite conjugate.
+    """
+    flag = True
+    for name, g in Sigma_iw:
+        n_points = int(g.data.shape[0]/2)
+        for i in range(n_points):
+            if not numpy.allclose(g.data[i + n_points, :, :], g.data[n_points - i - 1, :, :].conj().transpose()):
+                return False
+    return True
+
+
 
 def create_solver_params(ini_dict):
     """
@@ -91,7 +104,7 @@ class ShellQuantity(object):
         #self.Gimp_iw = self.Sigma_iw.copy()
 
 
-def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau, Sigma_iw, Gloc_iw, mesh, ish):
+def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau, Sigma_iw, Gloc_iw, mesh, ish, ite):
     """
 
     Solve an impurity model
@@ -117,7 +130,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     rot = compute_diag_basis(G0_iw) if basis_rot else None
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
-    s_params['work_dir'] = 'work/imp_shell'+str(ish)
+    s_params['work_dir'] = 'work/imp_shell'+str(ish)+"_ite"+str(ite)
 
     if not mesh is None:
         s_params['calc_Sigma_w'] = True
@@ -410,7 +423,7 @@ class DMFTCoreSolver(object):
         Solver = impurity_solvers.solver_classes[solver_name]
         if Solver.is_gf_realomega_available():
             Gloc_iw_sh, _ = self.calc_Gloc()
-            _, _, sigma_w = self.solve_impurity_models(Gloc_iw_sh, mesh)
+            _, _, sigma_w = self.solve_impurity_models(Gloc_iw_sh, -1, mesh)
             return sigma_w
         else:
             return [None] * self.n_inequiv_shells
@@ -429,7 +442,7 @@ class DMFTCoreSolver(object):
                     print("")
 
 
-    def solve_impurity_models(self, Gloc_iw_sh, mesh=None):
+    def solve_impurity_models(self, Gloc_iw_sh, iteration_number, mesh=None):
         """
 
         Solve impurity models for all inequivalent shells
@@ -450,7 +463,12 @@ class DMFTCoreSolver(object):
             Sigma_iw, Gimp_iw, Sigma_w = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
                              self._params["impurity_solver"]["basis_rotation"], self._Umat[ish], self._gf_struct[ish],
                                  self._beta, self._n_iw, self._n_tau,
-                                 self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish)
+                                 self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, iteration_number)
+            if not is_hermite_conjugate(Sigma_iw):
+                raise RuntimeError("Sigma_iw is not hermite conjugate!")
+            if not is_hermite_conjugate(Gimp_iw):
+                raise RuntimeError("Gimp_iw is not hermite conjugate!")
+
             Sigma_iw_sh.append(Sigma_iw)
             if not mesh is None:
                 Sigma_w_sh.append(Sigma_w)
@@ -604,7 +622,7 @@ class DMFTCoreSolver(object):
             print("\nWall Time : %.1f sec" % (time.time() - t0))
 
             sys.stdout.flush()
-            new_Sigma_iw, new_Gimp_iw = self.solve_impurity_models(Gloc_iw_sh)
+            new_Sigma_iw, new_Gimp_iw = self.solve_impurity_models(Gloc_iw_sh, iteration_number)
             sys.stdout.flush()
 
             # Solved. Now do post-processing:

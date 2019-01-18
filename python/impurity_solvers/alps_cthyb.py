@@ -123,6 +123,8 @@ def assign_from_numpy_array(g, data):
     for name, block in g:
         block_dim = len(block.indices)
         block.data[:,:,:] = data_rearranged[:, offset:offset + block_dim, offset:offset + block_dim]
+        for i in range(block.data.shape[0]):
+            block.data[i, :, :] = 0.5 * (block.data[i, :, :] + block.data[i, :, :].transpose().conj())
         offset += block_dim
 
 
@@ -236,21 +238,21 @@ class ALPSCTHYBSolver(SolverBase):
 
         with open(work_dir + '/hopping.txt', 'w') as f:
             for i, j in product(range(self.n_flavors), repeat=2):
-                print(i, j, H0[i,j].real, H0[i,j].imag, file=f)
+                print('{} {} {:.15e} {:.15e}'.format(i, j, H0[i,j].real, H0[i,j].imag), file=f)
 
         with open(work_dir + '/delta.txt', 'w') as f:
             for itau, f1, f2 in product(range(self.n_tau), range(self.n_flavors), range(self.n_flavors)):
-                print(itau, f1, f2, Delta_tau_data[itau, f1, f2].real, Delta_tau_data[itau, f1, f2].imag, file=f)
+                print('{} {} {} {:.15e} {:.15e}'.format(itau, f1, f2, Delta_tau_data[itau, f1, f2].real, Delta_tau_data[itau, f1, f2].imag), file=f)
 
         with open(work_dir + '/Uijkl.txt', 'w') as f:
             print(len(U_nonzeros), file=f)
             for n, elem in enumerate(U_nonzeros):
                 i, j, k, l = elem[0]
-                print(n, i, j, k, l, elem[1].real, elem[1].imag, file=f)
+                print('{} {} {} {} {} {:.15e} {:.15e}'.format(n, i, j, k, l, elem[1].real, elem[1].imag), file=f)
 
         with open(work_dir + '/basis.txt', 'w') as f:
             for f1, f2 in product(range(self.n_flavors), range(self.n_flavors)):
-                print(f1, f2, rot_mat_alps[f1, f2].real, rot_mat_alps[f1, f2].imag, file=f)
+                print('{} {} {:.15e} {:.15e}'.format(f1, f2, rot_mat_alps[f1, f2].real, rot_mat_alps[f1, f2].imag), file=f)
 
         if _read('dry_run'):
             return
