@@ -591,7 +591,7 @@ class DMFTCoreSolver(object):
                     for i1 in range(dim_tot):
                         print("          ", end="")
                         for i2 in range(dim_tot):
-                            print("{0:.3f} ".format(self._sh_quant[ish].Sigma_iw[sp1].data[0, i1, i2]), end="")
+                            print("{0:.3f} ".format(self._dc_imp[ish][sp1][i1, i2]), end="")
                         print("")
                 print("")
 
