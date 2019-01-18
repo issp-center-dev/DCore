@@ -562,7 +562,8 @@ class DMFTCoreSolver(object):
                         * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
                     )
                 if set_initial_Sigma_iw:
-                    self._sh_quant[ish].Sigma_iw << dc_imp_sh['ud'][0, 0]
+                    # fixed a bug in v1.0
+                    self._sh_quant[ish].Sigma_iw['ud'] << dc_imp_sh['ud']
                 self._dc_imp.append(dc_imp_sh)
             else:
                 dc_imp_sh = {}
@@ -581,7 +582,9 @@ class DMFTCoreSolver(object):
                         dc_imp_sh[sp1][i1, i2] += \
                             - numpy.sum(u_mat[i1, 0:num_orb, 0:num_orb, i2] * dens_mat[sp1][:, :])
                 if set_initial_Sigma_iw:
-                    self._sh_quant[ish].Sigma_iw << dc_imp_sh['up'][0, 0]
+                    # fixed a bug in v1.0
+                    for sp in self._spin_block_names:
+                        self._sh_quant[ish].Sigma_iw[sp] << dc_imp_sh[sp]
                 self._dc_imp.append(dc_imp_sh)
 
             if set_initial_Sigma_iw:
