@@ -150,7 +150,8 @@ class DMFTCoreSolver(object):
         self._n_tau = int(params['system']['n_tau'])  # Number of tau points
 
         # MPI commands
-        self._mpirun_command = params['mpi']['command'].replace('#', str(params['mpi']['num_processes']))
+        if 'num_processes' in params['mpi']:
+            self._mpirun_command = params['mpi']['command'].replace('#', str(params['mpi']['num_processes']))
 
         self._read_only = read_only
         if read_only:

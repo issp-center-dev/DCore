@@ -153,6 +153,12 @@ class ALPSCTHYBSolver(SolverBase):
             else:
                 return internal_params[key]
 
+        if 'max_time' in params_kw:
+            raise RuntimeError("Parameter max_time has been replaced by timelimit!")
+
+        if not 'timelimit' in params_kw:
+            raise RuntimeError("Please set timelimit for ALPS/cthyb!")
+
         # Non-interacting part of the local Hamiltonian including chemical potential
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin2, spin1, spin2, ...
