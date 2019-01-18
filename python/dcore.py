@@ -24,7 +24,7 @@ from .dmft_core import DMFTCoreSolver
 from .program_options import *
 
 
-def dcore(filename, np):
+def dcore(filename, np=1):
     """
     Main routine of DCore
 
