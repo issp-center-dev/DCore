@@ -118,10 +118,31 @@ class SolverBase(object):
             return None
         return self._Sigma_w.copy()
 
-    def solve(self, rot, mpirun_command, **params_kw):
+    def solve(self, rot, mpirun_command, params):
         """
         Solve the impudrity problem.
+
         self.G0_iw must be set before this function is called.
+
+        INPUT:
+          rot is a unitary matrix representing a basis transformation to reduce sign problem.
+          If rot is None, no basis transformation is disabled.
+
+          mpirun_command is a string (e.g. 'mpirun -np 8')
+
+          params is a dict containing parameters.
+          The following parameters must be set.
+          Each impurity solver may require additional parameters.
+
+              'work_dir'            : str, working directory (mandatory)
+              'random_seed_offset'  : int, off set value for random seed (mandatory)
+
+              'calc_Sigma_w'        : bool, if real-frequency Sigma is computed (optional)
+              'omega_min'           : float, lower limit of omega (must be set if calc_Sigma_iw is on).
+              'omega_max'           : float, uppper limit of omega (must be set if calc_Sigma_iw is on).
+              'n_omega'             : int, number of frequency points (must be set if calc_Sigma_iw is on).
+
+        OUTPUT:
         ``Gimp_iw``, ``Sigma_iw`` must be calculated.
 
         """

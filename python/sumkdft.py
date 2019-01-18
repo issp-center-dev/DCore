@@ -78,6 +78,14 @@ def run(model_file, work_dir, mpirun_command, params):
         Parameters for SumkDFT
     :return: dict
         results
+
+    params contains the following parameters.
+        calc_mode   : str, 'Gloc', 'dos', 'dos0', 'spaghettis' or 'momentum_distribution' (mandatory)
+        mu          : float, chemical potential. If mu is not given, mu will be adjusted (optional).
+        prec_mu     : float, precision of adjustment of chemical potential (optional)
+        broadening  : float, broadening parameter for DOS (must be set when calc_mode = dos, dos0, spaghettis)
+        mesh        : (float, float, int) real-frequency mesh (optional)
+
     """
 
     from .tools import raise_if_mpi_imported
@@ -89,24 +97,17 @@ def run(model_file, work_dir, mpirun_command, params):
     with HDFArchive(work_dir + '/input.h5', 'w') as h:
         h['params'] = params
 
-    #commands = shlex.split(mpirun_command)
     commands = [sys.executable, "-m", "dcore.sumkdft"]
     commands.append(model_file)
     commands.append(os.path.abspath(work_dir + '/input.h5'))
     commands.append(os.path.abspath(work_dir + '/output.h5'))
 
-    #print("Calling SumkDFT...", commands)
     with open(work_dir + '/output', 'w') as output_file:
         launch_mpi_subprocesses(mpirun_command, commands, output_file)
 
     with open(work_dir + '/output', 'r') as output_file:
         for line in output_file:
             print(line, end='')
-
-    #if returncode:
-        #print('returncode: ', returncode)
-        #print('command: ', ' '.join(commands))
-        #raise RuntimeError("Execution of SumKDFT failed: something went wrong!")
 
     results = {}
     with HDFArchive(os.path.abspath(work_dir + '/output.h5'), 'r') as h:

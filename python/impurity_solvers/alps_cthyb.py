@@ -134,14 +134,21 @@ class ALPSCTHYBSolver(SolverBase):
         """
         Initialize the solver.
 
-        Parameters
-        ----------
-        See the docstring of MPISolverBase.
         """
 
         super(ALPSCTHYBSolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
 
     def solve(self, rot, mpirun_command, params_kw):
+        """
+
+        In addition to the parameters described in the docstring of SolverBase,
+        params_kw must may contain the following parameters.
+          exec_path : str, path to an executable, mandatory
+          work_dir  : str, path to a work directory, mandatory
+          dry_run   : bool, actual computation is not performed if dry_run is True, optional
+
+        """
+
         internal_params = {
             'exec_path'           : '',
             'work_dir'            : '',

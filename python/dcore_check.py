@@ -72,7 +72,7 @@ def dcore_check(filename, fileplot=None):
     # Load DMFT data
     #
     p['control']['restart'] = True
-    solver = DMFTCoreSolver(p["model"]["seedname"], p)
+    solver = DMFTCoreSolver(p["model"]["seedname"], p, read_only=True)
     iteration_number = solver.iteration_number
     nsh = solver.n_inequiv_shells
     spn = solver.spin_block_names

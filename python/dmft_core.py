@@ -151,6 +151,16 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
 
 class DMFTCoreSolver(object):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out', read_only=False):
+        """
+
+        if read_only is True, no further SCF loops are performed. Chemical potential is fixed to that in the HDF5 file.
+
+        :param seedname:
+        :param params:
+        :param output_file:
+        :param output_group:
+        :param read_only:
+        """
         # Set up
         self._seedname = seedname
         self._params = copy.deepcopy(params)
@@ -322,6 +332,8 @@ class DMFTCoreSolver(object):
         Return a list of Gloc_iw and density matrices for inequivalent shells
         """
 
+        mu_old = self._chemical_potential
+
         params = self._make_sumkdft_params()
         params['calc_mode'] = 'Gloc'
         if self._params['system']['fix_mu'] or self._read_only:
@@ -330,6 +342,10 @@ class DMFTCoreSolver(object):
 
         if (not self._params['system']['fix_mu']) and (not self._read_only):
             self._chemical_potential = r['mu']
+
+        # Sanity check
+        if self._params['system']['fix_mu'] or self._read_only:
+            assert self._chemical_potential == mu_old
 
         return r['Gloc_iw_sh'], r['dm_corr_sh']
 
