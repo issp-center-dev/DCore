@@ -321,7 +321,7 @@ def main(input_file, output_file):
     params['u_mat'] =  u_mat
     S.solve(h_int=h_int, **params)
 
-    if params['calc_Sigma_w']:
+    if 'calc_Sigma_w' in params and params['calc_Sigma_w']:
         S.gf_realomega(params['omeags'], u_mat)
 
     # Save results
@@ -329,7 +329,7 @@ def main(input_file, output_file):
         with HDFArchive(os.path.abspath(output_file), 'w') as h:
             h['Sigma_iw'] = S.get_Sigma_iw()
             h['Gimp_iw'] = S.get_Gimp_iw()
-            if params['calc_Sigma_w']:
+            if 'calc_Sigma_w' in params and params['calc_Sigma_w']:
                 h['Sigma_w'] = S.get_Sigma_w()
 
 
