@@ -350,7 +350,7 @@ def __generate_lattice_model(params, n_k, kvec):
     return hopping, n_orbitals, proj_mat
 
 
-def dcore_post(filename, np):
+def dcore_post(filename, np=1):
     """
     Main routine for the post-processing tool
 

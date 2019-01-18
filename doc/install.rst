@@ -87,10 +87,10 @@ Prerequisites
 
    - `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
 
+   - `ALPSCore/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
+
    - `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
      [Note: checkout tag **1.4.2** on master branch, or download the released package from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_]
-
-   - `ALPSCore/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_ + `triqs_interface <https://github.com/shinaoka/triqs_interface>`_
 
    .. note::
 
@@ -103,13 +103,11 @@ Prerequisites
 
    .. note::
 
-      One must build ALPSCore, TRIQS, TRIQS/DFTTools, and other solvers with the same C++ compiler and the same C++ standard (C++14).
+      One must build TRIQS, TRIQS/DFTTools, and TRIQS solvers with the same C++ compiler and the same C++ standard (C++14).
 
    .. note::
 
       ALPSCore/CT-HYB is a standalone program with an interface based on text and HDF5 files.
-      "triqs_interface" is a TRIQS-compatible Python interface of ``ALPSCore/CT-HYB``.
-      This allows to use this impurity solver transparently from DCore (built with TRIQS python architecture).
       The main developer of ``ALPSCore/CT-HYB``, H. Shinaoka, is one of the developers of DCore.
 
       Both of ``ALPSCore/CT-HYB`` and ``TRIQS/cthyb`` implement the hybridization-expansion continuous-time quantum Monte Carlo method.
@@ -131,10 +129,10 @@ Installation steps
 
    ::
 
-     $ cmake -DTRIQS_PATH=path_to_triqs path_to_dcore_src
+     $ cmake -DTRIQS_PATH=path_to_triqs path_to_dcore_src -DCMAKE_INSTALL_PREFIX=path_to_dcore_install_directory
 
    Here, *path_to_triqs* refers to your ``TRIQS`` install directory, and *path_to_dcore_src* refers to the ``DCore`` source directory.
-   If you want to install DCore to somewhere other than the triqs directory, please set CMAKE_INSTALL_PREFIX to your install directory.
+   Please set CMAKE_INSTALL_PREFIX to the directory where DCore will be installed.
    If the cmake command succeeded, you will see the following message.
 
    ::

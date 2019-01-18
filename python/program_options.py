@@ -68,7 +68,7 @@ def create_parser():
     parser.add_option("system", "nk1", int, 0, "Number of *k* along b_1 (only for wannier90)")
     parser.add_option("system", "nk2", int, 0, "Number of *k* along b_2 (only for wannier90)")
     parser.add_option("system", "prec_mu", float, 0.0001,
-                      "Threshold for calculating chjlemical potential with the bisection method.")
+                      "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction (See below)")
     parser.add_option("system", "perform_tail_fit", bool, False, "Whether or not perform the tail-fit.")

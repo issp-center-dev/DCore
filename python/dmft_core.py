@@ -287,8 +287,8 @@ class DMFTCoreSolver(object):
         Sanity checks
         """
 
-        if not numpy.allclose(self._sk.corr_to_inequiv, self._sk.inequiv_to_corr):
-            raise RuntimeError("corr_to_inequiv must be equal to inequiv_to_corr!")
+        #if not numpy.allclose(self._sk.corr_to_inequiv, self._sk.inequiv_to_corr):
+            #raise RuntimeError("corr_to_inequiv must be equal to inequiv_to_corr!")
 
         raise_if_mpi_imported()
 
@@ -446,6 +446,7 @@ class DMFTCoreSolver(object):
         Sigma_w_sh = []
         for ish in range(self._n_inequiv_shells):
             print("Solving impurity model for inequivalent shell " + str(ish) + " ...")
+            sys.stdout.flush()
             Sigma_iw, Gimp_iw, Sigma_w = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
                              self._params["impurity_solver"]["basis_rotation"], self._Umat[ish], self._gf_struct[ish],
                                  self._beta, self._n_iw, self._n_tau,
