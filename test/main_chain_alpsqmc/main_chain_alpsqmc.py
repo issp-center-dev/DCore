@@ -17,7 +17,7 @@
 #
 from __future__ import print_function
 from pytriqs.utility.h5diff import h5diff
-from pytriqs.applications.dcore.dcore import dcore
+from dcore.dcore import dcore
 
 dcore('dmft.ini')
 

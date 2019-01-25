@@ -16,10 +16,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-from pytriqs.applications.dcore.numdiff import numdiff
-from pytriqs.applications.dcore.dcore_post import dcore_post
+from dcore.numdiff import numdiff
+from dcore.dcore_post import dcore_post
 
 dcore_post('dmft.ini')
 
 numdiff("test_akw.dat", "test_akw_ref.dat")
 numdiff("test_dos.dat", "test_dos_ref.dat")
+numdiff("test_momdist.dat", "test_momdist_ref.dat")
+numdiff("test_akw0.dat", "test_akw0_ref.dat")
+numdiff("test_dos0.dat", "test_dos0_ref.dat")

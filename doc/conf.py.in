@@ -38,6 +38,7 @@ html_context = {'header_title': 'DCore',
                 'header_subtitle': 'integrated DMFT software for CORrelated Electrons',
                 'header_links': [['Install', 'install'],
                                  ['Documentation', 'documentation'],
+                                 ['Presentatation', 'presentation'],
                                  ['Issues', 'issues'],
                                  ['About DCore', 'about']]}
 html_static_path = ['@CMAKE_SOURCE_DIR@/doc/_static']

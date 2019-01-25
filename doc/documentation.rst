@@ -1,4 +1,4 @@
-.. module:: pytriqs.applications.dcore
+.. module:: dcore
 
 .. _documentation:
 

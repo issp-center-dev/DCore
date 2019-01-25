@@ -17,7 +17,7 @@
 #
 from __future__ import print_function
 from pytriqs.utility.h5diff import h5diff
-from pytriqs.applications.dcore.dcore_pre import dcore_pre
+from dcore.dcore_pre import dcore_pre
 #
 # Execute dcore_pre.py to generate test.h5
 # Then Check the Diff of test.h5 and the reference output (stan_ref.h5))

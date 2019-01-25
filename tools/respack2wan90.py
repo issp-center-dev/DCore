@@ -137,10 +137,15 @@ def respack2wan90(seedname):
 if __name__ == '__main__':
 
     args = sys.argv
+    seedname = "zvo"
 
-    if len(args) != 2:
+    if len(args) == 1:
+        seedname = "zvo"
+    elif len(args) == 2:
+        seedname = args[1]
+    else:
         print("\nUsage:\n")
-        print("  $ respack2wan90.py seedname\n")
+        print("  $ respack2wan90.py [seedname]\n")
         exit(-1)
 
-    respack2wan90(args[1])
+    respack2wan90(seedname)

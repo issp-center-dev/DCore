@@ -99,6 +99,67 @@ def __generate_wannier90_model(params, f):
         print("{0} {1} {2} {3} 0 0".format(i, equiv[i], 0, norb[i]), file=f)
 
 
+def para2noncol(params):
+    """
+    Duplicate orbitals when we perform non-colinear DMFT from the colinear DFT calculation.
+    """
+    ncor = params["model"]['ncor']
+    norb_list = re.findall(r'\d+', params["model"]["norb"])
+    norb = [int(norb_list[icor]) / 2 for icor in range(ncor)]
+    #
+    # Read Wannier90 file
+    #
+    w90 = Wannier90Converter(seedname=params["model"]["seedname"])
+    nr, rvec, rdeg, nwan, hamr = w90.read_wannier90hr(params["model"]["seedname"] + "_col_hr.dat")
+    #
+    # Non correlated shell
+    #
+    ncor += 1
+    norb_tot = sum(norb)
+    norb.append(nwan - norb_tot)
+    #
+    # Output new wannier90 file
+    #
+    with open(params["model"]["seedname"] + "_hr.dat", 'w') as f:
+
+        print("Converted from Para to Non-collinear", file=f)
+        print(nwan*2, file=f)
+        print(nr, file=f)
+        for ir in range(nr):
+            print("%5d" % rdeg[ir], end="", file=f)
+            if ir % 15 == 14:
+                print("", file=f)
+        if nr % 15 != 0:
+            print("", file=f)
+        #
+        # Hopping
+        #
+        for ir in range(nr):
+            iorb1 = 0
+            iorb2 = 0
+            for icor in range(ncor):
+                for ispin in range(2):
+                    iorb1 -= ispin * norb[icor]
+                    for iorb in range(norb[icor]):
+                        iorb1 += 1
+                        iorb2 += 1
+                        jorb1 = 0
+                        jorb2 = 0
+                        for jcor in range(ncor):
+                            for jspin in range(2):
+                                jorb1 -= jspin * norb[jcor]
+                                for jorb in range(norb[jcor]):
+                                    jorb1 += 1
+                                    jorb2 += 1
+                                    if ispin == jspin:
+                                        hamr2 = hamr[ir][jorb1-1, iorb1-1]
+                                    else:
+                                        hamr2 = 0.0 + 0.0j
+                                    print("%5d%5d%5d%5d%5d%12.6f%12.6f" %
+                                          (rvec[ir, 0], rvec[ir, 1], rvec[ir, 2], jorb2, iorb2,
+                                           hamr2.real, hamr2.imag), file=f)
+
+
 def __generate_lattice_model(params, f):
     """
     Compute hopping etc. for A(k,w) of preset models
@@ -229,6 +290,9 @@ def __generate_umat(p):
     # ####  The format of this block is not fixed  ####
     #
     ncor = p["model"]['ncor']
+    kanamori = numpy.zeros((ncor, 3), numpy.float_)
+    slater_f = numpy.zeros((ncor, 4), numpy.float_)
+    slater_l = numpy.zeros(ncor, numpy.int_)
     #
     # Read interaction from input file
     #
@@ -244,7 +308,6 @@ def __generate_umat(p):
             sys.exit(-1)
 
         kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
-        kanamori = numpy.zeros((ncor, 3), numpy.float_)
         if len(kanamori_list) != ncor:
             print("\nError! The length of \"kanamori\" is wrong.")
             sys.exit(-1)
@@ -269,8 +332,6 @@ def __generate_umat(p):
 
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_uj"])
-        slater_f = numpy.zeros((ncor, 4), numpy.float_)
-        slater_l = numpy.zeros(ncor, numpy.int_)
         if len(f_list) != ncor:
             print("\nError! The length of \"slater_uj\" is wrong.")
             sys.exit(-1)
@@ -335,7 +396,7 @@ def __generate_umat(p):
 
     corr_shells = f["dft_input"]["corr_shells"]
     norb = [corr_shells[icor]["dim"] for icor in range(ncor)]
-    if p["model"]["spin_orbit"]:
+    if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
         for icor in range(ncor):
             norb[icor] /= 2
 
@@ -364,9 +425,9 @@ def __generate_umat(p):
             #
             if slater_l[icor]*2+1 != norb[icor]:
                 if slater_l[icor] == 2 and norb[icor] == 2:
-                    u_mat = eg_submatrix(umat_full)
+                    u_mat[icor] = eg_submatrix(umat_full)
                 elif slater_l[icor] == 2 and norb[icor] == 3:
-                    u_mat = t2g_submatrix(umat_full)
+                    u_mat[icor] = t2g_submatrix(umat_full)
                 else:
                     print("Error ! Unsupported pair of l and norb : ", slater_l[icor], norb[icor])
                     sys.exit(-1)
@@ -406,8 +467,22 @@ def __generate_umat(p):
             start += norb[icor]
     #
     for icor in range(ncor):
-        u_mat[icor][:, :].imag = 0.0
-    f["DCore"]["Umat"] = u_mat
+        u_mat[icor][:, :, :, :].imag = 0.0
+    #
+    # Spin & Orb
+    #
+    u_mat2 = [numpy.zeros((norb[icor]*2, norb[icor]*2, norb[icor]*2, norb[icor]*2), numpy.complex_)
+              for icor in range(ncor)]
+    for icor in range(ncor):
+        no = norb[icor]
+        for i1 in range(2):
+            for i2 in range(2):
+                for i3 in range(2):
+                    for i4 in range(2):
+                        if i1 == i3 and i2 == i4:
+                            u_mat2[icor][i1*no:(i1+1)*no, i2*no:(i2+1)*no, i3*no:(i3+1)*no, i4*no:(i4+1)*no]\
+                                = u_mat[icor][:, :, :, :]
+    f["DCore"]["Umat"] = u_mat2
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
     del f
 
@@ -449,6 +524,14 @@ def dcore_pre(filename):
     print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
     seedname = p["model"]["seedname"]
     if p["model"]["lattice"] == 'wannier90':
+        #
+        # non_colinear flag is used only for the case that COLINEAR DFT calculation
+        #
+        if p["model"]["spin_orbit"]:
+            p["model"]["non_colinear"] = False
+        #
+        if p["model"]["non_colinear"]:
+            para2noncol(p)
         with open(seedname+'.inp', 'w') as f:
             __generate_wannier90_model(p, f)
         # Convert General-Hk to SumDFT-HDF5 format
@@ -468,7 +551,7 @@ def dcore_pre(filename):
     #
     # Spin-Orbit case
     #
-    if p["model"]["spin_orbit"]:
+    if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
         f = HDFArchive(seedname + '.h5', 'a')
         f["dft_input"]["SP"] = 1
         f["dft_input"]["SO"] = 1

@@ -29,17 +29,18 @@ def create_parser():
     # [model]
     parser.add_option("model", "t", float, 1.0, "Transfer integral (Nearest neighbor)")
     parser.add_option("model", "t'", float, 0.0, "Transfer integral (Second nearest)")
-    parser.add_option("model", "ncor", int, 1, "Number of correlation shell (Only wannier90).")
+    parser.add_option("model", "ncor", int, 1, "Number of correlated shells in a unit cell (Only wannier90).")
     parser.add_option("model", "lattice", str, "chain",
                       'Chosen from "chain", "square", "cubic", "bethe", and "wannier90"')
     parser.add_option("model", "nelec", float, 1.0, "Number of electrons per unit cell.")
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "norb", str, "1",
-                      "Number of orbitals at each correlated shell. Separated by commas or spaces.")
+                      "Number of orbitals at each correlated shell (*ncor* integers separated by commas or spaces.)")
     parser.add_option("model", "equiv", str, "None",
-                      "Equivalence of each correlation shell. Please, be careful to use it (See below).")
-    parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors")
+                      "Equivalence of each correlated shell. Please, be careful to use it (See below).")
+    parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
     parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case (See :ref:`pbtutorial`).")
+    parser.add_option("model", "time_reversal", bool, False, "If true, an average over spin components are taken.")
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
@@ -48,6 +49,8 @@ def create_parser():
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
     parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
+    parser.add_option("model", "non_colinear", bool, False,
+                      "Set True for the case that non-colinear DMFT from the COLINEAR DFT calculation.")
 
     # [system]
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
@@ -70,20 +73,19 @@ def create_parser():
     parser.add_option("system", "n_l", int, 0,
                       "The number of the Legendre polynomial for QMC. If not, the solver's default value is used.")
 
-    # [impurity_solver] 
+    # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I',
                       "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
     parser.allow_undefined_options("impurity_solver")
 
-    # [control] 
+    # [control]
     parser.add_option("control", "max_step", int, 100, "Maximum steps of DMFT loops")
     parser.add_option("control", "sigma_mix", float, 0.5, "Mixing parameter for self-energy")
-    parser.add_option("control", "delta_mix", float, 0.5, "Mixing parameter for hybridization function")
     parser.add_option("control", "restart", bool, False,
                       "Whether or not restart from a previous calculation stored in a HDF file.")
 
-    # [tool] 
-    parser.add_option("tool", "nnode", int, 2, "Number of node for the *k* path")
+    # [tool]
+    parser.add_option("tool", "nnode", int, 0, "[NOT USED] Number of node for the *k* path", OptionStatus.RETIRED)
     parser.add_option("tool", "nk_line", int, 8, "Number of *k* along each line")
     parser.add_option("tool", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]",
                       "The name and the fractional coordinate of each k-node.")

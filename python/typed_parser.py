@@ -17,12 +17,18 @@
 #
 import os
 import copy
+from enum import Enum
+from warnings import warn
 
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
 
+class OptionStatus(Enum):
+    VALID = 0
+    DEPRECATED = 1
+    RETIRED = 2
 
 def cast(value_type, string):
     if value_type == bool:
@@ -56,13 +62,14 @@ class TypedParser(object):
         # Names of sections in which we accept options that are not predefined by add_option().
         self.__allow_undefined_options = []
 
-    def add_option(self, section, option, dtype, default, string):
+    def add_option(self, section, option, dtype, default, string, status = OptionStatus.VALID):
         """
         :param section: section name
         :param option: option name
         :param dtype: data type
         :param default: default value
         :param string: short description
+        :param status: VALID, DEPRECATED, or RETIRED
         """
         if self.__read:
             raise RuntimeError("Do not add option after an input file has been read!")
@@ -73,7 +80,10 @@ class TypedParser(object):
         if section not in self.__results:
             self.__results[section] = {}
 
-        self.__definitions[section][option] = (dtype, string, dtype(default))
+        self.__definitions[section][option] = {'dtype' : dtype,
+                                               'description' : string,
+                                               'default' : dtype(default),
+                                               'status' : status}
         self.__results[section][option] = dtype(default)
 
     def allow_undefined_options(self, section):
@@ -113,9 +123,13 @@ class TypedParser(object):
                 value = self.__config_parser.get(sect, opt)
                 if sect in self.__definitions and opt in self.__definitions[sect]:
                     # if an option is pre-defined.
-                    self.__results[sect][opt] = cast(self.__definitions[sect][opt][0], value)
+                    if self.__definitions[sect][opt]['status'] == OptionStatus.DEPRECATED:
+                        warn("Parameter {0} [{1}] is deprecated.".format(opt, sect))
+                    if self.__definitions[sect][opt]['status'] == OptionStatus.RETIRED:
+                        warn("Parameter {0} [{1}] is not used anymore.".format(opt, sect))
+                    self.__results[sect][opt] = cast(self.__definitions[sect][opt]['dtype'], value)
                 else:
-                    # if an option is not pre-defined, use the value in the input file
+                    # if an option is not pre-defined, use the value given in the input file
                     if sect in self.__allow_undefined_options:
                         self.__results[sect][opt] = value
                     else:
@@ -135,19 +149,19 @@ class TypedParser(object):
         """
         Get the type of a given option
         """
-        return self.__definitions[sect][opt][0]
+        return self.__definitions[sect][opt]['dtype']
 
     def get_description(self, sect, opt):
         """
         Get the description of a given option
         """
-        return self.__definitions[sect][opt][1]
+        return self.__definitions[sect][opt]['description']
 
     def get_default_value(self, sect, opt):
         """
         Get the default value of a given option
         """
-        return self.__definitions[sect][opt][2]
+        return self.__definitions[sect][opt]['default']
 
     def get_predefined_sections(self):
         """

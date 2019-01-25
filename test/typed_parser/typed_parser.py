@@ -17,12 +17,12 @@
 #
 from __future__ import print_function
 
-from pytriqs.applications.dcore.typed_parser import TypedParser
+from dcore.typed_parser import *
 
 
 def read_file():
     p = TypedParser()
-    p.add_option("sectionA", "a", int, -1000, "a in sectionA")
+    p.add_option("sectionA", "a", int, -1000, "a in sectionA", OptionStatus.RETIRED)
     p.allow_undefined_options("sectionB")
 
     params = p.as_dict()

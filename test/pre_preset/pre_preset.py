@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-from pytriqs.applications.dcore.dcore_pre import dcore_pre
+from dcore.dcore_pre import dcore_pre
 from pytriqs.utility.h5diff import h5diff
 #
 # Execute dcore_pre.py to generate test.h5
