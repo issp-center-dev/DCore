@@ -18,18 +18,13 @@
 from __future__ import print_function
 
 import numpy
-# from scipy.linalg import block_diag
-# import os
-# import shutil
-# import copy
-# import sys
 from itertools import product
 
 from pytriqs.gf.local import *
 # from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
 
@@ -66,7 +61,7 @@ class NullSolver(SolverBase):
         # (1a) If H0 is necessary:
         # Non-interacting part of the local Hamiltonian including chemical potential
         # Make sure H0 is hermite.
-        # Ordering of index in H0 is spin1, spin2, spin1, spin2, ...
+        # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
         H0 = extract_H0(self._G0_iw)
         H0 = 0.5 * (H0.transpose().conj() + H0)
 

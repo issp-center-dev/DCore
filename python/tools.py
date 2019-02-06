@@ -176,3 +176,27 @@ def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
         print("Return code: ", return_code)
         print("Command: ", ' '.join(commands))
         raise subprocess.CalledProcessError("Error occurred while executing MPI program!")
+
+def extract_H0(G0_iw):
+    """
+    Extract non-interacting Hamiltonian elements from G0_iw
+    """
+
+    H0 = [numpy.array(block.tail[2]) for name, block in G0_iw]
+
+    n_spin_orb = numpy.sum([b.shape[0] for b in H0])
+
+    if G0_iw.n_blocks > 2:
+        raise RuntimeError("n_blocks must be 1 or 2.")
+
+    names = [name for name, block in G0_iw]
+
+    data = numpy.zeros((n_spin_orb, n_spin_orb), dtype=complex)
+    offset = 0
+    for block in H0:
+        block_dim = block.shape[0]
+        data[offset:offset + block_dim, offset:offset + block_dim] = block
+        offset += block_dim
+
+    return data
+

@@ -31,39 +31,10 @@ from pytriqs.gf.local import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
 
-def extract_H0(G0_iw):
-    """
-    Extract non-interacting Hamiltonian elements from G0_iw
-    """
-
-    H0 = [numpy.array(block.tail[2]) for name, block in G0_iw]
-
-    n_spin_orb = numpy.sum([b.shape[0] for b in H0])
-
-    if G0_iw.n_blocks > 2:
-        raise RuntimeError("n_blocks must be 1 or 2.")
-
-    names = [name for name, block in G0_iw]
-
-    data = numpy.zeros((n_spin_orb, n_spin_orb), dtype=complex)
-    offset = 0
-    for block in H0:
-        block_dim = block.shape[0]
-        data[offset:offset + block_dim, offset:offset + block_dim] = block
-        offset += block_dim
-
-    # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
-    # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
-    norb = int(n_spin_orb/2)
-    index = numpy.zeros((n_spin_orb), dtype=int)
-    index[0::2] = numpy.arange(norb)
-    index[1::2] = numpy.arange(norb) + norb
-    # Swap cols and rows
-    return (data[:, index])[index, :]
 
 
 def to_numpy_array(g):
@@ -172,6 +143,15 @@ class ALPSCTHYBSolver(SolverBase):
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin2, spin1, spin2, ...
         H0 = extract_H0(self._G0_iw)
+
+        # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
+        # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
+        index = numpy.zeros((2*self.n_orb), dtype=int)
+        index[0::2] = numpy.arange(self.n_orb)
+        index[1::2] = numpy.arange(self.n_orb) + self.n_orb
+        # Swap cols and rows
+        H0 = (H0[:, index])[index, :]
+
         H0 = 0.5 * (H0.transpose().conj() + H0)
 
         # Compute the hybridization function from G0:
