@@ -63,6 +63,7 @@ def assign_from_numpy_array(g_block, data):
 def set_tail(g_block):
     # TODO: compute tails in ED
     for bname, gf in g_block:
+        gf.tail.zero()
         gf.tail[1] = numpy.identity(gf.N1)
 
 
@@ -132,8 +133,9 @@ class PomerolSolver(SolverBase):
             for i, j in product(range(H0.shape[0]), range(H0.shape[1])):
                 # TODO: check order of spin/orbital
                 # TODO: real or complex
-                # print(i, j, H0[i,j].real, H0[i,j].imag, file=f)
-                print(i, j, H0[i,j].real, file=f)
+                if abs(H0[i,j]) != 0:
+                    # print(i, j, H0[i,j].real, H0[i,j].imag, file=f)
+                    print(i, j, H0[i,j].real, file=f)
 
         # (1b) If Delta(iw) and/or Delta(tau) are necessary:
         # Compute the hybridization function from G0:
@@ -143,12 +145,14 @@ class PomerolSolver(SolverBase):
 
         # (1c) Set U_{ijkl} for the solver
 
+        # print(self.u_mat)
         with open(file_umat, "w") as f:
             for i, j, k, l in product(range(self.n_flavors), repeat=4):
                 # TODO: check order of spin/orbital
                 # TODO: real or complex
-                # print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
-                print(i, j, k, l, self.u_mat[i, j, k, l].real, file=f)
+                if abs(self.u_mat[i,j,k,l]) != 0:
+                    # print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
+                    print(i, j, k, l, self.u_mat[i, j, k, l].real, file=f)
 
         # (2) Run a working horse
         with open('./stdout.log', 'w') as output_f:
@@ -170,8 +174,19 @@ class PomerolSolver(SolverBase):
 
         set_tail(self._Gimp_iw)
 
+        # Compute Sigma_iw
+        # NOTE: do NOT use self._G0_iw because it includes more information than that passed to the solver
+        n_block = len(self.gf_struct)
+        n_inner = H0.shape[0] / n_block
+        # cut H0 into block structure
+        h0_block = [ H0[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block) ]
+        g0_inv = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
+        g0_inv << iOmega_n
+        g0_inv -= h0_block
+        self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
+
         # Solve Dyson's eq to obtain Sigma_iw
-        self._Sigma_iw = dyson(G0_iw=self._G0_iw, G_iw=self._Gimp_iw)
+        # self._Sigma_iw = dyson(G0_iw=self._G0_iw, G_iw=self._Gimp_iw)
 
 
     def name(self):
