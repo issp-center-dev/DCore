@@ -65,24 +65,26 @@ def to_numpy_array(g):
 def dcore2alpscore(dcore_U):
 
     dcore_U_len = len(dcore_U) 
-    alps_U  = numpy.zeros((dcore_U_len,dcore_U_len),dtype=float)      
-    alps_Uprime = numpy.zeros((dcore_U_len,dcore_U_len),dtype=float)  
+    alps_U  = numpy.zeros((dcore_U_len, dcore_U_len),dtype=float)      
+    alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len),dtype=float)  
+    alps_J = numpy.zeros((dcore_U_len, dcore_U_len),dtype=float)
 
     #m_range = range(size)
     for i, j in product(range(dcore_U_len),range(dcore_U_len)):
         alps_U[i,j]  = dcore_U[i,j,i,j].real - dcore_U[i,j,j,i].real
         alps_Uprime[i,j] = dcore_U[i,j,i,j].real
+        alps_J[i,j] = dcore_U[i,j,j,i].real
 
-    return alps_U, alps_Uprime
+    return alps_U, alps_Uprime, alps_J
 
-def write_Umatrix(U,Uprime,norb):
+def write_Umatrix(U,Uprime,J,norb):
     Uout = numpy.zeros((2,norb,2,norb))
     for a1, a2 in product(range(norb),repeat=2):
         for s1, s2 in product(range(2),repeat=2): #spin-1/2
             if s1==s2:
                 Uout[s1, a1, s2, a2]  = U[2*a1+s1, 2*a2+s2] 
             else:
-                Uout[s1, a1, s2, a2]  = Uprime[2*a1+s1, 2*a2+s2] 
+                Uout[s1, a1, s2, a2]  = Uprime[2*a1+s1, 2*a2+s2] -J[2*a1+s1, 2*a2+s2]
 
     Uout = Uout.reshape((2*norb,2*norb))
     with open('./Umatrix', 'w') as f:
@@ -147,10 +149,6 @@ class ALPSCTSEGSolver(SolverBase):
 
         H0 = 0.5 * (H0.transpose().conj() + H0)
         #TODO:chemical potentail extracted from H0: check
-        with open('./MUvector', 'w') as f:
-            for f1 in range(self.n_flavors):
-                print('{:.15e} '.format(H0[f1][f1].real),file=f,end="")
-            print("", file=f)    
 
         # (1b) If Delta(iw) and/or Delta(tau) are necessary:
         # Compute the hybridization function from G0:
@@ -215,11 +213,8 @@ class ALPSCTSEGSolver(SolverBase):
             'NMATSUBARA'                      : self.n_iw,
             't'                               : 1,
             'tprime'                          : 0,
-            #fixme
             'U_MATRIX'                        :  'Umatrix',
             'MU_VECTOR'                       :  'MUvector',
-            #?
-            #'model.basis_input_file'          :  '/basis.txt',
             'cthyb.DELTA'                      :  'delta',
         }
 
@@ -248,41 +243,20 @@ class ALPSCTSEGSolver(SolverBase):
                     print(' {:.15e}'.format(Delta_tau_data[itau,f1,f1].real),file=f,end="")
                 print("", file=f)    
 
-        alps2dcore=list(range(4))
-        umat_new = numpy.einsum("ijij->ij", self.u_mat)
-        jmat_new = numpy.einsum("ijji->ij", self.u_mat)
-        #umat_new =self.u_mat
-        #with open(work_dir + '/Umat_tmp.dat', "w") as umat:
-        #    for i, j in product(range(self.n_flavors), repeat=2):
-                #if abs(umat_new[i,j,k,l]) != 0:
-        #        print(i,j,umat_new[i,j].real, file=umat)
-                #print(i,j,k,l,self.u_mat[i,j,k,l].real, file=umat)
-                #print(i,j,k,l,self.j_mat[i,j,k,l].real, file=umat)
-                #print(i,j,umat_new[alps2dcore[i], alps2dcore[j]].real, file=f)
-        #with open(work_dir + '/Jmat_tmp.dat', "w") as jmat:
-        #    for i, j in product(range(self.n_flavors), repeat=2):
-        #        print(i,j,jmat_new[i,j].real, file=jmat)
-        #with open(work_dir + '/Umatrix.dat', "w") as uinput:
-            #U not done
+        #alps2dcore=list(range(4))
+        #umat_new = numpy.einsum("ijij->ij", self.u_mat)
+        #jmat_new = numpy.einsum("ijji->ij", self.u_mat)
             
         
-        U,Uprime=dcore2alpscore(self.u_mat)
-        H_int=write_Umatrix(U, Uprime, self.n_orb)
+        U,Uprime,J=dcore2alpscore(self.u_mat)
+        H_int=write_Umatrix(U, Uprime, J, self.n_orb)
         
-
-        #with open(work_dir + '/Umatrix.dat', 'w') as f:
-        #with open(file_umat, "w") as f:
-        #    for i, j, k, l in product(range(self.n_flavors), repeat=4):
-         #       if abs(umat_new[i,j,k,l]) != 0:
-        #            print(umat_new[i, j, k, l].real, file=f)
-        #    print(len(U_nonzeros), file=f)
-        #    for n, elem in enumerate(U_nonzeros):
-        #        i, j, k, l = elem[0]
-        #        print('{} {} {} {} {} {:.15e} {:.15e}'.format(n, i, j, k, l, elem[1].real, elem[1].imag), file=f)
-
-        #with open(work_dir + '/basis.txt', 'w') as f:
-        #    for f1, f2 in product(range(self.n_flavors), range(self.n_flavors)):
-        #        print('{} {} {:.15e} {:.15e}'.format(f1, f2, rot_mat_alps[f1, f2].real, rot_mat_alps[f1, f2].imag), file=f)
+        with open('./MUvector', 'w') as f:
+            for f1 in range(self.n_orb):
+                for f2 in range(2): #spin
+                    print("H0,U",H0[2*f1+f2][2*f1+f2].real,U[2*f1][2*f1+1].real/2.0)
+                    print('{:.15e} '.format(H0[2*f1+f2][2*f1+f2].real-U[2*f1][2*f1+1].real/2.0),file=f,end="")
+            print("", file=f)    
 
         if _read('dry_run'):
             return
