@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import numpy
 from itertools import product
+import os
 
 from pytriqs.gf.local import *
 # from pytriqs.archive import HDFArchive
@@ -27,6 +28,9 @@ from pytriqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
+# bse
+from dft_tools.index_pair import IndexPair, IndexPair2
+from bse_tools.h5bse import h5BSE
 
 def assign_from_numpy_array(g_block, data):
 
@@ -67,6 +71,12 @@ def set_tail(g_block):
         gf.tail[1] = numpy.identity(gf.N1)
 
 
+def decompose_index(index, n_orb):
+    spn = index / n_orb
+    orb = index % n_orb
+    print(spn, orb)
+    return spn, orb
+
 class PomerolSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
@@ -98,6 +108,19 @@ class PomerolSolver(SolverBase):
 
         # print("params_kw =", params_kw)
         exec_path = params_kw['exec_path']
+        flag_vx = params_kw.get('flag_vx', 0)
+        dir_vx = params_kw.get('dir_vx', './two_particle')
+        n_w2f = params_kw.get('n_w2f', 10)
+        n_w2b = params_kw.get('n_w2b', 1)
+
+        # for BSE
+        # n_corr_shells = params_kw.get('n_corr_shells', None)
+        # icrsh = params_kw.get('icrsh', None)
+        # only_diagonal = not params_kw.get('nonlocal_order_parameter', False)
+        # FIXME: passed from DCore
+        n_corr_shells = params_kw.get('n_corr_shells', 1)
+        icrsh = params_kw.get('icrsh', 0)
+        only_diagonal = not params_kw.get('nonlocal_order_parameter', False)
 
         # print(self.gf_struct)
         flag_spin_conserve = 1 if len(self.gf_struct) == 2 else 0
@@ -115,7 +138,9 @@ class PomerolSolver(SolverBase):
         params_pomerol['file_umat'] = file_umat
         params_pomerol['flag_gf'] = 1
         params_pomerol['n_w'] = self.n_iw
-        params_pomerol['flag_vx'] = 0
+        params_pomerol['flag_vx'] = flag_vx
+        params_pomerol['n_w2f'] = n_w2f
+        params_pomerol['n_w2b'] = n_w2b
 
         with open(file_pomerol, "w") as f:
             for key, val in params_pomerol.items():
@@ -187,6 +212,42 @@ class PomerolSolver(SolverBase):
 
         # Solve Dyson's eq to obtain Sigma_iw
         # self._Sigma_iw = dyson(G0_iw=self._G0_iw, G_iw=self._Gimp_iw)
+
+        if flag_vx:
+            block2 = IndexPair2(range(n_corr_shells), range(2), only_diagonal1=only_diagonal)
+            inner2 = IndexPair(range(self.n_orb), convert_to_int=True)
+
+            xloc = numpy.zeros((self.n_orb**2, self.n_orb**2, 2*n_w2f, 2*n_w2f))
+
+            # TODO: spin loop first
+            for i1,i2,i3,i4 in product(range(self.n_flavors), repeat=4):
+                filename = dir_vx + "/%d_%d_%d_%d.dat" %(i1,i2,i3,i4)
+                # print(filename)
+                if os.path.exists(filename):
+                    print(filename)
+                    # load data as a complex type
+                    data = numpy.loadtxt(filename).view(complex).reshape(-1)
+                    print(data.shape)
+                    data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
+                    print(data.shape)
+
+                    s1, o1 = decompose_index(i1, self.n_orb)
+                    s2, o2 = decompose_index(i2, self.n_orb)
+                    s3, o3 = decompose_index(i3, self.n_orb)
+                    s4, o4 = decompose_index(i4, self.n_orb)
+
+                    s12 = block2.get_index(icrsh, s1, icrsh, s2)
+                    s43 = block2.get_index(icrsh, s4, icrsh, s3)
+                    inner12 = inner2.get_index(o1, o2)
+                    inner43 = inner2.get_index(o4, o3)
+
+                    wb = 0
+                    xloc[inner12, inner43, :, :] = data[wb, :, :]
+                    # X_loc[(s12, s43)] =
+
+                    # h5bse
+                    # BS = h5BSE(h5_file, groupname)
+                    # BS.save(key=('X_loc', wb), data=X_loc)
 
 
     def name(self):
