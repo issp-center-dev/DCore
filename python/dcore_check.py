@@ -25,6 +25,7 @@ from pytriqs.gf.local import *
 
 from dmft_core import DMFTCoreSolver
 from matplotlib.gridspec import GridSpec
+import numpy
 
 from program_options import *
 
@@ -71,13 +72,15 @@ class DMFTCoreCheck(object):
         self.solver = DMFTCoreSolver(self.p["model"]["seedname"], self.p, read_only=True)
         self.n_iter = self.solver.iteration_number
         self.n_sh = self.solver.n_inequiv_shells
-        self.n_spn = self.solver.spin_block_names
+        self.spin_names = self.solver.spin_block_names
         self.shell_info = [self.solver.inequiv_shell_info(ish) for ish in range(self.n_sh)]
+        self.n_iw = self.p["system"]["n_iw"]
 
         print("  Total number of Iteration: {0}".format(self.n_iter))
 
         # if __plot_init() is called
         self.plot_called = False
+
 
     def print_chemical_potential(self):
         """
@@ -91,6 +94,8 @@ class DMFTCoreCheck(object):
 
     def __plot_init(self):
         if self.plot_called:
+            self.plt.clf()
+            self.plt.figure(figsize=(8, 6))  # default
             return
         self.plot_called = True
 
@@ -98,7 +103,6 @@ class DMFTCoreCheck(object):
         matplotlib.use('Agg')  # do not plot on x11
 
         from pytriqs.plot.mpl_interface import oplot, plt
-        plt.figure(figsize=(8, 10))
 
         self.plt = plt
         self.oplot = oplot
@@ -109,6 +113,7 @@ class DMFTCoreCheck(object):
         plot Sigma(iw) averaged over shell, spin and orbital for last several iterations
         """
         self.__plot_init()
+        self.plt.figure(figsize=(8, 10))
 
         sigma_ave = []
         nsigma = 0
@@ -124,7 +129,7 @@ class DMFTCoreCheck(object):
                 norb_tot = 0
                 for ish in range(self.n_sh):
                     norb = self.shell_info[ish]['block_dim']
-                    for isp in self.n_spn:
+                    for isp in self.spin_names:
                         for iorb in range(norb):
                             norb_tot += 1
                             for jorb in range(norb):
@@ -133,7 +138,7 @@ class DMFTCoreCheck(object):
                 nsigma += 1
 
         gs = GridSpec(2, 1)
-        #iii
+        #
         # Real part
         #
         self.plt.subplot(gs[0])
@@ -168,7 +173,7 @@ class DMFTCoreCheck(object):
             icol = 1
             for ish in range(self.n_sh):
                 norb = self.shell_info[ish]['block_dim']
-                for isp in self.n_spn:
+                for isp in self.spin_names:
                     for iorb in range(norb):
                         for jorb in range(norb):
                             icol += 1
@@ -185,10 +190,42 @@ class DMFTCoreCheck(object):
                 print("%f " % omega[iom].imag, end="", file=fo)
                 for ish in range(self.n_sh):
                     norb = self.shell_info[ish]['block_dim']
-                    for isp, iorb, jorb in product(self.n_spn, range(norb), range(norb)):
+                    for isp, iorb, jorb in product(self.spin_names, range(norb), range(norb)):
                         print("%f %f " % (Sigma_iw_tmp[ish][isp].data[iom, iorb, jorb].real,
                                           Sigma_iw_tmp[ish][isp].data[iom, iorb, jorb].imag), end="", file=fo)
                 print("", file=fo)
+
+
+    def plot_iter_mu(self, filename):
+        self.__plot_init()
+
+        iter = [ itr for itr in range(1, self.n_iter+1) ]
+        mu = [ self.solver.chemical_potential(itr) for itr in range(1, self.n_iter+1) ]
+        self.plt.plot(iter, mu, marker="o")
+        self.plt.xlabel("iterations")
+        self.plt.ylabel("$\mu$")
+        self.plt.savefig(filename)
+
+
+    def plot_iter_sigma(self, filename):
+        self.__plot_init()
+
+        iter = [ itr for itr in range(1, self.n_iter+1) ]
+
+        w0 = self.n_iw
+        for ish in range(self.n_sh):
+            norb = self.shell_info[ish]['block_dim']
+            for isp, iorb, jorb in product(self.spin_names, range(norb), range(norb)):
+                sigma0 = numpy.array([ self.solver.Sigma_iw_sh(itr)[ish][isp].data[w0, iorb, jorb].imag
+                                       for itr in range(1, self.n_iter+1) ])
+                z = 1./(1-sigma0/numpy.pi*self.beta)
+                self.plt.plot(iter, z, marker="o", label="(%d,%s,%d,%d)" %(ish,isp,iorb,jorb))
+
+        self.plt.legend()
+        self.plt.xlabel("iterations")
+        # self.plt.ylabel("$\Sigma(\omega_0)$")
+        self.plt.ylabel("Renormalization factor")
+        self.plt.savefig(filename)
 
 
 if __name__ == '__main__':
@@ -212,12 +249,13 @@ if __name__ == '__main__':
                         )
 
     args = parser.parse_args()
-    # dcore_check(args.path_input_file, args.output)
 
     check = DMFTCoreCheck(args.path_input_file, args.output)
     check.print_chemical_potential()
     check.write_sigma_text()
     check.plot_sigma_ave(args.output)
+    check.plot_iter_mu("iter_mu.pdf")
+    check.plot_iter_sigma("iter_sigma.pdf")
 
     # Finish
     print("\n  Done\n")
