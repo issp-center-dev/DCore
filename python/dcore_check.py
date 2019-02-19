@@ -155,15 +155,15 @@ class DMFTCoreCheck(object):
 
         # self.plt.show()
         self.plt.savefig(filename)
+        print(" Output " + filename)
 
 
-    def write_sigma_text(self):
+    def write_sigma_text(self, filename):
         """
         Output Sigma into a text file
         """
 
-        print("\n Output Local Self Energy : ", self.p["model"]["seedname"] + "_sigma.dat")
-        with open(self.p["model"]["seedname"] + "_sigma.dat", 'w') as fo:
+        with open(filename, 'w') as fo:
             print("# Local self energy at imaginary frequency", file=fo)
             #
             # Column information
@@ -195,6 +195,8 @@ class DMFTCoreCheck(object):
                                           Sigma_iw_tmp[ish][isp].data[iom, iorb, jorb].imag), end="", file=fo)
                 print("", file=fo)
 
+        print(" Output " + filename)
+
 
     def plot_iter_mu(self, filename):
         self.__plot_init()
@@ -205,6 +207,7 @@ class DMFTCoreCheck(object):
         self.plt.xlabel("iterations")
         self.plt.ylabel("$\mu$")
         self.plt.savefig(filename)
+        print(" Output " + filename)
 
 
     def plot_iter_sigma(self, filename):
@@ -226,6 +229,7 @@ class DMFTCoreCheck(object):
         # self.plt.ylabel("$\Sigma(\omega_0)$")
         self.plt.ylabel("Renormalization factor")
         self.plt.savefig(filename)
+        print(" Output " + filename)
 
 
 if __name__ == '__main__':
@@ -241,21 +245,39 @@ if __name__ == '__main__':
                         type=str,
                         help="input file name."
                         )
+    parser.add_argument('--prefix',
+                        action='store',
+                        default='check/',
+                        type=str,
+                        help='prefix for output files'
+                        )
+    parser.add_argument('--ext',
+                        action='store',
+                        default='png',
+                        type=str,
+                        help='file extension of output figures (png, pdf, eps, jpg, etc)'
+                        )
+    # for backward compatibility
     parser.add_argument('--output',
                         action='store',
                         default=None,
                         type=str,
-                        help='output file name (extension pdf, eps, jpg, etc)'
+                        help='not used (retained for backward compatibility)'
                         )
 
     args = parser.parse_args()
+    ext = args.ext
+    prefix = args.prefix
+
+    # make directory
+    os.makedirs(os.path.dirname(prefix))
 
     check = DMFTCoreCheck(args.path_input_file, args.output)
     check.print_chemical_potential()
-    check.write_sigma_text()
-    check.plot_sigma_ave(args.output)
-    check.plot_iter_mu("iter_mu.pdf")
-    check.plot_iter_sigma("iter_sigma.pdf")
+    check.write_sigma_text(prefix + "sigma.dat")
+    check.plot_sigma_ave(prefix + "sigma_ave." + ext)
+    check.plot_iter_mu(prefix + "iter_mu." + ext)
+    check.plot_iter_sigma(prefix + "iter_sigma." + ext)
 
     # Finish
     print("\n  Done\n")
