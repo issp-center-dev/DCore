@@ -23,7 +23,7 @@ import os
 from itertools import product
 
 from pytriqs.gf.local import *
-# from pytriqs.archive import HDFArchive
+from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
@@ -46,7 +46,7 @@ def to_numpy_array(g):
     # FIXME: Bit ugly
     n_data = g[names[0]].data.shape[0]
 
-    data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=complex)
+    data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype = complex)
     offset = 0
     for name, block in g:
         block_dim = len(block.indices)
@@ -56,18 +56,47 @@ def to_numpy_array(g):
     # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
     # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
     norb = int(n_spin_orbital/2)
-    index = numpy.zeros((n_spin_orbital), dtype=int)
+    index = numpy.zeros((n_spin_orbital), dtype = int)
     index[0::2] = numpy.arange(norb)
     index[1::2] = numpy.arange(norb) + norb
     # Swap cols and rows
     return (data[:, :, index])[:, index, :]
 
+def assign_from_numpy_array(g, data):
+    """
+    Does inversion of to_numpy_array
+    data[spin,orb,iw]
+    g[spin].data[iw,orb1,orb2] 
+    """
+    print(g.n_blocks)
+    if g.n_blocks != 2:
+        raise RuntimeError("n_blocks must be 1 or 2.")
+
+    names = [name for name, block in g]
+    norb = data.shape[1]
+    niw = data.shape[2]
+    print(data.shape)
+    print("norb:",norb)
+    #n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
+    
+    #check number of Matsubara frequency
+    assert data.shape[2]*2 == g[names[0]].data.shape[0]
+    print(g[names[0]].data.shape)
+
+    for spin in range(2):
+        for orb in range(norb):
+            print(orb,spin,names[spin])
+            #positive
+            g[names[spin]].data[niw:,orb,orb] = data[spin][orb][:]
+            #negative
+            g[names[spin]].data[:niw,orb,orb] = numpy.conj(data[spin][orb][::-1])
+
 def dcore2alpscore(dcore_U):
 
     dcore_U_len = len(dcore_U) 
-    alps_U  = numpy.zeros((dcore_U_len, dcore_U_len),dtype=float)      
-    alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len),dtype=float)  
-    alps_J = numpy.zeros((dcore_U_len, dcore_U_len),dtype=float)
+    alps_U  = numpy.zeros((dcore_U_len, dcore_U_len),dtype = float)      
+    alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len),dtype = float)  
+    alps_J = numpy.zeros((dcore_U_len, dcore_U_len),dtype = float)
 
     #m_range = range(size)
     for i, j in product(range(dcore_U_len),range(dcore_U_len)):
@@ -90,8 +119,8 @@ def write_Umatrix(U,Uprime,J,norb):
     with open('./Umatrix', 'w') as f:
         for i in range(2*norb):
             for j in range(2*norb):
-                print('{:.15e} '.format(Uout[i, j].real), file=f, end = "")
-            print("", file=f)
+                print('{:.15e} '.format(Uout[i, j].real), file = f, end = "")
+            print("", file = f)
 
 class ALPSCTSEGSolver(SolverBase):
 
@@ -141,7 +170,7 @@ class ALPSCTSEGSolver(SolverBase):
 	
         # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
         # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
-        index = numpy.zeros((2*self.n_orb), dtype=int)
+        index = numpy.zeros((2*self.n_orb), dtype = int)
         index[0::2] = numpy.arange(self.n_orb)
         index[1::2] = numpy.arange(self.n_orb) + self.n_orb
         # Swap cols and rows
@@ -177,13 +206,13 @@ class ALPSCTSEGSolver(SolverBase):
                 U_nonzeros.append((alps_index, self.u_mat[i,j,k,l]))
 
         if rot is None:
-            rot_mat_alps = numpy.identity(2*self.n_orb, dtype=complex)
+            rot_mat_alps = numpy.identity(2*self.n_orb, dtype = complex)
         else:
             if self.use_spin_orbit:
                 rot_single_block = rot
             else:
                 rot_single_block = block_diag(*[rot[name] for name in self.block_names])
-            rot_mat_alps = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
+            rot_mat_alps = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype = complex)
             for i, j in product(range(2*self.n_orb), repeat=2):
                 rot_mat_alps[conv(i), conv(j)] = rot_single_block[i,j]
 
@@ -195,20 +224,9 @@ class ALPSCTSEGSolver(SolverBase):
 		#TODO: check order spin/orbtital
         
         p_run = {
-        #MU, Umatrix
             'SEED'                            : params_kw['random_seed_offset'],
             'FLAVORS'                         : self.n_orb*2,
             'BETA'                            : self.beta,
-        #debug
-            #'U'                               : params_kw['U'],
-            #'U\''						      : params_kw['U\''],
-            #'cthyb.J'                         : params_kw['J'],
-            #'U'                               : 8.0,
-            #'U\''	                      : 5.33333,
-            #'cthyb.J'                         : 1.33333,
-        #debug end
-			#FIX currently only works for model calculation
-            #'model.hopping_matrix_input_file' : work_dir + '/hopping.txt',
             'N'                               : self.n_tau - 1,
             'NMATSUBARA'                      : self.n_iw,
             't'                               : 1,
@@ -230,33 +248,26 @@ class ALPSCTSEGSolver(SolverBase):
 
         with open('./input.ini', 'w') as f:
             for k, v in p_run.items():
-                print(k, " = ", v, file=f)
-
-        #with open(work_dir + '/hopping.txt', 'w') as f:
-        #    for i, j in product(range(self.n_flavors), repeat=2):
-        #        print('{} {} {:.15e} {:.15e}'.format(i, j, H0[i,j].real, H0[i,j].imag), file=f)
+                print(k, " = ", v, file = f)
 
         with open('./delta', 'w') as f:
             for itau in range(self.n_tau):
-                print('{}'.format(itau), file=f, end="")
+                print('{}'.format(itau), file = f, end = "")
                 for f1 in range(self.n_flavors):
-                    print(' {:.15e}'.format(Delta_tau_data[itau,f1,f1].real),file=f,end="")
-                print("", file=f)    
+                    if Delta_tau_data[itau,f1,f1].real >0:
+                        Delta_tau_data[itau,f1,f1] = 0
+                    print(' {:.15e}'.format(Delta_tau_data[itau,f1,f1].real),file = f,end = "")
+                print("", file = f)    
 
-        #alps2dcore=list(range(4))
-        #umat_new = numpy.einsum("ijij->ij", self.u_mat)
-        #jmat_new = numpy.einsum("ijji->ij", self.u_mat)
-            
-        
         U,Uprime,J=dcore2alpscore(self.u_mat)
         H_int=write_Umatrix(U, Uprime, J, self.n_orb)
         
         with open('./MUvector', 'w') as f:
             for f1 in range(self.n_orb):
                 for f2 in range(2): #spin
-                    print("H0,U",H0[2*f1+f2][2*f1+f2].real,U[2*f1][2*f1+1].real/2.0)
-                    print('{:.15e} '.format(H0[2*f1+f2][2*f1+f2].real-U[2*f1][2*f1+1].real/2.0),file=f,end="")
-            print("", file=f)    
+                    print('{:.15e} '.format(H0[2*f1+f2][2*f1+f2].real),file = f,end = "")
+                    #print('{:.15e} '.format(H0[2*f1+f2][2*f1+f2].real-U[2*f1][2*f1+1].real/2.0),file = f,end = "")
+            print("", file = f)    
 
         if _read('dry_run'):
             return
@@ -274,13 +285,30 @@ class ALPSCTSEGSolver(SolverBase):
 
         with open( './output', 'r') as output_f:
             for line in output_f:
-                print(line, end='')
-        print("2")
-        return
+                print(line, end = '')
 
         # (3) Copy results into
         #   self._Sigma_iw
         #   self._Gimp_iw
+        swdata = numpy.zeros((2,self.n_orb,self.n_iw),dtype = complex)
+        with HDFArchive( 'sim.h5', 'r') as f:
+            for f1 in range(self.n_orb):
+                for f2 in range(2):
+                    swdata_array = f["S_omega"][str(f1*2+f2)]["mean"]["value"]
+                    assert swdata_array.dtype == numpy.complex128
+                    assert swdata_array.shape == (self.n_iw,)
+                    swdata[f2,f1,:] = swdata_array
+        assign_from_numpy_array(self._Sigma_iw,swdata)
+
+        gwdata = numpy.zeros((2,self.n_orb,self.n_iw),dtype = complex)
+        with HDFArchive( 'sim.h5', 'r') as f:
+            for f1 in range(self.n_orb):
+                for f2 in range(2):
+                    gwdata_array = f["G_omega"][str(f1*2+f2)]["mean"]["value"]
+                    assert gwdata_array.dtype == numpy.complex128
+                    assert gwdata_array.shape == (self.n_iw,)
+                    gwdata[f2,f1,:] = gwdata_array
+        assign_from_numpy_array(self._Gimp_iw,gwdata)
 
     def name(self):
         return "ALPS/ctseg"
