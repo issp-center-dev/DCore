@@ -32,23 +32,18 @@ from program_options import *
 
 class DMFTCoreCheck(object):
 
-    def __init__(self, filename, fileplot=None):
+    def __init__(self, ini_file):
         """
-        Main routine for checking convergence
-
         Parameters
         ----------
-        filename : string
+        ini_file : string
             Input-file name
-
-        fileplot : string
-            Output file name. File format is determined by the extension (pdf, eps, jpg, etc).
         """
 
         if os.path.isfile(args.path_input_file) is False:
             raise Exception("Input file '%s' does not exist." % args.path_input_file)
 
-        print("\n  @ Reading {0} ...".format(filename))
+        print("\n  @ Reading {0} ...".format(ini_file))
         #
         # Construct a parser with default values
         #
@@ -56,7 +51,7 @@ class DMFTCoreCheck(object):
         #
         # Parse keywords and store
         #
-        pars.read(filename)
+        pars.read(ini_file)
         self.p = pars.as_dict()
 
         # Just for convenience
@@ -108,7 +103,7 @@ class DMFTCoreCheck(object):
         self.oplot = oplot
 
 
-    def plot_sigma_ave(self, filename):
+    def plot_sigma_ave(self, basename, fig_ext):
         """
         plot Sigma(iw) averaged over shell, spin and orbital for last several iterations
         """
@@ -153,16 +148,17 @@ class DMFTCoreCheck(object):
             self.oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
         self.plt.legend(loc=0)
 
-        # self.plt.show()
+        filename = basename + fig_ext
         self.plt.savefig(filename)
         print(" Output " + filename)
 
 
-    def write_sigma_text(self, filename):
+    def write_sigma_text(self, basename):
         """
         Output Sigma into a text file
         """
 
+        filename = basename + ".dat"
         with open(filename, 'w') as fo:
             print("# Local self energy at imaginary frequency", file=fo)
             #
@@ -198,11 +194,22 @@ class DMFTCoreCheck(object):
         print(" Output " + filename)
 
 
-    def plot_iter_mu(self, filename):
+    def plot_iter_mu(self, basename, fig_ext):
+        """
+        plot chemical potential as a function of iteration number
+        """
         self.__plot_init()
 
         iter = [ itr for itr in range(1, self.n_iter+1) ]
         mu = [ self.solver.chemical_potential(itr) for itr in range(1, self.n_iter+1) ]
+
+        # save data
+        filename = basename + ".dat"
+        numpy.savetxt(filename, zip(iter, mu), fmt="%d %.5e")
+        print(" Output " + filename)
+
+        # plot
+        filename = basename + fig_ext
         self.plt.plot(iter, mu, marker="o")
         self.plt.xlabel("iterations")
         self.plt.ylabel("$\mu$")
@@ -210,10 +217,14 @@ class DMFTCoreCheck(object):
         print(" Output " + filename)
 
 
-    def plot_iter_sigma(self, filename):
+    def plot_iter_sigma(self, basename, fig_ext):
+        """
+        plot renormalization factor as a function of iteration number
+        """
         self.__plot_init()
 
         iter = [ itr for itr in range(1, self.n_iter+1) ]
+        z_all = []
 
         w0 = self.n_iw
         for ish in range(self.n_sh):
@@ -223,7 +234,20 @@ class DMFTCoreCheck(object):
                                        for itr in range(1, self.n_iter+1) ])
                 z = 1./(1-sigma0/numpy.pi*self.beta)
                 self.plt.plot(iter, z, marker="o", label="(%d,%s,%d,%d)" %(ish,isp,iorb,jorb))
+                z_all.append(z)
 
+        # save data
+        filename = basename + ".dat"
+        with open(filename, "w") as f:
+            for i, itr in enumerate(iter):
+                print(itr, file=f, end="")
+                for z in z_all:
+                    print("", z[i], file=f, end="")
+                print("", file=f)
+        print(" Output " + filename)
+
+        # plot
+        filename = basename + fig_ext
         self.plt.legend()
         self.plt.xlabel("iterations")
         # self.plt.ylabel("$\Sigma(\omega_0)$")
@@ -258,26 +282,34 @@ if __name__ == '__main__':
                         help='file extension of output figures (png, pdf, eps, jpg, etc)'
                         )
     # for backward compatibility
-    parser.add_argument('--output',
-                        action='store',
-                        default=None,
-                        type=str,
-                        help='not used (retained for backward compatibility)'
-                        )
+    # parser.add_argument('--output',
+    #                     action='store',
+    #                     default=None,
+    #                     type=str,
+    #                     help='not used (retained for backward compatibility)'
+    #                     )
 
     args = parser.parse_args()
     ext = args.ext
     prefix = args.prefix
 
-    # make directory
-    os.makedirs(os.path.dirname(prefix))
+    if ext[0] != '.':
+        ext = '.' + ext
 
-    check = DMFTCoreCheck(args.path_input_file, args.output)
+    # if args.prefix is not None:
+    #     warn("--output option is not used")
+
+    # make directory
+    dir = os.path.dirname(prefix)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    check = DMFTCoreCheck(args.path_input_file)
     check.print_chemical_potential()
-    check.write_sigma_text(prefix + "sigma.dat")
-    check.plot_sigma_ave(prefix + "sigma_ave." + ext)
-    check.plot_iter_mu(prefix + "iter_mu." + ext)
-    check.plot_iter_sigma(prefix + "iter_sigma." + ext)
+    check.write_sigma_text(basename=prefix+"sigma")
+    check.plot_sigma_ave(basename=prefix+"sigma_ave", fig_ext=ext)
+    check.plot_iter_mu(basename=prefix+"iter_mu", fig_ext=ext)
+    check.plot_iter_sigma(basename=prefix+"iter_sigma", fig_ext=ext)
 
     # Finish
     print("\n  Done\n")
