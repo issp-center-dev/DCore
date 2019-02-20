@@ -40,8 +40,8 @@ class DMFTCoreCheck(object):
             Input-file name
         """
 
-        if os.path.isfile(args.path_input_file) is False:
-            raise Exception("Input file '%s' does not exist." % args.path_input_file)
+        if os.path.isfile(ini_file) is False:
+            raise Exception("Input file '%s' does not exist." % ini_file)
 
         print("\n  @ Reading {0} ...".format(ini_file))
         #
@@ -256,6 +256,24 @@ class DMFTCoreCheck(object):
         print(" Output " + filename)
 
 
+def dcore_check(ini_file, prefix, fig_ext):
+
+    # add a dot to the extension, e.g., 'png' --> '.png'
+    ext = fig_ext if fig_ext[0] == '.' else '.' + fig_ext
+
+    # make directory
+    dir = os.path.dirname(prefix)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    check = DMFTCoreCheck(ini_file)
+    check.print_chemical_potential()
+    check.write_sigma_text(basename=prefix+"sigma")
+    check.plot_sigma_ave(basename=prefix+"sigma_ave", fig_ext=ext)
+    check.plot_iter_mu(basename=prefix+"iter_mu", fig_ext=ext)
+    check.plot_iter_sigma(basename=prefix+"iter_sigma", fig_ext=ext)
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
@@ -289,27 +307,12 @@ if __name__ == '__main__':
     #                     help='not used (retained for backward compatibility)'
     #                     )
 
-    args = parser.parse_args()
-    ext = args.ext
-    prefix = args.prefix
-
-    if ext[0] != '.':
-        ext = '.' + ext
-
     # if args.prefix is not None:
     #     warn("--output option is not used")
 
-    # make directory
-    dir = os.path.dirname(prefix)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
+    args = parser.parse_args()
 
-    check = DMFTCoreCheck(args.path_input_file)
-    check.print_chemical_potential()
-    check.write_sigma_text(basename=prefix+"sigma")
-    check.plot_sigma_ave(basename=prefix+"sigma_ave", fig_ext=ext)
-    check.plot_iter_mu(basename=prefix+"iter_mu", fig_ext=ext)
-    check.plot_iter_sigma(basename=prefix+"iter_sigma", fig_ext=ext)
+    dcore_check(args.path_input_file, args.prefix, args.ext)
 
     # Finish
     print("\n  Done\n")
