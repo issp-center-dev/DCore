@@ -20,7 +20,6 @@ from __future__ import print_function
 import sys
 import os
 import numpy
-import argparse
 import re
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
@@ -563,13 +562,17 @@ def dcore_pre(filename):
 
 
 if __name__ == '__main__':
+    from .option_tables import generate_all_description
+    import argparse
 
     parser = argparse.ArgumentParser(
         prog='dcore_pre.py',
         description='pre script for dcore.',
-        epilog='end',
         usage='$ dcore_pre input',
-        add_help=True)
+        add_help=True,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=generate_all_description()
+    )
     parser.add_argument('path_input_file',
                         action='store',
                         default=None,

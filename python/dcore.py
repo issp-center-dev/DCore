@@ -18,7 +18,6 @@
 #
 from __future__ import print_function
 import sys
-import argparse
 from .dmft_core import DMFTCoreSolver
 
 from .program_options import *
@@ -51,12 +50,17 @@ def dcore(filename, np=1):
 
 
 if __name__ == '__main__':
+    from .option_tables import generate_all_description
+    import argparse
+
     parser = argparse.ArgumentParser(
         prog='dcore.py',
         description='.',
-        epilog='end',
         usage='$ dcore input.ini --np 4',
-        add_help=True)
+        add_help=True,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=generate_all_description()
+    )
 
     parser.add_argument('path_input_file',
                         action='store',

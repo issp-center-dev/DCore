@@ -18,3 +18,4 @@ prec_mu              Float       0.0001     Threshold for calculating chemical p
 n_l                  Integer     0          The number of the Legendre polynomial for QMC. If not, the solver's default value is used.    
 fit_max_moment       Integer     2          Highest moment to fit in the tail of Sigma_iw.                                                
 ==================== =========== ========== ==============================================================================================
+
