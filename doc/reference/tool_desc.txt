@@ -6,9 +6,10 @@ nk_line         Integer     8                                     Number of *k* 
 knode           String      [(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]     The name and the fractional coordinate of each k-node.    
 omega_max       Float       1.0                                   Max value of real frequency                               
 omega_min       Float       -1.0                                  Minimum value of real frequency                           
-nnode           Integer     2                                     Number of node for the *k* path                           
+nnode           Integer     0                                     [NOT USED] Number of node for the *k* path                
 Nomega          Integer     100                                   Number of real frequencies                                
 omega_pade      Float       5.0                                   Cutoff frequencies for the Pade approximation             
 eta             Float       0.0                                   Imaginary frequency shift for the Pade approximation      
 omega_check     Float       5.0                                   Maximum frequency for dcore_check.                        
 =============== =========== ===================================== ==========================================================
+

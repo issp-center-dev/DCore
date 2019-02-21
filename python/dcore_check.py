@@ -18,7 +18,6 @@
 #
 from __future__ import print_function
 
-import argparse
 from itertools import *
 
 from pytriqs.gf.local import *
@@ -215,12 +214,16 @@ def dcore_check(filename, fileplot=None):
 
 
 if __name__ == '__main__':
+    from .option_tables import generate_all_description
+    import argparse
 
     parser = argparse.ArgumentParser(
         prog='dcore_check.py',
         description='script for checking the convergence of dcore.',
-        epilog='end',
-        add_help=True)
+        add_help=True,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=generate_all_description()
+    )
     parser.add_argument('path_input_file',
                         action='store',
                         default=None,
