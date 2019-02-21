@@ -108,7 +108,6 @@ class DMFTCoreCheck(object):
         plot Sigma(iw) averaged over shell, spin and orbital for last several iterations
         """
         self.__plot_init()
-        self.plt.figure(figsize=(8, 10))
 
         sigma_ave = []
         nsigma = 0
@@ -132,6 +131,7 @@ class DMFTCoreCheck(object):
                 sigma_ave[nsigma].data[:, 0, 0] /= norb_tot
                 nsigma += 1
 
+        self.plt.figure(figsize=(8, 10))
         gs = GridSpec(2, 1)
         #
         # Real part
@@ -205,17 +205,28 @@ class DMFTCoreCheck(object):
 
         # save data
         filename = basename + ".dat"
-        numpy.savetxt(filename, zip(iter, mu), fmt="%d %.5e")
+        numpy.savetxt(filename, zip(iter, mu), fmt="%d %.10e")
         print(" Output " + filename)
 
         # plot
         filename = basename + fig_ext
+        self.plt.figure(figsize=(8, 10))
+        gs = GridSpec(2, 1)
+
+        self.plt.subplot(gs[0])
         self.plt.plot(iter, mu, marker="o")
         self.plt.xlabel("iterations")
         self.plt.ylabel("$\mu$")
+
+        # diff
+        self.plt.subplot(gs[1])
+        self.plt.plot(iter[1:], abs(numpy.array(mu[1:])-numpy.array(mu[:-1])), marker="o")
+        self.plt.xlabel("iterations")
+        self.plt.ylabel("diff")
+        self.plt.yscale("log")
+
         self.plt.savefig(filename)
         print(" Output " + filename)
-
 
     def plot_iter_sigma(self, basename, fig_ext):
         """
@@ -224,6 +235,7 @@ class DMFTCoreCheck(object):
         self.__plot_init()
 
         iter = [ itr for itr in range(1, self.n_iter+1) ]
+        label_all = []
         z_all = []
 
         w0 = self.n_iw
@@ -233,8 +245,8 @@ class DMFTCoreCheck(object):
                 sigma0 = numpy.array([ self.solver.Sigma_iw_sh(itr)[ish][isp].data[w0, iorb, jorb].imag
                                        for itr in range(1, self.n_iter+1) ])
                 z = 1./(1-sigma0/numpy.pi*self.beta)
-                self.plt.plot(iter, z, marker="o", label="(%d,%s,%d,%d)" %(ish,isp,iorb,jorb))
                 z_all.append(z)
+                label_all.append("shell=%d, spin=%s, %d, %d" %(ish,isp,iorb,jorb))
 
         # save data
         filename = basename + ".dat"
@@ -248,10 +260,25 @@ class DMFTCoreCheck(object):
 
         # plot
         filename = basename + fig_ext
-        self.plt.legend()
+        self.plt.figure(figsize=(8, 10))
+        gs = GridSpec(2, 1)
+
+        self.plt.subplot(gs[0])
+        for z, label in zip(z_all, label_all):
+            self.plt.plot(iter, z, label=label, marker="o")
         self.plt.xlabel("iterations")
-        # self.plt.ylabel("$\Sigma(\omega_0)$")
         self.plt.ylabel("Renormalization factor")
+        self.plt.legend()
+
+        # diff
+        self.plt.subplot(gs[1])
+        for z, label in zip(z_all, label_all):
+            self.plt.plot(iter[1:], abs(numpy.array(z[1:])-numpy.array(z[:-1])), label=label, marker="o")
+        self.plt.xlabel("iterations")
+        self.plt.ylabel("diff")
+        self.plt.yscale("log")
+        self.plt.legend()
+
         self.plt.savefig(filename)
         print(" Output " + filename)
 
