@@ -190,10 +190,6 @@ class ALPSCTSEGSolver(SolverBase):
             Delta_tau[name] << InverseFourier(self._Delta_iw[name])
         Delta_tau_data = to_numpy_array(Delta_tau)
 
-        # non-zero elements of U matrix
-        # Note: notation differences between ALPS/CT-HYB and TRIQS!
-        #    The positions of l and k are swapped.
-
         # (1c) Set U_{ijkl} for the solver
         # for i, j, k, l in product(range(self.n_flavors), repeat=4):
         #     self.u_mat[i, j, k, l]
@@ -217,7 +213,7 @@ class ALPSCTSEGSolver(SolverBase):
             if k in internal_params:
                 continue
             if k in p_run:
-                raise RuntimeError("Cannot override input parameter for ALPS/CT-HYB: " + k)
+                raise RuntimeError("Cannot override input parameter for ALPS/CTHYB-SEG: " + k)
             p_run[k] = v
 
         with open('./input.ini', 'w') as f:
@@ -237,10 +233,9 @@ class ALPSCTSEGSolver(SolverBase):
         write_Umatrix(U, Uprime, J, self.n_orb)
         
         with open('./MUvector', 'w') as f:
-            for f1 in range(self.n_orb):
-                for f2 in range(2):#spin
-                    print('{:.15e} '.format(H0[2*f1+f2][2*f1+f2].real), file=f, end="")
-                    #print('{:.15e} '.format(H0[2*f1+f2][2*f1+f2].real-U[2*f1][2*f1+1].real/2.0),file = f,end = "")
+            for orb in range(self.n_orb):
+                for spin in range(2):
+                    print('{:.15e} '.format(H0[2*orb+spin][2*orb+spin].real), file=f, end="")
             print("", file=f)
 
         if _read('dry_run'):
@@ -265,12 +260,12 @@ class ALPSCTSEGSolver(SolverBase):
         #   self._Sigma_iw
         swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=complex)
         with HDFArchive('sim.h5', 'r') as f:
-            for f1 in range(self.n_orb):
-                for f2 in range(2):
-                    swdata_array = f["S_omega"][str(f1*2+f2)]["mean"]["value"]
+            for orb in range(self.n_orb):
+                for spin in range(2):
+                    swdata_array = f["S_omega"][str(orb*2+spin)]["mean"]["value"]
                     assert swdata_array.dtype == numpy.complex
                     assert swdata_array.shape == (self.n_iw,)
-                    swdata[f2, f1, :] = swdata_array
+                    swdata[spin, orb, :] = swdata_array
         assign_from_numpy_array(self._Sigma_iw, swdata)
 
     def name(self):

@@ -5,9 +5,9 @@ from .null_solver import NullSolver
 from .alps_ctseg import ALPSCTSEGSolver
 
 solver_classes = {
-    'TRIQS/cthyb' : TRIQSCTHYBSolver,
-    'TRIQS/hubbard-I' : TRIQSHubbardISolver,
+    'TRIQS/cthyb': TRIQSCTHYBSolver,
+    'TRIQS/hubbard-I': TRIQSHubbardISolver,
     'ALPS/cthyb': ALPSCTHYBSolver,
     'null': NullSolver,
-	'ALPS/ctseg': ALPSCTSEGSolver,
+    'ALPS/ctseg': ALPSCTSEGSolver,
 }
