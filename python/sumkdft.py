@@ -126,69 +126,97 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
 
     """
 
-    #import warnings
-    #warnings.filterwarnings("ignore", message="numpy.dtype size changed")
-    #warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
-
-    #from pytriqs.applications.dft.sumk_dft import SumkDFT
-    #from pytriqs.applications.dft.sumk_dft_tools import SumkDFTTools
-    from .sumkdft_post import SumkDFTDCorePost
     import pytriqs.utility.mpi as mpi
 
     with HDFArchive(input_file, 'r') as h:
         params = h['params']
 
     beta = params['beta']
-    Sigma_iw_sh = params['Sigma_iw_sh']
     with_dc = params['with_dc']
-    dc_imp = params['dc_imp']
-    dc_energ = params['dc_energ']
 
     results = {}
 
-    sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
+    def setup_sk(sk, iwn_or_w_or_none):
+        if iwn_or_w_or_none == 'iwn':
+            sk.set_Sigma(params['Sigma_iw_sh'])
+        elif iwn_or_w_or_none == 'w':
+            sk.set_Sigma([params['Sigma_w_sh'][ish] for ish in range(sk.n_inequiv_shells)])
+        elif iwn_or_w_or_none == "none":
+            pass
+        else:
+            raise RuntimeError("Invalid iwn_or_w")
 
-    nsh = sk.n_inequiv_shells
-
-    # Set Sigma into the SumK class
-    sk.set_Sigma(Sigma_iw_sh)
-
-    # Set double-counting term
-    if with_dc:
-        sk.set_dc(dc_imp, dc_energ)
-
-    # Set/compute chemical potential
-    sk.set_mu(params['mu'])
-    if params['adjust_mu']:
-        # find the chemical potential for given density
-        sk.calc_mu(params['prec_mu'])
-        results['mu'] = sk.chemical_potential
+        if params['with_dc']:
+            sk.set_dc(params['dc_imp'], params['dc_energ'])
+        sk.set_mu(params['mu'])
 
     if params['calc_mode'] == 'Gloc':
+        from pytriqs.applications.dft.sumk_dft import SumkDFT
+        sk = SumkDFT(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
+        setup_sk(sk, 'iwn')
+        if params['adjust_mu']:
+            # find the chemical potential for given density
+            sk.calc_mu(params['prec_mu'])
+            results['mu'] = sk.chemical_potential
+
         # Local Green's function and Density matrix
         results['Gloc_iw_sh'] = sk.extract_G_loc(with_dc=with_dc)
         results['dm_corr_sh'] = sk.density_matrix(beta=beta)
+
     elif params['calc_mode'] == 'dos':
         # Compute dos
-        sk.set_Sigma([params['Sigma_w_sh'][ish] for ish in range(nsh)])
+        from .sumkdft_post import SumkDFTDCorePost
+        sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
+        setup_sk(sk, 'w')
         results['dos'], results['dosproj'], results['dosproj_orb'] = \
             sk.dos_wannier_basis(broadening=params['broadening'],
-                                 mesh=params['mesh'],
-                                 with_Sigma=True, with_dc=with_dc, save_to_file=False)
+                             mesh=params['mesh'],
+                             with_Sigma=True, with_dc=with_dc, save_to_file=False)
+
     elif params['calc_mode'] == 'dos0':
         # Compute non-interacting dos
+        from .sumkdft_post import SumkDFTDCorePost
+        sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
+        setup_sk(sk, "none")
         results['dos0'], results['dosproj0'], results['dosproj_orb0'] = \
             sk.dos_wannier_basis(broadening=params['broadening'],
-                                 mu=params['mu'],
-                                 mesh=params['mesh'],
-                                 with_Sigma=False, with_dc=False, save_to_file=False)
+                             mu=params['mu'],
+                             mesh=params['mesh'],
+                             with_Sigma=False, with_dc=False, save_to_file=False)
+
     elif params['calc_mode'] == 'spaghettis':
-        # Compute A(k, omega)
-        sk.set_Sigma([params['Sigma_w_sh'][ish] for ish in range(nsh)])
+        # A(k, omega)
+        from .sumkdft_post import SumkDFTDCorePost
+        sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
+        setup_sk(sk, 'w')
         results['akw'] = sk.spaghettis(broadening=params['broadening'], plot_range=None, ishell=None, save_to_file=None)
+
     elif params['calc_mode'] == 'momentum_distribution':
+        # n(k)
+        from .sumkdft_post import SumkDFTDCorePost
+        sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
+        setup_sk(sk, 'iwn')
         results['den'], results['ev0'] = \
             sk.calc_momentum_distribution(mu=params["mu"], beta=beta, with_Sigma=True, with_dc=True)
+
+    elif params['calc_mode'] == 'bse':
+        # chi0
+        from dft_tools.sumk_dft_chi import SumkDFTChi
+        if mpi.is_master_node():
+            with HDFArchive(model_hdf5_file, 'a') as ar:
+                if 'dft_input_chi' in ar:
+                   del ar['dft_input_chi']
+                if not 'dft_input_chi' in ar:
+                    ar.create_group('dft_input_chi')
+                ar['dft_input_chi']['div'] = params['div']
+        sk = SumkDFTChi(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0,
+                        dft_data_fbz='dft_input')
+        setup_sk(sk, 'iwn')
+        sk.save_X0q_for_bse(list_wb=params['list_wb'],
+                            n_wf_cutoff=params['n_wf_G2'],
+                            qpoints_saved='quadrant',
+                            h5_file=params['bse_h5_out_file'],
+                            nonlocal_order_parameter=False)
     else:
         raise RuntimeError("Unknown calc_mode: " + str(params['calc_mode']))
 
@@ -208,7 +236,6 @@ if __name__ == '__main__':
         args = parser.parse_args()
 
         _main_mpi(args.model_hdf5_file, args.input_file, args.output_file)
-        sys.exit(0)
 
     except Exception as e:
         print("Unexpected error:", e)

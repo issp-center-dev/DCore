@@ -25,6 +25,52 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+class TypedTuple(object):
+    def __init__(self, data, elem_type):
+        if isinstance(data, str):
+            chars_ignore = ['(', ')', '[', ']', ' ']
+            for c in chars_ignore:
+                data = data.replace(c, '')
+            data = data.strip(',')
+
+            self._data = tuple([elem_type(x) for x in data.split(',')])
+        elif isinstance(data, tuple):
+            for x in data:
+                if not isinstance(x, elem_type):
+                    raise RuntimeError("Invalid element in tuple.")
+            self._data = data
+        else:
+            raise RuntimeError("Invalid data for Tuple")
+
+    def __repr__(self):
+        """
+        Return a string representation like (1, 2, 3).
+
+        :return: str
+        """
+        return '(' + ' , '.join([str(x) for x in self._data]) + ')'
+
+    def to_tuple(self):
+        assert isinstance(self._data, tuple)
+        return self._data
+
+class IntTuple(TypedTuple):
+    def __init__(self, data):
+        if isinstance(data, IntTuple):
+            self._data = data._data
+            assert isinstance(self._data, tuple)
+        else:
+            super(IntTuple, self).__init__(data, int)
+
+class FloatTuple(TypedTuple):
+    def __init__(self, data):
+        if isinstance(data, FloatTuple):
+            self._data = data._data
+            assert isinstance(self._data, tuple)
+        else:
+            super(FloatTuple, self).__init__(data, float)
+
+
 class OptionStatus(Enum):
     VALID = 0
     DEPRECATED = 1

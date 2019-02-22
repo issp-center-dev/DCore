@@ -1,0 +1,6 @@
+cmake git g++ gfortran vim tmux zsh clang clang-format libclang-dev 
+libgfortran3 libnfft3-dev libboost-all-dev hdf5-tools libhdf5-serial-dev libjs-mathjax 
+openmpi-bin openmpi-common openmpi-doc libopenmpi-dev libblas-dev liblapack-dev libfftw3-dev libgmp-dev 
+python-dev python-numpy python-scipy python-jinja2 python-virtualenv python-matplotlib jupyter-notebook 
+python-tornado python-zmq python-h5py python-mpi4py python-mako python-clang-3.8 python-sphinx python-pip
+libenchant-dev

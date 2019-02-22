@@ -18,6 +18,7 @@
 from __future__ import print_function
 
 import sys
+import os
 import numpy
 import shlex
 import subprocess
@@ -175,7 +176,7 @@ def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
         print("Error occurred while executing MPI program!")
         print("Return code: ", return_code)
         print("Command: ", ' '.join(commands))
-        raise subprocess.CalledProcessError("Error occurred while executing MPI program!")
+        raise RuntimeError("Error occurred while executing MPI program! Output messages may be found in {}!".format(os.path.abspath(output_file.name)))
 
 def extract_H0(G0_iw):
     """

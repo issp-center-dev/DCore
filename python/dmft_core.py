@@ -19,6 +19,7 @@ from __future__ import print_function
 
 # here, any module depending on pytriqs.mpi or mpi4py should not be imported.
 import sys
+import os
 import re
 import time
 import __builtin__
@@ -426,6 +427,25 @@ class DMFTCoreSolver(object):
         params['mu'] = self._chemical_potential
         r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_momentum_distribution', self._mpirun_command, params)
         return r['den'], r['ev0']
+
+    def calc_bse(self):
+        """
+
+        Compute data for BSE
+
+        """
+        from .lattice_model import create_lattice_model
+
+        lattice_model = create_lattice_model(self._params)
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'bse'
+        params['mu'] = self._chemical_potential
+        params['list_wb'] = numpy.arange(self._params['bse']['num_wb']).tolist()
+        params['n_wf_G2'] = self._params['bse']['num_wf']
+        params['div'] = lattice_model.nkdiv()
+        params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
+        sumkdft.run(self._seedname+'.h5', './work/sumkdft_bse', self._mpirun_command, params)
 
     def calc_Sigma_w(self, mesh):
         """

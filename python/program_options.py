@@ -105,4 +105,10 @@ def create_parser():
     parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation")
     parser.add_option("tool", "omega_check", float, 5.0, "Maximum frequency for dcore_check.")
 
+    # [bse]
+    parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")
+    parser.add_option("bse", "num_wf", int, 10, "Number of fermionic frequencies (>0)")
+    #parser.add_option("bse", "div", IntTuple, IntTuple((10, 10, 10)), "Numbers of dimensions for kx, ky, kz")
+    parser.add_option("bse", "h5_output_file", str, 'dmft_bse.h5', "Output HDF5 file for bse data")
+
     return parser
