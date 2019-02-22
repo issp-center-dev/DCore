@@ -76,8 +76,7 @@ def assign_from_numpy_array(g, data):
     niw = data.shape[2]
     print(data.shape)
     print("norb:", norb)
-    #n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
-    
+
     #check number of Matsubara frequency
     assert data.shape[2]*2 == g[names[0]].data.shape[0]
     print(g[names[0]].data.shape)
@@ -191,9 +190,7 @@ class ALPSCTSEGSolver(SolverBase):
         Delta_tau_data = to_numpy_array(Delta_tau)
 
         # (1c) Set U_{ijkl} for the solver
-        # for i, j, k, l in product(range(self.n_flavors), repeat=4):
-        #     self.u_mat[i, j, k, l]
-        # Set up input parameters for ALPS/CT-HYB
+        # Set up input parameters and files for ALPS/CTSEG
 
         p_run = {
             'SEED'                            : params_kw['random_seed_offset'],
@@ -213,7 +210,7 @@ class ALPSCTSEGSolver(SolverBase):
             if k in internal_params:
                 continue
             if k in p_run:
-                raise RuntimeError("Cannot override input parameter for ALPS/CTHYB-SEG: " + k)
+                raise RuntimeError("Cannot override input parameter for ALPS/CTSEG: " + k)
             p_run[k] = v
 
         with open('./input.ini', 'w') as f:
@@ -270,4 +267,3 @@ class ALPSCTSEGSolver(SolverBase):
 
     def name(self):
         return "ALPS/ctseg"
-
