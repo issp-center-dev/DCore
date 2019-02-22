@@ -123,14 +123,14 @@ def write_Umatrix(U, Uprime, J, norb):
             print("", file=f)
 
 
-class ALPSCTSEGSolver(SolverBase):
+class ALPSCTHYBSEGSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
         """
         Initialize the solver.
         """
 
-        super(ALPSCTSEGSolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+        super(ALPSCTHYBSEGSolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
 
     def solve(self, rot, mpirun_command, params_kw):
         """
@@ -190,7 +190,7 @@ class ALPSCTSEGSolver(SolverBase):
         Delta_tau_data = to_numpy_array(Delta_tau)
 
         # (1c) Set U_{ijkl} for the solver
-        # Set up input parameters and files for ALPS/CTSEG
+        # Set up input parameters and files for ALPS/CTHYB-SEG
 
         p_run = {
             'SEED'                            : params_kw['random_seed_offset'],
@@ -210,7 +210,7 @@ class ALPSCTSEGSolver(SolverBase):
             if k in internal_params:
                 continue
             if k in p_run:
-                raise RuntimeError("Cannot override input parameter for ALPS/CTSEG: " + k)
+                raise RuntimeError("Cannot override input parameter for ALPS/CTHYB-SEG: " + k)
             p_run[k] = v
 
         with open('./input.ini', 'w') as f:
@@ -266,4 +266,4 @@ class ALPSCTSEGSolver(SolverBase):
         assign_from_numpy_array(self._Sigma_iw, swdata)
 
     def name(self):
-        return "ALPS/ctseg"
+        return "ALPS/cthyb_seg"
