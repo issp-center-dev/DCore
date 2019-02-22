@@ -202,10 +202,13 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
     elif params['calc_mode'] == 'bse':
         # chi0
         from dft_tools.sumk_dft_chi import SumkDFTChi
-        with HDFArchive(model_hdf5_file, 'a') as ar:
-            if not 'dft_input_chi' in ar:
-                ar.create_group('dft_input_chi')
-            ar['dft_input_chi']['div'] = params['div']
+        if mpi.is_master_node():
+            with HDFArchive(model_hdf5_file, 'a') as ar:
+                if 'dft_input_chi' in ar:
+                   del ar['dft_input_chi']
+                if not 'dft_input_chi' in ar:
+                    ar.create_group('dft_input_chi')
+                ar['dft_input_chi']['div'] = params['div']
         sk = SumkDFTChi(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0,
                         dft_data_fbz='dft_input')
         setup_sk(sk, 'iwn')
