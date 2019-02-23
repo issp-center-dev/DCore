@@ -266,4 +266,4 @@ class ALPSCTHYBSEGSolver(SolverBase):
         assign_from_numpy_array(self._Sigma_iw, swdata)
 
     def name(self):
-        return "ALPS/cthyb_seg"
+        return "ALPS/cthyb-seg"
