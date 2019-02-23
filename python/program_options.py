@@ -80,8 +80,8 @@ def create_parser():
                       OptionStatus.RETIRED)
 
     # [impurity_solver]
-    parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I',
-                      "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
+    parser.add_option("impurity_solver", "name", str, 'null',
+                      "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg.")
     parser.add_option("impurity_solver", "basis_rotation", bool, True,
                       "If True, impurity models are solved in the basis that diagonalizes the local non-interacting Hamiltonian.")
     parser.allow_undefined_options("impurity_solver")
