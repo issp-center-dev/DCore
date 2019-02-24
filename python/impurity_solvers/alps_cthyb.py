@@ -115,14 +115,12 @@ class ALPSCTHYBSolver(SolverBase):
         In addition to the parameters described in the docstring of SolverBase,
         params_kw must may contain the following parameters.
           exec_path : str, path to an executable, mandatory
-          work_dir  : str, path to a work directory, mandatory
           dry_run   : bool, actual computation is not performed if dry_run is True, optional
 
         """
 
         internal_params = {
             'exec_path'           : '',
-            'work_dir'            : '',
             'random_seed_offset'  : 0,
             'dry_run'             : False,
         }
@@ -188,28 +186,23 @@ class ALPSCTHYBSolver(SolverBase):
             for i, j in product(range(2*self.n_orb), repeat=2):
                 rot_mat_alps[conv(i), conv(j)] = rot_single_block[i,j]
 
-        work_dir = os.path.abspath(params_kw['work_dir'])
-
         # Set up input parameters for ALPS/CT-HYB
         p_run = {
             'SEED'                            : params_kw['random_seed_offset'],
             'model.sites'                     : self.n_orb,
             'model.spins'                     : 2,
             'model.beta'                      : self.beta,
-            'model.hopping_matrix_input_file' : work_dir + '/hopping.txt',
-            'model.coulomb_tensor_input_file' : work_dir + '/Uijkl.txt',
-            'model.basis_input_file'          : work_dir + '/basis.txt',
+            'model.hopping_matrix_input_file' : './hopping.txt',
+            'model.coulomb_tensor_input_file' : './Uijkl.txt',
+            'model.basis_input_file'          : './basis.txt',
             'model.n_tau_hyb'                 : self.n_tau - 1,
-            'model.delta_input_file'          : work_dir + '/delta.txt',
+            'model.delta_input_file'          : './delta.txt',
             'measurement.G1.n_tau'            : self.n_tau - 1,
             'measurement.G1.n_matsubara'      : self.n_iw,
         }
 
-        if not os.path.isdir(work_dir):
-            os.makedirs(work_dir)
-
-            if os.path.exists(work_dir + '/input.out.h5'):
-                shutil.move(work_dir + '/input.out.h5', work_dir + '/input_prev.out.h5')
+        if os.path.exists('./input.out.h5'):
+            shutil.move('./input.out.h5', './input_prev.out.h5')
 
         # Set parameters specified by the user
         for k, v in params_kw.items():
@@ -219,25 +212,25 @@ class ALPSCTHYBSolver(SolverBase):
                 raise RuntimeError("Cannot override input parameter for ALPS/CT-HYB: " + k)
             p_run[k] = v
 
-        with open(work_dir + '/input.ini', 'w') as f:
+        with open('./input.ini', 'w') as f:
             for k, v in p_run.items():
                 print(k, " = ", v, file=f)
 
-        with open(work_dir + '/hopping.txt', 'w') as f:
+        with open('./hopping.txt', 'w') as f:
             for i, j in product(range(self.n_flavors), repeat=2):
                 print('{} {} {:.15e} {:.15e}'.format(i, j, H0[i,j].real, H0[i,j].imag), file=f)
 
-        with open(work_dir + '/delta.txt', 'w') as f:
+        with open('./delta.txt', 'w') as f:
             for itau, f1, f2 in product(range(self.n_tau), range(self.n_flavors), range(self.n_flavors)):
                 print('{} {} {} {:.15e} {:.15e}'.format(itau, f1, f2, Delta_tau_data[itau, f1, f2].real, Delta_tau_data[itau, f1, f2].imag), file=f)
 
-        with open(work_dir + '/Uijkl.txt', 'w') as f:
+        with open('./Uijkl.txt', 'w') as f:
             print(len(U_nonzeros), file=f)
             for n, elem in enumerate(U_nonzeros):
                 i, j, k, l = elem[0]
                 print('{} {} {} {} {} {:.15e} {:.15e}'.format(n, i, j, k, l, elem[1].real, elem[1].imag), file=f)
 
-        with open(work_dir + '/basis.txt', 'w') as f:
+        with open('./basis.txt', 'w') as f:
             for f1, f2 in product(range(self.n_flavors), range(self.n_flavors)):
                 print('{} {} {:.15e} {:.15e}'.format(f1, f2, rot_mat_alps[f1, f2].real, rot_mat_alps[f1, f2].imag), file=f)
 
@@ -252,17 +245,17 @@ class ALPSCTHYBSolver(SolverBase):
             raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
 
         # Run a working horse
-        with open(work_dir + '/output', 'w') as output_f:
-            launch_mpi_subprocesses(mpirun_command, [exec_path, work_dir + '/input.ini'], output_f)
+        with open('./output', 'w') as output_f:
+            launch_mpi_subprocesses(mpirun_command, [exec_path, './input.ini'], output_f)
 
-        with open(work_dir + '/output', 'r') as output_f:
+        with open('./output', 'r') as output_f:
             for line in output_f:
                 print(line, end='')
 
         # Read the computed Green's function in Legendre basis and compute G(iwn)
-        if not os.path.exists(work_dir + '/input.out.h5'):
+        if not os.path.exists('./input.out.h5'):
             raise RuntimeError("Output HDF5 file of ALPS/CT-HYB does not exist. Something went wrong!")
-        with HDFArchive(work_dir + '/input.out.h5', 'r') as f:
+        with HDFArchive('input.out.h5', 'r') as f:
             # Sign
             sign = f['Sign']
             print("Average sign is ", sign, ".")

@@ -134,7 +134,6 @@ class SolverBase(object):
           The following parameters must be set.
           Each impurity solver may require additional parameters.
 
-              'work_dir'            : str, working directory (mandatory)
               'random_seed_offset'  : int, off set value for random seed (mandatory)
 
               'calc_Sigma_w'        : bool, if real-frequency Sigma is computed (optional)
@@ -261,13 +260,8 @@ class PytriqsMPISolver(SolverBase):
 
         params = copy.deepcopy(params_kw)
 
-        work_dir = params.pop('work_dir')
-
-        if not os.path.exists(work_dir):
-            os.makedirs(work_dir)
-
         # Write input parameters
-        with HDFArchive(os.path.abspath(work_dir + '/input.h5'), 'w') as h:
+        with HDFArchive(os.path.abspath('input.h5'), 'w') as h:
             h['beta'] = self.beta
             h['gf_struct'] = self.gf_struct
             h['u_mat'] = self.u_mat
@@ -287,17 +281,17 @@ class PytriqsMPISolver(SolverBase):
 
         # Run a working horse
         commands = [sys.executable, "-m", self._impl_module_name()]
-        commands.append(os.path.abspath(work_dir + '/input.h5'))
-        commands.append(os.path.abspath(work_dir + '/output.h5'))
+        commands.append(os.path.abspath('./input.h5'))
+        commands.append(os.path.abspath('./output.h5'))
 
-        with open(work_dir + '/output', 'w') as output_file:
+        with open('./output', 'w') as output_file:
             launch_mpi_subprocesses(mpirun_command, commands, output_file)
-        with open(work_dir + '/output', 'r') as output_file:
+        with open('./output', 'r') as output_file:
             for line in output_file:
                 print(line)
 
         # Read results
-        with HDFArchive(os.path.abspath(work_dir + '/output.h5'), 'r') as h:
+        with HDFArchive(os.path.abspath('output.h5'), 'r') as h:
             self._Sigma_iw << h['Sigma_iw']
             self._Gimp_iw << h['Gimp_iw']
             if 'Sigma_w' in h:
