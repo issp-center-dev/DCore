@@ -28,10 +28,6 @@ from pytriqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
-# bse
-from dft_tools.index_pair import IndexPair, IndexPair2
-from bse_tools.h5bse import h5BSE
-
 
 def assign_from_numpy_array(g_block, data):
 
@@ -213,6 +209,9 @@ class PomerolSolver(SolverBase):
         self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
 
         if flag_vx:
+            from dft_tools.index_pair import IndexPair, IndexPair2
+            from bse_tools.h5bse import h5BSE
+
             n_spin = 2 if flag_spin_conserve else 1
             n_inner = self.n_flavors / n_spin
 
