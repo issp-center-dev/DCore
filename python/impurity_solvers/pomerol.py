@@ -32,6 +32,7 @@ from .base import SolverBase
 from dft_tools.index_pair import IndexPair, IndexPair2
 from bse_tools.h5bse import h5BSE
 
+
 def assign_from_numpy_array(g_block, data):
 
     # g_block[].data.shape = (2*n_iw, n_orb, n_orb)
@@ -74,8 +75,9 @@ def set_tail(g_block):
 def decompose_index(index, n_orb):
     spn = index / n_orb
     orb = index % n_orb
-    print(spn, orb)
+    # print(spn, orb)
     return spn, orb
+
 
 class PomerolSolver(SolverBase):
 
@@ -112,6 +114,9 @@ class PomerolSolver(SolverBase):
         dir_vx = params_kw.get('dir_vx', './two_particle')
         n_w2f = params_kw.get('n_w2f', 10)
         n_w2b = params_kw.get('n_w2b', 1)
+        bse_h5 = params_kw.get('bse_h5_file', 'dmft_bse.h5')
+        bse_grp = params_kw.get('bse_grp_name', '')
+        bse_info = params_kw.get('bse_info', 'check')
 
         # for BSE
         # n_corr_shells = params_kw.get('n_corr_shells', None)
@@ -130,17 +135,18 @@ class PomerolSolver(SolverBase):
         file_umat = "umat.in"
         file_gf = "gf.dat"
 
-        params_pomerol = {}
-        params_pomerol['n_orb'] = self.n_orb
-        params_pomerol['beta'] = self.beta
-        params_pomerol['flag_spin_conserve'] = flag_spin_conserve
-        params_pomerol['file_h0'] = file_h0
-        params_pomerol['file_umat'] = file_umat
-        params_pomerol['flag_gf'] = 1
-        params_pomerol['n_w'] = self.n_iw
-        params_pomerol['flag_vx'] = flag_vx
-        params_pomerol['n_w2f'] = n_w2f
-        params_pomerol['n_w2b'] = n_w2b
+        params_pomerol = {
+            'n_orb': self.n_orb,
+            'beta': self.beta,
+            'flag_spin_conserve': flag_spin_conserve,
+            'file_h0': file_h0,
+            'file_umat': file_umat,
+            'flag_gf': 1,
+            'n_w': self.n_iw,
+            'flag_vx': flag_vx,
+            'n_w2f': n_w2f,
+            'n_w2b': n_w2b,
+        }
 
         with open(file_pomerol, "w") as f:
             for key, val in params_pomerol.items():
@@ -160,13 +166,7 @@ class PomerolSolver(SolverBase):
                 # TODO: real or complex
                 if abs(H0[i,j]) != 0:
                     # print(i, j, H0[i,j].real, H0[i,j].imag, file=f)
-                    print(i, j, H0[i,j].real, file=f)
-
-        # (1b) If Delta(iw) and/or Delta(tau) are necessary:
-        # Compute the hybridization function from G0:
-        #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
-        # H0 is extracted from the tail of the Green's function.
-        self._Delta_iw = delta(self._G0_iw)
+                    print(i, j, H0[i, j].real, file=f)
 
         # (1c) Set U_{ijkl} for the solver
 
@@ -175,7 +175,7 @@ class PomerolSolver(SolverBase):
             for i, j, k, l in product(range(self.n_flavors), repeat=4):
                 # TODO: check order of spin/orbital
                 # TODO: real or complex
-                if abs(self.u_mat[i,j,k,l]) != 0:
+                if abs(self.u_mat[i, j, k, l]) != 0:
                     # print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
                     print(i, j, k, l, self.u_mat[i, j, k, l].real, file=f)
 
@@ -214,44 +214,74 @@ class PomerolSolver(SolverBase):
         # self._Sigma_iw = dyson(G0_iw=self._G0_iw, G_iw=self._Gimp_iw)
 
         if flag_vx:
-            block2 = IndexPair2(range(n_corr_shells), range(2), only_diagonal1=only_diagonal)
-            inner2 = IndexPair(range(self.n_orb), convert_to_int=True)
+            n_spin = 2 if flag_spin_conserve else 1
+            n_inner = self.n_flavors / n_spin
 
-            xloc = numpy.zeros((self.n_orb**2, self.n_orb**2, 2*n_w2f, 2*n_w2f))
+            block2 = IndexPair2(range(n_corr_shells), range(n_spin), only_diagonal1=only_diagonal)
+            inner2 = IndexPair(range(n_inner), convert_to_int=True)
+            print(" block2 namelist =", block2.namelist)
+            print(" inner2 namelist =", inner2.namelist)
 
-            # TODO: spin loop first
-            for i1,i2,i3,i4 in product(range(self.n_flavors), repeat=4):
-                filename = dir_vx + "/%d_%d_%d_%d.dat" %(i1,i2,i3,i4)
-                # print(filename)
-                if os.path.exists(filename):
-                    print(filename)
+            # h5bse
+            BS = h5BSE(bse_h5, bse_grp)
+            if bse_info == 'check':
+                # check equivalence of info
+                assert BS.get(key=('block_name')) == block2.namelist
+                assert BS.get(key=('inner_name')) == inner2.namelist
+                assert BS.get(key=('beta')) == self.beta
+            elif bse_info == 'save':
+                # save info
+                BS.save(key=('block_name'), data=block2.namelist)
+                BS.save(key=('inner_name'), data=inner2.namelist)
+                BS.save(key=('beta'), data=self.beta)
+            else:
+                raise ValueError("bse_info =", bse_info)
+
+            # read X_loc data and save into h5 file
+            for wb in range(n_w2b):
+                # boson freq
+                print(" ---\n wb = %d" %wb)
+                x_loc = {}
+                for i1,i2,i3,i4 in product(range(self.n_flavors), repeat=4):
+                    filename = dir_vx + "/%d_%d_%d_%d.dat" %(i1,i2,i3,i4)
+                    if not os.path.exists(filename):
+                        continue
+                    print(" reading", filename)
+
                     # load data as a complex type
+                    # 1d array --> (wb, wf1, wf2) --> (wf1, wf2)
                     data = numpy.loadtxt(filename).view(complex).reshape(-1)
-                    print(data.shape)
+                    # print(data.shape)
                     data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
-                    print(data.shape)
+                    # print(data.shape)
+                    data_wb = data[wb]
+                    # print(data_wb.shape)
 
-                    s1, o1 = decompose_index(i1, self.n_orb)
-                    s2, o2 = decompose_index(i2, self.n_orb)
-                    s3, o3 = decompose_index(i3, self.n_orb)
-                    s4, o4 = decompose_index(i4, self.n_orb)
+                    if flag_spin_conserve:
+                        s1, o1 = decompose_index(i1, self.n_orb)
+                        s2, o2 = decompose_index(i2, self.n_orb)
+                        s3, o3 = decompose_index(i3, self.n_orb)
+                        s4, o4 = decompose_index(i4, self.n_orb)
+                    else:
+                        s1, o1 = 0, i1
+                        s2, o2 = 0, i2
+                        s3, o3 = 0, i3
+                        s4, o4 = 0, i4
 
                     s12 = block2.get_index(icrsh, s1, icrsh, s2)
                     s43 = block2.get_index(icrsh, s4, icrsh, s3)
                     inner12 = inner2.get_index(o1, o2)
                     inner43 = inner2.get_index(o4, o3)
 
-                    wb = 0
-                    xloc[inner12, inner43, :, :] = data[wb, :, :]
-                    # X_loc[(s12, s43)] =
+                    # print("(s12, s43) = (%d, %d)" %(s12, s43))
 
-                    # h5bse
-                    # BS = h5BSE(h5_file, groupname)
-                    # BS.save(key=('X_loc', wb), data=X_loc)
+                    if (s12, s43) not in x_loc:
+                        x_loc[(s12, s43)] = numpy.zeros((n_inner**2, n_inner**2, 2*n_w2f, 2*n_w2f), dtype=complex)
+                    x_loc[(s12, s43)][inner12, inner43, :, :] = data_wb[:, :]
+
+                # save
+                BS.save(key=('X_loc', wb), data=x_loc)
 
 
     def name(self):
         return "pomerol"
-
-    def get_Delta_iw(self):
-        return self._Delta_iw.copy()
