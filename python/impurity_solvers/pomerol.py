@@ -35,13 +35,15 @@ from bse_tools.h5bse import h5BSE
 
 def assign_from_numpy_array(g_block, data):
 
-    # g_block[].data.shape = (2*n_iw, n_orb, n_orb)
-    #                        (2*n_iw, 2*n_orb, 2*n_orb)
-    # Both positive and negative freq are stored
+    # DCore:
+    #   g_block[].data.shape = (2*n_iw, n_orb, n_orb)
+    #                          (2*n_iw, 2*n_orb, 2*n_orb)
+    #       Both positive and negative freq are stored
 
-    # data.shape = (2, n_orb, n_orb, n_iw)       w/ spin-orbit
-    #              (1, 2*n_orb, 2*n_orb, n_iw)   w/o spin-orbit
-    # Only positive freq
+    # pomerol:
+    #   data.shape = (2, n_orb, n_orb, n_iw)       w/ spin-orbit
+    #                (1, 2*n_orb, 2*n_orb, n_iw)   w/o spin-orbit
+    #       Only positive freq
 
     for i, (bname, gf) in enumerate(g_block):
         # FIXME: spin order
@@ -156,17 +158,17 @@ class PomerolSolver(SolverBase):
         # Non-interacting part of the local Hamiltonian including chemical potential
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
-        H0 = extract_H0(self._G0_iw)
-        H0 = 0.5 * (H0.transpose().conj() + H0)
+        h0_mat = extract_H0(self._G0_iw)
+        h0_mat = 0.5 * (h0_mat.transpose().conj() + h0_mat)
         # print(H0.shape)
         # print(H0)
         with open(file_h0, "w") as f:
-            for i, j in product(range(H0.shape[0]), range(H0.shape[1])):
+            for i, j in product(range(h0_mat.shape[0]), range(h0_mat.shape[1])):
                 # TODO: check order of spin/orbital
                 # TODO: real or complex
-                if abs(H0[i,j]) != 0:
+                if abs(h0_mat[i, j]) != 0:
                     # print(i, j, H0[i,j].real, H0[i,j].imag, file=f)
-                    print(i, j, H0[i, j].real, file=f)
+                    print(i, j, h0_mat[i, j].real, file=f)
 
         # (1c) Set U_{ijkl} for the solver
 
@@ -202,48 +204,46 @@ class PomerolSolver(SolverBase):
         # Compute Sigma_iw
         # NOTE: do NOT use self._G0_iw because it includes more information than that passed to the solver
         n_block = len(self.gf_struct)
-        n_inner = H0.shape[0] / n_block
+        n_inner = h0_mat.shape[0] / n_block
         # cut H0 into block structure
-        h0_block = [ H0[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block) ]
+        h0_block = [h0_mat[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
         g0_inv = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
         g0_inv << iOmega_n
         g0_inv -= h0_block
         self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
 
-        # Solve Dyson's eq to obtain Sigma_iw
-        # self._Sigma_iw = dyson(G0_iw=self._G0_iw, G_iw=self._Gimp_iw)
-
         if flag_vx:
             n_spin = 2 if flag_spin_conserve else 1
             n_inner = self.n_flavors / n_spin
 
+            # FIXME: spin order and names
             block2 = IndexPair2(range(n_corr_shells), range(n_spin), only_diagonal1=only_diagonal)
             inner2 = IndexPair(range(n_inner), convert_to_int=True)
             print(" block2 namelist =", block2.namelist)
             print(" inner2 namelist =", inner2.namelist)
 
             # h5bse
-            BS = h5BSE(bse_h5, bse_grp)
+            h5bse = h5BSE(bse_h5, bse_grp)
             if bse_info == 'check':
                 # check equivalence of info
-                assert BS.get(key=('block_name')) == block2.namelist
-                assert BS.get(key=('inner_name')) == inner2.namelist
-                assert BS.get(key=('beta')) == self.beta
+                assert h5bse.get(key=('block_name',)) == block2.namelist
+                assert h5bse.get(key=('inner_name',)) == inner2.namelist
+                assert h5bse.get(key=('beta',)) == self.beta
             elif bse_info == 'save':
                 # save info
-                BS.save(key=('block_name'), data=block2.namelist)
-                BS.save(key=('inner_name'), data=inner2.namelist)
-                BS.save(key=('beta'), data=self.beta)
+                h5bse.save(key=('block_name',), data=block2.namelist)
+                h5bse.save(key=('inner_name',), data=inner2.namelist)
+                h5bse.save(key=('beta',), data=self.beta)
             else:
                 raise ValueError("bse_info =", bse_info)
 
             # read X_loc data and save into h5 file
             for wb in range(n_w2b):
                 # boson freq
-                print(" ---\n wb = %d" %wb)
+                print(" ---\n wb = %d" % wb)
                 x_loc = {}
-                for i1,i2,i3,i4 in product(range(self.n_flavors), repeat=4):
-                    filename = dir_vx + "/%d_%d_%d_%d.dat" %(i1,i2,i3,i4)
+                for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
+                    filename = dir_vx + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
                     if not os.path.exists(filename):
                         continue
                     print(" reading", filename)
@@ -280,8 +280,7 @@ class PomerolSolver(SolverBase):
                     x_loc[(s12, s43)][inner12, inner43, :, :] = data_wb[:, :]
 
                 # save
-                BS.save(key=('X_loc', wb), data=x_loc)
-
+                h5bse.save(key=('X_loc', wb), data=x_loc)
 
     def name(self):
         return "pomerol"
