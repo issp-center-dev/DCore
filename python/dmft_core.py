@@ -131,15 +131,21 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     rot = compute_diag_basis(G0_iw) if basis_rot else None
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
-    s_params['work_dir'] = 'work/imp_shell'+str(ish)+"_ite"+str(ite)
+
+    work_dir_org = os.getcwd()
+    work_dir = 'work/imp_shell'+str(ish)+"_ite"+str(ite)
+    if not os.path.isdir(work_dir):
+        os.makedirs(work_dir)
+    os.chdir(work_dir)
 
     if not mesh is None:
         s_params['calc_Sigma_w'] = True
         s_params['omega_min'], s_params['omega_max'], s_params['n_omega'] = mesh
 
-
     # Solve the model
     sol.solve(rot, mpirun_command, s_params)
+
+    os.chdir(work_dir_org)
 
     # Read & save local quantities
     # Change from DCore v1:
