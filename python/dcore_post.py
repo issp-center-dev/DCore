@@ -18,7 +18,6 @@
 #
 from __future__ import print_function
 import os
-import argparse
 import re
 import sys
 import numpy
@@ -522,23 +521,24 @@ def dcore_post(filename, np=1):
 
 
 if __name__ == '__main__':
-    import warnings
-    warnings.filterwarnings("ignore", message="numpy.dtype size changed")
-    warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+    from .option_tables import generate_all_description
+    import argparse
 
     parser = argparse.ArgumentParser(
         prog='dcore_post.py',
         description='pre script for dcore.',
-        epilog='end',
         usage='$ dcore_post input --np 4',
-        add_help=True)
+        add_help=True,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=generate_all_description()
+    )
     parser.add_argument('path_input_file',
                         action='store',
                         default=None,
                         type=str,
                         help="input file name."
                         )
-    parser.add_argument('--np', default=1, help='Number of MPI processes')
+    parser.add_argument('--np', help='Number of MPI processes', required=True)
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:

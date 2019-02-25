@@ -17,61 +17,80 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
+
+import os
 import sys
-from .dmft_core import DMFTCoreSolver
 
-from .program_options import *
+from dmft_core import DMFTCoreSolver
+from program_options import create_parser
 
-
-def dcore(filename, np=1):
+def dcore_bse(filename, np=1):
     """
-    Main routine of DCore
+    Main routine for the BSE post-processing tool
 
     Parameters
     ----------
     filename : string
         Input-file name
     """
-    # Set Default value
+
+    print("\n############  Reading Input File  #################\n")
+    print("  Input File Name : ", filename)
+
+    #
+    # Construct a parser with default values
+    #
     pars = create_parser()
+
     #
     # Parse keywords and store
     #
     pars.read(filename)
-    params = pars.as_dict()
+    p = pars.as_dict()
+    seedname = p["model"]["seedname"]
+    p["mpi"]["num_processes"] = np
 
-    params["mpi"]["num_processes"] = np
+    #
+    # Load DMFT data
+    #
+    p['control']['restart'] = True
+    solver = DMFTCoreSolver(seedname, p, output_file=seedname+'.out.h5', read_only=True)
+    if solver.iteration_number == 0:
+        raise RuntimeError("Number of iterations is zero!")
+    print("Number of iterations :", solver.iteration_number)
 
-    solver = DMFTCoreSolver(params["model"]["seedname"], params)
+    #
+    # Compute data for BSE
+    #
+    solver.calc_bse()
 
-    solver.do_steps(max_step=params["control"]["max_step"])
-
-    print("\n########################  Done  ########################\n")
+    #
+    # Finish
+    #
+    print("\n#################  Done  #####################\n")
 
 
 if __name__ == '__main__':
-    from .option_tables import generate_all_description
     import argparse
+    from .option_tables import generate_all_description
 
     parser = argparse.ArgumentParser(
-        prog='dcore.py',
-        description='.',
-        usage='$ dcore input.ini --np 4',
-        add_help=True,
+        prog='dcore_bse.py',
+        description='Post-processing script for dcore (bse).',
+        usage='$ dcore_bse input --np 4',
         formatter_class=argparse.RawTextHelpFormatter,
-        epilog=generate_all_description()
-    )
-
+        epilog=generate_all_description(),
+        add_help=True)
     parser.add_argument('path_input_file',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name.")
-    parser.add_argument('--np', default=1, help='Number of MPI processes')
+                        help="input file name."
+                        )
+    parser.add_argument('--np', help='Number of MPI processes', required=True)
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
         print("Input file is not exist.")
         sys.exit(-1)
-
-    dcore(args.path_input_file, int(args.np))
+    dcore_bse(args.path_input_file, int(args.np))

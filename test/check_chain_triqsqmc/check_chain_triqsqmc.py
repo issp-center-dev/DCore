@@ -19,6 +19,6 @@ from __future__ import print_function
 from dcore.numdiff import numdiff
 from dcore.dcore_check import dcore_check
 
-dcore_check("dmft.ini", "test.pdf")
+dcore_check("dmft.ini", "./test_", "png")
 
 numdiff("test_sigma.dat", "test_sigma_ref.dat")

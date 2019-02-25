@@ -20,7 +20,6 @@ from __future__ import print_function
 import sys
 import os
 import numpy
-import argparse
 import re
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
@@ -31,254 +30,10 @@ from pytriqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, e
 
 from .tools import *
 
+from .lattice_model import create_lattice_model
+
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
-
-
-def __generate_wannier90_model(params, f):
-    """
-    Compute hopping etc. for A(k,w) of Wannier90
-
-    Parameters
-    ----------
-    params : dictionary
-        Input parameters
-    f : File stream
-        file
-    """
-    #
-    # Number of orbitals in each shell
-    # Equivalence of each shell
-    #
-    ncor = params["model"]["ncor"]
-    #
-    norb_list = re.findall(r'\d+', params["model"]["norb"])
-    norb = [int(norb_list[icor]) for icor in range(ncor)]
-    #
-    if params["model"]["equiv"] == "None":
-        equiv = [icor for icor in range(ncor)]
-    else:
-        equiv_list = re.findall(r'[^\s,]+', params["model"]["equiv"])
-        equiv_str_list = []
-        equiv_index = 0
-        equiv = [0] * ncor
-        for icor in range(ncor):
-            if equiv_list[icor] in equiv_str_list:
-                # Defined before
-                equiv[icor] = equiv_str_list.index(equiv_list[icor])
-            else:
-                # New one
-                equiv_str_list.append(equiv_list[icor])
-                equiv[icor] = equiv_index
-                equiv_index += 1
-    #
-    nk = params["system"]["nk"]
-    nk0 = params["system"]["nk0"]
-    nk1 = params["system"]["nk1"]
-    nk2 = params["system"]["nk2"]
-    if nk0 == 0:
-        nk0 = nk
-    if nk1 == 0:
-        nk1 = nk
-    if nk2 == 0:
-        nk2 = nk
-    print("\n    nk0 = {0}".format(nk0))
-    print("    nk1 = {0}".format(nk1))
-    print("    nk2 = {0}".format(nk2))
-    print("    ncor = {0}".format(ncor))
-    for i in range(ncor):
-        assert equiv[i] >= 0
-        print("    norb[{0}], equiv[{0}] = {1}, {2}".format(i, norb[i], equiv[i]))
-    print("")
-    #
-    # Generate file for Wannier90-Converter
-    #
-    print("0 {0} {1} {2}".format(nk0, nk1, nk2), file=f)
-    print(params["model"]["nelec"], file=f)
-    print(ncor, file=f)
-    for i in range(ncor):
-        print("{0} {1} {2} {3} 0 0".format(i, equiv[i], 0, norb[i]), file=f)
-
-
-def para2noncol(params):
-    """
-    Duplicate orbitals when we perform non-colinear DMFT from the colinear DFT calculation.
-    """
-    ncor = params["model"]['ncor']
-    norb_list = re.findall(r'\d+', params["model"]["norb"])
-    norb = [int(norb_list[icor]) / 2 for icor in range(ncor)]
-    #
-    # Read Wannier90 file
-    #
-    w90 = Wannier90Converter(seedname=params["model"]["seedname"])
-    nr, rvec, rdeg, nwan, hamr = w90.read_wannier90hr(params["model"]["seedname"] + "_col_hr.dat")
-    #
-    # Non correlated shell
-    #
-    ncor += 1
-    norb_tot = sum(norb)
-    norb.append(nwan - norb_tot)
-    #
-    # Output new wannier90 file
-    #
-    with open(params["model"]["seedname"] + "_hr.dat", 'w') as f:
-
-        print("Converted from Para to Non-collinear", file=f)
-        print(nwan*2, file=f)
-        print(nr, file=f)
-        for ir in range(nr):
-            print("%5d" % rdeg[ir], end="", file=f)
-            if ir % 15 == 14:
-                print("", file=f)
-        if nr % 15 != 0:
-            print("", file=f)
-        #
-        # Hopping
-        #
-        for ir in range(nr):
-            iorb1 = 0
-            iorb2 = 0
-            for icor in range(ncor):
-                for ispin in range(2):
-                    iorb1 -= ispin * norb[icor]
-                    for iorb in range(norb[icor]):
-                        iorb1 += 1
-                        iorb2 += 1
-                        jorb1 = 0
-                        jorb2 = 0
-                        for jcor in range(ncor):
-                            for jspin in range(2):
-                                jorb1 -= jspin * norb[jcor]
-                                for jorb in range(norb[jcor]):
-                                    jorb1 += 1
-                                    jorb2 += 1
-                                    if ispin == jspin:
-                                        hamr2 = hamr[ir][jorb1-1, iorb1-1]
-                                    else:
-                                        hamr2 = 0.0 + 0.0j
-                                    print("%5d%5d%5d%5d%5d%12.6f%12.6f" %
-                                          (rvec[ir, 0], rvec[ir, 1], rvec[ir, 2], jorb2, iorb2,
-                                           hamr2.real, hamr2.imag), file=f)
-
-
-def __generate_lattice_model(params, f):
-    """
-    Compute hopping etc. for A(k,w) of preset models
-
-    Parameters
-    ----------
-    params : dictionary
-            Input parameters
-    Returns
-    -------
-    weights_in_file: Bool
-        Weights for the bethe lattice
-    """
-    weights_in_file = False
-    if params["model"]["lattice"] == 'chain':
-        nkbz = params["system"]["nk"]
-    elif params["model"]["lattice"] == 'square':
-        nkbz = params["system"]["nk"]**2
-    elif params["model"]["lattice"] == 'cubic':
-        nkbz = params["system"]["nk"]**3
-    elif params["model"]["lattice"] == 'bethe':
-        nkbz = params["system"]["nk"]
-        weights_in_file = True
-    else:
-        print("Error ! Invalid lattice : ", params["model"]["lattice"])
-        sys.exit(-1)
-    print("\n    Total number of k =", str(nkbz))
-    #
-    # Model
-    #
-    norb = int(params["model"]["norb"])
-    #
-    # Write General-Hk formatted file
-    #
-    print(nkbz, file=f)
-    print(params["model"]["nelec"], file=f)
-    print("1", file=f)
-    print("0 0 {0} {1}".format(0, norb), file=f)
-    print("1", file=f)
-    print("0 0 {0} {1} 0 0".format(0, norb), file=f)
-    print("1 {0}".format(norb), file=f)
-
-    t = params["model"]["t"]
-    tp = params["model"]["t'"]
-    nk = params["system"]["nk"]
-
-    #
-    # Energy band
-    #
-    if params["model"]["lattice"] == 'bethe':
-        #
-        # If Bethe lattice, set k-weight manually to generate semi-circular DOS
-        #
-        for i0 in range(nk):
-            ek = float(2*i0 + 1 - nk) / float(nk)
-            wk = numpy.sqrt(1.0 - ek**2)
-            print("{0}".format(wk), file=f)
-        for i0 in range(nk):
-            ek = 2.0 * t * float(2*i0 + 1 - nk) / float(nk)
-            for iorb in range(norb):
-                for jorb in range(norb):
-                    if iorb == jorb:
-                        print("{0}".format(ek), file=f)  # Real part
-                    else:
-                        print("0.0", file=f)  # Real part
-            for iorb in range(norb*norb):
-                print("0.0", file=f)  # Imaginary part
-    elif params["model"]["lattice"] == 'chain':
-        kvec = [0.0, 0.0, 0.0]
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
-            for iorb in range(norb):
-                for jorb in range(norb):
-                    if iorb == jorb:
-                        print("{0}".format(ek), file=f)  # Real part
-                    else:
-                        print("0.0", file=f)  # Real part
-            for iorb in range(norb*norb):
-                print("0.0", file=f)  # Imaginary part
-    elif params["model"]["lattice"] == 'square':
-        kvec = [0.0, 0.0, 0.0]
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            for i1 in range(nk):
-                kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk)
-                ek = 2.0*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
-                    + 2.0*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
-                for iorb in range(norb):
-                    for jorb in range(norb):
-                        if iorb == jorb:
-                            print("{0}".format(ek), file=f)  # Real part
-                        else:
-                            print("0.0", file=f)  # Real part
-                for iorb in range(norb*norb):
-                    print("0.0", file=f)  # Imaginary part
-    elif params["model"]["lattice"] == 'cubic':
-        kvec = [0.0, 0.0, 0.0]
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            for i1 in range(nk):
-                kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk)
-                for i2 in range(nk):
-                    kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk)
-                    ek = 2*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
-                        + 2*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1])
-                                + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2])
-                                + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
-                    for iorb in range(norb):
-                        for jorb in range(norb):
-                            if iorb == jorb:
-                                print("{0}".format(ek), file=f)  # Real part
-                            else:
-                                print("0.0", file=f)  # Real part
-                    for iorb in range(norb*norb):
-                        print("0.0", file=f)  # Imaginary part
-    return weights_in_file
-
 
 def __generate_umat(p):
     """
@@ -512,32 +267,15 @@ def dcore_pre(filename):
     print("\n    [system] block")
     for k, v in p["system"].items():
         print("      {0} = {1}".format(k, v))
+
     #
     # One-body term
     #
     print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
     seedname = p["model"]["seedname"]
-    if p["model"]["lattice"] == 'wannier90':
-        #
-        # non_colinear flag is used only for the case that COLINEAR DFT calculation
-        #
-        if p["model"]["spin_orbit"]:
-            p["model"]["non_colinear"] = False
-        #
-        if p["model"]["non_colinear"]:
-            para2noncol(p)
-        with open(seedname+'.inp', 'w') as f:
-            __generate_wannier90_model(p, f)
-        # Convert General-Hk to SumDFT-HDF5 format
-        converter = Wannier90Converter(seedname=seedname)
-        converter.convert_dft_input()
-    else:
-        with open(seedname+'.inp', 'w') as f:
-            weights_in_file = __generate_lattice_model(p, f)
-        # Convert General-Hk to SumDFT-HDF5 format
-        converter = HkConverter(filename=seedname + ".inp", hdf_filename=seedname+".h5")
-        converter.convert_dft_input(weights_in_file=weights_in_file)
-    os.remove(seedname + ".inp")
+    lattice_model = create_lattice_model(p)
+    lattice_model.generate_model_file()
+
     #
     # Interaction
     #
@@ -563,13 +301,17 @@ def dcore_pre(filename):
 
 
 if __name__ == '__main__':
+    from .option_tables import generate_all_description
+    import argparse
 
     parser = argparse.ArgumentParser(
         prog='dcore_pre.py',
         description='pre script for dcore.',
-        epilog='end',
         usage='$ dcore_pre input',
-        add_help=True)
+        add_help=True,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=generate_all_description()
+    )
     parser.add_argument('path_input_file',
                         action='store',
                         default=None,

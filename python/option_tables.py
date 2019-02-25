@@ -17,11 +17,15 @@
 #
 from __future__ import print_function
 
+import sys
 import numpy
 from program_options import *
 
-p = create_parser()
+# Python3.x
+#from io import StringIO
 
+# Python2.7
+from io import BytesIO as StringIO
 
 def readable_type_string(t):
     if t == int:
@@ -42,29 +46,59 @@ def max_length(str_list):
     """
     return numpy.amax([len(s) for s in str_list])
 
+def generate_description(p, section):
+    """
+    Generate descriptions of all options in a given section
 
-for section in p.get_predefined_sections():
-    with open('../doc/reference/'+section+'_desc.txt', 'w') as f:
-        # Check length of strings
-        name_strings = p.get_predefined_options(section)
-        type_strings = []
-        default_value_strings = []
-        description_strings = []
-        for option in p.get_predefined_options(section):
-            type_strings.append(readable_type_string(p.get_type(section, option)))
-            default_value_strings.append(str(p.get_default_value(section, option)))
-            description_strings.append(p.get_description(section, option))
-    
-        width = [max_length(sl)+4 for sl in [name_strings, type_strings, default_value_strings, description_strings]]
-    
-        def print_one_line(*str_list):
-            for column in range(3):
-                print(str_list[column].ljust(width[column], ' '), end=' ', file=f)
-            print(str_list[3].ljust(width[3], ' '), file=f)
-    
-        print_one_line('='*width[0], '='*width[1], '='*width[2], '='*width[3])
-        print_one_line('Name', 'Type', 'Default', 'Description')
-        print_one_line('='*width[0], '='*width[1], '='*width[2], '='*width[3])
-        for i in range(len(name_strings)):
-            print_one_line(name_strings[i], type_strings[i], default_value_strings[i], description_strings[i])
-        print_one_line('='*width[0], '='*width[1], '='*width[2], '='*width[3])
+    :param p: parser
+    :param section: str
+        section name
+    :return description: str
+        Description of all options
+    """
+
+    output = StringIO()
+
+    # Check length of strings
+    name_strings = p.get_predefined_options(section)
+    type_strings = []
+    default_value_strings = []
+    description_strings = []
+    for option in p.get_predefined_options(section):
+        type_strings.append(readable_type_string(p.get_type(section, option)))
+        default_value_strings.append(str(p.get_default_value(section, option)))
+        description_strings.append(p.get_description(section, option))
+
+    width = [max_length(sl)+4 for sl in [name_strings, type_strings, default_value_strings, description_strings]]
+
+    def print_one_line(*str_list):
+        for column in range(3):
+            print(str_list[column].ljust(width[column], ' '), end=' ', file=output)
+        print(str_list[3].ljust(width[3], ' '), file=output)
+
+    print_one_line('='*width[0], '='*width[1], '='*width[2], '='*width[3])
+    print_one_line('Name', 'Type', 'Default', 'Description')
+    print_one_line('='*width[0], '='*width[1], '='*width[2], '='*width[3])
+    for i in range(len(name_strings)):
+        print_one_line(name_strings[i], type_strings[i], default_value_strings[i], description_strings[i])
+    print_one_line('='*width[0], '='*width[1], '='*width[2], '='*width[3])
+
+    return output.getvalue()
+
+def generate_all_description():
+    p = create_parser()
+    desc = []
+    for section in p.get_predefined_sections():
+        desc.append("\n[{}]\n".format(section))
+        desc.append(generate_description(p, section))
+    return ''.join(desc)
+
+if __name__ == '__main__':
+    p = create_parser()
+
+    for section in p.get_predefined_sections():
+        desc = generate_description(p, section)
+        with open('../doc/reference/'+section+'_desc.txt', 'w') as f:
+            print(desc, file=f)
+
+    print(generate_all_description())

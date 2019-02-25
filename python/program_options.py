@@ -80,8 +80,8 @@ def create_parser():
                       OptionStatus.RETIRED)
 
     # [impurity_solver]
-    parser.add_option("impurity_solver", "name", str, 'TRIQS/hubbard-I',
-                      "Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.")
+    parser.add_option("impurity_solver", "name", str, 'null',
+                      "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg.")
     parser.add_option("impurity_solver", "basis_rotation", bool, True,
                       "If True, impurity models are solved in the basis that diagonalizes the local non-interacting Hamiltonian.")
     parser.allow_undefined_options("impurity_solver")
@@ -104,5 +104,11 @@ def create_parser():
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
     parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation")
     parser.add_option("tool", "omega_check", float, 5.0, "Maximum frequency for dcore_check.")
+
+    # [bse]
+    parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")
+    parser.add_option("bse", "num_wf", int, 10, "Number of fermionic frequencies (>0)")
+    #parser.add_option("bse", "div", IntTuple, IntTuple((10, 10, 10)), "Numbers of dimensions for kx, ky, kz")
+    parser.add_option("bse", "h5_output_file", str, 'dmft_bse.h5', "Output HDF5 file for bse data")
 
     return parser

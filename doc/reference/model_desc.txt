@@ -1,20 +1,22 @@
-=================== =========== ================================================= ================================================================================================
-Name                Type        Default                                           Description                                                                                     
-=================== =========== ================================================= ================================================================================================
-non_colinear        Bool        False                                             Set True for the case that non-colinear DMFT from the COLINEAR DFT calculation.                 
-interaction         String      kanamori                                          Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)                          
-norb                String      1                                                 Number of orbitals at each correlated shell (*ncor* integers separated by commas or spaces.)    
-slater_f            String      None                                              Angular momentum, Slater integrals F (See below).                                               
-seedname            String      dcore                                             Name of the system. The model HDF5 file will be seedname.h5.                                    
-density_density     Bool        False                                             If true, only the density-density part of the interaction is used (See below).                  
-spin_orbit          Bool        False                                             Whether the spin-orbit case (See :ref:`pbtutorial`).                                            
-kanamori            String      None                                              U (Diagonal Coulomb pot.), U' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).    
-lattice             String      chain                                             Chosen from "chain", "square", "cubic", "bethe", and "wannier90"                                
-nelec               Float       1.0                                               Number of electrons per unit cell.                                                              
-t                   Float       1.0                                               Transfer integral (Nearest neighbor)                                                            
-bvec                String      [(1.0,0.0,0.0), (0.0,1.0,0.0), (0.0,0.0,1.0)]     Reciprocal lattice vectors in arbitrary unit.                                                   
-t'                  Float       0.0                                               Transfer integral (Second nearest)                                                              
-slater_uj           String      None                                              Angular momentum, Slater integrals in U and J (See below).                                      
-ncor                Integer     1                                                 Number of correlated shells in a unit cell (Only wannier90).                                    
-equiv               String      None                                              Equivalence of each correlated shell. Please, be careful to use it (See below).                 
-=================== =========== ================================================= ================================================================================================
+=================== =========== =============================================== ================================================================================================
+Name                Type        Default                                         Description                                                                                     
+=================== =========== =============================================== ================================================================================================
+non_colinear        Bool        False                                           Set True for the case that non-colinear DMFT from the COLINEAR DFT calculation.                 
+interaction         String      kanamori                                        Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)                          
+norb                String      1                                               Number of orbitals at each correlated shell (*ncor* integers separated by commas or spaces.)    
+slater_f            String      None                                            Angular momentum, Slater integrals F (See below).                                               
+seedname            String      dcore                                           Name of the system. The model HDF5 file will be seedname.h5.                                    
+time_reversal       Bool        False                                           If true, an average over spin components are taken.                                             
+density_density     Bool        False                                           If true, only the density-density part of the interaction is used (See below).                  
+spin_orbit          Bool        False                                           Whether the spin-orbit case (See :ref:`pbtutorial`).                                            
+kanamori            String      None                                            U (Diagonal Coulomb pot.), U' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).    
+lattice             String      chain                                           Chosen from "chain", "square", "cubic", "bethe", and "wannier90"                                
+nelec               Float       1.0                                             Number of electrons per unit cell.                                                              
+t                   Float       1.0                                             Transfer integral (Nearest neighbor)                                                            
+bvec                String      [(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]     Reciprocal lattice vectors in arbitrary unit.                                                   
+t'                  Float       0.0                                             Transfer integral (Second nearest)                                                              
+slater_uj           String      None                                            Angular momentum, Slater integrals in U and J (See below).                                      
+ncor                Integer     1                                               Number of correlated shells in a unit cell (Only wannier90).                                    
+equiv               String      None                                            Equivalence of each correlated shell. Please, be careful to use it (See below).                 
+=================== =========== =============================================== ================================================================================================
+
