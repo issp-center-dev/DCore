@@ -54,7 +54,6 @@ def assign_from_numpy_array(g_block, data):
 
         # data(o1, o2, iw) --> (iw, o1, o2)
         gf_iw_o1_o2 = data[i].transpose(2, 0, 1)
-        # print(gf_iw_o1_o2.shape)
 
         # copy data in the positive freq side
         gf.data[n_iw:, :, :] = gf_iw_o1_o2.copy()
@@ -73,7 +72,6 @@ def set_tail(g_block):
 def decompose_index(index, n_orb):
     spn = index / n_orb
     orb = index % n_orb
-    # print(spn, orb)
     return spn, orb
 
 
@@ -108,24 +106,12 @@ class PomerolSolver(SolverBase):
 
         # print("params_kw =", params_kw)
         exec_path = params_kw['exec_path']
-        flag_vx = params_kw.get('flag_vx', 0)
-        dir_vx = params_kw.get('dir_vx', './two_particle')
-        n_w2f = params_kw.get('n_w2f', 10)
-        n_w2b = params_kw.get('n_w2b', 1)
-        bse_h5 = params_kw.get('bse_h5_file', 'dmft_bse.h5')
-        bse_grp = params_kw.get('bse_grp_name', '')
-        bse_info = params_kw.get('bse_info', 'check')
 
         # for BSE
-        # n_corr_shells = params_kw.get('n_corr_shells', None)
-        # icrsh = params_kw.get('icrsh', None)
-        # only_diagonal = not params_kw.get('nonlocal_order_parameter', False)
-        # FIXME: passed from DCore
-        n_corr_shells = params_kw.get('n_corr_shells', 1)
-        icrsh = params_kw.get('icrsh', 0)
-        only_diagonal = not params_kw.get('nonlocal_order_parameter', False)
+        flag_vx = params_kw.get('flag_vx', 0)
+        n_w2f = params_kw.get('n_w2f', 10)
+        n_w2b = params_kw.get('n_w2b', 1)
 
-        # print(self.gf_struct)
         flag_spin_conserve = 1 if len(self.gf_struct) == 2 else 0
 
         file_pomerol = "pomerol.in"
@@ -156,22 +142,17 @@ class PomerolSolver(SolverBase):
         # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
         h0_mat = extract_H0(self._G0_iw)
         h0_mat = 0.5 * (h0_mat.transpose().conj() + h0_mat)
-        # print(H0.shape)
-        # print(H0)
+
         with open(file_h0, "w") as f:
             for i, j in product(range(h0_mat.shape[0]), range(h0_mat.shape[1])):
-                # TODO: check order of spin/orbital
                 # TODO: real or complex
                 if abs(h0_mat[i, j]) != 0:
                     # print(i, j, H0[i,j].real, H0[i,j].imag, file=f)
                     print(i, j, h0_mat[i, j].real, file=f)
 
         # (1c) Set U_{ijkl} for the solver
-
-        # print(self.u_mat)
         with open(file_umat, "w") as f:
             for i, j, k, l in product(range(self.n_flavors), repeat=4):
-                # TODO: check order of spin/orbital
                 # TODO: real or complex
                 if abs(self.u_mat[i, j, k, l]) != 0:
                     # print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
@@ -187,12 +168,10 @@ class PomerolSolver(SolverBase):
 
         # load data as a complex type
         gf_1d = numpy.loadtxt(file_gf).view(complex).reshape(-1)
-        # print(gf_1d.shape)
         if flag_spin_conserve:
             gf = gf_1d.reshape((2, self.n_orb, self.n_orb, self.n_iw))
         else:
             gf = gf_1d.reshape((1, self.n_flavors, self.n_flavors, self.n_iw))
-        # print(gf.shape)
         assign_from_numpy_array(self._Gimp_iw, gf)
 
         set_tail(self._Gimp_iw)
@@ -211,6 +190,16 @@ class PomerolSolver(SolverBase):
         if flag_vx:
             from dft_tools.index_pair import IndexPair, IndexPair2
             from bse_tools.h5bse import h5BSE
+
+            dir_g2 = params_kw.get('dir_g2', './two_particle')
+            bse_h5 = params_kw.get('bse_h5_file', 'dmft_bse.h5')
+            bse_grp = params_kw.get('bse_grp_name', '')
+            bse_info = params_kw.get('bse_info', 'check')
+
+            # FIXME: passed from DCore
+            n_corr_shells = params_kw.get('n_corr_shells', 1)
+            icrsh = params_kw.get('icrsh', 0)
+            only_diagonal = not params_kw.get('nonlocal_order_parameter', False)
 
             n_spin = 2 if flag_spin_conserve else 1
             n_inner = self.n_flavors / n_spin
@@ -242,7 +231,7 @@ class PomerolSolver(SolverBase):
                 print(" ---\n wb = %d" % wb)
                 x_loc = {}
                 for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
-                    filename = dir_vx + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
+                    filename = dir_g2 + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
                     if not os.path.exists(filename):
                         continue
                     print(" reading", filename)
@@ -250,11 +239,8 @@ class PomerolSolver(SolverBase):
                     # load data as a complex type
                     # 1d array --> (wb, wf1, wf2) --> (wf1, wf2)
                     data = numpy.loadtxt(filename).view(complex).reshape(-1)
-                    # print(data.shape)
                     data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
-                    # print(data.shape)
                     data_wb = data[wb]
-                    # print(data_wb.shape)
 
                     if flag_spin_conserve:
                         s1, o1 = decompose_index(i1, self.n_orb)
@@ -271,8 +257,6 @@ class PomerolSolver(SolverBase):
                     s43 = block2.get_index(icrsh, s4, icrsh, s3)
                     inner12 = inner2.get_index(o1, o2)
                     inner43 = inner2.get_index(o4, o3)
-
-                    # print("(s12, s43) = (%d, %d)" %(s12, s43))
 
                     if (s12, s43) not in x_loc:
                         x_loc[(s12, s43)] = numpy.zeros((n_inner**2, n_inner**2, 2*n_w2f, 2*n_w2f), dtype=complex)
