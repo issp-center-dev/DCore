@@ -52,18 +52,18 @@ class NullSolver(SolverBase):
         #   self.set_G0_iw
         #   self.u_mat
         #
-        # Additionally, the following variables may used:
+        # Additionally, the following variables may be used:
         #   self.n_orb
         #   self.n_flavor
         #   self.gf_struct
         #   self.n_tau
+        #   self.use_spin_orbit
 
         # (1a) If H0 is necessary:
         # Non-interacting part of the local Hamiltonian including chemical potential
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
         H0 = extract_H0(self._G0_iw)
-        H0 = 0.5 * (H0.transpose().conj() + H0)
 
         # (1b) If Delta(iw) and/or Delta(tau) are necessary:
         # Compute the hybridization function from G0:

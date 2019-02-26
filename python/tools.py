@@ -178,7 +178,7 @@ def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
         print("Command: ", ' '.join(commands))
         raise RuntimeError("Error occurred while executing MPI program! Output messages may be found in {}!".format(os.path.abspath(output_file.name)))
 
-def extract_H0(G0_iw):
+def extract_H0(G0_iw, hermitianize=True):
     """
     Extract non-interacting Hamiltonian elements from G0_iw
     """
@@ -198,6 +198,9 @@ def extract_H0(G0_iw):
         block_dim = block.shape[0]
         data[offset:offset + block_dim, offset:offset + block_dim] = block
         offset += block_dim
+
+    if hermitianize:
+        data = 0.5 * (data.transpose().conj() + data)
 
     return data
 
