@@ -98,11 +98,12 @@ class PomerolSolver(SolverBase):
         #   self.set_G0_iw
         #   self.u_mat
         #
-        # Additionally, the following variables may used:
+        # Additionally, the following variables may be used:
         #   self.n_orb
         #   self.n_flavor
         #   self.gf_struct
         #   self.n_tau
+        #   self.use_spin_orbit
 
         # print("params_kw =", params_kw)
         exec_path = params_kw['exec_path']
@@ -112,8 +113,6 @@ class PomerolSolver(SolverBase):
         n_w2f = params_kw.get('n_w2f', 10)
         n_w2b = params_kw.get('n_w2b', 1)
 
-        flag_spin_conserve = 1 if len(self.gf_struct) == 2 else 0
-
         file_pomerol = "pomerol.in"
         file_h0 = "h0.in"
         file_umat = "umat.in"
@@ -122,7 +121,7 @@ class PomerolSolver(SolverBase):
         params_pomerol = {
             'n_orb': self.n_orb,
             'beta': self.beta,
-            'flag_spin_conserve': flag_spin_conserve,
+            'flag_spin_conserve': 1 if not self.use_spin_orbit else 0,
             'file_h0': file_h0,
             'file_umat': file_umat,
             'flag_gf': 1,
@@ -168,7 +167,7 @@ class PomerolSolver(SolverBase):
 
         # load data as a complex type
         gf_1d = numpy.loadtxt(file_gf).view(complex).reshape(-1)
-        if flag_spin_conserve:
+        if not self.use_spin_orbit:
             gf = gf_1d.reshape((2, self.n_orb, self.n_orb, self.n_iw))
         else:
             gf = gf_1d.reshape((1, self.n_flavors, self.n_flavors, self.n_iw))
@@ -177,7 +176,10 @@ class PomerolSolver(SolverBase):
         set_tail(self._Gimp_iw)
 
         # Compute Sigma_iw
-        # NOTE: do NOT use self._G0_iw because it includes more information than that passed to the solver
+        # NOTE:
+        #   compute G0(iw) from h0_mat instead of using self._G0_iw, since
+        #   self._G0_iw includes more information than that passed to the
+        #   solver (see extract_H0 for details).
         n_block = len(self.gf_struct)
         n_inner = h0_mat.shape[0] / n_block
         # cut H0 into block structure
@@ -201,7 +203,7 @@ class PomerolSolver(SolverBase):
             icrsh = params_kw.get('icrsh', 0)
             only_diagonal = not params_kw.get('nonlocal_order_parameter', False)
 
-            n_spin = 2 if flag_spin_conserve else 1
+            n_spin = 2 if not self.use_spin_orbit else 1
             n_inner = self.n_flavors / n_spin
 
             # FIXME: spin order and names
@@ -242,7 +244,7 @@ class PomerolSolver(SolverBase):
                     data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
                     data_wb = data[wb]
 
-                    if flag_spin_conserve:
+                    if not self.use_spin_orbit:
                         s1, o1 = decompose_index(i1, self.n_orb)
                         s2, o2 = decompose_index(i2, self.n_orb)
                         s3, o3 = decompose_index(i3, self.n_orb)
