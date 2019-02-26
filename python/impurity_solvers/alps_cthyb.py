@@ -150,8 +150,6 @@ class ALPSCTHYBSolver(SolverBase):
         # Swap cols and rows
         H0 = (H0[:, index])[index, :]
 
-        H0 = 0.5 * (H0.transpose().conj() + H0)
-
         # Compute the hybridization function from G0:
         #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
         # H0 is extracted from the tail of the Green's function.

@@ -64,7 +64,6 @@ class NullSolver(SolverBase):
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
         H0 = extract_H0(self._G0_iw)
-        H0 = 0.5 * (H0.transpose().conj() + H0)
 
         # (1b) If Delta(iw) and/or Delta(tau) are necessary:
         # Compute the hybridization function from G0:
