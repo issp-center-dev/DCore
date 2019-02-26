@@ -177,8 +177,6 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # Swap cols and rows
         H0 = (H0[:, index])[index, :]
 
-        H0 = 0.5 * (H0.transpose().conj() + H0)
-
         # (1b) If Delta(iw) and/or Delta(tau) are necessary:
         # Compute the hybridization function from G0:
         #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)

@@ -140,7 +140,6 @@ class PomerolSolver(SolverBase):
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
         h0_mat = extract_H0(self._G0_iw)
-        h0_mat = 0.5 * (h0_mat.transpose().conj() + h0_mat)
 
         with open(file_h0, "w") as f:
             for i, j in product(range(h0_mat.shape[0]), range(h0_mat.shape[1])):
