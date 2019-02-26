@@ -52,11 +52,12 @@ class NullSolver(SolverBase):
         #   self.set_G0_iw
         #   self.u_mat
         #
-        # Additionally, the following variables may used:
+        # Additionally, the following variables may be used:
         #   self.n_orb
         #   self.n_flavor
         #   self.gf_struct
         #   self.n_tau
+        #   self.use_spin_orbit
 
         # (1a) If H0 is necessary:
         # Non-interacting part of the local Hamiltonian including chemical potential
