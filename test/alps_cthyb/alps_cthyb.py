@@ -32,16 +32,17 @@ class TestMethods(unittest.TestCase):
         super(TestMethods, self).__init__(*args, **kwargs)
 
     def test_copy_between_numpy_blockgf(self):
+        block_names = ['up', 'down']
         g1 = GfImFreq(indices=[0, 1], beta=beta, n_points=n_iw, name="up")
         g1.data[:,:,:] = numpy.random.rand(g1.data.shape[0], g1.data.shape[1], g1.data.shape[2])
         g2 = GfImFreq(indices=[0, 1], beta=beta, n_points=n_iw, name="down")
         g2.data[:,:,:] = numpy.random.rand(g2.data.shape[0], g2.data.shape[1], g2.data.shape[2])
         G = BlockGf(name_list=('up', 'down'), block_list=(g1, g2), make_copies=False)
 
-        data = to_numpy_array(G)
+        data = to_numpy_array(G, block_names)
 
         G_reconst = G.copy()
-        assign_from_numpy_array(G_reconst, data)
+        assign_from_numpy_array(G_reconst, data, block_names)
 
         for name, g in G:
             numpy.allclose(G[name].data, G_reconst[name].data, 1e-10)

@@ -27,7 +27,7 @@ from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
 
-def to_numpy_array(g):
+def to_numpy_array(g, names):
     """
     Convert BlockGf object to numpy.
     Rearrange spins and orbitals so that up and down spins appear alternatively.
@@ -38,7 +38,6 @@ def to_numpy_array(g):
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks must be 1 or 2.")
 
-    names = [name for name, block in g]
     n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
 
     # FIXME: Bit ugly
@@ -46,7 +45,8 @@ def to_numpy_array(g):
 
     data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=complex)
     offset = 0
-    for name, block in g:
+    for name in names:
+        block = g[name]
         block_dim = len(block.indices)
         data[:, offset:offset + block_dim, offset:offset + block_dim] = block.data
         offset += block_dim
@@ -61,7 +61,7 @@ def to_numpy_array(g):
     return (data[:, :, index])[:, index, :]
 
 
-def assign_from_numpy_array(g, data):
+def assign_from_numpy_array(g, data, names):
     """
     Does inversion of to_numpy_array
     data[spin,orb,iw]
@@ -71,7 +71,6 @@ def assign_from_numpy_array(g, data):
     if g.n_blocks != 2:
         raise RuntimeError("n_blocks must be 1 or 2.")
 
-    names = [name for name, block in g]
     norb = data.shape[1]
     niw = data.shape[2]
     print(data.shape)
@@ -183,9 +182,9 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # H0 is extracted from the tail of the Green's function.
         self._Delta_iw = delta(self._G0_iw)
         Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
-        for name, block in self._Delta_iw:
+        for name in self.block_names:
             Delta_tau[name] << InverseFourier(self._Delta_iw[name])
-        Delta_tau_data = to_numpy_array(Delta_tau)
+        Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
 
         # (1c) Set U_{ijkl} for the solver
         # Set up input parameters and files for ALPS/CTHYB-SEG
@@ -261,7 +260,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
                     assert swdata_array.dtype == numpy.complex
                     assert swdata_array.shape == (self.n_iw,)
                     swdata[spin, orb, :] = swdata_array
-        assign_from_numpy_array(self._Sigma_iw, swdata)
+        assign_from_numpy_array(self._Sigma_iw, swdata, self.block_names)
 
     def name(self):
         return "ALPS/cthyb-seg"
