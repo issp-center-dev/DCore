@@ -67,7 +67,7 @@ if __name__ == '__main__':
                         default=None,
                         type=str,
                         help="input file name.")
-    parser.add_argument('--np', default=1, help='Number of MPI processes')
+    parser.add_argument('--np', default=1, help='Number of MPI processes', required=True)
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
