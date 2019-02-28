@@ -192,7 +192,6 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
 
     os.chdir(work_dir_org)
 
-    assert isinstance(xloc, dict)
     return xloc
 
 
@@ -239,6 +238,7 @@ def save_g2_for_bse(xloc_ijkl, n_w2b, n_corr_shells, icrsh, nonlocal_order_param
         # print(" ---\n wb = %d" % wb)
         xloc_h5bse = {}
         for (i1, i2, i3, i4), data in xloc_ijkl.items():
+            # print(i1, i2, i3, i4)
             # print(data.shape)
             # (wb, wf1, wf2) --> (wf1, wf2)
             data_wb = data[wb]
@@ -255,14 +255,14 @@ def save_g2_for_bse(xloc_ijkl, n_w2b, n_corr_shells, icrsh, nonlocal_order_param
                 s4, o4 = 0, i4
 
             s12 = block2.get_index(icrsh, s1, icrsh, s2)
-            s43 = block2.get_index(icrsh, s4, icrsh, s3)
+            s34 = block2.get_index(icrsh, s3, icrsh, s4)
             inner12 = inner2.get_index(o1, o2)
-            inner43 = inner2.get_index(o4, o3)
+            inner34 = inner2.get_index(o3, o4)
 
-            if (s12, s43) not in xloc_h5bse:
+            if (s12, s34) not in xloc_h5bse:
                 # xloc_h5bse[(s12, s43)] = numpy.zeros((n_inner ** 2, n_inner ** 2, 2 * n_w2f, 2 * n_w2f), dtype=complex)
-                xloc_h5bse[(s12, s43)] = numpy.zeros((n_inner**2, n_inner**2) + data_wb.shape, dtype=complex)
-            xloc_h5bse[(s12, s43)][inner12, inner43, :, :] = data_wb[:, :]
+                xloc_h5bse[(s12, s34)] = numpy.zeros((n_inner**2, n_inner**2) + data_wb.shape, dtype=complex)
+            xloc_h5bse[(s12, s34)][inner12, inner34, :, :] = data_wb[:, :]
 
         # save
         h5bse.save(key=('X_loc', wb), data=xloc_h5bse)
@@ -580,6 +580,9 @@ class DMFTCoreSolver(object):
                                              self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                                              self._params['bse']['num_wb'],
                                              self._params['bse']['num_wf'], ish)
+            assert isinstance(xloc, dict)
+            print("\nxloc.keys() =", xloc.keys())
+
             #
             # save X_loc in hdf5
             #
