@@ -196,85 +196,100 @@ class PomerolSolver(SolverBase):
 
         self.solve(rot, mpirun_command, params_kw)
 
-        from dft_tools.index_pair import IndexPair, IndexPair2
-        from bse_tools.h5bse import h5BSE
+        # from dft_tools.index_pair import IndexPair, IndexPair2
+        # from bse_tools.h5bse import h5BSE
 
         n_w2f = params_kw.get('num_wf')
         n_w2b = params_kw.get('num_wb')
-
         dir_g2 = params_kw.get('dir_g2', './two_particle')
-        bse_h5 = params_kw.get('bse_h5_file', 'dmft_bse.h5')
-        bse_grp = params_kw.get('bse_grp_name', '')
-        bse_info = params_kw.get('bse_info', 'save')
 
-        # FIXME: passed from DCore
-        n_corr_shells = params_kw.get('n_corr_shells', 1)
-        icrsh = params_kw.get('icrsh', 0)
-        only_diagonal = not params_kw.get('nonlocal_order_parameter', False)
+        x_loc = {}
+        for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
+            filename = dir_g2 + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
+            if not os.path.exists(filename):
+                continue
+            print(" reading", filename)
 
-        n_spin = 2 if not self.use_spin_orbit else 1
-        n_inner = self.n_flavors / n_spin
+            # load data as a complex type
+            # 1d array --> (wb, wf1, wf2)
+            data = numpy.loadtxt(filename).view(complex).reshape(-1)
+            data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
 
-        # FIXME: spin order and names
-        block2 = IndexPair2(range(n_corr_shells), range(n_spin), only_diagonal1=only_diagonal)
-        inner2 = IndexPair(range(n_inner), convert_to_int=True)
-        print(" block2 namelist =", block2.namelist)
-        print(" inner2 namelist =", inner2.namelist)
+            x_loc[(i1,i2,i4,i3)] = data
+        return x_loc
 
-        # h5bse
-        h5bse = h5BSE(bse_h5, bse_grp)
-        if bse_info == 'check':
-            # check equivalence of info
-            assert h5bse.get(key=('block_name',)) == block2.namelist
-            assert h5bse.get(key=('inner_name',)) == inner2.namelist
-            assert h5bse.get(key=('beta',)) == self.beta
-        elif bse_info == 'save':
-            # save info
-            h5bse.save(key=('block_name',), data=block2.namelist)
-            h5bse.save(key=('inner_name',), data=inner2.namelist)
-            h5bse.save(key=('beta',), data=self.beta)
-        else:
-            raise ValueError("bse_info =", bse_info)
-
-        # read X_loc data and save into h5 file
-        for wb in range(n_w2b):
-            # boson freq
-            print(" ---\n wb = %d" % wb)
-            x_loc = {}
-            for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
-                filename = dir_g2 + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
-                if not os.path.exists(filename):
-                    continue
-                print(" reading", filename)
-
-                # load data as a complex type
-                # 1d array --> (wb, wf1, wf2) --> (wf1, wf2)
-                data = numpy.loadtxt(filename).view(complex).reshape(-1)
-                data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
-                data_wb = data[wb]
-
-                if not self.use_spin_orbit:
-                    s1, o1 = decompose_index(i1, self.n_orb)
-                    s2, o2 = decompose_index(i2, self.n_orb)
-                    s3, o3 = decompose_index(i3, self.n_orb)
-                    s4, o4 = decompose_index(i4, self.n_orb)
-                else:
-                    s1, o1 = 0, i1
-                    s2, o2 = 0, i2
-                    s3, o3 = 0, i3
-                    s4, o4 = 0, i4
-
-                s12 = block2.get_index(icrsh, s1, icrsh, s2)
-                s43 = block2.get_index(icrsh, s4, icrsh, s3)
-                inner12 = inner2.get_index(o1, o2)
-                inner43 = inner2.get_index(o4, o3)
-
-                if (s12, s43) not in x_loc:
-                    x_loc[(s12, s43)] = numpy.zeros((n_inner**2, n_inner**2, 2*n_w2f, 2*n_w2f), dtype=complex)
-                x_loc[(s12, s43)][inner12, inner43, :, :] = data_wb[:, :]
-
-            # save
-            h5bse.save(key=('X_loc', wb), data=x_loc)
+        # bse_h5 = params_kw.get('bse_h5_file', 'dmft_bse.h5')
+        # bse_grp = params_kw.get('bse_grp_name', '')
+        # bse_info = params_kw.get('bse_info', 'save')
+        #
+        # # FIXME: passed from DCore
+        # n_corr_shells = params_kw.get('n_corr_shells', 1)
+        # icrsh = params_kw.get('icrsh', 0)
+        # only_diagonal = not params_kw.get('nonlocal_order_parameter', False)
+        #
+        # n_spin = 2 if not self.use_spin_orbit else 1
+        # n_inner = self.n_flavors / n_spin
+        #
+        # # FIXME: spin order and names
+        # block2 = IndexPair2(range(n_corr_shells), range(n_spin), only_diagonal1=only_diagonal)
+        # inner2 = IndexPair(range(n_inner), convert_to_int=True)
+        # print(" block2 namelist =", block2.namelist)
+        # print(" inner2 namelist =", inner2.namelist)
+        #
+        # # h5bse
+        # h5bse = h5BSE(bse_h5, bse_grp)
+        # if bse_info == 'check':
+        #     # check equivalence of info
+        #     assert h5bse.get(key=('block_name',)) == block2.namelist
+        #     assert h5bse.get(key=('inner_name',)) == inner2.namelist
+        #     assert h5bse.get(key=('beta',)) == self.beta
+        # elif bse_info == 'save':
+        #     # save info
+        #     h5bse.save(key=('block_name',), data=block2.namelist)
+        #     h5bse.save(key=('inner_name',), data=inner2.namelist)
+        #     h5bse.save(key=('beta',), data=self.beta)
+        # else:
+        #     raise ValueError("bse_info =", bse_info)
+        #
+        # # read X_loc data and save into h5 file
+        # for wb in range(n_w2b):
+        #     # boson freq
+        #     print(" ---\n wb = %d" % wb)
+        #     x_loc = {}
+        #     for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
+        #         filename = dir_g2 + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
+        #         if not os.path.exists(filename):
+        #             continue
+        #         print(" reading", filename)
+        #
+        #         # load data as a complex type
+        #         # 1d array --> (wb, wf1, wf2) --> (wf1, wf2)
+        #         data = numpy.loadtxt(filename).view(complex).reshape(-1)
+        #         data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
+        #         data_wb = data[wb]
+        #
+        #         if not self.use_spin_orbit:
+        #             s1, o1 = decompose_index(i1, self.n_orb)
+        #             s2, o2 = decompose_index(i2, self.n_orb)
+        #             s3, o3 = decompose_index(i3, self.n_orb)
+        #             s4, o4 = decompose_index(i4, self.n_orb)
+        #         else:
+        #             s1, o1 = 0, i1
+        #             s2, o2 = 0, i2
+        #             s3, o3 = 0, i3
+        #             s4, o4 = 0, i4
+        #
+        #         s12 = block2.get_index(icrsh, s1, icrsh, s2)
+        #         s43 = block2.get_index(icrsh, s4, icrsh, s3)
+        #         inner12 = inner2.get_index(o1, o2)
+        #         inner43 = inner2.get_index(o4, o3)
+        #
+        #         if (s12, s43) not in x_loc:
+        #             x_loc[(s12, s43)] = numpy.zeros((n_inner**2, n_inner**2, 2*n_w2f, 2*n_w2f), dtype=complex)
+        #         x_loc[(s12, s43)][inner12, inner43, :, :] = data_wb[:, :]
+        #
+        #     # save
+        #     h5bse.save(key=('X_loc', wb), data=x_loc)
 
     def name(self):
         return "pomerol"
