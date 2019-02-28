@@ -155,6 +155,43 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     return sol.get_Sigma_iw(), sol.get_Gimp_iw(), sol.get_Sigma_w()
 
 
+def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau, Sigma_iw, Gloc_iw, num_wb, num_wf, ish):
+    """
+
+    Calculate G2 in an impurity model
+
+    """
+
+    Solver = impurity_solvers.solver_classes[solver_name]
+
+    raise_if_mpi_imported()
+
+    sol = Solver(beta, gf_struct, Umat, n_iw, n_tau)
+
+    G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
+    sol.set_G0_iw(G0_iw)
+
+    # Compute rotation matrix to the diagonal basis if supported
+    rot = compute_diag_basis(G0_iw) if basis_rot else None
+    s_params = copy.deepcopy(solver_params)
+    s_params['random_seed_offset'] = 1000 * ish
+
+    s_params['num_wb'] = num_wb
+    s_params['num_wf'] = num_wf
+
+    work_dir_org = os.getcwd()
+    # work_dir = 'work/imp_shell'+str(ish)+"_ite"+str(ite)
+    work_dir = 'work/imp_shell'+str(ish)+'_bse'
+    if not os.path.isdir(work_dir):
+        os.makedirs(work_dir)
+    os.chdir(work_dir)
+
+    # Solve the model
+    # sol.solve(rot, mpirun_command, s_params)
+    sol.calc_g2(rot, mpirun_command, s_params)
+
+    os.chdir(work_dir_org)
+
 
 class DMFTCoreSolver(object):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out', read_only=False):
@@ -452,6 +489,31 @@ class DMFTCoreSolver(object):
         params['div'] = lattice_model.nkdiv()
         params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
         sumkdft.run(self._seedname+'.h5', './work/sumkdft_bse', self._mpirun_command, params)
+
+        #
+        # X_loc
+        #
+        Gloc_iw_sh, _ = self.calc_Gloc()
+        solver_name = self._params['impurity_solver']['name']
+
+        for ish in range(self._n_inequiv_shells):
+            print("Solving impurity model for inequivalent shell " + str(ish) + " ...")
+            sys.stdout.flush()
+            calc_g2_in_impurity_model(solver_name, self._solver_params, self._mpirun_command,
+                                      self._params["impurity_solver"]["basis_rotation"],
+                                      self._Umat[ish], self._gf_struct[ish],
+                                      self._beta, self._n_iw, self._n_tau,
+                                      self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
+                                      self._params['bse']['num_wb'],
+                                      self._params['bse']['num_wf'], ish)
+
+        # TODO:
+        # get G2 from the impurity solver and save into the h5_file.
+        # This should be done for all **correlated_shells** (not for inequiv_shells)
+
+        # h5_file = params['bse_h5_out_file']
+        # nonlocal_order_parameter = False
+
 
     def calc_Sigma_w(self, mesh):
         """
