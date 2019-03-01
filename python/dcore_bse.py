@@ -67,7 +67,50 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
 
     os.chdir(work_dir_org)
 
-    return xloc
+    return xloc, sol.get_Gimp_iw()
+
+
+def subtract_disconnected(xloc, gimp, spin_names):
+    """
+    subtract disconnected part from X_loc
+        X_loc[(i1, i2, i3, i4)][wb=0, wf1, wf2] - G[(i2, i1)][wf1] * G[(i3, i4)][wf2]
+
+    """
+
+    # g_ij[(i, j)] = data[iw]
+    g_ij = {}
+    for isp, sp in enumerate(spin_names):
+        # print(gimp[sp].data.shape)
+        # data[iw, orb1, orb2]
+        norb = gimp[sp].data.shape[1]
+        assert norb == gimp[sp].data.shape[2]
+        for o1, o2 in product(range(norb), repeat=2):
+            i = o1 + isp*norb
+            j = o1 + isp*norb
+            g_ij[(i, j)] = gimp[sp].data[:, o1, o2]
+    print(g_ij.keys())
+
+    assert g_ij[(0, 0)].shape[0] % 2 == 0
+    w0 = g_ij[(0, 0)].shape[0] / 2
+
+    def g(_i, _j, _w):
+        return g_ij[(_i, _j)][w0 + _w]
+
+    for (i1, i2, i3, i4), data in xloc.items():
+        # print(i1, i2, i3, i4)
+        # print(data.shape)
+        n_wf = data.shape[1]
+        assert n_wf == data.shape[2]
+        assert n_wf % 2 == 0
+
+        # skip if g_ij has no data
+        if (not (i2, i1) in g_ij) or (not (i3, i4) in g_ij):
+            continue
+
+        for if1, if2 in product(range(n_wf), repeat=2):
+            wf1 = if1 - n_wf/2
+            wf2 = if2 - n_wf/2
+            data[0, if1, if2] -= g(i2, i1, wf1) * g(i3, i4, wf2)
 
 
 class SaveBSE:
@@ -237,14 +280,17 @@ class DMFTBSESolver(DMFTCoreSolver):
         for ish in range(self._n_inequiv_shells):
             print("Solving impurity model for inequivalent shell " + str(ish) + " ...")
             sys.stdout.flush()
-            xloc = calc_g2_in_impurity_model(solver_name, self._solver_params, self._mpirun_command,
-                                             self._params["impurity_solver"]["basis_rotation"],
-                                             self._Umat[ish], self._gf_struct[ish], self._beta, self._n_iw, self._n_tau,
-                                             self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
-                                             self._params['bse']['num_wb'],
-                                             self._params['bse']['num_wf'], ish)
-            assert isinstance(xloc, dict)
-            print("\nxloc.keys() =", xloc.keys())
+            x_loc, g_imp = calc_g2_in_impurity_model(solver_name, self._solver_params, self._mpirun_command,
+                                                     self._params["impurity_solver"]["basis_rotation"],
+                                                     self._Umat[ish], self._gf_struct[ish], self._beta, self._n_iw,
+                                                     self._n_tau,
+                                                     self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
+                                                     self._params['bse']['num_wb'],
+                                                     self._params['bse']['num_wf'], ish)
+            assert isinstance(x_loc, dict)
+            print("\nx_loc.keys() =", x_loc.keys())
+
+            subtract_disconnected(x_loc, g_imp, self.spin_block_names)
 
             # NOTE:
             #   n_flavors may depend on ish, but present BSE code does not support it
@@ -266,7 +312,7 @@ class DMFTBSESolver(DMFTCoreSolver):
             #
             # save X_loc
             #
-            bse.save_xloc(xloc, icrsh=self._sk.inequiv_to_corr[ish], n_w2b=self._params['bse']['num_wb'])
+            bse.save_xloc(x_loc, icrsh=self._sk.inequiv_to_corr[ish], n_w2b=self._params['bse']['num_wb'])
 
             #
             # save U matrix for RPA
