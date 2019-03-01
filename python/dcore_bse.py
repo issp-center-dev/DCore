@@ -28,7 +28,9 @@ from . import sumkdft
 from .tools import *
 import impurity_solvers
 
-def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau, Sigma_iw, Gloc_iw, num_wb, num_wf, ish):
+
+def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau,
+                              Sigma_iw, Gloc_iw, num_wb, num_wf, ish):
     """
 
     Calculate G2 in an impurity model
@@ -54,7 +56,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
 
     work_dir_org = os.getcwd()
     # work_dir = 'work/imp_shell'+str(ish)+"_ite"+str(ite)
-    work_dir = 'work/imp_shell'+str(ish)+'_bse'
+    work_dir = 'work/imp_shell' + str(ish) + '_bse'
     if not os.path.isdir(work_dir):
         os.makedirs(work_dir)
     os.chdir(work_dir)
@@ -68,86 +70,93 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     return xloc
 
 
-def save_g2_for_bse(xloc_ijkl, n_w2b, n_corr_shells, icrsh, nonlocal_order_parameter, h5_file, bse_info, n_flavors, use_spin_orbit, beta):
+class SaveBSE:
 
-    from dft_tools.index_pair import IndexPair, IndexPair2
-    from bse_tools.h5bse import h5BSE
+    def __init__(self, h5_file, bse_info, n_corr_shells, n_flavors, use_spin_orbit, nonlocal_order_parameter, beta,
+                 spin_names, bse_grp=''):
 
-    bse_grp = ''
-    only_diagonal = not nonlocal_order_parameter
+        from dft_tools.index_pair import IndexPair, IndexPair2
+        from bse_tools.h5bse import h5BSE
 
-    n_block = 2 if not use_spin_orbit else 1
-    n_inner = n_flavors // n_block
-    n_orb = n_flavors // 2
+        self.spin_names = spin_names
+        self.use_spin_orbit = use_spin_orbit
 
-    # FIXME: spin order and names
-    block2 = IndexPair2(range(n_corr_shells), range(n_block), only_diagonal1=only_diagonal)
-    inner2 = IndexPair(range(n_inner), convert_to_int=True)
-    print(" block2 namelist =", block2.namelist)
-    print(" inner2 namelist =", inner2.namelist)
+        only_diagonal = not nonlocal_order_parameter
 
-    h5bse = h5BSE(h5_file, bse_grp)
-    if bse_info == 'check':
-        # check equivalence of info
-        assert h5bse.get(key=('block_name',)) == block2.namelist
-        assert h5bse.get(key=('inner_name',)) == inner2.namelist
-        assert h5bse.get(key=('beta',)) == beta
-    elif bse_info == 'save':
-        # save info
-        h5bse.save(key=('block_name',), data=block2.namelist)
-        h5bse.save(key=('inner_name',), data=inner2.namelist)
-        h5bse.save(key=('beta',), data=beta)
-    else:
-        raise ValueError("bse_info =", bse_info)
+        n_block = 2 if not use_spin_orbit else 1
+        n_inner = n_flavors // n_block
+        self.n_orb = n_flavors // 2
+        assert n_block == len(spin_names)
 
-    def decompose_index(index, n_orb):
-        spn = index // n_orb
-        orb = index % n_orb
-        return spn, orb
+        self.block2 = IndexPair2(range(n_corr_shells), spin_names, only_diagonal1=only_diagonal)
+        self.inner2 = IndexPair(range(n_inner), convert_to_int=True)
+        print(" block2 namelist =", self.block2.namelist)
+        print(" inner2 namelist =", self.inner2.namelist)
 
-    # read X_loc data and save into h5 file
-    for wb in range(n_w2b):
-        # boson freq
-        # print(" ---\n wb = %d" % wb)
-        xloc_h5bse = {}
-        for (i1, i2, i3, i4), data in xloc_ijkl.items():
-            # print(i1, i2, i3, i4)
-            # print(data.shape)
-            # (wb, wf1, wf2) --> (wf1, wf2)
-            data_wb = data[wb]
+        self.h5bse = h5BSE(h5_file, bse_grp)
+        if bse_info == 'check':
+            # check equivalence of info
+            assert self.h5bse.get(key=('block_name',)) == self.block2.namelist
+            assert self.h5bse.get(key=('inner_name',)) == self.inner2.namelist
+            assert self.h5bse.get(key=('beta',)) == beta
+        elif bse_info == 'save':
+            # save info
+            self.h5bse.save(key=('block_name',), data=self.block2.namelist)
+            self.h5bse.save(key=('inner_name',), data=self.inner2.namelist)
+            self.h5bse.save(key=('beta',), data=beta)
+        else:
+            raise ValueError("bse_info =", bse_info)
 
-            if not use_spin_orbit:
-                s1, o1 = decompose_index(i1, n_orb)
-                s2, o2 = decompose_index(i2, n_orb)
-                s3, o3 = decompose_index(i3, n_orb)
-                s4, o4 = decompose_index(i4, n_orb)
-            else:
-                s1, o1 = 0, i1
-                s2, o2 = 0, i2
-                s3, o3 = 0, i3
-                s4, o4 = 0, i4
+    def save_xloc(self, xloc_ijkl, icrsh, n_w2b):
 
-            s12 = block2.get_index(icrsh, s1, icrsh, s2)
-            s34 = block2.get_index(icrsh, s3, icrsh, s4)
-            inner12 = inner2.get_index(o1, o2)
-            inner34 = inner2.get_index(o3, o4)
+        n_inner2 = len(self.inner2.namelist)
 
-            if (s12, s34) not in xloc_h5bse:
-                # xloc_h5bse[(s12, s43)] = numpy.zeros((n_inner ** 2, n_inner ** 2, 2 * n_w2f, 2 * n_w2f), dtype=complex)
-                xloc_h5bse[(s12, s34)] = numpy.zeros((n_inner**2, n_inner**2) + data_wb.shape, dtype=complex)
-            xloc_h5bse[(s12, s34)][inner12, inner34, :, :] = data_wb[:, :]
+        def decompose_index(index):
+            spn = index // self.n_orb
+            orb = index % self.n_orb
+            return self.spin_names[spn], orb
 
-        # save
-        h5bse.save(key=('X_loc', wb), data=xloc_h5bse)
+        # read X_loc data and save into h5 file
+        for wb in range(n_w2b):
+            # boson freq
+            # print(" ---\n wb = %d" % wb)
+            xloc_bse = {}
+            for (i1, i2, i3, i4), data in xloc_ijkl.items():
+                # print(i1, i2, i3, i4)
+                # print(data.shape)
+                # (wb, wf1, wf2) --> (wf1, wf2)
+                data_wb = data[wb]
+
+                if not self.use_spin_orbit:
+                    s1, o1 = decompose_index(i1)
+                    s2, o2 = decompose_index(i2)
+                    s3, o3 = decompose_index(i3)
+                    s4, o4 = decompose_index(i4)
+                else:
+                    s1, o1 = 0, i1
+                    s2, o2 = 0, i2
+                    s3, o3 = 0, i3
+                    s4, o4 = 0, i4
+
+                s12 = self.block2.get_index(icrsh, s1, icrsh, s2)
+                s34 = self.block2.get_index(icrsh, s3, icrsh, s4)
+                inner12 = self.inner2.get_index(o1, o2)
+                inner34 = self.inner2.get_index(o3, o4)
+
+                if (s12, s34) not in xloc_bse:
+                    # xloc_h5bse[(s12, s34)] = numpy.zeros((n_inner**2, n_inner**2) + data_wb.shape, dtype=complex)
+                    xloc_bse[(s12, s34)] = numpy.zeros((n_inner2, n_inner2) + data_wb.shape, dtype=complex)
+                xloc_bse[(s12, s34)][inner12, inner34, :, :] = data_wb[:, :]
+
+            # save
+            self.h5bse.save(key=('X_loc', wb), data=xloc_bse)
 
 
 class DMFTBSESolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
-
         assert params['control']['restart']
 
         super(DMFTBSESolver, self).__init__(seedname, params, output_file, output_group, read_only=True)
-
 
     def calc_bse(self):
         """
@@ -166,7 +175,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         params['n_wf_G2'] = self._params['bse']['num_wf']
         params['div'] = lattice_model.nkdiv()
         params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
-        sumkdft.run(self._seedname+'.h5', './work/sumkdft_bse', self._mpirun_command, params)
+        sumkdft.run(self._seedname + '.h5', './work/sumkdft_bse', self._mpirun_command, params)
 
         #
         # X_loc
@@ -186,30 +195,34 @@ class DMFTBSESolver(DMFTCoreSolver):
             assert isinstance(xloc, dict)
             print("\nxloc.keys() =", xloc.keys())
 
+            # NOTE:
+            #   n_flavors may depend on ish, but present BSE code does not support it
+            n_flavors = numpy.sum([len(indices) for indices in self._gf_struct[ish].values()])
+
+            # spin_names = [bname for bname, g in Gloc_iw_sh[ish]]
+            # print(spin_names)
+
+            bse = SaveBSE(n_corr_shells=self._n_corr_shells,
+                          h5_file='test_bse.h5',
+                          # h5_file=params['bse_h5_out_file'],
+                          bse_info='save',
+                          nonlocal_order_parameter=False,
+                          use_spin_orbit=self._use_spin_orbit,
+                          beta=self._beta,
+                          n_flavors=n_flavors,
+                          spin_names=self.spin_block_names,
+                          # spin_names=spin_names,
+                          )
+
             #
             # save X_loc in hdf5
             #
-            n_flavors = numpy.sum([ len(indices) for indices in self._gf_struct[ish].values() ])
-            save_g2_for_bse(xloc,
-                            n_w2b=self._params['bse']['num_wb'],
-                            n_corr_shells=self._n_corr_shells,
-                            icrsh=self._sk.inequiv_to_corr[ish],
-                            nonlocal_order_parameter=False,
-                            # h5_file=params['bse_h5_out_file'],
-                            h5_file='test_bse.h5',
-                            bse_info='save',
-                            use_spin_orbit=self._use_spin_orbit,
-                            beta=self._beta,
-                            n_flavors=n_flavors,
-                            )
+            bse.save_xloc(xloc, icrsh=self._sk.inequiv_to_corr[ish], n_w2b=self._params['bse']['num_wb'])
+
             # FIXME:
-            #     Do we need a loop for correlated shells?
-            #     when n_inequiv_shells < n_corr_shells
-            #
-            #     icrsh=self._sk.inequiv_to_corr[ish],
-
-            # This should be done for all **correlated_shells** (not for inequiv_shells)
-
+            #     Saving X_loc should be done for all **correlated_shells** (not for inequiv_shells)
+            #     Namely, we need a loop for correlated shells when n_inequiv_shells < n_corr_shells
+            assert self._n_inequiv_shells == self._n_corr_shells
 
 
 def dcore_bse(filename, np=1):
@@ -242,7 +255,7 @@ def dcore_bse(filename, np=1):
     # Load DMFT data
     #
     p['control']['restart'] = True
-    solver = DMFTBSESolver(seedname, p, output_file=seedname+'.out.h5')
+    solver = DMFTBSESolver(seedname, p, output_file=seedname + '.out.h5')
     if solver.iteration_number == 0:
         raise RuntimeError("Number of iterations is zero!")
     print("Number of iterations :", solver.iteration_number)
