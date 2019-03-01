@@ -88,7 +88,7 @@ def subtract_disconnected(xloc, gimp, spin_names):
             i = o1 + isp*norb
             j = o1 + isp*norb
             g_ij[(i, j)] = gimp[sp].data[:, o1, o2]
-    print(g_ij.keys())
+    # print(g_ij.keys())
 
     assert g_ij[(0, 0)].shape[0] % 2 == 0
     w0 = g_ij[(0, 0)].shape[0] / 2
@@ -152,9 +152,10 @@ class SaveBSE:
         else:
             raise ValueError("bse_info =", bse_info)
 
-    def save_xloc(self, xloc_ijkl, icrsh, n_w2b):
+    def save_xloc(self, xloc_ijkl, icrsh):
 
         n_inner2 = len(self.inner2.namelist)
+        n_w2b = xloc_ijkl[xloc_ijkl.keys()[0]].shape[0]
 
         def decompose_index(index):
             spn = index // self.n_orb
@@ -204,15 +205,15 @@ class SaveBSE:
         u_mat_ph1 = u_mat.transpose(0, 2, 3, 1)
         u_mat_ph2 = u_mat.transpose(0, 3, 2, 1)
 
-        def print_umat(_umat, _str):
-            print("\n" + _str)
-            for i, j, k, l in product(range(_umat.shape[0]), repeat=4):
-                if abs(_umat[i, j, k, l]):
-                    print(i, j, k, l, _umat[i, j, k, l])
-
-        print_umat(u_mat, "u_mat")
-        print_umat(u_mat_ph1, "u_mat_ph1")
-        print_umat(u_mat_ph2, "u_mat_ph2")
+        # def print_umat(_umat, _str):
+        #     print("\n" + _str)
+        #     for i, j, k, l in product(range(_umat.shape[0]), repeat=4):
+        #         if abs(_umat[i, j, k, l]):
+        #             print(i, j, k, l, _umat[i, j, k, l])
+        #
+        # print_umat(u_mat, "u_mat")
+        # print_umat(u_mat_ph1, "u_mat_ph1")
+        # print_umat(u_mat_ph2, "u_mat_ph2")
 
         if not self.use_spin_orbit:
             u_mat_ph1 = u_mat_ph1.reshape((2, self.n_orb)*4)
@@ -229,9 +230,9 @@ class SaveBSE:
                 if numpy.linalg.norm(gamma0_orb) == 0:
                     continue
 
-                for s in [s1, s2, s3, s4]:
-                    print("", self.spin_names[s], end="")
-                print(gamma0_orb)
+                # for s in [s1, s2, s3, s4]:
+                #     print("", self.spin_names[s], end="")
+                # print(gamma0_orb)
 
                 s12 = self.block2.get_index(icrsh, self.spin_names[s1], icrsh, self.spin_names[s2])
                 s34 = self.block2.get_index(icrsh, self.spin_names[s3], icrsh, self.spin_names[s4])
@@ -312,7 +313,7 @@ class DMFTBSESolver(DMFTCoreSolver):
             #
             # save X_loc
             #
-            bse.save_xloc(x_loc, icrsh=self._sk.inequiv_to_corr[ish], n_w2b=self._params['bse']['num_wb'])
+            bse.save_xloc(x_loc, icrsh=self._sk.inequiv_to_corr[ish])
 
             #
             # save U matrix for RPA
