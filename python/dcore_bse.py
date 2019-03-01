@@ -80,6 +80,7 @@ class SaveBSE:
 
         self.spin_names = spin_names
         self.use_spin_orbit = use_spin_orbit
+        self.n_flavors = n_flavors
 
         only_diagonal = not nonlocal_order_parameter
 
@@ -152,6 +153,55 @@ class SaveBSE:
             # save
             self.h5bse.save(key=('X_loc', wb), data=xloc_bse)
 
+    def save_gamma0(self, u_mat, icrsh):
+
+        assert u_mat.shape == (self.n_flavors, )*4
+
+        # transpose U matrix into p-h channel, c_1^+ c_2 c_4^+ c_3
+        u_mat_ph1 = u_mat.transpose(0, 2, 3, 1)
+        u_mat_ph2 = u_mat.transpose(0, 3, 2, 1)
+
+        def print_umat(_umat, str):
+            print("\n" + str)
+            for i,j,k,l in product(range(_umat.shape[0]), repeat=4):
+                if abs(_umat[i, j, k, l]):
+                    print(i, j, k, l, _umat[i, j, k, l])
+
+        print_umat(u_mat, "u_mat")
+        print_umat(u_mat_ph1, "u_mat_ph1")
+        print_umat(u_mat_ph2, "u_mat_ph2")
+
+        if not self.use_spin_orbit:
+            u_mat_ph1 = u_mat_ph1.reshape((2, self.n_orb)*4)
+            u_mat_ph2 = u_mat_ph2.reshape((2, self.n_orb)*4)
+            # print(u_mat_ph1.shape)
+
+            gamma0 = {}
+            for s1, s2, s3, s4 in product(range(2), repeat=4):
+                # u_mat_orb = u_mat_spn_orb[s1, :, s4, :, s3, :, s2, :]
+                gamma0_orb = u_mat_ph1[s1, :, s2, :, s3, :, s4, :] - u_mat_ph2[s1, :, s2, :, s3, :, s4, :]
+                # print(u_mat_orb.shape)
+
+                # skip if zero
+                if numpy.linalg.norm(gamma0_orb) == 0:
+                    continue
+
+                for s in [s1, s2, s3, s4]:
+                    print("", self.spin_names[s], end="")
+                print(gamma0_orb)
+
+                s12 = self.block2.get_index(icrsh, self.spin_names[s1], icrsh, self.spin_names[s2])
+                s34 = self.block2.get_index(icrsh, self.spin_names[s3], icrsh, self.spin_names[s4])
+
+                gamma0[(s12, s34)] = gamma0_orb.reshape((self.n_orb**2, )*2)
+
+            self.h5bse.save(key=('gamma0', ), data=gamma0)
+        else:
+            gamma0_inner = u_mat_ph1 - u_mat_ph2
+            gamma0_inner = gamma0_inner.reshape((len(self.inner2.namelist), )*2)
+            block_index = self.block2.get_index(icrsh, 0, icrsh, 0)
+            self.h5bse.save(key=('gamma0', ), data={(block_index, block_index) : gamma0_inner})
+
 
 class DMFTBSESolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
@@ -200,6 +250,9 @@ class DMFTBSESolver(DMFTCoreSolver):
             #   n_flavors may depend on ish, but present BSE code does not support it
             n_flavors = numpy.sum([len(indices) for indices in self._gf_struct[ish].values()])
 
+            #
+            # init for saving data into HDF5
+            #
             bse = SaveBSE(n_corr_shells=self._n_corr_shells,
                           h5_file=params['bse_h5_out_file'],
                           bse_info='check',
@@ -211,18 +264,19 @@ class DMFTBSESolver(DMFTCoreSolver):
                           )
 
             #
-            # save X_loc in hdf5
+            # save X_loc
             #
             bse.save_xloc(xloc, icrsh=self._sk.inequiv_to_corr[ish], n_w2b=self._params['bse']['num_wb'])
 
-            # FIXME:
-            #     Saving X_loc should be done for all **correlated_shells** (not for inequiv_shells)
-            #     Namely, we need a loop for correlated shells when n_inequiv_shells < n_corr_shells
-            assert self._n_inequiv_shells == self._n_corr_shells
+            #
+            # save U matrix for RPA
+            #
+            bse.save_gamma0(self._Umat[ish], icrsh=self._sk.inequiv_to_corr[ish])
 
-            print(self._Umat[ish].shape)
-            for i,j,k,l in product(range(self._Umat[ish].shape[0]), repeat=4):
-                print(i, j, k, l, self._Umat[ish][i, j, k, l])
+        # FIXME:
+        #     Saving data should be done for all **correlated_shells** (not for inequiv_shells)
+        #     Namely, we need a loop for correlated shells when n_inequiv_shells < n_corr_shells
+        assert self._n_inequiv_shells == self._n_corr_shells
 
 
 def dcore_bse(filename, np=1):
