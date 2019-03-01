@@ -32,6 +32,114 @@ from sumkdft import SumkDFTCompat
 from program_options import create_parser
 
 from .tools import launch_mpi_subprocesses
+import impurity_solvers
+from . import sumkdft
+
+class DMFTPostSolver(DMFTCoreSolver):
+    def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
+
+        assert params['control']['restart']
+
+        super(DMFTPostSolver, self).__init__(seedname, params, output_file, output_group, read_only=True)
+
+
+    def calc_dos(self, Sigma_w_sh, mesh, broadening):
+        """
+
+        Compute dos in real frequency.
+
+        :param Sigma_w_sh: list
+           List of real-frequency self-energy
+
+        :param broadening: float
+           Broadening factor
+
+        :return: tuple
+           Results are 'dos', 'dosproj', 'dosproj_orb'.
+
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'dos'
+        params['mu'] = self._chemical_potential
+        params['Sigma_w_sh'] = Sigma_w_sh
+        params['mesh'] = mesh
+        params['broadening'] = broadening
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos', self._mpirun_command, params)
+        return r['dos'], r['dosproj'], r['dosproj_orb']
+
+    def calc_dos0(self, mesh, broadening):
+        """
+
+        Compute dos in real frequency.
+
+        :param broadening: float
+           Broadening factor
+
+        :return: tuple
+           Results are 'dos0', 'dosproj0', 'dosproj_orb0'.
+
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'dos0'
+        params['mu'] = self._params['system']['mu']
+        params['mesh'] = mesh
+        params['broadening'] = broadening
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos0', self._mpirun_command, params)
+        return r['dos0'], r['dosproj0'], r['dosproj_orb0']
+
+    def calc_spaghettis(self, Sigma_w_sh, mesh, broadening):
+        """
+
+        Compute A(k, omega)
+
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'spaghettis'
+        params['mu'] = self._chemical_potential
+        params['Sigma_w_sh'] = Sigma_w_sh
+        params['mesh'] = mesh
+        params['broadening'] = broadening
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_spaghettis', self._mpirun_command, params)
+        return r['akw']
+
+    def calc_momentum_distribution(self):
+        """
+
+        Compute momentum distributions and eigen values of H(k)
+        Data are taken from bands_data.
+
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'momentum_distribution'
+        params['mu'] = self._chemical_potential
+        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_momentum_distribution', self._mpirun_command, params)
+        return r['den'], r['ev0']
+
+    def calc_Sigma_w(self, mesh):
+        """
+        Compute Sigma_w for computing band structure
+        For an imaginary-time solver, a list of Nones will be returned.
+
+        :param mesh: (float, float, int)
+            real-frequency mesh (min, max, num_points)
+
+        :return: list of Sigma_w
+
+        """
+
+        solver_name = self._params['impurity_solver']['name']
+        Solver = impurity_solvers.solver_classes[solver_name]
+        if Solver.is_gf_realomega_available():
+            Gloc_iw_sh, _ = self.calc_Gloc()
+            _, _, sigma_w = self.solve_impurity_models(Gloc_iw_sh, -1, mesh)
+            return sigma_w
+        else:
+            return [None] * self.n_inequiv_shells
+
 
 class DMFTCoreTools:
     def __init__(self, seedname, params, n_k, xk):
@@ -63,7 +171,7 @@ class DMFTCoreTools:
         self._xk = xk
 
         self._params['control']['restart'] = True
-        self._solver = DMFTCoreSolver(seedname, self._params, output_file=seedname+'.out.h5', read_only=True)
+        self._solver = DMFTPostSolver(seedname, self._params, output_file=seedname+'.out.h5')
         #self._skc = SumkDFTCompat(seedname+'.h5')
         print("iteration :", self._solver.iteration_number)
 
@@ -477,7 +585,6 @@ def dcore_post(filename, np=1):
     #
     # Plot
     #
-    #dct = DMFTCoreSolver(seedname, p, output_file=seedname+'.out.h5', read_only=True)
 
     dct = DMFTCoreTools(seedname, p, n_k, xk)
     dct.post()
