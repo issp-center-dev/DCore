@@ -161,9 +161,9 @@ class SaveBSE:
         u_mat_ph1 = u_mat.transpose(0, 2, 3, 1)
         u_mat_ph2 = u_mat.transpose(0, 3, 2, 1)
 
-        def print_umat(_umat, str):
-            print("\n" + str)
-            for i,j,k,l in product(range(_umat.shape[0]), repeat=4):
+        def print_umat(_umat, _str):
+            print("\n" + _str)
+            for i, j, k, l in product(range(_umat.shape[0]), repeat=4):
                 if abs(_umat[i, j, k, l]):
                     print(i, j, k, l, _umat[i, j, k, l])
 
@@ -179,7 +179,7 @@ class SaveBSE:
             gamma0 = {}
             for s1, s2, s3, s4 in product(range(2), repeat=4):
                 # u_mat_orb = u_mat_spn_orb[s1, :, s4, :, s3, :, s2, :]
-                gamma0_orb = u_mat_ph1[s1, :, s2, :, s3, :, s4, :] - u_mat_ph2[s1, :, s2, :, s3, :, s4, :]
+                gamma0_orb = - u_mat_ph1[s1, :, s2, :, s3, :, s4, :] + u_mat_ph2[s1, :, s2, :, s3, :, s4, :]
                 # print(u_mat_orb.shape)
 
                 # skip if zero
@@ -197,10 +197,10 @@ class SaveBSE:
 
             self.h5bse.save(key=('gamma0', ), data=gamma0)
         else:
-            gamma0_inner = u_mat_ph1 - u_mat_ph2
+            gamma0_inner = - u_mat_ph1 + u_mat_ph2
             gamma0_inner = gamma0_inner.reshape((len(self.inner2.namelist), )*2)
             block_index = self.block2.get_index(icrsh, 0, icrsh, 0)
-            self.h5bse.save(key=('gamma0', ), data={(block_index, block_index) : gamma0_inner})
+            self.h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
 
 
 class DMFTBSESolver(DMFTCoreSolver):
