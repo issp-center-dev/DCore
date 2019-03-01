@@ -220,6 +220,10 @@ class DMFTBSESolver(DMFTCoreSolver):
             #     Namely, we need a loop for correlated shells when n_inequiv_shells < n_corr_shells
             assert self._n_inequiv_shells == self._n_corr_shells
 
+            print(self._Umat[ish].shape)
+            for i,j,k,l in product(range(self._Umat[ish].shape[0]), repeat=4):
+                print(i, j, k, l, self._Umat[ish][i, j, k, l])
+
 
 def dcore_bse(filename, np=1):
     """
