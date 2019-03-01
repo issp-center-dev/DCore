@@ -88,7 +88,8 @@ class SaveBSE:
         self.n_orb = n_flavors // 2
         assert n_block == len(spin_names)
 
-        self.block2 = IndexPair2(range(n_corr_shells), spin_names, only_diagonal1=only_diagonal)
+        # NOTE: change the order of spins in HDF5 to meet SumkDFTChi
+        self.block2 = IndexPair2(range(n_corr_shells), sorted(spin_names), only_diagonal1=only_diagonal)
         self.inner2 = IndexPair(range(n_inner), convert_to_int=True)
         print(" block2 namelist =", self.block2.namelist)
         print(" inner2 namelist =", self.inner2.namelist)
@@ -199,19 +200,14 @@ class DMFTBSESolver(DMFTCoreSolver):
             #   n_flavors may depend on ish, but present BSE code does not support it
             n_flavors = numpy.sum([len(indices) for indices in self._gf_struct[ish].values()])
 
-            # spin_names = [bname for bname, g in Gloc_iw_sh[ish]]
-            # print(spin_names)
-
             bse = SaveBSE(n_corr_shells=self._n_corr_shells,
-                          h5_file='test_bse.h5',
-                          # h5_file=params['bse_h5_out_file'],
-                          bse_info='save',
+                          h5_file=params['bse_h5_out_file'],
+                          bse_info='check',
                           nonlocal_order_parameter=False,
                           use_spin_orbit=self._use_spin_orbit,
                           beta=self._beta,
                           n_flavors=n_flavors,
                           spin_names=self.spin_block_names,
-                          # spin_names=spin_names,
                           )
 
             #
