@@ -21,6 +21,7 @@ from __future__ import print_function
 import os
 import re
 import numpy
+from warnings import warn
 
 
 def create_lattice_model(params):
@@ -465,6 +466,45 @@ class Wannier90Model(NNNHoppingModel):
         converter.convert_dft_input()
 
 
-all_lattice_models = [ChainModel, SquareModel, CubicModel, BetheModel, Wannier90Model]
+class ExternalModel(LatticeModel):
+    """
+    Prepare DFT data externally. This class only checks an existing file and data in it.
+    """
+
+    def __init__(self, params):
+        super(ExternalModel, self).__init__(params)
+
+        from pytriqs.archive import HDFArchive
+
+        seedname = self._params["model"]["seedname"]
+        h5_file = seedname+'.h5'
+
+        # check if h5 file already exists
+        try:
+            assert os.path.exists(h5_file)
+            with HDFArchive(h5_file, 'r') as ar:
+                assert 'dft_input' in ar
+        except:
+            raise Exception("Prepare, in advance, '%s' file which stores DFT data in 'dft_input' subgroup" % h5_file)
+
+        # read nkdiv
+        try:
+            with HDFArchive(h5_file, 'r') as ar:
+                self._nkdiv = ar['dft_input_chi']['div']
+        except:
+            warn("nkdiv has not been set properly. BSE calc requires nkdiv data in '%s/dft_input_chi/div'." % h5_file)
+
+    @classmethod
+    def name(self):
+        return 'external'
+
+    def nkdiv(self):
+        return self._nkdiv
+
+    def generate_model_file(self):
+        pass
+
+
+all_lattice_models = [ChainModel, SquareModel, CubicModel, BetheModel, Wannier90Model, ExternalModel]
 
 
