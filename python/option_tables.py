@@ -94,11 +94,15 @@ def generate_all_description():
     return ''.join(desc)
 
 if __name__ == '__main__':
+    import sys
     p = create_parser()
+
+    if len(sys.argv) != 2:
+        raise RuntimeError("Invalid number of arguments!")
+    prefix = sys.argv[1]
+    print("Writing tables of runtime options into ", prefix)
 
     for section in p.get_predefined_sections():
         desc = generate_description(p, section)
-        with open('../doc/reference/'+section+'_desc.txt', 'w') as f:
+        with open(prefix+'/'+section+'_desc.txt', 'w') as f:
             print(desc, file=f)
-
-    print(generate_all_description())
