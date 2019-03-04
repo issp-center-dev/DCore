@@ -29,7 +29,7 @@ from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
 
-def assign_from_numpy_array(g_block, data):
+def assign_from_numpy_array(g_block, data, block_names):
 
     # DCore:
     #   g_block[].data.shape = (2*n_iw, n_orb, n_orb)
@@ -41,8 +41,8 @@ def assign_from_numpy_array(g_block, data):
     #                (1, 2*n_orb, 2*n_orb, n_iw)   w/o spin-orbit
     #       Only positive freq
 
-    for i, (bname, gf) in enumerate(g_block):
-        # FIXME: spin order
+    for i, bname in enumerate(block_names):
+        gf = g_block[bname]
 
         # print(bname)
         # print(gf.data.shape)
@@ -170,7 +170,7 @@ class PomerolSolver(SolverBase):
             gf = gf_1d.reshape((2, self.n_orb, self.n_orb, self.n_iw))
         else:
             gf = gf_1d.reshape((1, self.n_flavors, self.n_flavors, self.n_iw))
-        assign_from_numpy_array(self._Gimp_iw, gf)
+        assign_from_numpy_array(self._Gimp_iw, gf, self.block_names)
 
         set_tail(self._Gimp_iw)
 
