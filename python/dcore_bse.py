@@ -253,12 +253,15 @@ class DMFTBSESolver(DMFTCoreSolver):
 
         super(DMFTBSESolver, self).__init__(seedname, params, output_file, output_group, read_only=True)
 
-    def calc_bse(self):
+    def _calc_bse_x0q(self):
         """
-
-        Compute data for BSE
-
+        Calc X_0(q)
         """
+        print("\n--- dcore_bse - X_0(q)")
+        if self._params['bse']['skip_X0q_if_exists'] and os.path.exists(self._params['bse']['h5_output_file']):
+            print(" skip")
+            return
+
         from .lattice_model import create_lattice_model
 
         lattice_model = create_lattice_model(self._params)
@@ -272,14 +275,58 @@ class DMFTBSESolver(DMFTCoreSolver):
         params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
         sumkdft.run(self._seedname + '.h5', './work/sumkdft_bse', self._mpirun_command, params)
 
+    def _calc_bse_xloc(self):
+        """
+        Calc X_loc and U matrix
+        """
+
+        # NOTE:
+        #   n_flavors may depend on ish, but present BSE code does not support it
+        def calc_num_flavors(_ish):
+            return numpy.sum([len(indices) for indices in self._gf_struct[_ish].values()])
+        n_flavors = calc_num_flavors(0)
+        for ish in range(self._n_inequiv_shells):
+            assert n_flavors == calc_num_flavors(ish)
+
+        #
+        # init for saving data into HDF5
+        #
+        print("\n--- dcore_bse - invoking h5BSE...")
+        bse = SaveBSE(
+            n_corr_shells=self._n_corr_shells,
+            h5_file=os.path.abspath(self._params['bse']['h5_output_file']),
+            bse_info='check',
+            nonlocal_order_parameter=False,
+            use_spin_orbit=self._use_spin_orbit,
+            beta=self._beta,
+            n_flavors=n_flavors,
+            spin_names=self.spin_block_names)
+
+        #
+        # save U matrix for RPA
+        #
+        print("\n--- dcore_bse - U matrix")
+        for ish in range(self._n_inequiv_shells):
+            bse.save_gamma0(self._Umat[ish], icrsh=self._sk.inequiv_to_corr[ish])
+
+        # FIXME:
+        #     Saving data should be done for all **correlated_shells** (not for inequiv_shells)
+        #     Namely, we need a loop for correlated shells when n_inequiv_shells < n_corr_shells
+        assert self._n_inequiv_shells == self._n_corr_shells
+
         #
         # X_loc
         #
+        print("\n--- dcore_bse - X_loc")
+        if self._params['bse']['skip_Xloc']:
+            print(" skip")
+            return
+
         Gloc_iw_sh, _ = self.calc_Gloc()
         solver_name = self._params['impurity_solver']['name']
 
         for ish in range(self._n_inequiv_shells):
-            print("Solving impurity model for inequivalent shell " + str(ish) + " ...")
+            print("\nSolving impurity model for inequivalent shell " + str(ish) + " ...")
             sys.stdout.flush()
             x_loc, g_imp = calc_g2_in_impurity_model(solver_name, self._solver_params, self._mpirun_command,
                                                      self._params["impurity_solver"]["basis_rotation"],
@@ -293,37 +340,15 @@ class DMFTBSESolver(DMFTCoreSolver):
 
             subtract_disconnected(x_loc, g_imp, self.spin_block_names)
 
-            # NOTE:
-            #   n_flavors may depend on ish, but present BSE code does not support it
-            n_flavors = numpy.sum([len(indices) for indices in self._gf_struct[ish].values()])
-
-            #
-            # init for saving data into HDF5
-            #
-            bse = SaveBSE(n_corr_shells=self._n_corr_shells,
-                          h5_file=params['bse_h5_out_file'],
-                          bse_info='check',
-                          nonlocal_order_parameter=False,
-                          use_spin_orbit=self._use_spin_orbit,
-                          beta=self._beta,
-                          n_flavors=n_flavors,
-                          spin_names=self.spin_block_names,
-                          )
-
-            #
             # save X_loc
-            #
             bse.save_xloc(x_loc, icrsh=self._sk.inequiv_to_corr[ish])
 
-            #
-            # save U matrix for RPA
-            #
-            bse.save_gamma0(self._Umat[ish], icrsh=self._sk.inequiv_to_corr[ish])
-
-        # FIXME:
-        #     Saving data should be done for all **correlated_shells** (not for inequiv_shells)
-        #     Namely, we need a loop for correlated shells when n_inequiv_shells < n_corr_shells
-        assert self._n_inequiv_shells == self._n_corr_shells
+    def calc_bse(self):
+        """
+        Compute data for BSE
+        """
+        self._calc_bse_x0q()
+        self._calc_bse_xloc()
 
 
 def dcore_bse(filename, np=1):
