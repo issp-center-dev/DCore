@@ -55,14 +55,12 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     s_params['num_wf'] = num_wf
 
     work_dir_org = os.getcwd()
-    # work_dir = 'work/imp_shell'+str(ish)+"_ite"+str(ite)
     work_dir = 'work/imp_shell' + str(ish) + '_bse'
     if not os.path.isdir(work_dir):
         os.makedirs(work_dir)
     os.chdir(work_dir)
 
     # Solve the model
-    # sol.solve(rot, mpirun_command, s_params)
     xloc = sol.calc_g2(rot, mpirun_command, s_params)
 
     os.chdir(work_dir_org)
@@ -80,7 +78,6 @@ def subtract_disconnected(xloc, gimp, spin_names):
     # g_ij[(i, j)] = data[iw]
     g_ij = {}
     for isp, sp in enumerate(spin_names):
-        # print(gimp[sp].data.shape)
         # data[iw, orb1, orb2]
         norb = gimp[sp].data.shape[1]
         assert norb == gimp[sp].data.shape[2]
@@ -88,7 +85,6 @@ def subtract_disconnected(xloc, gimp, spin_names):
             i = o1 + isp*norb
             j = o2 + isp*norb
             g_ij[(i, j)] = gimp[sp].data[:, o1, o2]
-    # print(g_ij.keys())
 
     assert g_ij[(0, 0)].shape[0] % 2 == 0
     w0 = g_ij[(0, 0)].shape[0] / 2
@@ -97,8 +93,6 @@ def subtract_disconnected(xloc, gimp, spin_names):
         return g_ij[(_i, _j)][w0 + _w]
 
     for (i1, i2, i3, i4), data in xloc.items():
-        # print(i1, i2, i3, i4)
-        # print(data.shape)
         n_wf = data.shape[1]
         assert n_wf == data.shape[2]
         assert n_wf % 2 == 0
@@ -165,11 +159,8 @@ class SaveBSE:
         # read X_loc data and save into h5 file
         for wb in range(n_w2b):
             # boson freq
-            # print(" ---\n wb = %d" % wb)
             xloc_bse = {}
             for (i1, i2, i3, i4), data in xloc_ijkl.items():
-                # print(i1, i2, i3, i4)
-                # print(data.shape)
                 # (wb, wf1, wf2) --> (wf1, wf2)
                 data_wb = data[wb]
 
@@ -190,7 +181,6 @@ class SaveBSE:
                 inner34 = self.inner2.get_index(o3, o4)
 
                 if (s12, s34) not in xloc_bse:
-                    # xloc_h5bse[(s12, s34)] = numpy.zeros((n_inner**2, n_inner**2) + data_wb.shape, dtype=complex)
                     xloc_bse[(s12, s34)] = numpy.zeros((n_inner2, n_inner2) + data_wb.shape, dtype=complex)
                 xloc_bse[(s12, s34)][inner12, inner34, :, :] = data_wb[:, :]
 
@@ -205,34 +195,17 @@ class SaveBSE:
         u_mat_ph1 = u_mat.transpose(0, 2, 3, 1)
         u_mat_ph2 = u_mat.transpose(0, 3, 2, 1)
 
-        # def print_umat(_umat, _str):
-        #     print("\n" + _str)
-        #     for i, j, k, l in product(range(_umat.shape[0]), repeat=4):
-        #         if abs(_umat[i, j, k, l]):
-        #             print(i, j, k, l, _umat[i, j, k, l])
-        #
-        # print_umat(u_mat, "u_mat")
-        # print_umat(u_mat_ph1, "u_mat_ph1")
-        # print_umat(u_mat_ph2, "u_mat_ph2")
-
         if not self.use_spin_orbit:
             u_mat_ph1 = u_mat_ph1.reshape((2, self.n_orb)*4)
             u_mat_ph2 = u_mat_ph2.reshape((2, self.n_orb)*4)
-            # print(u_mat_ph1.shape)
 
             gamma0 = {}
             for s1, s2, s3, s4 in product(range(2), repeat=4):
-                # u_mat_orb = u_mat_spn_orb[s1, :, s4, :, s3, :, s2, :]
                 gamma0_orb = - u_mat_ph1[s1, :, s2, :, s3, :, s4, :] + u_mat_ph2[s1, :, s2, :, s3, :, s4, :]
-                # print(u_mat_orb.shape)
 
                 # skip if zero
                 if numpy.linalg.norm(gamma0_orb) == 0:
                     continue
-
-                # for s in [s1, s2, s3, s4]:
-                #     print("", self.spin_names[s], end="")
-                # print(gamma0_orb)
 
                 s12 = self.block2.get_index(icrsh, self.spin_names[s1], icrsh, self.spin_names[s2])
                 s34 = self.block2.get_index(icrsh, self.spin_names[s3], icrsh, self.spin_names[s4])
