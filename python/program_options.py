@@ -110,5 +110,7 @@ def create_parser():
     parser.add_option("bse", "num_wf", int, 10, "Number of fermionic frequencies (>0)")
     #parser.add_option("bse", "div", IntTuple, IntTuple((10, 10, 10)), "Numbers of dimensions for kx, ky, kz")
     parser.add_option("bse", "h5_output_file", str, 'dmft_bse.h5', "Output HDF5 file for bse data")
+    parser.add_option("bse", "skip_X0q_if_exists", bool, False, "Skip X_0(q) calc if file already exists")
+    parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
 
     return parser
