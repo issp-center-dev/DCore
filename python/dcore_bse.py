@@ -86,7 +86,7 @@ def subtract_disconnected(xloc, gimp, spin_names):
         assert norb == gimp[sp].data.shape[2]
         for o1, o2 in product(range(norb), repeat=2):
             i = o1 + isp*norb
-            j = o1 + isp*norb
+            j = o2 + isp*norb
             g_ij[(i, j)] = gimp[sp].data[:, o1, o2]
     # print(g_ij.keys())
 

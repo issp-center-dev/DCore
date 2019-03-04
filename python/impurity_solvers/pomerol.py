@@ -221,8 +221,7 @@ class PomerolSolver(SolverBase):
             data = numpy.loadtxt(filename).view(complex).reshape(-1)
             data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
 
-            # divide by beta because of difference in the definition of x_loc
-            x_loc[(i1, i2, i4, i3)] = data / self.beta
+            x_loc[(i1, i2, i3, i4)] = data / self.beta
         return x_loc
 
     def name(self):
