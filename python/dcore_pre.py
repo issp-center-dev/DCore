@@ -238,6 +238,9 @@ def __generate_umat(p):
 
 
 def read_potential(filename, mat):
+    if not os.path.exists(filename):
+        print("Error: file '{}' not found".format(filename))
+        exit(1)
     print("Reading '{}'...".format(filename))
 
     try:
@@ -306,6 +309,8 @@ def __generate_local_potential(p):
     if local_potential_matrix != 'None':
         try:
             files = ast.literal_eval(local_potential_matrix)
+            assert isinstance(files, dict)
+            assert all([ish < ncor for ish in files.keys()])
         except Exception as e:
             print("Error: local_potential_matrix =", local_potential_matrix)
             print(e)
@@ -325,7 +330,7 @@ def __generate_local_potential(p):
 
     # check if potential matrix is hermitian
     def is_hermitian(mat):
-        return numpy.linalg.norm(mat - mat.transpose().conj()) < 1e-10
+        return numpy.allclose(mat, mat.transpose().conj())
     try:
         for ish, pot_ish in enumerate(pot):
             for sp in range(pot_ish.shape[0]):
