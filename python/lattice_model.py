@@ -418,26 +418,27 @@ class CubicModel(NNNHoppingModel):
         return 3
 
 
+def set_nk(nk, nk0, nk1, nk2):
+    if abs(nk0) + abs(nk1) + abs(nk2) == 0:
+        # If one of nk0, nk1 and nk2 are set, use nk.
+        nk0 = nk
+        nk1 = nk
+        nk2 = nk
+    elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
+        # if any of nk0, nk1 and nk2 are set, use them.
+        if nk0 * nk1 * nk2 == 0:
+            raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
+    return nk0, nk1, nk2
+
+
 class Wannier90Model(NNNHoppingModel):
     def __init__(self, params):
         super(Wannier90Model, self).__init__(params)
 
-        nk = params["system"]["nk"]
-        nk0 = params["system"]["nk0"]
-        nk1 = params["system"]["nk1"]
-        nk2 = params["system"]["nk2"]
-
-        if abs(nk0) + abs(nk1) + abs(nk2) == 0:
-            # If one of nk0, nk1 and nk2 are set, use nk.
-            nk0 = nk
-            nk1 = nk
-            nk2 = nk
-        elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
-            # if any of nk0, nk1 and nk2 are set, use them.
-            if nk0 * nk1 * nk2 == 0:
-                raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
-
-        self._nkdiv = (nk0, nk1, nk2)
+        self._nkdiv = set_nk(params["system"]["nk"],
+                             params["system"]["nk0"],
+                             params["system"]["nk1"],
+                             params["system"]["nk2"])
 
     @classmethod
     def name(self):
@@ -487,12 +488,11 @@ class ExternalModel(LatticeModel):
         except:
             raise Exception("Prepare, in advance, '%s' file which stores DFT data in 'dft_input' subgroup" % h5_file)
 
-        # read nkdiv
-        try:
-            with HDFArchive(h5_file, 'r') as ar:
-                self._nkdiv = ar['dft_input_chi']['div']
-        except:
-            warn("nkdiv has not been set properly. BSE calc requires nkdiv data in '%s/dft_input_chi/div'." % h5_file)
+        # set nkdiv
+        self._nkdiv = set_nk(params["system"]["nk"],
+                             params["system"]["nk0"],
+                             params["system"]["nk1"],
+                             params["system"]["nk2"])
 
     @classmethod
     def name(self):
