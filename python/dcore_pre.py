@@ -236,6 +236,45 @@ def __generate_umat(p):
     del f
 
 
+def __generate_local_potential(p):
+    print("\n  @ Write the information of local potential")
+
+    print(type(p["model"]["local_potential_matrix"]))
+    print(p["model"]["local_potential_matrix"])
+    print(type(p["model"]["local_potential_factor"]))
+    print(p["model"]["local_potential_factor"])
+
+    # str
+    local_potential_matrix = p["model"]["local_potential_matrix"]
+    local_potential_factor = p["model"]["local_potential_factor"]
+
+    ncor = p["model"]['ncor']
+    spin_orbit = p["model"]["spin_orbit"]
+
+    # read parameters from DFT data
+    with HDFArchive(p["model"]["seedname"] + '.h5', 'r') as f:
+        corr_shells = f["dft_input"]["corr_shells"]
+    norb = [corr_shell["dim"] for corr_shell in corr_shells]
+
+    if local_potential_matrix == 'None':
+        if not spin_orbit:
+            pot_mat = [numpy.zeros((2, norb[icor], norb[icor]), numpy.complex_) for icor in range(ncor)]
+        else:
+            pot_mat = [numpy.zeros((1, 2*norb[icor], 2*norb[icor]), numpy.complex_) for icor in range(ncor)]
+    else:
+        # TODO: set local_potential
+        pass
+
+    # TODO: check if hermitian
+    # for mat in pot_mat:
+    #     assert is_hermitian(mat)
+
+    # write potential matrix
+    with HDFArchive(p["model"]["seedname"] + '.h5', 'a') as f:
+        f["DCore"]["LocalPotential"] = pot_mat
+    print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
+
+
 def dcore_pre(filename):
     """
     Main routine for the pre-processing tool
@@ -294,6 +333,12 @@ def dcore_pre(filename):
         f["dft_input"]["corr_shells"] = corr_shells
 
         del f
+
+    #
+    # Local potential
+    #
+    __generate_local_potential(p)
+
     #
     # Finish
     #

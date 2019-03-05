@@ -219,6 +219,7 @@ class DMFTCoreSolver(object):
 
         with HDFArchive(seedname+'.h5', 'r') as h:
             self._Umat = h["DCore"]["Umat"]
+            self._local_potential = h["DCore"]["LocalPotential"]
 
         # local quantities at ineuivalent shells
         self._sh_quant = [ShellQuantity(self._gf_struct[ish], self._beta, self._n_iw, self._n_tau) for ish in range(self._n_inequiv_shells)]
@@ -328,6 +329,7 @@ class DMFTCoreSolver(object):
             'prec_mu'       : self._params['system']['prec_mu'],
             'with_dc'       : self._params['system']['with_dc'],
             'Sigma_iw_sh'   : [s.Sigma_iw for s in self._sh_quant],
+            'potential'     : self._local_potential,
             'dc_imp'        : self._dc_imp,
             'dc_energ'      : self._dc_energ,
             'mu'            : self._chemical_potential,
