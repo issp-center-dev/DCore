@@ -140,7 +140,6 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         if iwn_or_w_or_none == 'iwn':
             # sk.set_Sigma(params['Sigma_iw_sh'])
             assert len(params['Sigma_iw_sh']) == len(params['potential'])
-            # TODO: check if correct
             Sigma_iw_sh_plus_pot = [sigma_iw + pot for sigma_iw, pot in zip(params['Sigma_iw_sh'], params['potential'])]
             sk.set_Sigma(Sigma_iw_sh_plus_pot)
         elif iwn_or_w_or_none == 'w':

@@ -239,7 +239,6 @@ def __generate_umat(p):
 
 def read_potential(filename, mat):
     print("Reading '{}'...".format(filename))
-    # print(mat.shape)
 
     try:
         with open(filename, 'r') as f:
@@ -249,7 +248,6 @@ def read_potential(filename, mat):
                     continue
 
                 array = line.split()
-                # print(array)
                 assert len(array) == 5
                 sp = int(array[0])
                 o1 = int(array[1])
@@ -259,20 +257,13 @@ def read_potential(filename, mat):
                     raise Exception("duplicate components")
                 mat[sp, o1, o2] = val
     except Exception as e:
-        # print("Error in reading '{}':".format(filename))
         print("Error:", e)
-        # print(e)
         print(line, end="")
         exit(1)
 
 
 def __generate_local_potential(p):
     print("\n  @ Write the information of local potential")
-
-    # print(type(p["model"]["local_potential_matrix"]))
-    # print(p["model"]["local_potential_matrix"])
-    # print(type(p["model"]["local_potential_factor"]))
-    # print(p["model"]["local_potential_factor"])
 
     # str
     local_potential_matrix = p["model"]["local_potential_matrix"]
@@ -289,7 +280,6 @@ def __generate_local_potential(p):
     # set factor
     try:
         fac = ast.literal_eval(local_potential_factor)
-        # print(type(fac))
         if isinstance(fac, float):
             fac = [fac] * ncor
         elif isinstance(fac, list) or isinstance(fac, tuple):
@@ -322,7 +312,6 @@ def __generate_local_potential(p):
             exit(1)
 
         for ish, file in files.items():
-            # print(ish, file)
             read_potential(file, pot[ish])
             pot[ish] *= fac[ish]
 
