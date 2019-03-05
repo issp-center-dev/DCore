@@ -330,6 +330,7 @@ class DMFTCoreSolver(object):
             'with_dc'       : self._params['system']['with_dc'],
             'Sigma_iw_sh'   : [s.Sigma_iw for s in self._sh_quant],
             'potential'     : self._local_potential,
+            'use_spin_orbit': self._use_spin_orbit,
             'dc_imp'        : self._dc_imp,
             'dc_energ'      : self._dc_energ,
             'mu'            : self._chemical_potential,
