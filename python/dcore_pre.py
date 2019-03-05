@@ -275,7 +275,7 @@ def __generate_local_potential(p):
     # read parameters from DFT data
     with HDFArchive(p["model"]["seedname"] + '.h5', 'r') as f:
         corr_shells = f["dft_input"]["corr_shells"]
-    norb = [corr_shell["dim"] for corr_shell in corr_shells]
+    dim_crsh = [corr_shell["dim"] for corr_shell in corr_shells]
 
     # set factor
     try:
@@ -298,9 +298,9 @@ def __generate_local_potential(p):
     # pot.shape = (2, orb1, orb2)     w/  spin-orbit
     #             (1, 2*orb1, 2*orb2) w/o spin-orbit
     if not spin_orbit:
-        pot = [numpy.zeros((2, norb[icor], norb[icor]), numpy.complex_) for icor in range(ncor)]
+        pot = [numpy.zeros((2, dim_crsh[icor], dim_crsh[icor]), numpy.complex_) for icor in range(ncor)]
     else:
-        pot = [numpy.zeros((1, 2 * norb[icor], 2 * norb[icor]), numpy.complex_) for icor in range(ncor)]
+        pot = [numpy.zeros((1, dim_crsh[icor], dim_crsh[icor]), numpy.complex_) for icor in range(ncor)]
 
     # read potential matrix
     if local_potential_matrix != 'None':
