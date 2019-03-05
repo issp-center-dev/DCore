@@ -334,9 +334,16 @@ def __generate_local_potential(p):
             print("sp =", sp)
             print(pot_ish[sp])
 
-    # TODO: check if hermitian
-    # for mat in pot_mat:
-    #     assert is_hermitian(mat)
+    # check if potential matrix is hermitian
+    def is_hermitian(mat):
+        return numpy.linalg.norm(mat - mat.transpose().conj()) < 1e-10
+    try:
+        for ish, pot_ish in enumerate(pot):
+            for sp in range(pot_ish.shape[0]):
+                assert is_hermitian(pot_ish[sp]), "potential matrix for ish={} sp={} is not hermitian".format(ish, sp)
+    except AssertionError as e:
+        print("Error:", e)
+        exit(1)
 
     # write potential matrix
     with HDFArchive(p["model"]["seedname"] + '.h5', 'a') as f:
