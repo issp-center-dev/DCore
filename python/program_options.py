@@ -56,9 +56,8 @@ def create_parser():
     parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
     parser.add_option("model", "non_colinear", bool, False,
                       "Set True for the case that non-colinear DMFT from the COLINEAR DFT calculation.")
-    # TODO: local_potential more detail
-    parser.add_option("model", "local_potential_matrix", str, "None", "local potential matrix")
-    parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with dim=ncor)")
+    parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: filename} to specify local potential matrix of ish-th shell")
+    parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
     # [system]
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")

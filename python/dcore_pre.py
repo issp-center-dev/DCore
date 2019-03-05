@@ -21,6 +21,7 @@ import sys
 import os
 import numpy
 import re
+import ast
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
@@ -236,13 +237,42 @@ def __generate_umat(p):
     del f
 
 
+def read_potential(filename, mat):
+    print("Reading '{}'...".format(filename))
+    # print(mat.shape)
+
+    try:
+        with open(filename, 'r') as f:
+            for line in f:
+                # skip comment line
+                if line[0] == '#':
+                    continue
+
+                array = line.split()
+                # print(array)
+                assert len(array) == 5
+                sp = int(array[0])
+                o1 = int(array[1])
+                o2 = int(array[2])
+                val = complex(float(array[3]), float(array[4]))
+                if mat[sp, o1, o2] != 0:
+                    raise Exception("duplicate components")
+                mat[sp, o1, o2] = val
+    except Exception as e:
+        # print("Error in reading '{}':".format(filename))
+        print("Error:", e)
+        # print(e)
+        print(line, end="")
+        exit(1)
+
+
 def __generate_local_potential(p):
     print("\n  @ Write the information of local potential")
 
-    print(type(p["model"]["local_potential_matrix"]))
-    print(p["model"]["local_potential_matrix"])
-    print(type(p["model"]["local_potential_factor"]))
-    print(p["model"]["local_potential_factor"])
+    # print(type(p["model"]["local_potential_matrix"]))
+    # print(p["model"]["local_potential_matrix"])
+    # print(type(p["model"]["local_potential_factor"]))
+    # print(p["model"]["local_potential_factor"])
 
     # str
     local_potential_matrix = p["model"]["local_potential_matrix"]
@@ -256,14 +286,53 @@ def __generate_local_potential(p):
         corr_shells = f["dft_input"]["corr_shells"]
     norb = [corr_shell["dim"] for corr_shell in corr_shells]
 
-    if local_potential_matrix == 'None':
-        if not spin_orbit:
-            pot_mat = [numpy.zeros((2, norb[icor], norb[icor]), numpy.complex_) for icor in range(ncor)]
+    # set factor
+    try:
+        fac = ast.literal_eval(local_potential_factor)
+        # print(type(fac))
+        if isinstance(fac, float):
+            fac = [fac] * ncor
+        elif isinstance(fac, list) or isinstance(fac, tuple):
+            assert len(fac) == ncor
         else:
-            pot_mat = [numpy.zeros((1, 2*norb[icor], 2*norb[icor]), numpy.complex_) for icor in range(ncor)]
+            raise Exception("local_potential_factor should be float or list of length %d" % ncor)
+    except Exception as e:
+        print("Error: local_potential_factor =", local_potential_factor)
+        print(e)
+        exit(1)
+
+    # print factor
+    print("fac =", fac)
+
+    # init potential
+    # pot.shape = (2, orb1, orb2)     w/  spin-orbit
+    #             (1, 2*orb1, 2*orb2) w/o spin-orbit
+    if not spin_orbit:
+        pot = [numpy.zeros((2, norb[icor], norb[icor]), numpy.complex_) for icor in range(ncor)]
     else:
-        # TODO: set local_potential
-        pass
+        pot = [numpy.zeros((1, 2 * norb[icor], 2 * norb[icor]), numpy.complex_) for icor in range(ncor)]
+
+    # read potential matrix
+    if local_potential_matrix != 'None':
+        try:
+            files = ast.literal_eval(local_potential_matrix)
+        except Exception as e:
+            print("Error: local_potential_matrix =", local_potential_matrix)
+            print(e)
+            exit(1)
+
+        for ish, file in files.items():
+            # print(ish, file)
+            read_potential(file, pot[ish])
+            pot[ish] *= fac[ish]
+
+    # print potential
+    print("\n--- potential matrix")
+    for ish, pot_ish in enumerate(pot):
+        print("ish =", ish)
+        for sp in range(pot_ish.shape[0]):
+            print("sp =", sp)
+            print(pot_ish[sp])
 
     # TODO: check if hermitian
     # for mat in pot_mat:
@@ -271,7 +340,7 @@ def __generate_local_potential(p):
 
     # write potential matrix
     with HDFArchive(p["model"]["seedname"] + '.h5', 'a') as f:
-        f["DCore"]["LocalPotential"] = pot_mat
+        f["DCore"]["LocalPotential"] = pot
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
 
 
