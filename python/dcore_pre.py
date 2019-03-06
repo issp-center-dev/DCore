@@ -21,6 +21,7 @@ import sys
 import os
 import numpy
 import re
+import ast
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
 from pytriqs.applications.dft.converters.hk_converter import HkConverter
@@ -236,6 +237,114 @@ def __generate_umat(p):
     del f
 
 
+def read_potential(filename, mat):
+    if not os.path.exists(filename):
+        print("Error: file '{}' not found".format(filename))
+        exit(1)
+    print("Reading '{}'...".format(filename))
+
+    try:
+        with open(filename, 'r') as f:
+            for line in f:
+                # skip comment line
+                if line[0] == '#':
+                    continue
+
+                array = line.split()
+                assert len(array) == 5
+                sp = int(array[0])
+                o1 = int(array[1])
+                o2 = int(array[2])
+                val = complex(float(array[3]), float(array[4]))
+                if mat[sp, o1, o2] != 0:
+                    raise Exception("duplicate components")
+                mat[sp, o1, o2] = val
+    except Exception as e:
+        print("Error:", e)
+        print(line, end="")
+        exit(1)
+
+
+def __generate_local_potential(p):
+    print("\n  @ Write the information of local potential")
+
+    # str
+    local_potential_matrix = p["model"]["local_potential_matrix"]
+    local_potential_factor = p["model"]["local_potential_factor"]
+
+    ncor = p["model"]['ncor']
+    spin_orbit = p["model"]["spin_orbit"]
+
+    # read parameters from DFT data
+    with HDFArchive(p["model"]["seedname"] + '.h5', 'r') as f:
+        corr_shells = f["dft_input"]["corr_shells"]
+    dim_crsh = [corr_shell["dim"] for corr_shell in corr_shells]
+
+    # set factor
+    try:
+        fac = ast.literal_eval(local_potential_factor)
+        if isinstance(fac, float):
+            fac = [fac] * ncor
+        elif isinstance(fac, list) or isinstance(fac, tuple):
+            assert len(fac) == ncor
+        else:
+            raise Exception("local_potential_factor should be float or list of length %d" % ncor)
+    except Exception as e:
+        print("Error: local_potential_factor =", local_potential_factor)
+        print(e)
+        exit(1)
+
+    # print factor
+    print("fac =", fac)
+
+    # init potential
+    # pot.shape = (2, orb1, orb2)     w/  spin-orbit
+    #             (1, 2*orb1, 2*orb2) w/o spin-orbit
+    if not spin_orbit:
+        pot = [numpy.zeros((2, dim_crsh[icor], dim_crsh[icor]), numpy.complex_) for icor in range(ncor)]
+    else:
+        pot = [numpy.zeros((1, dim_crsh[icor], dim_crsh[icor]), numpy.complex_) for icor in range(ncor)]
+
+    # read potential matrix
+    if local_potential_matrix != 'None':
+        try:
+            files = ast.literal_eval(local_potential_matrix)
+            assert isinstance(files, dict)
+            assert all([ish < ncor for ish in files.keys()])
+        except Exception as e:
+            print("Error: local_potential_matrix =", local_potential_matrix)
+            print(e)
+            exit(1)
+
+        for ish, file in files.items():
+            read_potential(file, pot[ish])
+            pot[ish] *= fac[ish]
+
+    # print potential
+    print("\n--- potential matrix")
+    for ish, pot_ish in enumerate(pot):
+        print("ish =", ish)
+        for sp in range(pot_ish.shape[0]):
+            print("sp =", sp)
+            print(pot_ish[sp])
+
+    # check if potential matrix is hermitian
+    def is_hermitian(mat):
+        return numpy.allclose(mat, mat.transpose().conj())
+    try:
+        for ish, pot_ish in enumerate(pot):
+            for sp in range(pot_ish.shape[0]):
+                assert is_hermitian(pot_ish[sp]), "potential matrix for ish={} sp={} is not hermitian".format(ish, sp)
+    except AssertionError as e:
+        print("Error:", e)
+        exit(1)
+
+    # write potential matrix
+    with HDFArchive(p["model"]["seedname"] + '.h5', 'a') as f:
+        f["DCore"]["LocalPotential"] = pot
+    print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
+
+
 def dcore_pre(filename):
     """
     Main routine for the pre-processing tool
@@ -294,6 +403,12 @@ def dcore_pre(filename):
         f["dft_input"]["corr_shells"] = corr_shells
 
         del f
+
+    #
+    # Local potential
+    #
+    __generate_local_potential(p)
+
     #
     # Finish
     #
