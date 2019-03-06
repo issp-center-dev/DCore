@@ -25,7 +25,7 @@ import shlex
 import subprocess
 
 from pytriqs.archive import HDFArchive
-from .tools import launch_mpi_subprocesses, gf_block_names
+from .tools import launch_mpi_subprocesses
 
 def read_dft_input_data(file, subgrp, things_to_read):
     """
@@ -136,25 +136,24 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
 
     results = {}
 
-    spin_names = gf_block_names(params['use_spin_orbit'])
-    def add_potential(sigma_sh, pot_sh):
-        sigma_sh_plus_pot = sigma_sh.copy()
-        for i, sp in enumerate(spin_names):
-            sigma_sh_plus_pot[sp] += pot_sh[i]
-        return sigma_sh_plus_pot
+    def add_potential(_sigma, _pot):
+        sigma_plus_pot = _sigma.copy()
+        for sp, sigma in sigma_plus_pot:
+            sigma += _pot[sp]
+        return sigma_plus_pot
 
     def setup_sk(sk, iwn_or_w_or_none):
         if iwn_or_w_or_none == 'iwn':
             # sk.set_Sigma(params['Sigma_iw_sh'])
             assert len(params['Sigma_iw_sh']) == len(params['potential'])
-            Sigma_iw_sh_plus_pot = [add_potential(sigma_sh, pot_sh)
-                                    for sigma_sh, pot_sh in zip(params['Sigma_iw_sh'], params['potential'])]
+            Sigma_iw_sh_plus_pot = [add_potential(sigma, pot)
+                                    for sigma, pot in zip(params['Sigma_iw_sh'], params['potential'])]
             sk.set_Sigma(Sigma_iw_sh_plus_pot)
         elif iwn_or_w_or_none == 'w':
             # sk.set_Sigma([params['Sigma_w_sh'][ish] for ish in range(sk.n_inequiv_shells)])
             Sigma_w_sh = [params['Sigma_w_sh'][ish] for ish in range(sk.n_inequiv_shells)]
-            Sigma_w_sh_plus_pot = [add_potential(sigma_sh, pot_sh)
-                                   for sigma_sh, pot_sh in zip(Sigma_w_sh, params['potential'])]
+            Sigma_w_sh_plus_pot = [add_potential(sigma, pot)
+                                   for sigma, pot in zip(Sigma_w_sh, params['potential'])]
             sk.set_Sigma(Sigma_w_sh_plus_pot)
         elif iwn_or_w_or_none == "none":
             pass
