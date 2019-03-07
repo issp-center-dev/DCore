@@ -45,124 +45,166 @@ def double_matrix(mat):
     return expand_block_diag_matrix(mat, mat)
 
 
-def turn_on_spin_orbit(h5_file_in, h5_file_out):
-    if not os.path.exists(h5_file_in):
-        print("file '{}' not found".format(h5_file_in))
-        exit(1)
+class H5SpinOrbitOn:
+    def __init__(self, h5_file):
+        if not os.path.exists(h5_file):
+            print("file '{}' not found".format(h5_file))
+            exit(1)
+        self.h5_file_in = h5_file
 
-    #
-    # read data
-    #
-    with HDFArchive(h5_file_in, 'r') as ar:
-        ar = ar['dft_input']
-        data = {key: ar[key] for key in ar.keys()}
-    print(data.keys())
+        #
+        # read data
+        #
+        self.set_group('dft_input')
 
-    n_corr_shells = data['n_corr_shells']
-    nk = data['n_k']
+        #
+        # define values common to all groups
+        #
+        self.n_corr_shells = self.data['n_corr_shells']
+        self.max_corr_shell_dim = max([corr_shell['dim'] for corr_shell in self.data['corr_shells']]) * 2
+        print("max_corr_shell_dim =", self.max_corr_shell_dim)
 
-    # check flags
-    SP = data['SP']  # spin polarized
-    SO = data['SO']  # spin-orbit
-    print("(SP, SO) = ({}, {})".format(SP, SO))
-    assert (SP, SO) == (0, 0) or (SP, SO) == (1, 0)
+        # check flags
+        SP = self.data['SP']  # spin polarized
+        SO = self.data['SO']  # spin-orbit
+        print("(SP, SO) = ({}, {})".format(SP, SO))
+        assert SO == 0
 
-    sp = [0, 0] if (SP, SO) == (0, 0) else [0, 1]
+        self.sp = [0, 0] if SP == 0 else [0, 1]
 
-    #
-    # expand arrays
-    #
-    keys = ('n_orbitals', 'proj_mat', 'hopping')  # arrays to be updated
-    for key in keys:
-        print("{:11s}:".format(key), data[key].shape)
+    def set_group(self, grp):
+        """
+        return True if succeeded
+        """
+        if hasattr(self, 'data'):
+            del self.data
 
-    data_new = {}
+        with HDFArchive(self.h5_file_in, 'r') as ar:
+            if grp not in ar:
+                return False
+            ar = ar[grp]
+            self.data = {key: ar[key] for key in ar.keys()}
+        print("\n*** grp = " + grp)
+        print(self.data.keys())
 
-    # n_orbitals
-    data_new['n_orbitals'] = numpy.zeros((nk, 1), dtype=int)
-    data_new['n_orbitals'][:, 0] = data['n_orbitals'][:, sp[0]] + data['n_orbitals'][:, sp[1]]
+        if 'n_k' in self.data:
+            self.nk = self.data['n_k']
+            print("n_k =", self.nk)
 
-    max_n_orbitals = data_new['n_orbitals'].max()
-    print("max_n_orbitals =", max_n_orbitals)
+        if hasattr(self, '_max_n_orbitals'):
+            del self._max_n_orbitals
 
-    max_corr_shell_dim = max([ corr_shell['dim'] for corr_shell in data['corr_shells'] ])
-    max_corr_shell_dim *= 2
-    print("max_corr_shell_dim =", max_corr_shell_dim)
+        self.data_new = {}
 
-    # proj_mat
-    data_new['proj_mat'] = numpy.zeros((nk, 1, n_corr_shells, max_corr_shell_dim, max_n_orbitals), dtype=complex)
-    for k in range(nk):
-        for j in range(n_corr_shells):
-            data_new['proj_mat'][k, 0, j] \
-                = expand_block_diag_matrix(data['proj_mat'][k, sp[0], j], data['proj_mat'][k, sp[1], j])
+        return True
 
-    # hopping
-    data_new['hopping'] = numpy.zeros((nk, 1, max_n_orbitals, max_n_orbitals), dtype=complex)
-    for k in range(nk):
-        data_new['hopping'][k, 0] \
-            = expand_block_diag_matrix(data['hopping'][k, sp[0]], data['hopping'][k, sp[1]])
-
-    for key in keys:
-        print("{:11s}:".format(key), data_new[key].shape)
-
-    # rot_mat
-    data_new['rot_mat'] = [double_matrix(rot) for rot in data['rot_mat']]
-
-    # T
-    data_new['T'] = [double_matrix(t) for t in data['T']]
-
-    #
-    # set flags
-    #
-    data_new['SO'] = 1
-    data_new['SP'] = 1
-
-    # corr_shells
-    corr_shells = data['corr_shells']
-    # print(corr_shells)
-    for crsh in corr_shells:
-        assert crsh['SO'] == 0
-        crsh['SO'] = 1
-        crsh['dim'] *= 2
-    data_new['corr_shells'] = corr_shells
-    # print(corr_shells)
-
-    #
-    # print changes in database
-    #
-    def print_formated(obj):
-        if isinstance(obj, numpy.ndarray):
-            print("    ", obj.shape)
-        elif isinstance(obj, list):
-            for x in obj:
-                print_formated(x)
+    def save(self, h5_file_out, grp):
+        if self.h5_file_in == h5_file_out:
+            # overwrite only updated components
+            data_save = self.data_new
         else:
-            print("    ", obj)
+            # write all components
+            data_save = dict(self.data)
+            data_save.update(self.data_new)
 
-    print("Summary of changes in the database")
-    for key, d in data_new.items():
+        with HDFArchive(h5_file_out, 'a') as ar:
+            if grp not in ar:
+                ar.create_group(grp)
+            ar = ar[grp]
+
+            for key, d in data_save.items():
+                ar[key] = d
+
+    def update(self, key):
+        assert key in dir(self)
+
+        self.data_new[key] = eval('self.'+key)()
+
+        def print_formated(obj):
+            if isinstance(obj, numpy.ndarray):
+                print("    ", obj.shape)
+            elif isinstance(obj, list):
+                for x in obj:
+                    print_formated(x)
+            else:
+                print("    ", obj)
+
         print(" -", key)
-        print_formated(data[key])
-        print_formated(d)
+        print_formated(self.data[key])
+        print_formated(self.data_new[key])
+
+    @property
+    def max_n_orbitals(self):
+        if not hasattr(self, '_max_n_orbitals'):
+            print("n_orbitals must be set first")
+            exit(1)
+        return self._max_n_orbitals
 
     #
-    # save data
+    # implementation of updating data
     #
-    if h5_file_in == h5_file_out:
-        # overwrite only updated components
-        data_save = data_new
-    else:
-        # write all components
-        data.update(data_new)
-        data_save = data
+    def n_orbitals(self):
+        n_orbitals = numpy.zeros((self.nk, 1), dtype=int)
+        n_orbitals[:, 0] = self.data['n_orbitals'][:, self.sp[0]] + self.data['n_orbitals'][:, self.sp[1]]
 
-    with HDFArchive(h5_file_out, 'a') as ar:
-        if 'dft_input' not in ar:
-            ar.create_group('dft_input')
-        ar = ar['dft_input']
+        self._max_n_orbitals = n_orbitals.max()
+        # print("max_n_orbitals =", self._max_n_orbitals)
+        return n_orbitals
 
-        for key, d in data_save.items():
-            ar[key] = d
+    def proj_mat(self):
+        max_n_orbitals = self.max_n_orbitals
+        max_corr_shell_dim = self.max_corr_shell_dim
+
+        proj_mat = numpy.zeros((self.nk, 1, self.n_corr_shells, max_corr_shell_dim, max_n_orbitals), dtype=complex)
+        for k in range(self.nk):
+            for j in range(self.n_corr_shells):
+                proj_mat[k, 0, j] \
+                    = expand_block_diag_matrix(self.data['proj_mat'][k, self.sp[0], j], self.data['proj_mat'][k, self.sp[1], j])
+        return proj_mat
+
+    def hopping(self):
+        max_n_orbitals = self.max_n_orbitals
+
+        hopping = numpy.zeros((self.nk, 1, max_n_orbitals, max_n_orbitals), dtype=complex)
+        for k in range(self.nk):
+            hopping[k, 0] \
+                = expand_block_diag_matrix(self.data['hopping'][k, self.sp[0]], self.data['hopping'][k, self.sp[1]])
+        return hopping
+
+    def corr_shells(self):
+        corr_shells = self.data['corr_shells']
+        for crsh in corr_shells:
+            assert crsh['SO'] == 0
+            crsh['SO'] = 1
+            crsh['dim'] *= 2
+        return corr_shells
+
+    def rot_mat(self):
+        return [double_matrix(rot) for rot in self.data['rot_mat']]
+
+    def T(self):
+        return [double_matrix(t) for t in self.data['T']]
+
+    def SP(self):
+        return 1
+
+    def SO(self):
+        return 1
+
+
+def turn_on_spin_orbit(h5_file_in, h5_file_out):
+
+    # 'dft_input'
+    h5so = H5SpinOrbitOn(h5_file_in)
+    for key in ['n_orbitals', 'proj_mat', 'hopping', 'corr_shells', 'rot_mat', 'T', 'SP', 'SO']:
+        h5so.update(key)
+    h5so.save(h5_file_out, 'dft_input')
+
+    # 'dft_bands_input'
+    if h5so.set_group('dft_bands_input'):
+        for key in ['n_orbitals', 'proj_mat']:
+            h5so.update(key)
+        h5so.save(h5_file_out, 'dft_bands_input')
 
 
 if __name__ == '__main__':
