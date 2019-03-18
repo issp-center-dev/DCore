@@ -23,6 +23,7 @@ import sys
 import os
 import shlex
 import subprocess
+import numpy
 
 from pytriqs.archive import HDFArchive
 from .tools import launch_mpi_subprocesses
@@ -208,7 +209,7 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
                 if 'dft_input_chi' in ar:
                    del ar['dft_input_chi']
                 ar.create_group('dft_input_chi')
-                ar['dft_input_chi']['div'] = params['div']
+                ar['dft_input_chi']['div'] = numpy.array(params['div'])
         # check if IBZ and FBZ data are saved separately
         dft_data_fbz = 'dft_input'
         if mpi.is_master_node():
