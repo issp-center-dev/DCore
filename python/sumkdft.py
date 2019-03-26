@@ -23,6 +23,7 @@ import sys
 import os
 import shlex
 import subprocess
+import numpy
 
 from pytriqs.archive import HDFArchive
 from .tools import launch_mpi_subprocesses
@@ -216,15 +217,22 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
     elif params['calc_mode'] == 'bse':
         # chi0
         from dft_tools.sumk_dft_chi import SumkDFTChi
+        # save div data (overwrite if data exist)
         if mpi.is_master_node():
             with HDFArchive(model_hdf5_file, 'a') as ar:
                 if 'dft_input_chi' in ar:
                    del ar['dft_input_chi']
-                if not 'dft_input_chi' in ar:
-                    ar.create_group('dft_input_chi')
-                ar['dft_input_chi']['div'] = params['div']
+                ar.create_group('dft_input_chi')
+                ar['dft_input_chi']['div'] = numpy.array(params['div'])
+        # check if IBZ and FBZ data are saved separately
+        dft_data_fbz = 'dft_input'
+        if mpi.is_master_node():
+            with HDFArchive(model_hdf5_file, 'r') as ar:
+                if 'dft_input_fbz' in ar:
+                    dft_data_fbz = 'dft_input_fbz'
+        dft_data_fbz = mpi.bcast(dft_data_fbz)
         sk = SumkDFTChi(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0,
-                        dft_data_fbz='dft_input')
+                        dft_data_fbz=dft_data_fbz)
         setup_sk(sk, 'iwn')
         sk.save_X0q_for_bse(list_wb=params['list_wb'],
                             n_wf_cutoff=params['n_wf_G2'],

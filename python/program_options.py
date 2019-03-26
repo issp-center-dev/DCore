@@ -35,7 +35,7 @@ def create_parser():
     parser.add_option("model", "t'", float, 0.0, "Transfer integral (Second nearest)")
     parser.add_option("model", "ncor", int, 1, "Number of correlated shells in a unit cell (Only wannier90).")
     parser.add_option("model", "lattice", str, "chain",
-                      'Chosen from "chain", "square", "cubic", "bethe", and "wannier90"')
+                      'Chosen from "chain", "square", "cubic", "bethe", "wannier90", and "external"')
     parser.add_option("model", "nelec", float, 1.0, "Number of electrons per unit cell.")
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "norb", str, "1",
@@ -66,9 +66,9 @@ def create_parser():
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
     parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
     parser.add_option("system", "nk", int, 8, "Number of *k* along each line")
-    parser.add_option("system", "nk0", int, 0, "Number of *k* along b_0 (only for wannier90)")
-    parser.add_option("system", "nk1", int, 0, "Number of *k* along b_1 (only for wannier90)")
-    parser.add_option("system", "nk2", int, 0, "Number of *k* along b_2 (only for wannier90)")
+    parser.add_option("system", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
+    parser.add_option("system", "nk1", int, 0, "Number of *k* along b_1 (for lattice = wannier90, external)")
+    parser.add_option("system", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
     parser.add_option("system", "prec_mu", float, 0.0001,
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")

@@ -21,6 +21,7 @@ from __future__ import print_function
 import os
 import re
 import numpy
+from warnings import warn
 
 
 def create_lattice_model(params):
@@ -417,26 +418,27 @@ class CubicModel(NNNHoppingModel):
         return 3
 
 
+def set_nk(nk, nk0, nk1, nk2):
+    if abs(nk0) + abs(nk1) + abs(nk2) == 0:
+        # If one of nk0, nk1 and nk2 are set, use nk.
+        nk0 = nk
+        nk1 = nk
+        nk2 = nk
+    elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
+        # if any of nk0, nk1 and nk2 are set, use them.
+        if nk0 * nk1 * nk2 == 0:
+            raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
+    return nk0, nk1, nk2
+
+
 class Wannier90Model(NNNHoppingModel):
     def __init__(self, params):
         super(Wannier90Model, self).__init__(params)
 
-        nk = params["system"]["nk"]
-        nk0 = params["system"]["nk0"]
-        nk1 = params["system"]["nk1"]
-        nk2 = params["system"]["nk2"]
-
-        if abs(nk0) + abs(nk1) + abs(nk2) == 0:
-            # If one of nk0, nk1 and nk2 are set, use nk.
-            nk0 = nk
-            nk1 = nk
-            nk2 = nk
-        elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
-            # if any of nk0, nk1 and nk2 are set, use them.
-            if nk0 * nk1 * nk2 == 0:
-                raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
-
-        self._nkdiv = (nk0, nk1, nk2)
+        self._nkdiv = set_nk(params["system"]["nk"],
+                             params["system"]["nk0"],
+                             params["system"]["nk1"],
+                             params["system"]["nk2"])
 
     @classmethod
     def name(self):
@@ -465,6 +467,44 @@ class Wannier90Model(NNNHoppingModel):
         converter.convert_dft_input()
 
 
-all_lattice_models = [ChainModel, SquareModel, CubicModel, BetheModel, Wannier90Model]
+class ExternalModel(LatticeModel):
+    """
+    Prepare DFT data externally. This class only checks an existing file and data in it.
+    """
+
+    def __init__(self, params):
+        super(ExternalModel, self).__init__(params)
+
+        from pytriqs.archive import HDFArchive
+
+        seedname = self._params["model"]["seedname"]
+        h5_file = seedname+'.h5'
+
+        # check if h5 file already exists
+        try:
+            assert os.path.exists(h5_file)
+            with HDFArchive(h5_file, 'r') as ar:
+                assert 'dft_input' in ar
+        except:
+            raise Exception("Prepare, in advance, '%s' file which stores DFT data in 'dft_input' subgroup" % h5_file)
+
+        # set nkdiv
+        self._nkdiv = set_nk(params["system"]["nk"],
+                             params["system"]["nk0"],
+                             params["system"]["nk1"],
+                             params["system"]["nk2"])
+
+    @classmethod
+    def name(self):
+        return 'external'
+
+    def nkdiv(self):
+        return self._nkdiv
+
+    def generate_model_file(self):
+        pass
+
+
+all_lattice_models = [ChainModel, SquareModel, CubicModel, BetheModel, Wannier90Model, ExternalModel]
 
 
