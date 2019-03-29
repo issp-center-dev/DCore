@@ -485,6 +485,7 @@ def dcore_post(filename, np=1):
     seedname = p["model"]["seedname"]
     p["mpi"]["num_processes"] = np
     mpirun_command = p['mpi']['command'].replace('#', str(p['mpi']['num_processes']))
+    mpirun_command_np1 = p['mpi']['command'].replace('#', '1')
     #
     # Nodes for k-point path
     # knode=(label, k0, k1, k2) in the fractional coordinate
@@ -567,7 +568,7 @@ def dcore_post(filename, np=1):
     #
     print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
     if p["model"]["lattice"] == 'wannier90':
-        hopping, n_orbitals, proj_mat = __generate_wannier90_model(mpirun_command, p["model"], n_k, kvec)
+        hopping, n_orbitals, proj_mat = __generate_wannier90_model(mpirun_command_np1, p["model"], n_k, kvec)
     else:
         hopping, n_orbitals, proj_mat = __generate_lattice_model(p["model"], n_k, kvec)
     #

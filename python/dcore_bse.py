@@ -216,7 +216,7 @@ class SaveBSE:
         else:
             gamma0_inner = - u_mat_ph1 + u_mat_ph2
             gamma0_inner = gamma0_inner.reshape((len(self.inner2.namelist), )*2)
-            block_index = self.block2.get_index(icrsh, 0, icrsh, 0)
+            block_index = self.block2.get_index(icrsh, self.spin_names[0], icrsh, self.spin_names[0])
             self.h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
 
 

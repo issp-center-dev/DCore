@@ -268,7 +268,7 @@ class DMFTCoreSolver(object):
         with HDFArchive(output_file, 'r') as f:
             ar = f[output_group]
             if 'iterations' not in ar:
-                raise RuntimeError("Failed to restart the previous simulation!")
+                raise RuntimeError("Failed to restart the previous simulation! Data not found!")
 
             self._previous_runs = ar['iterations']
             if ar['iterations'] <= 0:
@@ -545,6 +545,7 @@ class DMFTCoreSolver(object):
             print("")
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Chemical potential and G0_imp  @@@@@@@@@@@@@@@@@@@@@@@@")
             print("")
+            sys.stdout.flush()
 
             # Compute Gloc_iw where the chemical potential is adjusted if needed
             Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
