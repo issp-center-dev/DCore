@@ -247,7 +247,7 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
 
         sk.save_X0q_for_bse(list_wb=params['list_wb'],
                             n_wf_cutoff=params['n_wf_G2'],
-                            qpoints_saved='quadrant',
+                            qpoints_saved=params['X0q_qpoints_saved'],
                             h5_file=params['bse_h5_out_file'],
                             temp_file=temp_file,
                             nonlocal_order_parameter=False)

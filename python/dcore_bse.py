@@ -247,6 +247,15 @@ class DMFTBSESolver(DMFTCoreSolver):
         params['div'] = lattice_model.nkdiv()
         params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
         params['use_temp_file'] = self._params['bse']['use_temp_file']
+        if self._params['bse']['X0q_qpoints_saved'] == 'quadrant':
+            params['X0q_qpoints_saved'] = 'quadrant'
+        else:
+            q_points = []
+            with open(self._params['bse']['X0q_qpoints_saved'], 'r') as f:
+                for line in f:
+                    q_str = line.split()[1]
+                    q_points.append(tuple(map(int, q_str.split('.'))))
+            params['X0q_qpoints_saved'] = q_points
         sumkdft.run(os.path.abspath(self._seedname + '.h5'), './work/sumkdft_bse', self._mpirun_command, params)
 
     def _calc_bse_xloc(self):

@@ -115,5 +115,6 @@ def create_parser():
     parser.add_option("bse", "skip_X0q_if_exists", bool, False, "Skip X_0(q) calc if file already exists")
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q.")
+    parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
 
     return parser
