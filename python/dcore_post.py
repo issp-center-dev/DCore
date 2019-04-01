@@ -65,7 +65,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['Sigma_w_sh'] = Sigma_w_sh
         params['mesh'] = mesh
         params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos', self._mpirun_command, params)
         return r['dos'], r['dosproj'], r['dosproj_orb']
 
     def calc_dos0(self, mesh, broadening):
@@ -86,7 +86,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['mu'] = self._params['system']['mu']
         params['mesh'] = mesh
         params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos0', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos0', self._mpirun_command, params)
         return r['dos0'], r['dosproj0'], r['dosproj_orb0']
 
     def calc_spaghettis(self, Sigma_w_sh, mesh, broadening):
@@ -102,7 +102,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['Sigma_w_sh'] = Sigma_w_sh
         params['mesh'] = mesh
         params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_spaghettis', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_spaghettis', self._mpirun_command, params)
         return r['akw']
 
     def calc_momentum_distribution(self):
@@ -116,7 +116,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params = self._make_sumkdft_params()
         params['calc_mode'] = 'momentum_distribution'
         params['mu'] = self._chemical_potential
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_momentum_distribution', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_momentum_distribution', self._mpirun_command, params)
         return r['den'], r['ev0']
 
     def calc_Sigma_w(self, mesh):

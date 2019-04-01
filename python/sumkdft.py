@@ -95,25 +95,31 @@ def run(model_file, work_dir, mpirun_command, params):
     # Prepare input files
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
-    with HDFArchive(work_dir + '/input.h5', 'w') as h:
+
+    cwd_org = os.getcwd()
+    os.chdir(work_dir)
+
+    with HDFArchive('./input.h5', 'w') as h:
         h['params'] = params
 
     commands = [sys.executable, "-m", "dcore.sumkdft"]
     commands.append(model_file)
-    commands.append(os.path.abspath(work_dir + '/input.h5'))
-    commands.append(os.path.abspath(work_dir + '/output.h5'))
+    commands.append(os.path.abspath('./input.h5'))
+    commands.append(os.path.abspath('./output.h5'))
 
-    with open(work_dir + '/output', 'w') as output_file:
+    with open('./output', 'w') as output_file:
         launch_mpi_subprocesses(mpirun_command, commands, output_file)
 
-    with open(work_dir + '/output', 'r') as output_file:
+    with open('./output', 'r') as output_file:
         for line in output_file:
             print(line, end='')
 
     results = {}
-    with HDFArchive(os.path.abspath(work_dir + '/output.h5'), 'r') as h:
+    with HDFArchive(os.path.abspath('./output.h5'), 'r') as h:
         for k in h.keys():
             results[k] = h[k]
+
+    os.chdir(cwd_org)
 
     return results
 
@@ -234,10 +240,16 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         sk = SumkDFTChi(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0,
                         dft_data_fbz=dft_data_fbz)
         setup_sk(sk, 'iwn')
+
+        temp_file = None
+        if params['use_temp_file']:
+            temp_file = 'G_k_iw_temp.h5'
+
         sk.save_X0q_for_bse(list_wb=params['list_wb'],
                             n_wf_cutoff=params['n_wf_G2'],
                             qpoints_saved='quadrant',
                             h5_file=params['bse_h5_out_file'],
+                            temp_file=temp_file,
                             nonlocal_order_parameter=False)
     else:
         raise RuntimeError("Unknown calc_mode: " + str(params['calc_mode']))

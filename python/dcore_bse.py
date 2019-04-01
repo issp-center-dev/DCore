@@ -246,7 +246,8 @@ class DMFTBSESolver(DMFTCoreSolver):
         params['n_wf_G2'] = self._params['bse']['num_wf']
         params['div'] = lattice_model.nkdiv()
         params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
-        sumkdft.run(self._seedname + '.h5', './work/sumkdft_bse', self._mpirun_command, params)
+        params['use_temp_file'] = self._params['bse']['use_temp_file']
+        sumkdft.run(os.path.abspath(self._seedname + '.h5'), './work/sumkdft_bse', self._mpirun_command, params)
 
     def _calc_bse_xloc(self):
         """

@@ -114,5 +114,6 @@ def create_parser():
     parser.add_option("bse", "h5_output_file", str, 'dmft_bse.h5', "Output HDF5 file for bse data")
     parser.add_option("bse", "skip_X0q_if_exists", bool, False, "Skip X_0(q) calc if file already exists")
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
+    parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q.")
 
     return parser

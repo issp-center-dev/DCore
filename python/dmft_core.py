@@ -355,7 +355,7 @@ class DMFTCoreSolver(object):
         params['calc_mode'] = 'Gloc'
         if (not self._params['system']['fix_mu']) and (not self._read_only):
             params['adjust_mu'] = True
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft', self._mpirun_command, params)
 
         if params['adjust_mu']:
             self._chemical_potential = r['mu']
