@@ -22,6 +22,7 @@ import os
 import re
 import numpy
 from warnings import warn
+from itertools import product
 
 
 def create_lattice_model(params):
@@ -127,7 +128,38 @@ def _generate_nnn_lattice_model(spatial_dim, nelec, norb, t, tp, nk, f):
                         print("0.0", file=f)  # Imaginary part
 
 
-def _generate_bethe_lattice_model(nelec, norb, t, nk, f):
+def _generate_bethe_lattice_model(norb, t, nk):
+    """
+    Compute a list of H(k) and weights for bethe lattice model with t
+
+    Parameters
+    ----------
+    norb : int
+            Number of orbitals
+    t : float
+            Nearest neighbor hopping
+    nk : int
+            Number of k divisions along each axis
+    """
+
+    #
+    # If Bethe lattice, set k-weight manually to generate semi-circular DOS
+    #
+    weight = numpy.empty((nk,))
+    for ik in range(nk):
+        ek = float(2*ik + 1 - nk) / float(nk)
+        weight[ik] = numpy.sqrt(1.0 - ek**2)
+
+    Hk = numpy.zeros((nk, norb, norb), dtype=complex)
+    for ik in range(nk):
+        ek = 2.0 * t * float(2*ik + 1 - nk) / float(nk)
+        for iorb in range(norb):
+            Hk[ik, iorb, iorb] = ek
+
+    return Hk, weight
+
+
+def _call_Hk_converter(seedname, nelec, norb, Hk, weight):
     """
     Compute a list of H(k) for bethe lattice model with t
 
@@ -137,46 +169,49 @@ def _generate_bethe_lattice_model(nelec, norb, t, nk, f):
             Number of electrons
     norb : int
             Number of orbitals
-    t : float
-            Nearest neighbor hopping
-    nk : int
-            Number of k divisions along each axis
-    f : file
-            Output file
+    Hk : [nkbz, :, :]
+            H(k)
+    weight : [nkbz] or None
+            weight for k
     """
+    from pytriqs.applications.dft.converters.hk_converter import HkConverter
 
-    nkbz = nk
+    nkbz = Hk.shape[0]
+    assert nelec <= norb
+    assert Hk.shape == (nkbz, norb, norb)
+    assert weight is None or weight.shape == (nkbz,)
+
+    use_weight = not weight is None
 
     print("\n    Total number of k =", str(nkbz))
 
-    #
-    # Write General-Hk formatted file
-    #
-    print(nkbz, file=f)
-    print(nelec, file=f)
-    print("1", file=f)
-    print("0 0 {0} {1}".format(0, norb), file=f)
-    print("1", file=f)
-    print("0 0 {0} {1} 0 0".format(0, norb), file=f)
-    print("1 {0}".format(norb), file=f)
+    with open(seedname+'.inp', 'w') as f:
+        #
+        # Write General-Hk formatted file
+        #
+        print(nkbz, file=f)
+        print(nelec, file=f)
+        print("1", file=f)
+        print("0 0 {0} {1}".format(0, norb), file=f)
+        print("1", file=f)
+        print("0 0 {0} {1} 0 0".format(0, norb), file=f)
+        print("1 {0}".format(norb), file=f)
 
-    #
-    # If Bethe lattice, set k-weight manually to generate semi-circular DOS
-    #
-    for i0 in range(nk):
-        ek = float(2*i0 + 1 - nk) / float(nk)
-        wk = numpy.sqrt(1.0 - ek**2)
-        print("{0}".format(wk), file=f)
-    for i0 in range(nk):
-        ek = 2.0 * t * float(2*i0 + 1 - nk) / float(nk)
-        for iorb in range(norb):
-            for jorb in range(norb):
-                if iorb == jorb:
-                    print("{0}".format(ek), file=f)  # Real part
-                else:
-                    print("0.0", file=f)  # Real part
-        for iorb in range(norb*norb):
-            print("0.0", file=f)  # Imaginary part
+        # Write weight
+        if use_weight:
+            for ik in range(nkbz):
+                print("{0}".format(weight[ik]), file=f)
+
+        # Write H(k)
+        for ik in range(nkbz):
+            for iorb, jorb in product(range(norb), repeat=2):
+                print("{}".format(Hk[ik,iorb,jorb].real), file=f)
+            for iorb, jorb in product(range(norb), repeat=2):
+                print("{}".format(Hk[ik,iorb,jorb].imag), file=f)
+
+    converter = HkConverter(filename=seedname + ".inp", hdf_filename=seedname+".h5")
+    converter.convert_dft_input(weights_in_file=use_weight)
+    os.remove(seedname + ".inp")
 
 
 def _generate_wannier90_model(nkdiv, params, f):
@@ -337,17 +372,10 @@ class BetheModel(LatticeModel):
         return (self._nk, 1, 1)
 
     def generate_model_file(self):
-        from pytriqs.applications.dft.converters.hk_converter import HkConverter
-
         p = self._params
         seedname = p["model"]["seedname"]
-        with open(seedname+'.inp', 'w') as f:
-            _generate_bethe_lattice_model(p['model']['nelec'], int(p['model']['norb']), p['model']['t'], p['system']['nk'], f)
-
-        # Convert General-Hk to SumDFT-HDF5 format
-        converter = HkConverter(filename=seedname + ".inp", hdf_filename=seedname+".h5")
-        converter.convert_dft_input(weights_in_file=True)
-        os.remove(seedname + ".inp")
+        Hk, weight = _generate_bethe_lattice_model(int(p['model']['norb']), p['model']['t'], p['system']['nk'])
+        _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, weight)
 
 
 class NNNHoppingModel(LatticeModel):
