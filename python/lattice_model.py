@@ -21,9 +21,8 @@ from __future__ import print_function
 import os
 import re
 import numpy
-from warnings import warn
 from itertools import product
-
+from pytriqs.archive.hdf_archive import HDFArchive
 
 def create_lattice_model(params):
     model_name =  params["model"]["lattice"]
@@ -35,7 +34,7 @@ def create_lattice_model(params):
     raise RuntimeError('Unknown lattice model name: ' + model_name)
 
 
-def _generate_nnn_lattice_model(spatial_dim, nelec, norb, t, tp, nk, f):
+def _generate_nnn_lattice_model(spatial_dim, norb, t, tp, nk):
     """
     Compute a list of H(k) for lattice model with t and t'
 
@@ -53,8 +52,6 @@ def _generate_nnn_lattice_model(spatial_dim, nelec, norb, t, tp, nk, f):
             Next nearest neighbor hopping
     nk : int
             Number of k divisions along each axis
-    f : file
-            Output file
     """
 
     assert spatial_dim > 0 and spatial_dim <= 3
@@ -62,19 +59,9 @@ def _generate_nnn_lattice_model(spatial_dim, nelec, norb, t, tp, nk, f):
     print("nk = ", nk, spatial_dim)
 
     nkbz = nk**spatial_dim
+    Hk = numpy.zeros((nkbz, norb, norb), dtype=complex)
 
     print("\n    Total number of k =", str(nkbz))
-
-    #
-    # Write General-Hk formatted file
-    #
-    print(nkbz, file=f)
-    print(nelec, file=f)
-    print("1", file=f)
-    print("0 0 {0} {1}".format(0, norb), file=f)
-    print("1", file=f)
-    print("0 0 {0} {1} 0 0".format(0, norb), file=f)
-    print("1 {0}".format(norb), file=f)
 
     #
     # Energy band
@@ -85,48 +72,25 @@ def _generate_nnn_lattice_model(spatial_dim, nelec, norb, t, tp, nk, f):
             kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
             ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
             for iorb in range(norb):
-                for jorb in range(norb):
-                    if iorb == jorb:
-                        print("{0}".format(ek), file=f)  # Real part
-                    else:
-                        print("0.0", file=f)  # Real part
-            for iorb in range(norb*norb):
-                print("0.0", file=f)  # Imaginary part
+                Hk[i0, iorb, iorb] = ek
     elif spatial_dim == 2:
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            for i1 in range(nk):
-                kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk)
-                ek = 2.0*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
-                     + 2.0*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
-                for iorb in range(norb):
-                    for jorb in range(norb):
-                        if iorb == jorb:
-                            print("{0}".format(ek), file=f)  # Real part
-                        else:
-                            print("0.0", file=f)  # Real part
-                for iorb in range(norb*norb):
-                    print("0.0", file=f)  # Imaginary part
+        for ik, kidx in enumerate(product(range(nk), repeat=2)):
+            kvec[:2] = 2.0 * numpy.pi * numpy.array(kidx)/float(nk)
+            ek = 2.0*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
+                 + 2.0*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
+            for iorb in range(norb):
+                Hk[ik, iorb, iorb] = ek
     elif spatial_dim == 3:
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            for i1 in range(nk):
-                kvec[1] = 2.0 * numpy.pi * float(i1) / float(nk)
-                for i2 in range(nk):
-                    kvec[2] = 2.0 * numpy.pi * float(i2) / float(nk)
-                    ek = 2*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
-                         + 2*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1])
-                                 + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2])
-                                 + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
-                    for iorb in range(norb):
-                        for jorb in range(norb):
-                            if iorb == jorb:
-                                print("{0}".format(ek), file=f)  # Real part
-                            else:
-                                print("0.0", file=f)  # Real part
-                    for iorb in range(norb*norb):
-                        print("0.0", file=f)  # Imaginary part
+        for ik, kidx in enumerate(product(range(nk), repeat=3)):
+            kvec[:] = 2.0 * numpy.pi * numpy.array(kidx)/float(nk)
+            ek = 2*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
+                 + 2*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1])
+                         + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2])
+                         + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
+            for iorb in range(norb):
+                Hk[ik, iorb, iorb] = ek
 
+    return Hk
 
 def _generate_bethe_lattice_model(norb, t, nk):
     """
@@ -352,6 +316,7 @@ class LatticeModel(object):
         pass
 
 
+
 class BetheModel(LatticeModel):
     """
     Bethe-lattice model
@@ -376,6 +341,12 @@ class BetheModel(LatticeModel):
         seedname = p["model"]["seedname"]
         Hk, weight = _generate_bethe_lattice_model(int(p['model']['norb']), p['model']['t'], p['system']['nk'])
         _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, weight)
+
+        if p['model']['spin_orbit']:
+            from .manip_database import turn_on_spin_orbit
+            print('')
+            print('Turning on spin_orbit...')
+            turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
 
 
 class NNNHoppingModel(LatticeModel):
@@ -405,18 +376,17 @@ class NNNHoppingModel(LatticeModel):
         raise RuntimeError("spatial_dim must be inherited in a subclass.")
 
     def generate_model_file(self):
-        from pytriqs.applications.dft.converters.hk_converter import HkConverter
-
         p = self._params
         seedname = p["model"]["seedname"]
-        with open(seedname+'.inp', 'w') as f:
-            _generate_nnn_lattice_model(self.__class__.spatial_dim(),
-                p['model']['nelec'], int(p['model']['norb']), p['model']['t'], p['model']["t'"], p['system']['nk'], f)
+        Hk = _generate_nnn_lattice_model(self.__class__.spatial_dim(),
+                                    int(p['model']['norb']), p['model']['t'], p['model']["t'"], p['system']['nk'])
+        _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, None)
 
-        # Convert General-Hk to SumDFT-HDF5 format
-        converter = HkConverter(filename=seedname + ".inp", hdf_filename=seedname+".h5")
-        converter.convert_dft_input(weights_in_file=False)
-        os.remove(seedname + ".inp")
+        if p['model']['spin_orbit']:
+            from .manip_database import turn_on_spin_orbit
+            print('')
+            print('Turning on spin_orbit...')
+            turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
 
 
 class ChainModel(NNNHoppingModel):
@@ -493,6 +463,16 @@ class Wannier90Model(NNNHoppingModel):
         # Convert General-Hk to SumDFT-HDF5 format
         converter = Wannier90Converter(seedname=seedname)
         converter.convert_dft_input()
+
+        if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
+            with HDFArchive(seedname + '.h5', 'a') as f:
+                f["dft_input"]["SP"] = 1
+                f["dft_input"]["SO"] = 1
+
+                corr_shells = f["dft_input"]["corr_shells"]
+                for icor in range(p["model"]['ncor']):
+                    corr_shells[icor]["SO"] = 1
+                f["dft_input"]["corr_shells"] = corr_shells
 
 
 class ExternalModel(LatticeModel):

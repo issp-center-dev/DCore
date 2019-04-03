@@ -243,6 +243,7 @@ def read_potential(filename, mat):
         exit(1)
     print("Reading '{}'...".format(filename))
 
+    filled = numpy.full(mat.shape, False)
     try:
         with open(filename, 'r') as f:
             for line in f:
@@ -256,9 +257,10 @@ def read_potential(filename, mat):
                 o1 = int(array[1])
                 o2 = int(array[2])
                 val = complex(float(array[3]), float(array[4]))
-                if mat[sp, o1, o2] != 0:
-                    raise Exception("duplicate components")
+                if filled[sp, o1, o2]:
+                    raise Exception("duplicate components: " + line)
                 mat[sp, o1, o2] = val
+                filled[sp, o1, o2] = True
     except Exception as e:
         print("Error:", e)
         print(line, end="")
@@ -381,7 +383,6 @@ def dcore_pre(filename):
     # One-body term
     #
     print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
-    seedname = p["model"]["seedname"]
     lattice_model = create_lattice_model(p)
     lattice_model.generate_model_file()
 
@@ -389,20 +390,6 @@ def dcore_pre(filename):
     # Interaction
     #
     __generate_umat(p)
-    #
-    # Spin-Orbit case
-    #
-    if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
-        f = HDFArchive(seedname + '.h5', 'a')
-        f["dft_input"]["SP"] = 1
-        f["dft_input"]["SO"] = 1
-
-        corr_shells = f["dft_input"]["corr_shells"]
-        for icor in range(ncor):
-            corr_shells[icor]["SO"] = 1
-        f["dft_input"]["corr_shells"] = corr_shells
-
-        del f
 
     #
     # Local potential
