@@ -172,8 +172,10 @@ class ALPSCTHYBSolver(SolverBase):
         if rot is None:
             rot_mat_alps = numpy.identity(2*self.n_orb, dtype=complex)
         else:
+            assert isinstance(rot, dict)
             if self.use_spin_orbit:
-                rot_single_block = rot
+                assert len(rot) == 1
+                rot_single_block = rot['ud']
             else:
                 rot_single_block = block_diag(*[rot[name] for name in self.block_names])
             rot_mat_alps = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
