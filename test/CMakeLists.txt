@@ -2,6 +2,7 @@
 find_package(TriqsTest)
 
 add_subdirectory(typed_parser)
+add_subdirectory(tools)
 add_subdirectory(openmx)
 add_subdirectory(respack)
 add_subdirectory(pre_preset)

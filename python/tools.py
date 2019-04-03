@@ -28,6 +28,7 @@ from pytriqs.utility.h5diff import compare, failures
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.gf.local import *
 from pytriqs.operators import *
+import scipy
 
 """
 THIS MODULE  MUST NOT DEPEND ON MPI!
@@ -204,3 +205,34 @@ def extract_H0(G0_iw, hermitianize=True):
 
     return data
 
+def spin_moments_sh(dm_corr_sh):
+    """
+    Compute spin moments on shells.
+    dm_corr_sh must contain density matrices.
+    """
+
+    pauli_mat = []
+    pauli_mat.append(numpy.array([[0, 1], [1,0]], dtype=complex))
+    pauli_mat.append(numpy.array([[0, -1J], [1J, 0]], dtype=complex))
+    pauli_mat.append(numpy.array([[1, 0], [0, -1]], dtype=complex))
+
+    assert numpy.allclose(numpy.dot(pauli_mat[0],pauli_mat[1]), 1J*pauli_mat[2])
+
+    spin_moments = []
+    for ish in range(len(dm_corr_sh)):
+        dm_dict = dm_corr_sh[ish]
+        if len(dm_dict) == 1:
+            dm = dm_dict['ud']
+        else:
+            dm = scipy.linalg.block_diag(dm_dict['up'], dm_dict['down'])
+
+        assert dm.shape[0] == dm.shape[1]
+
+        norb = dm.shape[0]//2
+ 
+        dm = dm.reshape((2, norb, 2, norb))
+
+        s = numpy.array([0.5*numpy.einsum('st, sntn', pauli_mat[i], dm).real for i in range(3)])
+        spin_moments.append(s)
+
+    return spin_moments

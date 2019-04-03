@@ -57,7 +57,6 @@ def is_hermite_conjugate(Sigma_iw):
     return True
 
 
-
 def create_solver_params(ini_dict):
     """
     Parse a dict and create parameters for an impurity solver.
@@ -368,6 +367,7 @@ class DMFTCoreSolver(object):
 
 
     def print_density_matrix(self, dm_corr_sh):
+        smoments = spin_moments_sh(dm_corr_sh)
         print("\nDensity Matrix")
         for icrsh in range(self._n_corr_shells):
             print("\n  Shell ", icrsh)
@@ -378,6 +378,10 @@ class DMFTCoreSolver(object):
                     for i2 in range(self._sk.corr_shells[icrsh]['dim']):
                         print("{0:.3f} ".format(dm_corr_sh[icrsh][sp][i1, i2]), end="")
                     print("")
+                evals, evecs = numpy.linalg.eigh(dm_corr_sh[icrsh][sp])
+                print('    Eigenvalues: ', evals)
+            print('')
+            print('    Sx, Sy, Sz : {} {} {}'.format(smoments[icrsh][0], smoments[icrsh][1], smoments[icrsh][2]))
 
 
     def solve_impurity_models(self, Gloc_iw_sh, iteration_number, mesh=None):
