@@ -27,7 +27,6 @@ def create_parser():
     parser = TypedParser()
 
     # [mpi]
-    #parser.add_option("mpi", "num_processes", int, 1, "Number of processes")
     parser.add_option("mpi", "command", str, "mpirun -np #", "Command for executing a MPI job. # will be relaced by the number of processes.")
 
     # [model]
@@ -56,7 +55,7 @@ def create_parser():
     parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
     parser.add_option("model", "non_colinear", bool, False,
                       "Set True for the case that non-colinear DMFT from the COLINEAR DFT calculation.")
-    parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: filename} to specify local potential matrix of ish-th shell")
+    parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: 'filename'} to specify local potential matrix of ish-th shell")
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
     # [system]
@@ -110,11 +109,10 @@ def create_parser():
     # [bse]
     parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")
     parser.add_option("bse", "num_wf", int, 10, "Number of fermionic frequencies (>0)")
-    #parser.add_option("bse", "div", IntTuple, IntTuple((10, 10, 10)), "Numbers of dimensions for kx, ky, kz")
     parser.add_option("bse", "h5_output_file", str, 'dmft_bse.h5', "Output HDF5 file for bse data")
     parser.add_option("bse", "skip_X0q_if_exists", bool, False, "Skip X_0(q) calc if file already exists")
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
-    parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q.")
+    parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
 
     return parser

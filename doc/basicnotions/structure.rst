@@ -37,6 +37,9 @@ The preset models include
 * Chain lattice
 * Square lattice
 * Cubic lattice
+* External model
+
+.. todo:: EXPLAIN EXTERNAL MODEL
 
 ..
   For more details, please see :ref:`inputformat`.

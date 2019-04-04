@@ -18,7 +18,7 @@ You can download the source files in two ways.
 
   .. code-block:: bash
 
-      $ tar zxvf v1.x.x.tar.gz
+      $ tar zxvf v2.x.x.tar.gz
 
 - **[Develop version]**
 
@@ -28,7 +28,8 @@ You can download the source files in two ways.
 
       $ git clone https://github.com/issp-center-dev/DCore.git dcore.src
 
-  The master branch basically corresponds to the latest released package, and the develop branch includes new features. Note that the develop branch may not be well tested and contains some bugs.
+  The master branch basically corresponds to the latest released package, and the develop branch includes new features.
+  Note that develop branches may not be well tested and contains some bugs.
 
 Prerequisites
 -------------
@@ -87,10 +88,11 @@ Prerequisites
 
    - `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
 
-   - `ALPSCore/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
+   - `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
 
    - `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
      [Note: checkout tag **1.4.2** on master branch, or download the released package from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_]
+   and others. Please see a complete list of the supported impurity solvers in :doc:`reference/impuritysolvers`.
 
    .. note::
 
@@ -103,14 +105,13 @@ Prerequisites
 
    .. note::
 
-      One must build TRIQS, TRIQS/DFTTools, and TRIQS solvers with the same C++ compiler and the same C++ standard (C++14).
+      One must build TRIQS, TRIQS/DFTTools, and TRIQS solvers using the same C++ compiler with the same C++ standard (C++14).
+      One does not necessarily have to build ALPS/CT-HYB with the same C++ compiler as that used for TRIQS.
 
    .. note::
 
-      ALPSCore/CT-HYB is a standalone program with an interface based on text and HDF5 files.
-      The main developer of ``ALPSCore/CT-HYB``, H. Shinaoka, is one of the developers of DCore.
-
-      Both of ``ALPSCore/CT-HYB`` and ``TRIQS/cthyb`` implement the hybridization-expansion continuous-time quantum Monte Carlo method.
+      ``ALPS/CT-HYB`` is developed by one of the main developers of DCore, H. Shinaoka.
+      Both of ``ALPS/CT-HYB`` and ``TRIQS/cthyb`` implement the hybridization-expansion continuous-time quantum Monte Carlo method.
       The main difference is the reliability of measurement of the single-particle Green's function.
       ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
       The non-worm conventional sampling, which is implemented in ``TRIQS/cthyb``,
@@ -221,7 +222,7 @@ Installation steps
 
      $ make install
 
-   ``DCore`` is installed in the directory *path_to_triqs*.
+   ``DCore`` is installed in the directory *path_to_dcore_install_directory*.
 
 .. Version compatibility
 .. ---------------------

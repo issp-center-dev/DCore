@@ -380,7 +380,6 @@ class DMFTCoreSolver(object):
                     print("")
                 evals, evecs = numpy.linalg.eigh(dm_corr_sh[icrsh][sp])
                 print('    Eigenvalues: ', evals)
-            print('')
             print('    Sx, Sy, Sz : {} {} {}'.format(smoments[icrsh][0], smoments[icrsh][1], smoments[icrsh][2]))
 
 
