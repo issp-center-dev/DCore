@@ -24,6 +24,8 @@ import numpy
 from itertools import product
 from pytriqs.archive.hdf_archive import HDFArchive
 
+from .tools import pauli_matrix
+
 def create_lattice_model(params):
     model_name =  params["model"]["lattice"]
 
@@ -388,7 +390,6 @@ class NNNHoppingModel(LatticeModel):
             print('Turning on spin_orbit...')
             turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
 
-
 class ChainModel(NNNHoppingModel):
     def __init__(self, params):
         super(ChainModel, self).__init__(params)
@@ -513,6 +514,47 @@ class ExternalModel(LatticeModel):
         pass
 
 
+def print_local_fields(h5_file, subgrp='dft_input'):
+    """
+    Print local fields of H(R=0)
+    :param h5_file: input file for DFTTools
+    :param subgrp:
+    """
+
+    with HDFArchive(h5_file, 'r') as f:
+        Hk = f[subgrp]['hopping'][()]
+        SO = f[subgrp]['SO']
+        SP = f[subgrp]['SP']
+        bz_weights = f[subgrp]['bz_weights'][()]
+
+    if (SO==1 and SP==0) or (SO==0 and SP==1):
+        raise RuntimeError("SO={} and SP={} are not supported by DCore!".format(SO, SP))
+
+    nk = Hk.shape[0]
+    block_dim = Hk.shape[2]
+    if SO==0:
+        Hk_ud = numpy.zeros((nk, 2, block_dim, 2, block_dim), dtype=complex)
+        for isp in range(2):
+            Hk_ud[:, isp, :, isp, :] = Hk[:, 0, :, :]
+        Hk_ud = Hk_ud.reshape((nk, 2*block_dim, 2*block_dim))
+        norb = block_dim
+    else:
+        Hk_ud = Hk.reshape((nk, block_dim, block_dim))
+        norb = block_dim//2
+
+    # Hk_ud (nk, 2*num_orb, 2*num_orb)
+    # Check only H(R=0)
+    H0_ud = numpy.einsum('kij,k->ij', Hk_ud, bz_weights)
+    H0_ud = H0_ud.reshape((2, norb, 2, norb))
+
+    print('')
+    print('---local fields (w/o local potential)')
+    pauli_mat = pauli_matrix()
+    for iorb in range(norb):
+        # alpha = x, y, z
+        h = numpy.empty(3)
+        for alpha in range(3):
+            h[alpha] = 0.5 * numpy.trace(numpy.dot(H0_ud[:, iorb, :, iorb], pauli_mat[alpha])).real
+        print("    orbital {} : hx, hy, hz = {} {} {}".format(iorb, *h))
+
 all_lattice_models = [ChainModel, SquareModel, CubicModel, BetheModel, Wannier90Model, ExternalModel]
-
-

@@ -31,7 +31,7 @@ from pytriqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, e
 
 from .tools import *
 
-from .lattice_model import create_lattice_model
+from .lattice_model import create_lattice_model, print_local_fields
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
@@ -356,7 +356,6 @@ def dcore_pre(filename):
     lattice_model = create_lattice_model(p)
     lattice_model.generate_model_file()
 
-    #
     # Interaction
     #
     __generate_umat(p)
@@ -367,8 +366,16 @@ def dcore_pre(filename):
     __generate_local_potential(p)
 
     #
+    # Check one-body term
+    #
+    print('')
+    print('@@@@@@@@@@@@@@@@@@@ Check Model-HDF5 file @@@@@@@@@@@@@@@@@@@@')
+    print_local_fields(p['model']['seedname'] + '.h5')
+
+    #
     # Finish
     #
+
     print("\n@@@@@@@@@@@@@@@@@@@@@@  Done  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 

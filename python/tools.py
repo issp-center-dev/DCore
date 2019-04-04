@@ -205,16 +205,20 @@ def extract_H0(G0_iw, hermitianize=True):
 
     return data
 
+def pauli_matrix():
+    pauli_mat = []
+    pauli_mat.append(numpy.array([[0, 1], [1,0]], dtype=complex))
+    pauli_mat.append(numpy.array([[0, -1J], [1J, 0]], dtype=complex))
+    pauli_mat.append(numpy.array([[1, 0], [0, -1]], dtype=complex))
+    return pauli_mat
+
 def spin_moments_sh(dm_corr_sh):
     """
     Compute spin moments on shells.
     dm_corr_sh must contain density matrices.
     """
 
-    pauli_mat = []
-    pauli_mat.append(numpy.array([[0, 1], [1,0]], dtype=complex))
-    pauli_mat.append(numpy.array([[0, -1J], [1J, 0]], dtype=complex))
-    pauli_mat.append(numpy.array([[1, 0], [0, -1]], dtype=complex))
+    pauli_mat = pauli_matrix()
 
     assert numpy.allclose(numpy.dot(pauli_mat[0],pauli_mat[1]), 1J*pauli_mat[2])
 
