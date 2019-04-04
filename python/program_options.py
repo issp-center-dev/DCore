@@ -79,6 +79,7 @@ def create_parser():
     parser.add_option("system", "n_l", int, 0,
                       "The number of the Legendre polynomial for QMC. If not, the solver's default value is used.",
                       OptionStatus.RETIRED)
+    parser.add_option("system", "initial_self_energy", str, "None", "dict of {ish: 'filename'} to specify initial value of the self-energy of ish-th shell. The file format is the same as local_potential_matrix.")
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',

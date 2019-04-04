@@ -25,6 +25,7 @@ import time
 import __builtin__
 import numpy
 import copy
+import ast
 
 from .program_options import *
 
@@ -312,11 +313,44 @@ class DMFTCoreSolver(object):
 
         self._previous_runs = 0
 
-        #Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
-        #print("")
-        #print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
-        #print("")
-        #self.calc_dc_imp(dm_corr_sh, set_initial_Sigma_iw=True)
+        # Set double-counting correction
+        #     First, compute G_loc without self-energy
+        if self._params['system']['with_dc']:
+            print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
+            Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
+            self.set_dc_imp(dm_corr_sh)
+
+        # Set initial value to self-energy
+        if self._params["system"]["initial_self_energy"] != "None":
+            print("@@@@@@@@@@@@@@@@@@@@@@@@  Setting initial value to self-energy @@@@@@@@@@@@@@@@@@@@@@@@")
+            try:
+                files = ast.literal_eval(self._params["system"]["initial_self_energy"])
+                assert isinstance(files, dict)
+                assert all([ish < self.n_inequiv_shells for ish in files.keys()])
+            except Exception as e:
+                print("Error in parsing initial_self_energy!")
+                print(e)
+                exit(1)
+
+            if self.use_spin_orbit:
+                init_se = [numpy.zeros((1, self._dim_sh[ish], self._dim_sh[ish]), numpy.complex) for ish in range(self.n_inequiv_shells)]
+            else:
+                init_se = [numpy.zeros((2, self._dim_sh[ish], self._dim_sh[ish]), numpy.complex) for ish in range(self.n_inequiv_shells)]
+
+            for ish, file in files.items():
+                read_potential(file, init_se[ish])
+
+            print("\n--- initial self-energy matrix")
+            for ish, init_se_ish in enumerate(init_se):
+                print("ish =", ish)
+                for sp in range(init_se_ish.shape[0]):
+                    print("sp =", sp)
+                    print(init_se_ish[sp])
+
+            for ish in range(self.n_inequiv_shells):
+                for isp, sp in enumerate(self._spin_block_names):
+                    self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
+
 
     def _sanity_check(self):
         """
@@ -421,7 +455,7 @@ class DMFTCoreSolver(object):
         else:
             return Sigma_iw_sh, Gimp_iw_sh, Sigma_w_sh
 
-    def calc_dc_imp(self, dm_corr_sh, set_initial_Sigma_iw=True):
+    def set_dc_imp(self, dm_corr_sh):
         """
 
         Compute Double-counting term (Hartree-Fock term)
@@ -482,9 +516,6 @@ class DMFTCoreSolver(object):
                         u_mat[i1, 0:num_orb, 0:num_orb, i2]
                         * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
                     )
-                if set_initial_Sigma_iw:
-                    # fixed a bug in v1.0
-                    self._sh_quant[ish].Sigma_iw['ud'] << dc_imp_sh['ud']
                 self._dc_imp.append(dc_imp_sh)
             else:
                 dc_imp_sh = {}
@@ -502,22 +533,17 @@ class DMFTCoreSolver(object):
                         #
                         dc_imp_sh[sp1][i1, i2] += \
                             - numpy.sum(u_mat[i1, 0:num_orb, 0:num_orb, i2] * dens_mat[sp1][:, :])
-                if set_initial_Sigma_iw:
-                    # fixed a bug in v1.0
-                    for sp in self._spin_block_names:
-                        self._sh_quant[ish].Sigma_iw[sp] << dc_imp_sh[sp]
                 self._dc_imp.append(dc_imp_sh)
 
-            if set_initial_Sigma_iw:
-                print("\n      DC Self Energy:")
-                for sp1 in self._spin_block_names:
-                    print("        Spin {0}".format(sp1))
-                    for i1 in range(dim_tot):
-                        print("          ", end="")
-                        for i2 in range(dim_tot):
-                            print("{0:.3f} ".format(self._dc_imp[ish][sp1][i1, i2]), end="")
-                        print("")
-                print("")
+            print("\n      DC Self Energy:")
+            for sp1 in self._spin_block_names:
+                print("        Spin {0}".format(sp1))
+                for i1 in range(dim_tot):
+                    print("          ", end="")
+                    for i2 in range(dim_tot):
+                        print("{0:.3f} ".format(self._dc_imp[ish][sp1][i1, i2]), end="")
+                    print("")
+            print("")
 
 
     def do_steps(self, max_step):
@@ -558,11 +584,11 @@ class DMFTCoreSolver(object):
                 print("\n    Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
 
             # Compute DC corrections and initial guess to self-energy
-            if iteration_number == 1 and not previous_present and with_dc:
-                print("")
-                print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
-                print("")
-                self.calc_dc_imp(dm_corr_sh, set_initial_Sigma_iw=True)
+            #if iteration_number == 1 and not previous_present and with_dc:
+                #print("")
+                #print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
+                #print("")
+                #self.calc_dc_imp(dm_corr_sh, set_initial_Sigma_iw=True)
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
 

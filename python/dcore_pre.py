@@ -237,36 +237,6 @@ def __generate_umat(p):
     del f
 
 
-def read_potential(filename, mat):
-    if not os.path.exists(filename):
-        print("Error: file '{}' not found".format(filename))
-        exit(1)
-    print("Reading '{}'...".format(filename))
-
-    filled = numpy.full(mat.shape, False)
-    try:
-        with open(filename, 'r') as f:
-            for line in f:
-                # skip comment line
-                if line[0] == '#':
-                    continue
-
-                array = line.split()
-                assert len(array) == 5
-                sp = int(array[0])
-                o1 = int(array[1])
-                o2 = int(array[2])
-                val = complex(float(array[3]), float(array[4]))
-                if filled[sp, o1, o2]:
-                    raise Exception("duplicate components: " + line)
-                mat[sp, o1, o2] = val
-                filled[sp, o1, o2] = True
-    except Exception as e:
-        print("Error:", e)
-        print(line, end="")
-        exit(1)
-
-
 def __generate_local_potential(p):
     print("\n  @ Write the information of local potential")
 
