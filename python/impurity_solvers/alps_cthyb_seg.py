@@ -92,27 +92,37 @@ def assign_from_numpy_array(g, data, names):
 def dcore2alpscore(dcore_U):
 
     dcore_U_len = len(dcore_U)
-    alps_U  = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+    alps_U = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
     alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
     alps_J = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
 
-    #m_range = range(size)
+    # m_range = range(size)
     for i, j in product(range(dcore_U_len), range(dcore_U_len)):
         alps_U[i, j] = dcore_U[i, j, i, j].real - dcore_U[i, j, j, i].real
         alps_Uprime[i, j] = dcore_U[i, j, i, j].real
         alps_J[i, j] = dcore_U[i, j, j, i].real
-
     return alps_U, alps_Uprime, alps_J
 
 
 def write_Umatrix(U, Uprime, J, norb):
-    Uout = numpy.zeros((2, norb, 2, norb))
+    Uout = numpy.zeros((norb, 2, norb, 2))
+
+    # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
+    # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
+    def func(u):
+        uout = u.reshape((2, norb, 2, norb)).transpose(1, 0, 3, 2)
+        return uout
+
+    U_four = func(U)
+    Uprime_four = func(Uprime)
+    J_four = func(J)
+
     for a1, a2 in product(range(norb), repeat=2):
-        for s1, s2 in product(range(2), repeat=2): #spin-1/2
-            if s1 == s2:
-                Uout[s1, a1, s2, a2] = U[2*a1+s1, 2*a2+s2]
+        for s1, s2 in product(range(2), repeat=2):  # spin-1/2
+            if a1 == a2:
+                Uout[a1, s1, a2, s2] = U_four[a1, s1, a2, s2]
             else:
-                Uout[s1, a1, s2, a2] = Uprime[2*a1+s1, 2*a2+s2] - J[2*a1+s1, 2*a2+s2]
+                Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
 
     Uout = Uout.reshape((2*norb, 2*norb))
     with open('./Umatrix', 'w') as f:
@@ -150,6 +160,16 @@ class ALPSCTHYBSEGSolver(SolverBase):
             else:
                 return internal_params[key]
         print (params_kw)
+
+        # TODO:
+        #if not 'density_density' in params_kw:
+        #    raise RuntimeError("Please set density_density = True for ALPS/cthyb-seg!")
+
+        #print ("density:", params_kw['density_density'])
+        #if param_kw['density_density']==False:
+        #if 'max_time' in params_kw:
+        #    raise RuntimeError("Parameter max_time has been replaced by timelimit!")
+
         # (1) Set configuration for the impurity solver
         # input:
         #   self.beta
@@ -188,6 +208,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # (1c) Set U_{ijkl} for the solver
         # Set up input parameters and files for ALPS/CTHYB-SEG
+
 
         p_run = {
             'SEED'                            : params_kw['random_seed_offset'],
