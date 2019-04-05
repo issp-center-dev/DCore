@@ -20,6 +20,7 @@ from __future__ import print_function
 # DO NOT IMPORT GLOBALLY ANY MODULE DEPENDING ON MPI
 import os
 import re
+import sys
 import numpy
 from itertools import product
 from pytriqs.archive.hdf_archive import HDFArchive
@@ -442,8 +443,27 @@ class ExternalModel(LatticeModel):
     def generate_model_file(self):
         pass
 
+def _drop_small_vals(z, eps=1e-10):
+    z_real = z.real if numpy.abs(z.real) > eps else 0.0
+    z_imag = z.imag if numpy.abs(z.imag) > eps else 0.0
+    return complex(z_real, z_imag)
 
-def print_local_fields(h5_file, subgrp='dft_input'):
+def print_spin_orbital_matrix(mat, file, print_offset=0):
+    norb = mat.shape[1]
+
+    for isp in range(2):
+        for iorb in range(norb):
+            print(' '*print_offset, end='')
+            for jsp in range(2):
+                for jorb in range(norb):
+                    z = _drop_small_vals(mat[isp, iorb, jsp, jorb])
+                    print('({0:>9.2e},{1:>9.2e})'.format(z.real, z.imag), end=' ', file=file)
+                if jsp==0:
+                    print('  ', file=file, end='')
+            print('', file=file)
+        print('', file=file) 
+
+def print_local_fields(h5_file, corr_shell_dims=None, subgrp='dft_input'):
     """
     Print local fields of H(R=0)
     :param h5_file: input file for DFTTools
@@ -455,21 +475,25 @@ def print_local_fields(h5_file, subgrp='dft_input'):
         SO = f[subgrp]['SO']
         SP = f[subgrp]['SP']
         bz_weights = f[subgrp]['bz_weights'][()]
+        n_corr_sh = f[subgrp]['n_shells']
+        dims_corr_sh = numpy.array([f[subgrp]['shells'][ish]['dim'] for ish in range(n_corr_sh)])
 
     if (SO==1 and SP==0) or (SO==0 and SP==1):
         raise RuntimeError("SO={} and SP={} are not supported by DCore!".format(SO, SP))
 
     nk = Hk.shape[0]
-    block_dim = Hk.shape[2]
+    spin_block_dim = Hk.shape[2]
     if SO==0:
-        Hk_ud = numpy.zeros((nk, 2, block_dim, 2, block_dim), dtype=complex)
+        Hk_ud = numpy.zeros((nk, 2, spin_block_dim, 2, spin_block_dim), dtype=complex)
         for isp in range(2):
             Hk_ud[:, isp, :, isp, :] = Hk[:, 0, :, :]
-        Hk_ud = Hk_ud.reshape((nk, 2*block_dim, 2*block_dim))
-        norb = block_dim
+        Hk_ud = Hk_ud.reshape((nk, 2*spin_block_dim, 2*spin_block_dim))
+        norb = spin_block_dim
+        num_spin_orb_corr_sh = 2*dims_corr_sh
     else:
-        Hk_ud = Hk.reshape((nk, block_dim, block_dim))
-        norb = block_dim//2
+        Hk_ud = Hk.reshape((nk, spin_block_dim, spin_block_dim))
+        norb = spin_block_dim//2
+        num_spin_orb_corr_sh = dims_corr_sh
 
     # Hk_ud (nk, 2*num_orb, 2*num_orb)
     # Check only H(R=0)
@@ -485,5 +509,23 @@ def print_local_fields(h5_file, subgrp='dft_input'):
         for alpha in range(3):
             h[alpha] = 0.5 * numpy.trace(numpy.dot(H0_ud[:, iorb, :, iorb], pauli_mat[alpha])).real
         print("    orbital {} : hx, hy, hz = {} {} {}".format(iorb, *h))
+
+    print('')
+    print('---intra shell Hamiltonian (w/o local potential)')
+    # (spin, orb, spin, orb) => (orb, spin, orb, spin)
+    H0_ud2 = H0_ud.transpose((1, 0, 3, 2)).reshape((2*norb, 2*norb))
+    offset = 0
+    print('    ordering: up ... up, down ... down')
+    for ish in range(n_corr_sh):
+        print(' '*4, 'corr_shell=', ish)
+        block_size = num_spin_orb_corr_sh[ish]
+        H0_block = H0_ud2[offset:offset+block_size, offset:offset+block_size]
+        # (orb, spin, orb, spin) => (spin, orb, spin, orb)
+        H0_block = H0_block.reshape((block_size//2, 2, block_size//2, 2)).transpose((1, 0, 3, 2))
+        print_spin_orbital_matrix(H0_block, sys.stdout, 6)
+        evals, evecs = numpy.linalg.eigh(H0_block.reshape((block_size, block_size)))
+        print('      eigenvalues: ', evals)
+        print('')
+        offset += block_size
 
 all_lattice_models = [ChainModel, SquareModel, CubicModel, BetheModel, Wannier90Model, ExternalModel]
