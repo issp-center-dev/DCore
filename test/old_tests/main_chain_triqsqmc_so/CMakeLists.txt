@@ -1,0 +1,5 @@
+FILE(COPY  dmft.ini DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+FILE(COPY  test.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+FILE(COPY  test_ref.out.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+triqs_add_python_test(main_chain_triqsqmc_so)

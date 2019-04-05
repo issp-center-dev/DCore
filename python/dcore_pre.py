@@ -23,11 +23,10 @@ import numpy
 import re
 import ast
 from pytriqs.archive.hdf_archive import HDFArchive
-from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
-from pytriqs.applications.dft.converters.hk_converter import HkConverter
 from program_options import create_parser
-import pytriqs.utility.mpi as mpi
 from pytriqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
+
+from converters.wannier90_converter import Wannier90Converter
 
 from .tools import *
 
@@ -191,8 +190,10 @@ def __generate_umat(p):
             else:
                 u_mat[icor] = umat_full
     elif p["model"]["interaction"] == 'respack':
+        #w90u = converters.wannier90_converter.Wannier90Converter(seedname=p["model"]["seedname"])
         w90u = Wannier90Converter(seedname=p["model"]["seedname"])
         nr_u, rvec_u, rdeg_u, nwan_u, hamr_u = w90u.read_wannier90hr(p["model"]["seedname"] + "_ur.dat")
+        #w90j = converters.wannier90_converter.Wannier90Converter(seedname=p["model"]["seedname"])
         w90j = Wannier90Converter(seedname=p["model"]["seedname"])
         nr_j, rvec_j, rdeg_j, nwan_j, hamr_j = w90j.read_wannier90hr(p["model"]["seedname"] + "_jr.dat")
         #
@@ -349,6 +350,10 @@ def dcore_pre(filename):
     for k, v in p["system"].items():
         print("      {0} = {1}".format(k, v))
 
+    if os.path.exists(p['model']['seedname'] + '.h5'):
+        print("Removing the existing model HDF5 file...")
+        os.remove(p['model']['seedname'] + '.h5')
+
     #
     # One-body term
     #
@@ -402,5 +407,4 @@ if __name__ == '__main__':
     if os.path.isfile(args.path_input_file) is False:
         print("Input file is not exist.")
         sys.exit(-1)
-    if mpi.is_master_node():
-        dcore_pre(args.path_input_file)
+    dcore_pre(args.path_input_file)

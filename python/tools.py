@@ -25,6 +25,7 @@ import subprocess
 from itertools import *
 
 from pytriqs.utility.h5diff import compare, failures
+from pytriqs.utility.h5diff import h5diff as h5diff_org
 from pytriqs.archive.hdf_archive import HDFArchive
 from pytriqs.gf.local import *
 from pytriqs.operators import *
@@ -34,16 +35,20 @@ import scipy
 THIS MODULE  MUST NOT DEPEND ON MPI!
 """
 
-def h5diff(f1, f2, key, precision=1.e-6):
+def h5diff(f1, f2, key=None, precision=1.e-6):
     """
 
     Modified version of pytriqs.utility.h5diff.h5diff
     key is the path of the data set to be compared: e.g., "dmft_out/Sigma_iw"
 
     """
+    if key is None:
+        h5diff_org(os.path.abspath(f1), os.path.abspath(f2), precision)
+        return
+
     keys = key.split("/")
-    h1 = HDFArchive(f1,'r')
-    h2 = HDFArchive(f2,'r')
+    h1 = HDFArchive(os.path.abspath(f1),'r')
+    h2 = HDFArchive(os.path.abspath(f2),'r')
 
     for k in keys:
         h1 = h1[k]

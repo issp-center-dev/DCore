@@ -125,6 +125,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
         raise RuntimeError("Error: requested real-frequency quantities for an imaginary-time solver.")
 
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
+    assert is_hermite_conjugate(G0_iw)
     sol.set_G0_iw(G0_iw)
 
     # Compute rotation matrix to the diagonal basis if supported
@@ -351,6 +352,8 @@ class DMFTCoreSolver(object):
                 for isp, sp in enumerate(self._spin_block_names):
                     self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
 
+        self._sanity_check()
+
 
     def _sanity_check(self):
         """
@@ -361,6 +364,14 @@ class DMFTCoreSolver(object):
             #raise RuntimeError("corr_to_inequiv must be equal to inequiv_to_corr!")
 
         raise_if_mpi_imported()
+
+        for ish in range(self._n_inequiv_shells):
+            for sp1 in self._spin_block_names:
+                if not numpy.allclose(self._dc_imp[ish][sp1], self._dc_imp[ish][sp1].conjugate().transpose()):
+                    raise RuntimeError("dc_imp is not hermite!")
+
+            if not is_hermite_conjugate(self._sh_quant[ish].Sigma_iw):
+                raise RuntimeError("Sigma_iw is not hermite conjugate!")
 
     def _make_sumkdft_params(self):
         return {
@@ -427,6 +438,8 @@ class DMFTCoreSolver(object):
             (om_min, om_max, n_om)
         :return:
         """
+
+        self._sanity_check()
 
         solver_name = self._params['impurity_solver']['name']
         Sigma_iw_sh = []
@@ -565,6 +578,8 @@ class DMFTCoreSolver(object):
 
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
+            self._sanity_check()
+
             sys.stdout.flush()
             print("")
             print("#####################################################################")
@@ -582,13 +597,6 @@ class DMFTCoreSolver(object):
 
             for ish in range(self._n_inequiv_shells):
                 print("\n    Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
-
-            # Compute DC corrections and initial guess to self-energy
-            #if iteration_number == 1 and not previous_present and with_dc:
-                #print("")
-                #print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
-                #print("")
-                #self.calc_dc_imp(dm_corr_sh, set_initial_Sigma_iw=True)
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
 

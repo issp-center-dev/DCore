@@ -141,7 +141,7 @@ def _call_Hk_converter(seedname, nelec, norb, Hk, weight):
     weight : [nkbz] or None
             weight for k
     """
-    from pytriqs.applications.dft.converters.hk_converter import HkConverter
+    from converters.hk_converter import HkConverter
 
     nkbz = Hk.shape[0]
     assert nelec <= norb
@@ -384,7 +384,7 @@ class Wannier90Model(NNNHoppingModel):
         return self._nkdiv
 
     def generate_model_file(self):
-        from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
+        from converters.wannier90_converter import Wannier90Converter
 
         #
         # non_colinear flag is used only for the case that COLINEAR DFT calculation
@@ -399,11 +399,21 @@ class Wannier90Model(NNNHoppingModel):
         converter = Wannier90Converter(seedname=seedname)
         converter.convert_dft_input()
 
-        if p['model']['non_colinear']:
-            from .manip_database import turn_on_spin_orbit
-            print('')
-            print('Turning on spin_orbit...')
-            turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
+        if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
+            if p['model']['non_colinear']:
+                from .manip_database import turn_on_spin_orbit
+                print('')
+                print('Turning on spin_orbit...')
+                turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
+            else:
+                with HDFArchive(seedname + '.h5', 'a') as f:
+                    f["dft_input"]["SP"] = 1
+                    f["dft_input"]["SO"] = 1
+
+                    corr_shells = f["dft_input"]["corr_shells"]
+                    for icor in range(p["model"]['ncor']):
+                        corr_shells[icor]["SO"] = 1
+                    f["dft_input"]["corr_shells"] = corr_shells
 
 
 class ExternalModel(LatticeModel):
@@ -475,8 +485,8 @@ def print_local_fields(h5_file, corr_shell_dims=None, subgrp='dft_input'):
         SO = f[subgrp]['SO']
         SP = f[subgrp]['SP']
         bz_weights = f[subgrp]['bz_weights'][()]
-        n_corr_sh = f[subgrp]['n_shells']
-        dims_corr_sh = numpy.array([f[subgrp]['shells'][ish]['dim'] for ish in range(n_corr_sh)])
+        n_corr_sh = f[subgrp]['n_corr_shells']
+        dims_corr_sh = numpy.array([f[subgrp]['corr_shells'][ish]['dim'] for ish in range(n_corr_sh)])
 
     if (SO==1 and SP==0) or (SO==0 and SP==1):
         raise RuntimeError("SO={} and SP={} are not supported by DCore!".format(SO, SP))
