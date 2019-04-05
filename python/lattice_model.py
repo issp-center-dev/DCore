@@ -237,68 +237,6 @@ def _generate_wannier90_model(nkdiv, params, f):
     for i in range(ncor):
         print("{0} {1} {2} {3} 0 0".format(i, equiv[i], 0, norb[i]), file=f)
 
-
-def para2noncol(params):
-    """
-    Duplicate orbitals when we perform non-colinear DMFT from the colinear DFT calculation.
-    """
-    ncor = params["model"]['ncor']
-    norb_list = re.findall(r'\d+', params["model"]["norb"])
-    norb = [int(norb_list[icor]) / 2 for icor in range(ncor)]
-    #
-    # Read Wannier90 file
-    #
-    w90 = Wannier90Converter(seedname=params["model"]["seedname"])
-    nr, rvec, rdeg, nwan, hamr = w90.read_wannier90hr(params["model"]["seedname"] + "_col_hr.dat")
-    #
-    # Non correlated shell
-    #
-    ncor += 1
-    norb_tot = sum(norb)
-    norb.append(nwan - norb_tot)
-    #
-    # Output new wannier90 file
-    #
-    with open(params["model"]["seedname"] + "_hr.dat", 'w') as f:
-
-        print("Converted from Para to Non-collinear", file=f)
-        print(nwan*2, file=f)
-        print(nr, file=f)
-        for ir in range(nr):
-            print("%5d" % rdeg[ir], end="", file=f)
-            if ir % 15 == 14:
-                print("", file=f)
-        if nr % 15 != 0:
-            print("", file=f)
-        #
-        # Hopping
-        #
-        for ir in range(nr):
-            iorb1 = 0
-            iorb2 = 0
-            for icor in range(ncor):
-                for ispin in range(2):
-                    iorb1 -= ispin * norb[icor]
-                    for iorb in range(norb[icor]):
-                        iorb1 += 1
-                        iorb2 += 1
-                        jorb1 = 0
-                        jorb2 = 0
-                        for jcor in range(ncor):
-                            for jspin in range(2):
-                                jorb1 -= jspin * norb[jcor]
-                                for jorb in range(norb[jcor]):
-                                    jorb1 += 1
-                                    jorb2 += 1
-                                    if ispin == jspin:
-                                        hamr2 = hamr[ir][jorb1-1, iorb1-1]
-                                    else:
-                                        hamr2 = 0.0 + 0.0j
-                                    print("%5d%5d%5d%5d%5d%12.6f%12.6f" %
-                                          (rvec[ir, 0], rvec[ir, 1], rvec[ir, 2], jorb2, iorb2,
-                                           hamr2.real, hamr2.imag), file=f)
-
-
 class LatticeModel(object):
     """
     Base class for H(k) model
@@ -316,8 +254,6 @@ class LatticeModel(object):
 
     def generate_model_file(self):
         pass
-
-
 
 class BetheModel(LatticeModel):
     """
@@ -454,26 +390,19 @@ class Wannier90Model(NNNHoppingModel):
         #
         p = self._params
         seedname = self._params["model"]["seedname"]
-        if p["model"]["spin_orbit"]:
-            p["model"]["non_colinear"] = False
-        #
-        if p["model"]["non_colinear"]:
-            para2noncol(p)
+        if p["model"]["spin_orbit"] and p["model"]["non_colinear"]:
+            raise RuntimeError("The options spin_orbit and non_colinear are not compatible!")
         with open(seedname+'.inp', 'w') as f:
             _generate_wannier90_model(self.nkdiv(), p, f)
         # Convert General-Hk to SumDFT-HDF5 format
         converter = Wannier90Converter(seedname=seedname)
         converter.convert_dft_input()
 
-        if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
-            with HDFArchive(seedname + '.h5', 'a') as f:
-                f["dft_input"]["SP"] = 1
-                f["dft_input"]["SO"] = 1
-
-                corr_shells = f["dft_input"]["corr_shells"]
-                for icor in range(p["model"]['ncor']):
-                    corr_shells[icor]["SO"] = 1
-                f["dft_input"]["corr_shells"] = corr_shells
+        if p['model']['non_colinear']:
+            from .manip_database import turn_on_spin_orbit
+            print('')
+            print('Turning on spin_orbit...')
+            turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
 
 
 class ExternalModel(LatticeModel):

@@ -155,7 +155,7 @@ def __generate_umat(p):
     norb = [corr_shells[icor]["dim"] for icor in range(ncor)]
     if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
         for icor in range(ncor):
-            norb[icor] /= 2
+            norb[icor] //= 2
 
     if not ("DCore" in f):
         f.create_group("DCore")
