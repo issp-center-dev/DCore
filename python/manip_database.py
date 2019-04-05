@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import numpy
 import os
+import copy
 from pytriqs.archive.hdf_archive import HDFArchive
 
 
@@ -63,6 +64,9 @@ class H5SpinOrbitOn:
         self.n_corr_shells = self.data['n_corr_shells']
         self.max_corr_shell_dim = max([corr_shell['dim'] for corr_shell in self.data['corr_shells']]) * 2
         print("max_corr_shell_dim =", self.max_corr_shell_dim)
+
+        # store corr_shells for update of shells
+        self.store_corr_shells = copy.deepcopy(self.data['corr_shells'])
 
         # check flags
         SP = self.data['SP']  # spin polarized
@@ -172,12 +176,22 @@ class H5SpinOrbitOn:
         return hopping
 
     def corr_shells(self):
-        corr_shells = self.data['corr_shells']
+        corr_shells = copy.deepcopy(self.data['corr_shells'])
         for crsh in corr_shells:
             assert crsh['SO'] == 0
             crsh['SO'] = 1
             crsh['dim'] *= 2
         return corr_shells
+
+    def shells(self):
+        atom_l_sort = [(crsh['atom'], crsh['l'], crsh['sort']) for crsh in self.store_corr_shells]
+
+        shells = copy.deepcopy(self.data['shells'])
+        for sh in shells:
+            if (sh['atom'], sh['l'], sh['sort']) in atom_l_sort:
+                sh['dim'] *= 2
+        return shells
+
 
     def rot_mat(self):
         return [double_matrix(rot) for rot in self.data['rot_mat']]
@@ -196,7 +210,7 @@ def turn_on_spin_orbit(h5_file_in, h5_file_out):
 
     # 'dft_input'
     h5so = H5SpinOrbitOn(h5_file_in)
-    for key in ['n_orbitals', 'proj_mat', 'hopping', 'corr_shells', 'rot_mat', 'T', 'SP', 'SO']:
+    for key in ['n_orbitals', 'proj_mat', 'hopping', 'corr_shells', 'shells', 'rot_mat', 'T', 'SP', 'SO']:
         h5so.update(key)
     h5so.save(h5_file_out, 'dft_input')
 
