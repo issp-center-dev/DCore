@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import numpy
+import scipy
 from itertools import product
 from pytriqs.archive.hdf_archive import HDFArchive
 
@@ -36,64 +37,6 @@ def create_lattice_model(params):
 
     raise RuntimeError('Unknown lattice model name: ' + model_name)
 
-
-def _generate_nnn_lattice_model(spatial_dim, norb, t, tp, nk):
-    """
-    Compute a list of H(k) for lattice model with t and t'
-
-    Parameters
-    ----------
-    spatial_dim : int
-            Spatial dimension
-    nelec : int
-            Number of electrons
-    norb : int
-            Number of orbitals
-    t : float
-            Nearest neighbor hopping
-    tp : float
-            Next nearest neighbor hopping
-    nk : int
-            Number of k divisions along each axis
-    """
-
-    assert spatial_dim > 0 and spatial_dim <= 3
-
-    print("nk = ", nk, spatial_dim)
-
-    nkbz = nk**spatial_dim
-    Hk = numpy.zeros((nkbz, norb, norb), dtype=complex)
-
-    print("\n    Total number of k =", str(nkbz))
-
-    #
-    # Energy band
-    #
-    kvec = [0.0, 0.0, 0.0]
-    if spatial_dim == 1:
-        for i0 in range(nk):
-            kvec[0] = 2.0 * numpy.pi * float(i0) / float(nk)
-            ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
-            for iorb in range(norb):
-                Hk[i0, iorb, iorb] = ek
-    elif spatial_dim == 2:
-        for ik, kidx in enumerate(product(range(nk), repeat=2)):
-            kvec[:2] = 2.0 * numpy.pi * numpy.array(kidx)/float(nk)
-            ek = 2.0*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
-                 + 2.0*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
-            for iorb in range(norb):
-                Hk[ik, iorb, iorb] = ek
-    elif spatial_dim == 3:
-        for ik, kidx in enumerate(product(range(nk), repeat=3)):
-            kvec[:] = 2.0 * numpy.pi * numpy.array(kidx)/float(nk)
-            ek = 2*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
-                 + 2*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1])
-                         + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2])
-                         + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
-            for iorb in range(norb):
-                Hk[ik, iorb, iorb] = ek
-
-    return Hk
 
 def _generate_bethe_lattice_model(norb, t, nk):
     """
@@ -253,6 +196,19 @@ class LatticeModel(object):
     def nkdiv(self):
         return self._nkdiv
 
+    def Hk(self, kvec):
+        """
+
+        kvec is a 1D array-like object of length 3 (with 2*pi)
+
+        :return:
+            spin_orbit == True:
+                Hk for ud sector: complex(2*num_orb, 2*num_orb)
+            spin_orbit == False:
+                Hk for up and down sectors: (complex(num_orb, num_orb), complex(num_orb, num_orb))
+        """
+        pass
+
     def generate_model_file(self):
         pass
 
@@ -274,6 +230,9 @@ class BetheModel(LatticeModel):
 
     def nkdiv(self):
         return (self._nk, 1, 1)
+
+    def Hk(self, kvec):
+        raise RuntimeError("Hk is ill-defied for BetheModel")
 
     def generate_model_file(self):
         p = self._params
@@ -314,11 +273,57 @@ class NNNHoppingModel(LatticeModel):
     def spatial_dim(cls):
         raise RuntimeError("spatial_dim must be inherited in a subclass.")
 
+    def Hk(self, kvec):
+        spatial_dim = self.__class__.spatial_dim()
+        t = self._params['model']['t']
+        tp = self._params['model']["t'"]
+        norb = int(self._params['model']['norb'])
+
+        Hk = numpy.zeros((norb, norb), dtype=complex)
+        if spatial_dim == 1:
+            ek = 2.0*t*numpy.cos(kvec[0]) + 2*tp*numpy.cos(2.0*kvec[0])
+            for iorb in range(norb):
+                Hk[iorb, iorb] = ek
+        elif spatial_dim == 2:
+           ek = 2.0*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
+                + 2.0*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
+           for iorb in range(norb):
+               Hk[iorb, iorb] = ek
+        elif spatial_dim == 3:
+           ek = 2*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
+                + 2*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1])
+                        + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2])
+                        + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
+           for iorb in range(norb):
+               Hk[iorb, iorb] = ek
+
+        if self._params['model']['spin_orbit']:
+            return scipy.linalg.block_diag((Hk, Hk))
+        else:
+            return (Hk, Hk)
+
     def generate_model_file(self):
         p = self._params
-        seedname = p["model"]["seedname"]
-        Hk = _generate_nnn_lattice_model(self.__class__.spatial_dim(),
-                                    int(p['model']['norb']), p['model']['t'], p['model']["t'"], p['system']['nk'])
+        seedname = p['model']['seedname']
+        spin_orbit = p['model']['spin_orbit']
+        spatial_dim = self.__class__.spatial_dim()
+        norb = int(p['model']['norb'])
+        nk = p['system']['nk']
+        nkbz = nk**spatial_dim
+        Hk = numpy.zeros((nkbz, norb, norb), dtype=complex)
+        nkdiv = self.nkdiv()
+
+        # Since Hk_converter does support SO=1, we create a model file for a spinless model.
+        if spin_orbit:
+            for ik, (ik0, ik1, ik2) in enumerate(product(range(nkdiv[0]), range(nkdiv[1]), range(nkdiv[2]))):
+                Hk_tmp = self.Hk( 2*numpy.pi*numpy.array((ik0, ik1, ik2))/float(nk))
+                assert numpy.allclose(Hk_tmp[0:norb, 0:norb], Hk_tmp[norb:2*norb, norb:2*norb])
+                Hk[ik, :, :] = Hk_tmp[0:norb, 0:norb]
+        else:
+            for ik, (ik0, ik1, ik2) in enumerate(product(range(nkdiv[0]), range(nkdiv[1]), range(nkdiv[2]))):
+                Hk_tmp = self.Hk( 2*numpy.pi*numpy.array((ik0, ik1, ik2))/float(nk))
+                assert numpy.allclose(Hk_tmp[0], Hk_tmp[1])
+                Hk[ik, :, :] = Hk_tmp[0]
         _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, None)
 
         if p['model']['spin_orbit']:
@@ -326,6 +331,7 @@ class NNNHoppingModel(LatticeModel):
             print('')
             print('Turning on spin_orbit...')
             turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
+
 
 class ChainModel(NNNHoppingModel):
     def __init__(self, params):
@@ -354,7 +360,7 @@ class CubicModel(NNNHoppingModel):
         return 3
 
 
-def set_nk(nk, nk0, nk1, nk2):
+def _set_nk(nk, nk0, nk1, nk2):
     if abs(nk0) + abs(nk1) + abs(nk2) == 0:
         # If one of nk0, nk1 and nk2 are set, use nk.
         nk0 = nk
@@ -371,7 +377,7 @@ class Wannier90Model(NNNHoppingModel):
     def __init__(self, params):
         super(Wannier90Model, self).__init__(params)
 
-        self._nkdiv = set_nk(params["system"]["nk"],
+        self._nkdiv = _set_nk(params["system"]["nk"],
                              params["system"]["nk0"],
                              params["system"]["nk1"],
                              params["system"]["nk2"])
@@ -395,6 +401,7 @@ class Wannier90Model(NNNHoppingModel):
             raise RuntimeError("The options spin_orbit and non_colinear are not compatible!")
         with open(seedname+'.inp', 'w') as f:
             _generate_wannier90_model(self.nkdiv(), p, f)
+
         # Convert General-Hk to SumDFT-HDF5 format
         converter = Wannier90Converter(seedname=seedname)
         converter.convert_dft_input()
@@ -438,7 +445,7 @@ class ExternalModel(LatticeModel):
             raise Exception("Prepare, in advance, '%s' file which stores DFT data in 'dft_input' subgroup" % h5_file)
 
         # set nkdiv
-        self._nkdiv = set_nk(params["system"]["nk"],
+        self._nkdiv = _set_nk(params["system"]["nk"],
                              params["system"]["nk0"],
                              params["system"]["nk1"],
                              params["system"]["nk2"])
