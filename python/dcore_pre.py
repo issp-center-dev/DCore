@@ -32,6 +32,7 @@ from .tools import *
 
 from lattice_models import create_lattice_model
 from lattice_models.tools import print_local_fields
+from .program_options import parse_parameters
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
@@ -339,6 +340,7 @@ def dcore_pre(filename):
     #
     pars.read(filename)
     p = pars.as_dict()
+    parse_parameters(p)
     ncor = p["model"]['ncor']
     #
     # Summary of input parameters

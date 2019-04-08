@@ -29,11 +29,12 @@ from pytriqs.operators import *
 
 from dmft_core import DMFTCoreSolver
 from sumkdft import SumkDFTCompat
-from program_options import create_parser
+from program_options import create_parser, parse_parameters
 
 from .tools import launch_mpi_subprocesses
 import impurity_solvers
 from . import sumkdft
+from lattice_models import create_lattice_model
 
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
@@ -482,6 +483,7 @@ def dcore_post(filename, np=1):
     #
     pars.read(filename)
     p = pars.as_dict()
+    parse_parameters(p)
     seedname = p["model"]["seedname"]
     p["mpi"]["num_processes"] = np
     mpirun_command = p['mpi']['command'].replace('#', str(p['mpi']['num_processes']))
@@ -564,29 +566,15 @@ def dcore_post(filename, np=1):
     # HDF5 file for band
     #
     #
-    # Compute k-dependent Hamiltonian
+    # Compute k-dependent Hamiltonian and save into seedname.h5
     #
     print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
-    if p["model"]["lattice"] == 'wannier90':
-        hopping, n_orbitals, proj_mat = __generate_wannier90_model(mpirun_command_np1, p["model"], n_k, kvec)
-    else:
-        hopping, n_orbitals, proj_mat = __generate_lattice_model(p["model"], n_k, kvec)
-    #
-    # Output them into seedname.h5
-    #
-    with HDFArchive(seedname+'.h5', 'a') as f:
-        if not ("dft_bands_input" in f):
-            f.create_group("dft_bands_input")
-        f["dft_bands_input"]["hopping"] = hopping
-        f["dft_bands_input"]["n_k"] = n_k
-        f["dft_bands_input"]["n_orbitals"] = n_orbitals
-        f["dft_bands_input"]["proj_mat"] = proj_mat
-    print("    Done")
+    lattice_model = create_lattice_model(p)
+    lattice_model.write_dft_band_input_data(p, kvec)
 
     #
     # Plot
     #
-
     dct = DMFTCoreTools(seedname, p, n_k, xk)
     dct.post()
     dct.momentum_distribution()

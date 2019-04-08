@@ -17,16 +17,12 @@
 #
 from __future__ import print_function
 
-# DO NOT IMPORT GLOBALLY ANY MODULE DEPENDING ON MPI
-#import os
 import re
-#import sys
-#import numpy
-#import scipy
-#from itertools import product
+import numpy
 from pytriqs.archive.hdf_archive import HDFArchive
 
 from .base import LatticeModel
+from ..converters.wannier90_converter import Wannier90Converter
 
 def _generate_w90_converter_input(nkdiv, params, f):
     """
@@ -86,6 +82,62 @@ def _generate_w90_converter_input(nkdiv, params, f):
         print("{0} {1} {2} {3} 0 0".format(i, equiv[i], 0, norb[i]), file=f)
 
 
+def __generate_wannier90_model(seedname, ncor, norb, n_k, kvec):
+    """
+    Compute hopping etc. for A(k,w) of Wannier90
+
+    Parameters
+    ----------
+    seedname : str
+    ncor : int
+    norb : int
+    n_k : integer
+        Number of k points
+    kvec : float array
+        k-points where A(k,w) is computed
+
+    Returns
+    -------
+    hopping : complex
+        k-dependent one-body Hamiltonian
+    n_orbitals : integer
+        Number of orbitals at each k. It does not depend on k
+    proj_mat : complex
+        Projection onto each correlated orbitals
+    """
+    n_spin = 1
+    norb_list = re.findall(r'\d+', norb)
+    norb = [int(norb_list[icor]) for icor in range(ncor)]
+    #
+    print("               ncor = ", ncor)
+    for i in range(ncor):
+        print("     norb[{0}] = {1}".format(i, norb[i]))
+    #
+    # Read hopping in the real space from the Wannier90 output
+    #
+    w90c = Wannier90Converter(seedname=seedname)
+    nr, rvec, rdeg, nwan, hamr = w90c.read_wannier90hr(seedname+"_hr.dat")
+    #
+    # Fourier transformation of the one-body Hamiltonian
+    #
+    n_orbitals = numpy.ones([n_k, n_spin], numpy.int) * nwan
+    hopping = numpy.zeros([n_k, n_spin, numpy.max(n_orbitals), numpy.max(n_orbitals)], numpy.complex_)
+    for ik in range(n_k):
+        for ir in range(nr):
+            rdotk = numpy.dot(kvec[ik, :], rvec[ir, :])
+            factor = (numpy.cos(rdotk) + 1j * numpy.sin(rdotk)) / float(rdeg[ir])
+            hopping[ik, 0, :, :] += factor * hamr[ir][:, :]
+    #
+    # proj_mat is (norb*norb) identities at each correlation shell
+    #
+    proj_mat = numpy.zeros([n_k, n_spin, ncor, numpy.max(norb), numpy.max(n_orbitals)], numpy.complex_)
+    iorb = 0
+    for icor in range(ncor):
+        proj_mat[:, :, icor, 0:norb[icor], iorb:iorb + norb[icor]] = numpy.identity(norb[icor], numpy.complex_)
+        iorb += norb[icor]
+
+    return hopping, n_orbitals, proj_mat
+
 def _set_nk(nk, nk0, nk1, nk2):
     if abs(nk0) + abs(nk1) + abs(nk2) == 0:
         # If one of nk0, nk1 and nk2 are set, use nk.
@@ -109,6 +161,9 @@ class Wannier90Model(LatticeModel):
                              params["system"]["nk2"])
         self._spin_orbit = params['model']['spin_orbit']
 
+        #self._norb_list = params['model']['norb_list']
+        #norb = [int(norb_list[icor]) for icor in range(ncor)]
+
     @classmethod
     def name(self):
         return 'wannier90'
@@ -117,8 +172,6 @@ class Wannier90Model(LatticeModel):
         return self._nkdiv
 
     def generate_model_file(self):
-        from ..converters.wannier90_converter import Wannier90Converter
-
         #
         # non_colinear flag is used only for the case that COLINEAR DFT calculation
         #
@@ -133,19 +186,96 @@ class Wannier90Model(LatticeModel):
         converter = Wannier90Converter(seedname=seedname)
         converter.convert_dft_input()
 
-        if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
-            if p['model']['non_colinear']:
-                from ..manip_database import turn_on_spin_orbit
-                print('')
-                print('Turning on spin_orbit...')
-                turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
-            else:
-                with HDFArchive(seedname + '.h5', 'a') as f:
-                    f["dft_input"]["SP"] = 1
-                    f["dft_input"]["SO"] = 1
+        if p['model']['non_colinear']:
+            from ..manip_database import turn_on_spin_orbit
+            print('')
+            print('Turning on spin_orbit...')
+            turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
+        elif p["model"]["spin_orbit"]:
+            with HDFArchive(seedname + '.h5', 'a') as f:
+                f["dft_input"]["SP"] = 1
+                f["dft_input"]["SO"] = 1
 
-                    corr_shells = f["dft_input"]["corr_shells"]
-                    for icor in range(p["model"]['ncor']):
-                        corr_shells[icor]["SO"] = 1
-                    f["dft_input"]["corr_shells"] = corr_shells
+                corr_shells = f["dft_input"]["corr_shells"]
+                for icor in range(p["model"]['ncor']):
+                    corr_shells[icor]["SO"] = 1
+                f["dft_input"]["corr_shells"] = corr_shells
 
+
+    def write_dft_band_input_data(self, params, kvec):
+        """
+
+        Returns
+        -------
+        hopping : complex
+            k-dependent one-body Hamiltonian
+        n_orbitals : integer
+            Number of orbitals at each k. It does not depend on k
+        proj_mat : complex
+            Projection onto each correlated orbitals
+        """
+        n_k = kvec.shape[0]
+        assert kvec.shape[1] == 3
+
+
+        norb_sh = numpy.array(params['model']['norb_corr_sh'])
+        n_spin_orb_sh = 2 * norb_sh
+        ncor = params['model']['ncor']
+        seedname = params['model']['seedname']
+
+        # Print 2 * norb for each shell
+        print("               ncor = ", ncor)
+        for i in range(ncor):
+            print("     num_spin_orb[{0}] = {1}".format(i, n_spin_orb_sh[i]))
+
+        #
+        # Read hopping in the real space from the Wannier90 output
+        #  FIXME: Wannier90Converter may be relaced
+        #
+        w90c = Wannier90Converter(seedname=seedname)
+        nr, rvec, rdeg, nwan, hamr = w90c.read_wannier90hr(seedname + "_hr.dat")
+
+        # if spin_orbit == True, nwan must be twice of the number of orbitals in the correlated shells.
+        # Otherwise, nwan must be the number of orbitals in the correlated shells.
+
+        #
+        # Fourier transformation of the one-body Hamiltonian
+        #
+        n_spin = 1
+        hopping = numpy.zeros((n_k, n_spin, nwan, nwan), complex)
+        for ik in range(n_k):
+            for ir in range(nr):
+                rdotk = numpy.dot(kvec[ik, :], rvec[ir, :])
+                factor = (numpy.cos(rdotk) + 1j * numpy.sin(rdotk)) / float(rdeg[ir])
+                hopping[ik, 0, :, :] += factor * hamr[ir][:, :]
+
+        #
+        # proj_mat is (norb*norb) identities at each correlation shell
+        #
+        offset = 0
+        dim_Hk = n_spin_orb_sh if params['model']['spin_orbit'] else norb_sh
+        proj_mat = numpy.zeros([n_k, n_spin, ncor, numpy.max(dim_Hk), nwan], complex)
+        for icor in range(ncor):
+            proj_mat[:, :, icor, 0:dim_Hk[icor], offset:offset+dim_Hk[icor]] = numpy.identity(dim_Hk[icor])
+            offset += n_spin_orb_sh[icor]
+
+        #
+        # Output them into seedname.h5
+        #
+        with HDFArchive(seedname + '.h5', 'a') as f:
+            if not ('dft_bands_input' in f):
+                f.create_group('dft_bands_input')
+            f['dft_bands_input']['hopping'] = hopping
+            f['dft_bands_input']['n_k'] = n_k
+            f['dft_bands_input']['n_orbitals'] = dim_Hk
+            f['dft_bands_input']['proj_mat'] = proj_mat
+        print('    Done')
+
+        #
+        # Extend spin block if needed
+        #
+        if params['model']['non_colinear']:
+            from ..manip_database import turn_on_spin_orbit
+            print('')
+            print('Turning on non_collinear...')
+            turn_on_spin_orbit(seedname + '.h5', seedname + '.h5', update_dft_input=False, update_dft_bands_input=True)

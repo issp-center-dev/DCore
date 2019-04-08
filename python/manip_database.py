@@ -206,16 +206,17 @@ class H5SpinOrbitOn:
         return 1
 
 
-def turn_on_spin_orbit(h5_file_in, h5_file_out):
+def turn_on_spin_orbit(h5_file_in, h5_file_out, update_dft_input=True, update_dft_bands_input=True):
 
     # 'dft_input'
     h5so = H5SpinOrbitOn(h5_file_in)
-    for key in ['n_orbitals', 'proj_mat', 'hopping', 'corr_shells', 'shells', 'rot_mat', 'T', 'SP', 'SO']:
-        h5so.update(key)
-    h5so.save(h5_file_out, 'dft_input')
+    if update_dft_input:
+        for key in ['n_orbitals', 'proj_mat', 'hopping', 'corr_shells', 'shells', 'rot_mat', 'T', 'SP', 'SO']:
+            h5so.update(key)
+        h5so.save(h5_file_out, 'dft_input')
 
     # 'dft_bands_input'
-    if h5so.set_group('dft_bands_input'):
+    if update_dft_bands_input and h5so.set_group('dft_bands_input'):
         for key in ['n_orbitals', 'proj_mat']:
             h5so.update(key)
         h5so.save(h5_file_out, 'dft_bands_input')

@@ -24,7 +24,7 @@ import os
 import numpy
 import scipy
 from itertools import product
-#from pytriqs.archive.hdf_archive import HDFArchive
+from pytriqs.archive.hdf_archive import HDFArchive
 
 from .base import LatticeModel
 
@@ -200,7 +200,7 @@ class NNNHoppingModel(LatticeModel):
                Hk[iorb, iorb] = ek
 
         if self._params['model']['spin_orbit']:
-            return scipy.linalg.block_diag((Hk, Hk))
+            return scipy.linalg.block_diag(Hk, Hk)
         else:
             return (Hk, Hk)
 
@@ -233,6 +233,62 @@ class NNNHoppingModel(LatticeModel):
             print('')
             print('Turning on spin_orbit...')
             turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
+
+
+    def write_dft_band_input_data(self, params, kvec):
+        """
+
+        Returns
+        -------
+        hopping : complex
+            k-dependent one-body Hamiltonian
+        n_orbitals : integer
+            Number of orbitals at each k. It does not depend on k
+        proj_mat : complex
+            Projection onto each correlated orbitals
+        """
+
+        n_k = kvec.shape[0]
+        assert kvec.shape[1] == 3
+
+        norb_sh = numpy.array(params['model']['norb_corr_sh'])
+
+        assert len(norb_sh) == 1
+        assert params['model']['ncor'] == 1
+
+        #
+        # Energy band
+        #
+        norb = norb_sh[0]
+        dim_Hk = 2*norb if params['model']['spin_orbit'] else norb
+        n_spin = 1
+        n_orbitals = numpy.ones((n_k, n_spin), dtype=int) * dim_Hk
+        hopping = numpy.zeros((n_k, n_spin, dim_Hk, dim_Hk), complex)
+        if params['model']['spin_orbit']:
+            for ik in range(n_k):
+                hopping[ik, 0, :, :] = self.Hk(kvec[ik])
+        else:
+            for ik in range(n_k):
+                # Copy only the up component
+                hopping[ik, 0, :, :] = self.Hk(kvec[ik])[0]
+
+        #
+        # proj_mat is (norb*norb) identities at each correlation shell
+        #
+        proj_mat = numpy.zeros([n_k, n_spin, 1, dim_Hk, dim_Hk], complex)
+        proj_mat[:, :, 0, 0:dim_Hk, 0:dim_Hk] = numpy.identity(dim_Hk, complex)
+
+        #
+        # Output them into seedname.h5
+        #
+        with HDFArchive(params['model']['seedname'] + '.h5', 'a') as f:
+            if not ('dft_bands_input' in f):
+                f.create_group('dft_bands_input')
+            f['dft_bands_input']['hopping'] = hopping
+            f['dft_bands_input']['n_k'] = n_k
+            f['dft_bands_input']['n_orbitals'] = n_orbitals
+            f['dft_bands_input']['proj_mat'] = proj_mat
+        print('    Done')
 
 
 class ChainModel(NNNHoppingModel):

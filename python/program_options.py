@@ -19,6 +19,8 @@ from __future__ import print_function
 
 from typed_parser import *
 
+import re
+
 
 def create_parser():
     """
@@ -117,3 +119,14 @@ def create_parser():
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
 
     return parser
+
+
+def parse_parameters(params):
+    """
+    Parse some parameters in a parameter
+
+    :param params: dict (will be updated)
+    :return:  None
+    """
+
+    params['model']['norb_corr_sh'] = map(int, re.findall(r'\d+', params['model']['norb']))

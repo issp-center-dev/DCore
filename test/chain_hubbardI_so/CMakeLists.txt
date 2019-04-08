@@ -9,4 +9,4 @@ foreach(test_file ${REF_FILES})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ref/${test_file} ${CMAKE_CURRENT_BINARY_DIR}/ref/${test_file} COPYONLY)
 endforeach()
 
-triqs_add_python_test(chain_hubbardI)
+triqs_add_python_test(chain_hubbardI_so)

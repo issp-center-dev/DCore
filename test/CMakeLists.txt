@@ -12,6 +12,7 @@ add_subdirectory(pre_respack)
 add_subdirectory(pre_respack_so)
 add_subdirectory(alps_cthyb)
 
+add_subdirectory(chain_hubbardI_so)
 add_subdirectory(chain_hubbardI)
 
 #add_subdirectory(main_chain_hubbardI)

@@ -17,6 +17,9 @@
 #
 from __future__ import print_function
 
+from pytriqs.archive.hdf_archive import HDFArchive
+
+
 class LatticeModel(object):
     """
     Base class for H(k) model
@@ -47,4 +50,34 @@ class LatticeModel(object):
 
     def generate_model_file(self):
         pass
+
+    def write_dft_band_input_data(self, params, kvec):
+        pass
+
+
+def write_dft_bands_input_data(seedname, params, n_k, kvec, lattice_model):
+    """
+    Write DFT band input data into a HDF5 file
+    :param seedname:
+    :param params: runtime parameters
+    :param n_k:  Number of k points
+    :param kvec:  2D array
+    :param lattice_model: object of LatticeModel
+    :return:  None
+    """
+    assert kvec.shape[0] == n_k
+
+    hopping, n_orbitals, proj_mat = lattice_model.generate_dft_band_input_data(params, kvec)
+
+    #
+    # Output them into seedname.h5
+    #
+    with HDFArchive(seedname+'.h5', 'a') as f:
+        if not ('dft_bands_input' in f):
+            f.create_group('dft_bands_input')
+        f['dft_bands_input']['hopping'] = hopping
+        f['dft_bands_input']['n_k'] = n_k
+        f['dft_bands_input']['n_orbitals'] = n_orbitals
+        f['dft_bands_input']['proj_mat'] = proj_mat
+    print('    Done')
 

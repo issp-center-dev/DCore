@@ -39,6 +39,7 @@ def dcore(filename, np=1):
     #
     pars.read(filename)
     params = pars.as_dict()
+    parse_parameters(params)
 
     params["mpi"]["num_processes"] = np
 
