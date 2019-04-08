@@ -30,7 +30,8 @@ from converters.wannier90_converter import Wannier90Converter
 
 from .tools import *
 
-from .lattice_model import create_lattice_model, print_local_fields
+from lattice_models import create_lattice_model
+from lattice_models.tools import print_local_fields
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
