@@ -19,8 +19,6 @@ from __future__ import print_function
 
 # DO NOT IMPORT GLOBALLY ANY MODULE DEPENDING ON MPI
 import os
-#import re
-#import sys
 import numpy
 import scipy
 from itertools import product
@@ -68,7 +66,7 @@ def _call_Hk_converter(seedname, nelec, norb, Hk, weight):
     nelec : int
             Number of electrons
     norb : int
-            Number of orbitals
+            Number of orbitals (not physical orbitals actually the size of H(k))
     Hk : [nkbz, :, :]
             H(k)
     weight : [nkbz] or None
@@ -77,7 +75,7 @@ def _call_Hk_converter(seedname, nelec, norb, Hk, weight):
     from ..converters.hk_converter import HkConverter
 
     nkbz = Hk.shape[0]
-    assert nelec <= norb
+    #assert nelec <= norb
     assert Hk.shape == (nkbz, norb, norb)
     assert weight is None or weight.shape == (nkbz,)
 
@@ -133,6 +131,10 @@ class BetheModel(LatticeModel):
     def nkdiv(self):
         return (self._nk, 1, 1)
 
+    @classmethod
+    def is_Hk_supported(cls):
+        return False
+
     def Hk(self, kvec):
         raise RuntimeError("Hk is ill-defied for BetheModel")
 
@@ -143,7 +145,7 @@ class BetheModel(LatticeModel):
         _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, weight)
 
         if p['model']['spin_orbit']:
-            from .manip_database import turn_on_spin_orbit
+            from ..manip_database import turn_on_spin_orbit
             print('')
             print('Turning on spin_orbit...')
             turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
@@ -218,14 +220,14 @@ class NNNHoppingModel(LatticeModel):
         # Since Hk_converter does support SO=1, we create a model file for a spinless model.
         if spin_orbit:
             for ik, (ik0, ik1, ik2) in enumerate(product(range(nkdiv[0]), range(nkdiv[1]), range(nkdiv[2]))):
-                Hk_tmp = self.Hk( 2*numpy.pi*numpy.array((ik0, ik1, ik2))/float(nk))
-                assert numpy.allclose(Hk_tmp[0:norb, 0:norb], Hk_tmp[norb:2*norb, norb:2*norb])
-                Hk[ik, :, :] = Hk_tmp[0:norb, 0:norb]
+                Hk_ud = self.Hk( 2*numpy.pi*numpy.array((ik0, ik1, ik2))/float(nk))
+                assert numpy.allclose(Hk_ud[0:norb, 0:norb], Hk_ud[norb:2*norb, norb:2*norb])
+                Hk[ik, :, :] = Hk_ud[0:norb, 0:norb]
         else:
             for ik, (ik0, ik1, ik2) in enumerate(product(range(nkdiv[0]), range(nkdiv[1]), range(nkdiv[2]))):
-                Hk_tmp = self.Hk( 2*numpy.pi*numpy.array((ik0, ik1, ik2))/float(nk))
-                assert numpy.allclose(Hk_tmp[0], Hk_tmp[1])
-                Hk[ik, :, :] = Hk_tmp[0]
+                Hk_up_down = self.Hk( 2*numpy.pi*numpy.array((ik0, ik1, ik2))/float(nk))
+                assert numpy.allclose(Hk_up_down[0], Hk_up_down[1])
+                Hk[ik, :, :] = Hk_up_down[0]
         _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, None)
 
         if p['model']['spin_orbit']:

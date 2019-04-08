@@ -35,9 +35,12 @@ class LatticeModel(object):
     def nkdiv(self):
         return self._nkdiv
 
+    @classmethod
+    def is_Hk_supported(cls):
+        return True
+
     def Hk(self, kvec):
         """
-
         kvec is a 1D array-like object of length 3 (with 2*pi)
 
         :return:

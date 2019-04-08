@@ -82,62 +82,6 @@ def _generate_w90_converter_input(nkdiv, params, f):
         print("{0} {1} {2} {3} 0 0".format(i, equiv[i], 0, norb[i]), file=f)
 
 
-def __generate_wannier90_model(seedname, ncor, norb, n_k, kvec):
-    """
-    Compute hopping etc. for A(k,w) of Wannier90
-
-    Parameters
-    ----------
-    seedname : str
-    ncor : int
-    norb : int
-    n_k : integer
-        Number of k points
-    kvec : float array
-        k-points where A(k,w) is computed
-
-    Returns
-    -------
-    hopping : complex
-        k-dependent one-body Hamiltonian
-    n_orbitals : integer
-        Number of orbitals at each k. It does not depend on k
-    proj_mat : complex
-        Projection onto each correlated orbitals
-    """
-    n_spin = 1
-    norb_list = re.findall(r'\d+', norb)
-    norb = [int(norb_list[icor]) for icor in range(ncor)]
-    #
-    print("               ncor = ", ncor)
-    for i in range(ncor):
-        print("     norb[{0}] = {1}".format(i, norb[i]))
-    #
-    # Read hopping in the real space from the Wannier90 output
-    #
-    w90c = Wannier90Converter(seedname=seedname)
-    nr, rvec, rdeg, nwan, hamr = w90c.read_wannier90hr(seedname+"_hr.dat")
-    #
-    # Fourier transformation of the one-body Hamiltonian
-    #
-    n_orbitals = numpy.ones([n_k, n_spin], numpy.int) * nwan
-    hopping = numpy.zeros([n_k, n_spin, numpy.max(n_orbitals), numpy.max(n_orbitals)], numpy.complex_)
-    for ik in range(n_k):
-        for ir in range(nr):
-            rdotk = numpy.dot(kvec[ik, :], rvec[ir, :])
-            factor = (numpy.cos(rdotk) + 1j * numpy.sin(rdotk)) / float(rdeg[ir])
-            hopping[ik, 0, :, :] += factor * hamr[ir][:, :]
-    #
-    # proj_mat is (norb*norb) identities at each correlation shell
-    #
-    proj_mat = numpy.zeros([n_k, n_spin, ncor, numpy.max(norb), numpy.max(n_orbitals)], numpy.complex_)
-    iorb = 0
-    for icor in range(ncor):
-        proj_mat[:, :, icor, 0:norb[icor], iorb:iorb + norb[icor]] = numpy.identity(norb[icor], numpy.complex_)
-        iorb += norb[icor]
-
-    return hopping, n_orbitals, proj_mat
-
 def _set_nk(nk, nk0, nk1, nk2):
     if abs(nk0) + abs(nk1) + abs(nk2) == 0:
         # If one of nk0, nk1 and nk2 are set, use nk.
@@ -149,7 +93,6 @@ def _set_nk(nk, nk0, nk1, nk2):
         if nk0 * nk1 * nk2 == 0:
             raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
     return nk0, nk1, nk2
-
 
 class Wannier90Model(LatticeModel):
     def __init__(self, params):
@@ -201,6 +144,16 @@ class Wannier90Model(LatticeModel):
                     corr_shells[icor]["SO"] = 1
                 f["dft_input"]["corr_shells"] = corr_shells
 
+                # Make projectors compatible with DCore's block structure
+                # proj_mat (n_k, nb, n_corr, max_dim_sh, max_n_orb)
+                proj_mat = f['dft_input']['proj_mat']
+                n_k, nb, n_corr, max_dim_sh, max_n_orb = proj_mat.shape
+                assert nb == 1
+                # (n_k, nb, n_corr, orb, spin, orb, spin) => (n_k, nb, n_corr, spin, orb, spin, orb)
+                proj_mat = proj_mat.reshape((n_k, nb, n_corr, max_dim_sh//2, 2, max_n_orb//2, 2))
+                proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
+                f['dft_input']['proj_mat'] = proj_mat.reshape((n_k, 1, n_corr, max_dim_sh, max_n_orb))
+
 
     def write_dft_band_input_data(self, params, kvec):
         """
@@ -230,13 +183,13 @@ class Wannier90Model(LatticeModel):
 
         #
         # Read hopping in the real space from the Wannier90 output
-        #  FIXME: Wannier90Converter may be relaced
+        #  FIXME: Wannier90Converter may be replaced by an original implementation
+        #
+        # if spin_orbit == True, nwan must be twice of the number of orbitals in the correlated shells.
+        # Otherwise, nwan must be the number of orbitals in the correlated shells.
         #
         w90c = Wannier90Converter(seedname=seedname)
         nr, rvec, rdeg, nwan, hamr = w90c.read_wannier90hr(seedname + "_hr.dat")
-
-        # if spin_orbit == True, nwan must be twice of the number of orbitals in the correlated shells.
-        # Otherwise, nwan must be the number of orbitals in the correlated shells.
 
         #
         # Fourier transformation of the one-body Hamiltonian
@@ -258,6 +211,10 @@ class Wannier90Model(LatticeModel):
         for icor in range(ncor):
             proj_mat[:, :, icor, 0:dim_Hk[icor], offset:offset+dim_Hk[icor]] = numpy.identity(dim_Hk[icor])
             offset += n_spin_orb_sh[icor]
+        # Make proj_mat compatible with DCore's block structure
+        proj_mat = proj_mat.reshape((n_k, n_spin, ncor, numpy.max(dim_Hk)//2, 2, nwan//2, 2))
+        proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
+        proj_mat = proj_mat.reshape((n_k, n_spin, ncor, numpy.max(dim_Hk), nwan))
 
         #
         # Output them into seedname.h5
