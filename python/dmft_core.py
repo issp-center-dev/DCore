@@ -622,13 +622,16 @@ class DMFTCoreSolver(object):
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.
-            if iteration_number > 1 or previous_present:
-                for ish in range(self._n_inequiv_shells):
-                    self._sh_quant[ish].Sigma_iw << sigma_mix * new_Sigma_iw[ish] \
-                                + (1.0-sigma_mix) * self._sh_quant[ish].Sigma_iw
-            else:
-                for ish in range(self._n_inequiv_shells):
-                    self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
+            #if iteration_number > 1 or previous_present:
+                #for ish in range(self._n_inequiv_shells):
+                    #self._sh_quant[ish].Sigma_iw << sigma_mix * new_Sigma_iw[ish] \
+                                #+ (1.0-sigma_mix) * self._sh_quant[ish].Sigma_iw
+            #else:
+            #for ish in range(self._n_inequiv_shells):
+                #self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
+            for ish in range(self._n_inequiv_shells):
+                self._sh_quant[ish].Sigma_iw << sigma_mix * new_Sigma_iw[ish] \
+                            + (1.0-sigma_mix) * self._sh_quant[ish].Sigma_iw
 
             # Write data to the hdf5 archive:
             with HDFArchive(self._output_file, 'a') as ar:

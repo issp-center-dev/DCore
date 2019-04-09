@@ -182,7 +182,11 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
 
         # Local Green's function and Density matrix
         results['Gloc_iw_sh'] = sk.extract_G_loc(with_dc=with_dc)
-        results['dm_corr_sh'] = sk.density_matrix(beta=beta)
+        dm = sk.density_matrix(beta=beta)
+        for icrsh in range(len(dm)):
+            for b in dm[icrsh].keys():
+                dm[icrsh][b] = numpy.conj(dm[icrsh][b])
+        results['dm_corr_sh'] = dm
 
     elif params['calc_mode'] == 'dos':
         # Compute dos

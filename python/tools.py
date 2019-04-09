@@ -221,6 +221,7 @@ def spin_moments_sh(dm_corr_sh):
     """
     Compute spin moments on shells.
     dm_corr_sh must contain density matrices.
+    A fully polarized S=1/2 spin gives 1/2.
     """
 
     pauli_mat = pauli_matrix()
