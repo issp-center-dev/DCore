@@ -19,8 +19,8 @@ from __future__ import print_function
 
 from typed_parser import *
 
+import numpy
 import re
-
 
 def create_parser():
     """
@@ -129,4 +129,23 @@ def parse_parameters(params):
     :return:  None
     """
 
-    params['model']['norb_corr_sh'] = map(int, re.findall(r'\d+', params['model']['norb']))
+    params['model']['norb_corr_sh'] = numpy.array(map(int, re.findall(r'\d+', params['model']['norb'])))
+
+    ncor = params['model']['ncor']
+    if params['model']['equiv'] == 'None':
+        params['model']['equiv_sh'] = numpy.arange(ncor)
+    else:
+        equiv_list = re.findall(r'[^\s,]+', params['model']['equiv'])
+        equiv_str_list = []
+        equiv_index = 0
+        equiv = numpy.zeros(ncor, dtype=int)
+        for icor in range(ncor):
+            if equiv_list[icor] in equiv_str_list:
+                # Defined before
+                equiv[icor] = equiv_str_list.index(equiv_list[icor])
+            else:
+                # New one
+                equiv_str_list.append(equiv_list[icor])
+                equiv[icor] = equiv_index
+                equiv_index += 1
+        params['model']['equiv_sh'] = equiv

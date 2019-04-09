@@ -37,31 +37,22 @@ def _generate_w90_converter_input(nkdiv, params, f):
     f : File stream
         file
     """
+
     #
     # Number of orbitals in each shell
     # Equivalence of each shell
     #
-    ncor = params["model"]["ncor"]
-    #
-    norb_list = re.findall(r'\d+', params["model"]["norb"])
-    norb = [int(norb_list[icor]) for icor in range(ncor)]
-    #
-    if params["model"]["equiv"] == "None":
-        equiv = [icor for icor in range(ncor)]
+    ncor = params['model']['ncor']
+    equiv_sh = params['model']['equiv_sh']
+    if params['model']['spin_orbit']:
+        dim_Hk = 2 * params['model']['norb_corr_sh']
     else:
-        equiv_list = re.findall(r'[^\s,]+', params["model"]["equiv"])
-        equiv_str_list = []
-        equiv_index = 0
-        equiv = [0] * ncor
-        for icor in range(ncor):
-            if equiv_list[icor] in equiv_str_list:
-                # Defined before
-                equiv[icor] = equiv_str_list.index(equiv_list[icor])
-            else:
-                # New one
-                equiv_str_list.append(equiv_list[icor])
-                equiv[icor] = equiv_index
-                equiv_index += 1
+        dim_Hk = params['model']['norb_corr_sh']
+
+    #
+    #norb_list = re.findall(r'\d+', params["model"]["norb"])
+    #norb = [int(norb_list[icor]) for icor in range(ncor)]
+    #
     nk0, nk1, nk2 = nkdiv
 
     print("\n    nk0 = {0}".format(nk0))
@@ -69,9 +60,10 @@ def _generate_w90_converter_input(nkdiv, params, f):
     print("    nk2 = {0}".format(nk2))
     print("    ncor = {0}".format(ncor))
     for i in range(ncor):
-        assert equiv[i] >= 0
-        print("    norb[{0}], equiv[{0}] = {1}, {2}".format(i, norb[i], equiv[i]))
+        assert equiv_sh[i] >= 0
+        print("    dim[{0}], equiv[{0}] = {1}, {2}".format(i, dim_Hk[i], equiv_sh[i]))
     print("")
+
     #
     # Generate file for Wannier90-Converter
     #
@@ -79,7 +71,7 @@ def _generate_w90_converter_input(nkdiv, params, f):
     print(params["model"]["nelec"], file=f)
     print(ncor, file=f)
     for i in range(ncor):
-        print("{0} {1} {2} {3} 0 0".format(i, equiv[i], 0, norb[i]), file=f)
+        print("{0} {1} {2} {3} 0 0".format(i, equiv_sh[i], 0, dim_Hk[i]), file=f)
 
 
 def _set_nk(nk, nk0, nk1, nk2):
@@ -170,6 +162,7 @@ class Wannier90Model(LatticeModel):
         n_k = kvec.shape[0]
         assert kvec.shape[1] == 3
 
+        spin_orbit = params['model']['spin_orbit']
 
         norb_sh = numpy.array(params['model']['norb_corr_sh'])
         n_spin_orb_sh = 2 * norb_sh
@@ -191,11 +184,17 @@ class Wannier90Model(LatticeModel):
         w90c = Wannier90Converter(seedname=seedname)
         nr, rvec, rdeg, nwan, hamr = w90c.read_wannier90hr(seedname + "_hr.dat")
 
+        # Number of physical orbitals in the model (including non-interacting ones)
+        #if spin_orbit:
+            #norb_tot = nwan//2
+        #else:
+            #norb_tot = nwan
+
         #
         # Fourier transformation of the one-body Hamiltonian
         #
-        n_spin = 1
-        hopping = numpy.zeros((n_k, n_spin, nwan, nwan), complex)
+        nblock = 1
+        hopping = numpy.zeros((n_k, nblock, nwan, nwan), complex)
         for ik in range(n_k):
             for ir in range(nr):
                 rdotk = numpy.dot(kvec[ik, :], rvec[ir, :])
@@ -206,15 +205,15 @@ class Wannier90Model(LatticeModel):
         # proj_mat is (norb*norb) identities at each correlation shell
         #
         offset = 0
-        dim_Hk = n_spin_orb_sh if params['model']['spin_orbit'] else norb_sh
-        proj_mat = numpy.zeros([n_k, n_spin, ncor, numpy.max(dim_Hk), nwan], complex)
+        dim_Hk = n_spin_orb_sh if spin_orbit else norb_sh
+        proj_mat = numpy.zeros([n_k, nblock, ncor, numpy.max(dim_Hk), nwan], complex)
         for icor in range(ncor):
             proj_mat[:, :, icor, 0:dim_Hk[icor], offset:offset+dim_Hk[icor]] = numpy.identity(dim_Hk[icor])
             offset += n_spin_orb_sh[icor]
         # Make proj_mat compatible with DCore's block structure
-        proj_mat = proj_mat.reshape((n_k, n_spin, ncor, numpy.max(dim_Hk)//2, 2, nwan//2, 2))
+        proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk)//2, 2, nwan//2, 2))
         proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
-        proj_mat = proj_mat.reshape((n_k, n_spin, ncor, numpy.max(dim_Hk), nwan))
+        proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk), nwan))
 
         #
         # Output them into seedname.h5
@@ -224,7 +223,7 @@ class Wannier90Model(LatticeModel):
                 f.create_group('dft_bands_input')
             f['dft_bands_input']['hopping'] = hopping
             f['dft_bands_input']['n_k'] = n_k
-            f['dft_bands_input']['n_orbitals'] = dim_Hk
+            f['dft_bands_input']['n_orbitals'] = numpy.full((n_k, nblock), nwan, dtype=int)
             f['dft_bands_input']['proj_mat'] = proj_mat
         print('    Done')
 
