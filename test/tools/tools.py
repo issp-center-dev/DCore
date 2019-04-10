@@ -17,11 +17,12 @@
 #
 from __future__ import print_function
 
-from dcore.tools import spin_moments_sh
 import numpy
 import scipy
 
 def test_spin_moments_sh():
+    from dcore.tools import spin_moments_sh
+
     # (Sx, Sy, Sz) = (0, 0, 1/2)
     dm_corr_sh = [{'ud': numpy.array([[1, 0], [0, 0]])}]
     assert numpy.allclose(spin_moments_sh(dm_corr_sh)[0], numpy.array([0.0, 0.0, 0.5]) )
@@ -41,4 +42,39 @@ def test_spin_moments_sh():
     dm_corr_sh = [{'ud': dm_mat.reshape(2*norb,2*norb)}]
     assert numpy.allclose(spin_moments_sh(dm_corr_sh)[0], numpy.array([0, 0, norb*0.5]) )
 
+def test_save_load_Sigma_iw():
+    from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt
+    from pytriqs.gf.local import GfImFreq
+
+    nsh = 2
+    norb = 2
+    beta = 10.0
+    n_points = 100
+
+    for spin_names in [['ud'], ['up', 'down']]:
+        gf_struct = {sp : numpy.arange(norb) for sp in spin_names}
+
+        Sigma_iw_sh = [make_block_gf(GfImFreq, gf_struct, beta, n_points) for ish in range(nsh)]
+
+        for ish in range(nsh):
+            for sp in spin_names:
+                Sigma_iw_sh[ish][sp].data[:,:,:] = numpy.random.randn(2*n_points, norb, norb) + 1J * numpy.random.randn(2*n_points, norb, norb)
+
+        save_Sigma_iw_sh_txt('Sigma_iw_sh.txt', Sigma_iw_sh, spin_names)
+
+        Sigma_iw_sh_loaded = [s.copy() for s in Sigma_iw_sh]
+        for ish in range(nsh):
+            Sigma_iw_sh_loaded[ish].zero()
+
+        load_Sigma_iw_sh_txt('Sigma_iw_sh.txt', Sigma_iw_sh_loaded, spin_names)
+
+        mesh_points = lambda mesh: numpy.array([x for x in mesh])
+
+        for ish in range(nsh):
+            for sp in spin_names:
+                numpy.allclose(mesh_points(Sigma_iw_sh[ish][sp].mesh), mesh_points(Sigma_iw_sh_loaded[ish][sp].mesh))
+                numpy.allclose(Sigma_iw_sh[ish][sp].data, Sigma_iw_sh_loaded[ish][sp].data)
+
+
 test_spin_moments_sh()
+test_save_load_Sigma_iw()

@@ -124,6 +124,8 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     if not mesh is None and not Solver.is_gf_realomega_available():
         raise RuntimeError("Error: requested real-frequency quantities for an imaginary-time solver.")
 
+    # Correct?
+    # G0_iw^{-1} = Gloc_iw + Sigma_iw
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
     assert is_hermite_conjugate(G0_iw)
     sol.set_G0_iw(G0_iw)
@@ -322,14 +324,14 @@ class DMFTCoreSolver(object):
             self.set_dc_imp(dm_corr_sh)
 
         # Set initial value to self-energy
-        if self._params["system"]["initial_self_energy"] != "None":
+        if self._params["control"]["initial_static_self_energy"] != "None":
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Setting initial value to self-energy @@@@@@@@@@@@@@@@@@@@@@@@")
             try:
-                files = ast.literal_eval(self._params["system"]["initial_self_energy"])
+                files = ast.literal_eval(self._params["control"]["initial_static_self_energy"])
                 assert isinstance(files, dict)
                 assert all([ish < self.n_inequiv_shells for ish in files.keys()])
             except Exception as e:
-                print("Error in parsing initial_self_energy!")
+                print("Error in parsing initial_static_self_energy!")
                 print(e)
                 exit(1)
 
@@ -351,6 +353,15 @@ class DMFTCoreSolver(object):
             for ish in range(self.n_inequiv_shells):
                 for isp, sp in enumerate(self._spin_block_names):
                     self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
+
+        elif self._params["control"]["initial_self_energy"] != "None":
+            Sigma_iw_sh_tmp = [self._sh_quant[ish].Sigma_iw for ish in range(self.n_inequiv_shells)]
+            load_Sigma_iw_sh_txt(self._params["control"]["initial_self_energy"], Sigma_iw_sh_tmp, self.spin_block_names)
+            print('')
+            print('Loading {} ...'.format(self._params["control"]["initial_self_energy"]), end=' ')
+            for ish in range(self.n_inequiv_shells):
+                self._sh_quant[ish].Sigma_iw << Sigma_iw_sh_tmp[ish]
+            print('Done')
 
         self._sanity_check()
 
@@ -622,16 +633,13 @@ class DMFTCoreSolver(object):
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.
-            #if iteration_number > 1 or previous_present:
-                #for ish in range(self._n_inequiv_shells):
-                    #self._sh_quant[ish].Sigma_iw << sigma_mix * new_Sigma_iw[ish] \
-                                #+ (1.0-sigma_mix) * self._sh_quant[ish].Sigma_iw
-            #else:
-            #for ish in range(self._n_inequiv_shells):
-                #self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
-            for ish in range(self._n_inequiv_shells):
-                self._sh_quant[ish].Sigma_iw << sigma_mix * new_Sigma_iw[ish] \
-                            + (1.0-sigma_mix) * self._sh_quant[ish].Sigma_iw
+            if iteration_number > 1 or previous_present:
+                for ish in range(self._n_inequiv_shells):
+                    self._sh_quant[ish].Sigma_iw << sigma_mix * new_Sigma_iw[ish] \
+                                + (1.0-sigma_mix) * self._sh_quant[ish].Sigma_iw
+            else:
+                for ish in range(self._n_inequiv_shells):
+                    self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
 
             # Write data to the hdf5 archive:
             with HDFArchive(self._output_file, 'a') as ar:

@@ -147,8 +147,8 @@ class ALPSCTHYBSolver(SolverBase):
         H0 = (H0[:, index])[index, :]
 
         # Compute the hybridization function from G0:
-        #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
-        # H0 is extracted from the tail of the Green's function.
+        #     Delta(iwn_n) = iw_n + mu - H0 - G0^{-1}(iw_n)
+        # H0 -mu is extracted from the tail of G0. (correct?)
         self._Delta_iw = delta(self._G0_iw)
         Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         for name in self.block_names:
@@ -272,6 +272,7 @@ class ALPSCTHYBSolver(SolverBase):
 
 
         # Solve Dyson's eq to obtain Sigma_iw
+        # Sigma_iw = G0_iw^{-1} - G_imp_iw^{-1}
         self._Sigma_iw = dyson(G0_iw=self._G0_iw, G_iw=self._Gimp_iw)
 
 

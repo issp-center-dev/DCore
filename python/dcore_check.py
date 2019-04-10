@@ -157,38 +157,10 @@ class DMFTCoreCheck(object):
         Output Sigma into a text file
         """
 
-        filename = basename + ".dat"
-        with open(filename, 'w') as fo:
-            print("# Local self energy at imaginary frequency", file=fo)
-            #
-            # Column information
-            #
-            print("# [Column] Data", file=fo)
-            print("# [1] Frequency", file=fo)
-            icol = 1
-            for ish in range(self.n_sh):
-                norb = self.shell_info[ish]['block_dim']
-                for isp in self.spin_names:
-                    for iorb in range(norb):
-                        for jorb in range(norb):
-                            icol += 1
-                            print("# [%d] Re(Sigma_{shell=%d, spin=%s, %d, %d})" % (icol, ish, isp, iorb, jorb), file=fo)
-                            icol += 1
-                            print("# [%d] Im(Sigma_{shell=%d, spin=%s, %d, %d})" % (icol, ish, isp, iorb, jorb), file=fo)
-            #
-            # Write data
-            #
-            Sigma_iw_tmp = self.solver.Sigma_iw_sh(self.n_iter)
-            # omega = [x for x in Sigma_iw_sh[0].mesh]
-            omega = [x for x in Sigma_iw_tmp[0].mesh]
-            for iom in range(len(omega)):
-                print("%f " % omega[iom].imag, end="", file=fo)
-                for ish in range(self.n_sh):
-                    norb = self.shell_info[ish]['block_dim']
-                    for isp, iorb, jorb in product(self.spin_names, range(norb), range(norb)):
-                        print("%f %f " % (Sigma_iw_tmp[ish][isp].data[iom, iorb, jorb].real,
-                                          Sigma_iw_tmp[ish][isp].data[iom, iorb, jorb].imag), end="", file=fo)
-                print("", file=fo)
+        from .tools import save_Sigma_iw_sh_txt
+
+        filename = basename + '.dat'
+        save_Sigma_iw_sh_txt(basename + '.dat', self.solver.Sigma_iw_sh(self.n_iter), self.spin_names)
 
         print(" Output " + filename)
 
