@@ -31,7 +31,13 @@ from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
 
+def remove_positive_eigenvalues(Delta_tau):
+    ntau = Delta_tau.shape[0]
 
+    for itau in range(ntau):
+        evals, evecs = numpy.linalg.eigh(Delta_tau[itau, :, :])
+        evals[evals>0] = 0.0
+        Delta_tau[itau, :, :] = evecs.dot(numpy.diag(evals).dot(evecs.transpose().conjugate()))
 
 def to_numpy_array(g, block_names):
     """
@@ -154,6 +160,7 @@ class ALPSCTHYBSolver(SolverBase):
         for name in self.block_names:
             Delta_tau[name] << InverseFourier(self._Delta_iw[name])
         Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
+        remove_positive_eigenvalues(Delta_tau_data)
 
         # non-zero elements of U matrix
         # Note: notation differences between ALPS/CT-HYB and TRIQS!
