@@ -186,8 +186,8 @@ class ALPSCTHYBSolver(SolverBase):
             else:
                 rot_single_block = block_diag(*[rot[name] for name in self.block_names])
             rot_mat_alps = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
-            for i, j in product(range(2*self.n_orb), repeat=2):
-                rot_mat_alps[conv(i), conv(j)] = rot_single_block[i,j]
+            for i, iv in product(range(2*self.n_orb), repeat=2):
+                rot_mat_alps[conv(i), iv] = rot_single_block[i, iv]
 
         # Set up input parameters for ALPS/CT-HYB
         p_run = {

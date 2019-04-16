@@ -143,7 +143,7 @@ if __name__ == '__main__':
                         type=str,
                         help="seedname")
     parser.add_argument('--inputorder', default=None, help='up_down_up_down, up_up_down_down or up_up_up_up', required=True)
-    parser.add_argument('--localaxis', default=None, help='Name of file containing local coordinate axes', required=True)
+    #parser.add_argument('--localaxis', default=None, help='Name of file containing local coordinate axes', required=True)
     parser.add_argument('--output', default=None, help='Output file name', required=False)
 
     args = parser.parse_args()
@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     w90 = Wannier90(args.seedname+'_hr.dat', spin_orbital_order=args.inputorder)
 
-    _read_local_coordinate(args.localaxis)
+    #_read_local_coordinate(args.localaxis)
 
     if not args.output is None:
         w90.save(args.output)
