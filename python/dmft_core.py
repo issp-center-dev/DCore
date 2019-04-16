@@ -320,8 +320,8 @@ class DMFTCoreSolver(object):
         #     First, compute G_loc without self-energy
         if self._params['system']['with_dc']:
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
-            Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
-            self.set_dc_imp(dm_corr_sh)
+            Gloc_iw_sh, dm_sh = self.calc_Gloc()
+            self.set_dc_imp(dm_sh)
 
         # Set initial value to self-energy
         if self._params["control"]["initial_static_self_energy"] != "None":
@@ -419,24 +419,24 @@ class DMFTCoreSolver(object):
         if self._params['system']['fix_mu'] or self._read_only:
             assert self._chemical_potential == mu_old
 
-        return r['Gloc_iw_sh'], r['dm_corr_sh']
+        return r['Gloc_iw_sh'], r['dm_sh']
 
 
-    def print_density_matrix(self, dm_corr_sh):
-        smoments = spin_moments_sh(dm_corr_sh)
+    def print_density_matrix(self, dm_sh):
+        smoments = spin_moments_sh(dm_sh)
         print("\nDensity Matrix")
-        for icrsh in range(self._n_corr_shells):
-            print("\n  Shell ", icrsh)
+        for ish in range(self._n_inequiv_shells):
+            print("\n  Inequivalent Shell ", ish)
             for sp in self._spin_block_names:
                 print("\n    Spin ", sp)
-                for i1 in range(self._sk.corr_shells[icrsh]['dim']):
+                for i1 in range(self._dim_sh[ish]):
                     print("          ", end="")
-                    for i2 in range(self._sk.corr_shells[icrsh]['dim']):
-                        print("{0:.3f} ".format(dm_corr_sh[icrsh][sp][i1, i2]), end="")
+                    for i2 in range(self._dim_sh[ish]):
+                        print("{0:.3f} ".format(dm_sh[ish][sp][i1, i2]), end="")
                     print("")
-                evals, evecs = numpy.linalg.eigh(dm_corr_sh[icrsh][sp])
+                evals, evecs = numpy.linalg.eigh(dm_sh[ish][sp])
                 print('    Eigenvalues: ', evals)
-            print('    Sx, Sy, Sz : {} {} {}'.format(smoments[icrsh][0], smoments[icrsh][1], smoments[icrsh][2]))
+            print('    Sx, Sy, Sz : {} {} {}'.format(smoments[ish][0], smoments[ish][1], smoments[ish][2]))
 
 
     def solve_impurity_models(self, Gloc_iw_sh, iteration_number, mesh=None):
@@ -479,7 +479,7 @@ class DMFTCoreSolver(object):
         else:
             return Sigma_iw_sh, Gimp_iw_sh, Sigma_w_sh
 
-    def set_dc_imp(self, dm_corr_sh):
+    def set_dc_imp(self, dm_sh):
         """
 
         Compute Double-counting term (Hartree-Fock term)
@@ -496,7 +496,7 @@ class DMFTCoreSolver(object):
             dim_tot = self._dim_sh[ish]
             num_orb = int(u_mat.shape[0] / 2)
 
-            dens_mat = dm_corr_sh[self._sk.inequiv_to_corr[ish]]
+            dens_mat = dm_sh[self._sk.inequiv_to_corr[ish]]
 
             print("")
             print("    DC for inequivalent shell {0}".format(ish))
@@ -603,8 +603,8 @@ class DMFTCoreSolver(object):
             sys.stdout.flush()
 
             # Compute Gloc_iw where the chemical potential is adjusted if needed
-            Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
-            self.print_density_matrix(dm_corr_sh)
+            Gloc_iw_sh, dm_sh = self.calc_Gloc()
+            self.print_density_matrix(dm_sh)
 
             for ish in range(self._n_inequiv_shells):
                 print("\n    Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
@@ -686,7 +686,7 @@ class DMFTCoreSolver(object):
     def inequiv_shell_info(self, ish):
         info = {}
         if self._use_spin_orbit:
-            info['num_orb'] = int(self._dim_sh[ish]/2)
+            info['num_orb'] = self._dim_sh[ish]//2
         else:
             info['num_orb'] = self._dim_sh[ish]
 
@@ -695,7 +695,7 @@ class DMFTCoreSolver(object):
         return info
 
     def corr_shell_info(self, ish):
-        return self.inequiv_shell_info(ish)
+        return self.inequiv_shell_info(self._sk.corr_to_inequiv[ish])
 
     def Sigma_iw_sh(self, iteration_number):
         Sigma_iw_sh = []

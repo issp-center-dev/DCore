@@ -142,26 +142,29 @@ def parse_parameters(params):
     :return:  None
     """
 
-    params['model']['norb_corr_sh'] = numpy.array(map(int, re.findall(r'\d+', params['model']['norb'])))
-
-    ncor = params['model']['ncor']
-    if params['model']['equiv'] == 'None':
-        params['model']['equiv_sh'] = numpy.arange(ncor)
-    else:
-        equiv_list = re.findall(r'[^\s,]+', params['model']['equiv'])
-        equiv_str_list = []
-        equiv_index = 0
-        equiv = numpy.zeros(ncor, dtype=int)
-        for icor in range(ncor):
-            if equiv_list[icor] in equiv_str_list:
-                # Defined before
-                equiv[icor] = equiv_str_list.index(equiv_list[icor])
-            else:
-                # New one
-                equiv_str_list.append(equiv_list[icor])
-                equiv[icor] = equiv_index
-                equiv_index += 1
-        params['model']['equiv_sh'] = equiv
-
     two_options_incompatible(params, ('control', 'restart'), ('control', 'initial_static_self_energy'))
     two_options_incompatible(params, ('control', 'initial_self_energy'), ('control', 'initial_static_self_energy'))
+
+    ncor = params['model']['ncor']
+
+    # Set [model][equiv_sh] and [model][n_inequiv_shells]
+    if params['model']['equiv'] == 'None':
+        params['model']['equiv_sh'] = numpy.arange(ncor)
+        params['model']['n_inequiv_shells'] = ncor
+    else:
+        equiv_str_list = re.findall(r'[^\s,]+', params['model']['equiv'])
+        equiv_sh = numpy.array(list(map(int, equiv_str_list)))
+        if len(equiv_sh) != ncor:
+            raise RuntimeError("Invalid number of elements in equiv!")
+        params['model']['equiv_sh'] = equiv_sh
+        params['model']['n_inequiv_shells'] = len(numpy.unique(equiv_sh))
+
+    # Set [model][norb_inequiv_sh]
+    nsh = params['model']['n_inequiv_shells']
+    params['model']['norb_inequiv_sh'] = numpy.array(map(int, re.findall(r'\d+', params['model']['norb'])))
+    if len(params['model']['norb_inequiv_sh']) != nsh:
+        raise RuntimeError("Invalid number of elements in norb_inequiv_sh!")
+
+    # Set [model][norb_corr_sh]
+    equiv_sh = params['model']['equiv_sh']
+    params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][equiv_sh[icrsh]] for icrsh in range(ncor)])

@@ -24,23 +24,23 @@ def test_spin_moments_sh():
     from dcore.tools import spin_moments_sh
 
     # (Sx, Sy, Sz) = (0, 0, 1/2)
-    dm_corr_sh = [{'ud': numpy.array([[1, 0], [0, 0]])}]
-    assert numpy.allclose(spin_moments_sh(dm_corr_sh)[0], numpy.array([0.0, 0.0, 0.5]) )
+    dm_sh = [{'ud': numpy.array([[1, 0], [0, 0]])}]
+    assert numpy.allclose(spin_moments_sh(dm_sh)[0], numpy.array([0.0, 0.0, 0.5]) )
     
-    dm_corr_sh = [{'up': numpy.array([[1]]), 'down': numpy.array([[0]])}]
-    assert numpy.allclose(spin_moments_sh(dm_corr_sh)[0], numpy.array([0.0, 0.0, 0.5]) )
+    dm_sh = [{'up': numpy.array([[1]]), 'down': numpy.array([[0]])}]
+    assert numpy.allclose(spin_moments_sh(dm_sh)[0], numpy.array([0.0, 0.0, 0.5]) )
     
     # (Sx, Sy, Sz) = (1/2, 0, 0)
-    dm_corr_sh = [{'ud': 0.5*numpy.ones((2,2))}]
-    assert numpy.allclose(spin_moments_sh(dm_corr_sh)[0], numpy.array([0.5, 0.0, 0.0]) )
+    dm_sh = [{'ud': 0.5*numpy.ones((2,2))}]
+    assert numpy.allclose(spin_moments_sh(dm_sh)[0], numpy.array([0.5, 0.0, 0.0]) )
 
     # Two-orbital case
     norb = 2
     dm_mat = numpy.zeros((2,norb,2,norb))
     for iorb in range(norb):
         dm_mat[:,iorb,:,iorb] = numpy.array([[1, 0], [0, 0]])
-    dm_corr_sh = [{'ud': dm_mat.reshape(2*norb,2*norb)}]
-    assert numpy.allclose(spin_moments_sh(dm_corr_sh)[0], numpy.array([0, 0, norb*0.5]) )
+    dm_sh = [{'ud': dm_mat.reshape(2*norb,2*norb)}]
+    assert numpy.allclose(spin_moments_sh(dm_sh)[0], numpy.array([0, 0, norb*0.5]) )
 
 def test_save_load_Sigma_iw():
     from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt

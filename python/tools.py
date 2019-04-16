@@ -217,10 +217,10 @@ def pauli_matrix():
     pauli_mat.append(numpy.array([[1, 0], [0, -1]], dtype=complex))
     return pauli_mat
 
-def spin_moments_sh(dm_corr_sh):
+def spin_moments_sh(dm_sh):
     """
     Compute spin moments on shells.
-    dm_corr_sh must contain density matrices.
+    dm_sh must contain density matrices.
     A fully polarized S=1/2 spin gives 1/2.
     """
 
@@ -229,8 +229,8 @@ def spin_moments_sh(dm_corr_sh):
     assert numpy.allclose(numpy.dot(pauli_mat[0],pauli_mat[1]), 1J*pauli_mat[2])
 
     spin_moments = []
-    for ish in range(len(dm_corr_sh)):
-        dm_dict = dm_corr_sh[ish]
+    for ish in range(len(dm_sh)):
+        dm_dict = dm_sh[ish]
         if len(dm_dict) == 1:
             dm = dm_dict['ud']
         else:

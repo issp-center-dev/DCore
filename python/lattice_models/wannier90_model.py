@@ -49,16 +49,13 @@ def _generate_w90_converter_input(nkdiv, params, f):
     else:
         dim_Hk = params['model']['norb_corr_sh']
 
-    #
-    #norb_list = re.findall(r'\d+', params["model"]["norb"])
-    #norb = [int(norb_list[icor]) for icor in range(ncor)]
-    #
     nk0, nk1, nk2 = nkdiv
 
     print("\n    nk0 = {0}".format(nk0))
     print("    nk1 = {0}".format(nk1))
     print("    nk2 = {0}".format(nk2))
     print("    ncor = {0}".format(ncor))
+    print("    n_inequiv_sh = {0}".format(params['model']['n_inequiv_shells']))
     for i in range(ncor):
         assert equiv_sh[i] >= 0
         print("    dim[{0}], equiv[{0}] = {1}, {2}".format(i, dim_Hk[i], equiv_sh[i]))
@@ -96,8 +93,6 @@ class Wannier90Model(LatticeModel):
                              params["system"]["nk2"])
         self._spin_orbit = params['model']['spin_orbit']
 
-        #self._norb_list = params['model']['norb_list']
-        #norb = [int(norb_list[icor]) for icor in range(ncor)]
 
     @classmethod
     def name(self):
@@ -184,11 +179,6 @@ class Wannier90Model(LatticeModel):
         w90c = Wannier90Converter(seedname=seedname)
         nr, rvec, rdeg, nwan, hamr = w90c.read_wannier90hr(seedname + "_hr.dat")
 
-        # Number of physical orbitals in the model (including non-interacting ones)
-        #if spin_orbit:
-            #norb_tot = nwan//2
-        #else:
-            #norb_tot = nwan
 
         #
         # Fourier transformation of the one-body Hamiltonian

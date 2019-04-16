@@ -295,7 +295,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         # FIXME:
         #     Saving data should be done for all **correlated_shells** (not for inequiv_shells)
         #     Namely, we need a loop for correlated shells when n_inequiv_shells < n_corr_shells
-        assert self._n_inequiv_shells == self._n_corr_shells
+        #assert self._n_inequiv_shells == self._n_corr_shells
 
         #
         # X_loc
@@ -324,7 +324,9 @@ class DMFTBSESolver(DMFTCoreSolver):
             subtract_disconnected(x_loc, g_imp, self.spin_block_names)
 
             # save X_loc
-            bse.save_xloc(x_loc, icrsh=self._sk.inequiv_to_corr[ish])
+            for icrsh in range(self._n_corr_shells):
+                if ish == self._sk.corr_to_inequiv[icrsh]:
+                    bse.save_xloc(x_loc, icrsh=icrsh)
 
     def calc_bse(self):
         """

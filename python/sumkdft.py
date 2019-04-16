@@ -48,7 +48,10 @@ def read_dft_input_data(file, subgrp, things_to_read):
 
 
 class SumkDFTCompat(object):
-    def __init__(self, hdf_file):
+    """
+    Reading data from a SumkDFT HDF5 file
+    """
+    def __init__(self, hdf_file, subgrp='dft_input'):
 
         things_to_read = ['energy_unit', 'n_k', 'k_dep_projection', 'SP', 'SO', 'charge_below', 'density_required',
                           'symm_op', 'n_shells', 'shells', 'n_corr_shells', 'corr_shells', 'use_rotations', 'rot_mat',
@@ -56,7 +59,7 @@ class SumkDFTCompat(object):
                           'hopping',
                           'n_inequiv_shells', 'corr_to_inequiv', 'inequiv_to_corr']
 
-        dft_data = read_dft_input_data(hdf_file, subgrp='dft_input', things_to_read=things_to_read)
+        dft_data = read_dft_input_data(hdf_file, subgrp, things_to_read=things_to_read)
 
         for k, v in dft_data.items():
             setattr(self, k, v)
@@ -98,6 +101,11 @@ def run(model_file, work_dir, mpirun_command, params):
 
     cwd_org = os.getcwd()
     os.chdir(work_dir)
+
+    if os.path.exists('./input.h5'):
+        os.remove('./input.h5')
+    if os.path.exists('./output.h5'):
+        os.remove('./output.h5')
 
     with HDFArchive('./input.h5', 'w') as h:
         h['params'] = params
@@ -151,7 +159,6 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
 
     def setup_sk(sk, iwn_or_w_or_none):
         if iwn_or_w_or_none == 'iwn':
-            # sk.set_Sigma(params['Sigma_iw_sh'])
             assert len(params['Sigma_iw_sh']) == len(params['potential'])
             Sigma_iw_sh_plus_pot = [add_potential(sigma, pot)
                                     for sigma, pot in zip(params['Sigma_iw_sh'], params['potential'])]
@@ -183,10 +190,10 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         # Local Green's function and Density matrix
         results['Gloc_iw_sh'] = sk.extract_G_loc(with_dc=with_dc)
         dm = sk.density_matrix(beta=beta)
-        for icrsh in range(len(dm)):
-            for b in dm[icrsh].keys():
-                dm[icrsh][b] = numpy.conj(dm[icrsh][b])
-        results['dm_corr_sh'] = dm
+        for ish in range(len(dm)):
+            for b in dm[ish].keys():
+                dm[ish][b] = numpy.conj(dm[ish][b])
+        results['dm_sh'] = dm
 
     elif params['calc_mode'] == 'dos':
         # Compute dos
