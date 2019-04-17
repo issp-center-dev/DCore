@@ -44,7 +44,7 @@ def test_spin_moments_sh():
 
 def test_save_load_Sigma_iw():
     from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt
-    from pytriqs.gf.local import GfImFreq
+    from pytriqs.gf import GfImFreq
 
     nsh = 2
     norb = 2

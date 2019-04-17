@@ -25,10 +25,10 @@ message(STATUS "Installing DCore into ${CMAKE_INSTALL_PREFIX}...")
 
 # Check version of TRIQS
 execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/show_triqs_version.py OUTPUT_VARIABLE TRIQS_VERSION)
-if (TRIQS_VERSION STREQUAL "1.4" OR TRIQS_VERSION STREQUAL "2.1")
+if (TRIQS_VERSION STREQUAL "1.4" OR TRIQS_VERSION MATCHES "^2.1.")
     message(STATUS "Found TRIQS Version ${TRIQS_VERSION}")
 else()
-    message(WARNING "Found TRIQS Version ${TRIQS_VERSION}, but may be imcompatible with DCore.")
+    message(WARNING "TRIQS Version ${TRIQS_VERSION} may be imcompatible with DCore.")
 endif()
 
 # Find where the pytriqs is installed

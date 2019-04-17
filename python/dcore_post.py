@@ -24,7 +24,7 @@ import numpy
 import copy
 
 from pytriqs.archive import HDFArchive
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 
 from dmft_core import DMFTCoreSolver

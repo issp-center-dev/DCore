@@ -18,7 +18,7 @@
 from __future__ import print_function
 
 import unittest
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import pytriqs.operators.util as op
 
 from dcore.impurity_solvers.alps_cthyb import *

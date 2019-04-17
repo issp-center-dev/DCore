@@ -1,6 +1,6 @@
 function(add_python_test test)
     add_test(NAME ${test} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py)
-    set_tests_properties(${test} PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python:${TRIQS_SITE_PACKAGES}:$ENV{PYTHONPATH}")
+    set_tests_properties(${test} PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}:${CMAKE_BINARY_DIR}/python:${TRIQS_SITE_PACKAGES}:$ENV{PYTHONPATH}")
 endfunction()
 
 add_subdirectory(typed_parser)

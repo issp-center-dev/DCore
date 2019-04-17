@@ -21,7 +21,7 @@ import numpy
 from itertools import product
 import os
 
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 # from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 

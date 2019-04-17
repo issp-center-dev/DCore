@@ -27,7 +27,7 @@ from itertools import *
 from pytriqs.utility.h5diff import compare, failures
 from pytriqs.utility.h5diff import h5diff as h5diff_org
 from pytriqs.archive.hdf_archive import HDFArchive
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 import scipy
 
@@ -109,7 +109,8 @@ def make_block_gf(gf_class, gf_struct, beta, n_points):
     for name, indices in gf_struct.items():
         assert isinstance(name, str)
         block_names.append(name)
-        blocks.append(gf_class(indices=indices, beta=beta, n_points=n_points, name=name))
+        indices_str = list(map(str, indices))
+        blocks.append(gf_class(indices=indices_str, beta=beta, n_points=n_points, name=name))
     return BlockGf(name_list=block_names, block_list=blocks, make_copies=True)
 
 
