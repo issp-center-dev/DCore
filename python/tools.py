@@ -203,9 +203,29 @@ def extract_H0(G0_iw, hermitianize=True):
         data = 0.5 * (data.transpose().conj() + data)
 
     return data
-
 # TODO: clean comments
 def umat2dd(dcore_U):
+    print("dcore_u", dcore_U.shape)
+
+    n_orb = dcore_U.shape[0]/2  # spin-1/2
+    print("n_orb:", n_orb)
+
+    # extract density-density part
+    dcore_U_len = len(dcore_U)
+    Uout = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb))
+
+    # m_range = range(size)
+    # print("dcore_U_len:", dcore_U_len)
+    for i, j, k, l in product(range(dcore_U_len), range(dcore_U_len), range(dcore_U_len), range(dcore_U_len)):
+        if (i == k and j == l) or (i == l and j == k):
+            Uout[i, j, k, l] = dcore_U[i, j, k, l]
+
+    return Uout
+
+# TODO: clean
+def umat2dd_bak(dcore_U):
+    print("in func")
+    print("dcore_u", dcore_U.shape)
 
     n_orb = dcore_U.shape[0]/2  # spin-1/2
     print("n_orb:", n_orb)
@@ -229,7 +249,7 @@ def umat2dd(dcore_U):
     # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
     # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
     def func(u):
-        print("shape:",u.shape)
+        print("shape:", u.shape)
         uout = u.reshape((2, n_orb, 2, n_orb))
         # uout = u.reshape((2, norb, 2, norb)).transpose(1, 0, 3, 2)
         return uout
@@ -247,7 +267,11 @@ def umat2dd(dcore_U):
                 Uout[s1, a1, s2, a2] = Uprime_four[s1, a1, s2, a2] - J_four[s1, a1, s2, a2]
                 # Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
 
-    Uout = Uout.reshape((2*n_orb, 2*n_orb))
+    Uout = Uout.reshape((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb))
+    # Uout = Uout.reshape((2*n_orb, 2*n_orb))
+    return Uout
+
+
 
 # TODO: clean up
 def dcore2alpscore(dcore_U):

@@ -90,20 +90,62 @@ def assign_from_numpy_array(g, data, names):
 
 
 # TODO: clean up
-def write_Umatrix(dd_U, norb):
-#def write_Umatrix(U, Uprime, J, norb):
+def dcore2alpscore(dcore_U):
+
+    dcore_U_len = len(dcore_U)
+    alps_U = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+    alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+    alps_J = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+
+    # m_range = range(size)
+    for i, j in product(range(dcore_U_len), range(dcore_U_len)):
+        alps_U[i, j] = dcore_U[i, j, i, j].real - dcore_U[i, j, j, i].real
+        alps_Uprime[i, j] = dcore_U[i, j, i, j].real
+        alps_J[i, j] = dcore_U[i, j, j, i].real
+    return alps_U, alps_Uprime, alps_J
+
+# TODO: clean up
+def write_Umatrix(U, Uprime, J, norb):
     Uout = numpy.zeros((norb, 2, norb, 2))
 
-    print("dd_U:", dd_U.shape)
-    print("Uout:", Uout.shape)
+    # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
+    # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
+    def func(u):
+        uout = u.reshape((2, norb, 2, norb)).transpose(1, 0, 3, 2)
+        return uout
 
-    Uout = dd_U.transpose(1, 0, 3, 2)
+    U_four = func(U)
+    Uprime_four = func(Uprime)
+    J_four = func(J)
+
+    for a1, a2 in product(range(norb), repeat=2):
+        for s1, s2 in product(range(2), repeat=2):  # spin-1/2
+            if a1 == a2:
+                Uout[a1, s1, a2, s2] = U_four[a1, s1, a2, s2]
+            else:
+                Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
+
     Uout = Uout.reshape((2*norb, 2*norb))
     with open('./Umatrix', 'w') as f:
         for i in range(2*norb):
             for j in range(2*norb):
                 print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
             print("", file=f)
+# TODO: clean up
+##def write_Umatrix(dd_U, norb):
+#def write_Umatrix(U, Uprime, J, norb):
+##    Uout = numpy.zeros((norb, 2, norb, 2))
+
+##    print("dd_U:", dd_U.shape)
+##    print("Uout:", Uout.shape)
+
+##    Uout = dd_U.transpose(1, 0, 3, 2)
+##    Uout = Uout.reshape((2*norb, 2*norb))
+##    with open('./Umatrix', 'w') as f:
+##        for i in range(2*norb):
+##            for j in range(2*norb):
+##                print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
+##            print("", file=f)
 
 
 class ALPSCTHYBSEGSolver(SolverBase):
@@ -137,7 +179,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # TODO: density_density
         umat_check = umat2dd(self.u_mat)
-        assert numpy.allclose(umat_check, self.u_mat)
+        assert numpy.allclose(umat_check, self.u_mat), "Please set density_density = True when you run ALPS/cthyb-seg as an impurity solver!"
 
 
         # (1) Set configuration for the impurity solver
@@ -214,9 +256,11 @@ class ALPSCTHYBSEGSolver(SolverBase):
                     print(' {:.15e}'.format(Delta_tau_data[itau, f1, f1].real), file=f, end="")
                 print("", file=f)
 
-        # TODO: call from tools.py
-        print("umat_check:", umat_check.shape)
-        write_Umatrix(umat_check, self.n_orb)  # TODO:correct?
+        # TODO: clean
+        U, Uprime, J = dcore2alpscore(self.u_mat)
+        write_Umatrix(U, Uprime, J, self.n_orb)
+        ## print("umat_check:", umat_check.shape)
+        ## write_Umatrix(umat_check, self.n_orb)  # TODO:correct?
 
         with open('./MUvector', 'w') as f:
             for orb in range(self.n_orb):
