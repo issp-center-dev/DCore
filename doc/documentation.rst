@@ -43,15 +43,6 @@ Reference manual
    reference/output
    reference/impuritysolvers
 
-Reference of python module (for developers)
--------------------------------------------
-
-.. toctree::
-   :maxdepth: 2
-
-   reference/DMFTCoreSolver
-   reference/TypedParser
-   
 FAQs
 ----
 

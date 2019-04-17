@@ -1,1 +1,1 @@
-triqs_add_python_test(tools)
+add_python_test(tools)

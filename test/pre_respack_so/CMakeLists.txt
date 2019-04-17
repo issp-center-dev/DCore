@@ -4,4 +4,4 @@ FILE(COPY test_ur.dat DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(COPY test_ref.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(COPY dmft.ini DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-triqs_add_python_test(pre_respack_so)
+add_python_test(pre_respack_so)

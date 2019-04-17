@@ -1,3 +1,6 @@
+find_package(Sphinx REQUIRED)
+message(STATUS "Found sphinx at ${SPHINX_EXECUTABLE}")
+
 # generate the conf.py
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
 
@@ -14,16 +17,17 @@ add_custom_target(make_doc_local_copy ALL DEPENDS make_option_tables)
 
 # create documentation target
 set(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/index.html)
-add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${doc_sources} py_copy
-    COMMAND ${CMAKE_BINARY_DIR}/build_pytriqs ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -b html ${CMAKE_BINARY_DIR}/doc_source html)
+add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${doc_sources} 
+    COMMAND ${SPHINX_EXECUTABLE} ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -b html ${CMAKE_BINARY_DIR}/doc_source html)
 
-option(DOC_SPELLING "Activate spellcheck for documentations" OFF)
-if (DOC_SPELLING)
-    set(sphinx_spelling_out ${CMAKE_CURRENT_BINARY_DIR}/spelling/output.txt)
-    add_custom_command(OUTPUT ${sphinx_spelling_out} DEPENDS ${doc_sources} py_copy spelling_wordlist.txt
-                   COMMAND ${CMAKE_BINARY_DIR}/build_pytriqs ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -b spelling ${CMAKE_CURRENT_SOURCE_DIR} spelling)
-endif ()
-add_custom_target(doc_sphinx ALL DEPENDS make_doc_local_copy ${sphinx_top} ${sphinx_spelling_out})
+#option(DOC_SPELLING "Activate spellcheck for documentations" OFF)
+#if (DOC_SPELLING)
+    #set(sphinx_spelling_out ${CMAKE_CURRENT_BINARY_DIR}/spelling/output.txt)
+    #add_custom_command(OUTPUT ${sphinx_spelling_out} DEPENDS ${doc_sources} spelling_wordlist.txt
+                   #COMMAND ${CMAKE_BINARY_DIR}/build_pytriqs ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -b spelling ${CMAKE_CURRENT_SOURCE_DIR} spelling)
+#endif ()
+#add_custom_target(doc_sphinx ALL DEPENDS make_doc_local_copy ${sphinx_top} ${sphinx_spelling_out})
+add_custom_target(doc_sphinx ALL DEPENDS make_doc_local_copy ${sphinx_top})
 
 # install
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/dcore
