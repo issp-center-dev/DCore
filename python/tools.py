@@ -204,3 +204,98 @@ def extract_H0(G0_iw, hermitianize=True):
 
     return data
 
+# TODO: clean comments
+def umat2dd(dcore_U):
+
+    n_orb = dcore_U.shape[0]/2 # spin-1/2
+    # n_orb = dcore_U.shape[0]
+    print("n_orb:",n_orb)
+    # extract density-density part
+    dcore_U_len = len(dcore_U)
+    alps_U = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+    alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+    alps_J = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+
+    # m_range = range(size)
+    print("dcore_U_len:",dcore_U_len)
+    for i, j in product(range(dcore_U_len), range(dcore_U_len)):
+        alps_U[i, j] = dcore_U[i, j, i, j].real - dcore_U[i, j, j, i].real
+        alps_Uprime[i, j] = dcore_U[i, j, i, j].real
+        alps_J[i, j] = dcore_U[i, j, j, i].real
+    #return alps_U, alps_Uprime, alps_J
+    #def write_Umatrix(U, Uprime, J, norb):
+
+    #Uout = numpy.zeros((n_orb, 2, n_orb, 2))
+    Uout = numpy.zeros((2, n_orb, 2, n_orb))
+
+    # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
+    # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
+    def func(u):
+        print("shape:",u.shape)
+        uout = u.reshape((2, n_orb, 2, n_orb))
+        #uout = u.reshape((2, norb, 2, norb)).transpose(1, 0, 3, 2)
+        return uout
+
+    print("Uout:", Uout.shape, "alpsU:", alps_U.shape)
+    U_four = func(alps_U)
+    Uprime_four = func(alps_Uprime)
+    J_four = func(alps_J)
+
+    for a1, a2 in product(range(n_orb), repeat=2):
+        for s1, s2 in product(range(2), repeat=2):  # spin-1/2
+            if a1 == a2:
+                Uout[s1, a1, s2, a2] = U_four[s1, a1, s2, a2]
+                #Uout[a1, s1, a2, s2] = U_four[a1, s1, a2, s2]
+            else:
+                Uout[s1, a1, s2, a2] = Uprime_four[s1, a1, s2, a2] - J_four[s1, a1, s2, a2]
+                #Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
+
+    Uout = Uout.reshape((2*n_orb, 2*n_orb))
+    # with open('./Umatrix', 'w') as f:
+    #    for i in range(2*norb):
+    #        for j in range(2*norb):
+    #            print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
+    #        print("", file=f)
+
+# TODO: clean up
+def dcore2alpscore(dcore_U):
+
+    dcore_U_len = len(dcore_U)
+    alps_U = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+    alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+    alps_J = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+
+    # m_range = range(size)
+    for i, j in product(range(dcore_U_len), range(dcore_U_len)):
+        alps_U[i, j] = dcore_U[i, j, i, j].real - dcore_U[i, j, j, i].real
+        alps_Uprime[i, j] = dcore_U[i, j, i, j].real
+        alps_J[i, j] = dcore_U[i, j, j, i].real
+    return alps_U, alps_Uprime, alps_J
+
+# TODO: clean up
+def write_Umatrix(U, Uprime, J, norb):
+    Uout = numpy.zeros((norb, 2, norb, 2))
+
+    # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
+    # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
+    def func(u):
+        uout = u.reshape((2, norb, 2, norb)).transpose(1, 0, 3, 2)
+        return uout
+
+    U_four = func(U)
+    Uprime_four = func(Uprime)
+    J_four = func(J)
+
+    for a1, a2 in product(range(norb), repeat=2):
+        for s1, s2 in product(range(2), repeat=2):  # spin-1/2
+            if a1 == a2:
+                Uout[a1, s1, a2, s2] = U_four[a1, s1, a2, s2]
+            else:
+                Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
+
+    Uout = Uout.reshape((2*norb, 2*norb))
+    with open('./Umatrix', 'w') as f:
+        for i in range(2*norb):
+            for j in range(2*norb):
+                print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
+            print("", file=f)

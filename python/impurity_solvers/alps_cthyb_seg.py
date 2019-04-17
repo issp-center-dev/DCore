@@ -23,7 +23,7 @@ from itertools import product
 from pytriqs.gf.local import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0,umat2dd
 from .base import SolverBase
 
 
@@ -88,42 +88,46 @@ def assign_from_numpy_array(g, data, names):
             #negative frequency
             g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
 
+# TODO: clean up
+#def dcore2alpscore(dcore_U):
 
-def dcore2alpscore(dcore_U):
-
-    dcore_U_len = len(dcore_U)
-    alps_U = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
-    alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
-    alps_J = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+#    dcore_U_len = len(dcore_U)
+#    alps_U = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+#    alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+#    alps_J = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
 
     # m_range = range(size)
-    for i, j in product(range(dcore_U_len), range(dcore_U_len)):
-        alps_U[i, j] = dcore_U[i, j, i, j].real - dcore_U[i, j, j, i].real
-        alps_Uprime[i, j] = dcore_U[i, j, i, j].real
-        alps_J[i, j] = dcore_U[i, j, j, i].real
-    return alps_U, alps_Uprime, alps_J
+#    for i, j in product(range(dcore_U_len), range(dcore_U_len)):
+#        alps_U[i, j] = dcore_U[i, j, i, j].real - dcore_U[i, j, j, i].real
+#        alps_Uprime[i, j] = dcore_U[i, j, i, j].real
+#        alps_J[i, j] = dcore_U[i, j, j, i].real
+#    return alps_U, alps_Uprime, alps_J
 
-
-def write_Umatrix(U, Uprime, J, norb):
+# TODO: clean up
+def write_Umatrix(dd_U, norb):
+#def write_Umatrix(U, Uprime, J, norb):
     Uout = numpy.zeros((norb, 2, norb, 2))
 
     # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
     # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
-    def func(u):
-        uout = u.reshape((2, norb, 2, norb)).transpose(1, 0, 3, 2)
-        return uout
+#    def func(u):
+#        uout = u.reshape((2, norb, 2, norb)).transpose(1, 0, 3, 2)
+#        return uout
 
-    U_four = func(U)
-    Uprime_four = func(Uprime)
-    J_four = func(J)
+#    U_four = func(U)
+#    Uprime_four = func(Uprime)
+#    J_four = func(J)
 
-    for a1, a2 in product(range(norb), repeat=2):
-        for s1, s2 in product(range(2), repeat=2):  # spin-1/2
-            if a1 == a2:
-                Uout[a1, s1, a2, s2] = U_four[a1, s1, a2, s2]
-            else:
-                Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
+#    for a1, a2 in product(range(norb), repeat=2):
+#        for s1, s2 in product(range(2), repeat=2):  # spin-1/2
+#            if a1 == a2:
+#                Uout[a1, s1, a2, s2] = U_four[a1, s1, a2, s2]
+#            else:
+#                Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
+    print("dd_U:",dd_U.shape)
+    print("Uout:",Uout.shape)
 
+    Uout = dd_U.transpose(1, 0, 3, 2)
     Uout = Uout.reshape((2*norb, 2*norb))
     with open('./Umatrix', 'w') as f:
         for i in range(2*norb):
@@ -169,6 +173,9 @@ class ALPSCTHYBSEGSolver(SolverBase):
         #if param_kw['density_density']==False:
         #if 'max_time' in params_kw:
         #    raise RuntimeError("Parameter max_time has been replaced by timelimit!")
+        ##umat_check = umat2dd(self.u_mat)
+        ##assert numpy.allclose(umat_check, self.u_mat)
+
 
         # (1) Set configuration for the impurity solver
         # input:
@@ -244,9 +251,11 @@ class ALPSCTHYBSEGSolver(SolverBase):
                     print(' {:.15e}'.format(Delta_tau_data[itau, f1, f1].real), file=f, end="")
                 print("", file=f)
 
-        U, Uprime, J = dcore2alpscore(self.u_mat)
-        write_Umatrix(U, Uprime, J, self.n_orb)
-        
+        # TODO: call from tools.py?
+        #U, Uprime, J = dcore2alpscore(self.u_mat)
+        write_Umatrix(self.u_mat, self.n_orb) #TODO: correct?
+        # write_Umatrix(U, Uprime, J, self.n_orb)
+
         with open('./MUvector', 'w') as f:
             for orb in range(self.n_orb):
                 for spin in range(2):

@@ -225,13 +225,35 @@ def __generate_umat(p):
     #
     for icor in range(ncor):
         u_mat[icor][:, :, :, :].imag = 0.0
-    #
+    # TODO delete?
+    # TODO: Umat new func if density-density= True
+    # print("u_mat in pre:",u_mat[icor].shape)
+    #import pdb; pdb.set_trace()
+    # if p["model"]["density_density"]:
+    #     print("inside function")
+    #    for icor in range(ncor):
+    #        umat = umat2dd(u_mat[icor][:])
+    #        #umat=newumat(umat2)
+    #        u_mat[icor][:] = umat
+    #    print("u_mat in pre after:",u_mat[icor].shape)
+    # delete
     # Spin & Orb
     #
     u_mat2 = [numpy.zeros((norb[icor]*2, norb[icor]*2, norb[icor]*2, norb[icor]*2), numpy.complex_)
               for icor in range(ncor)]
     for icor in range(ncor):
         u_mat2[icor] = to_spin_full_U_matrix(u_mat[icor])
+
+    # TODO: Umat new func if density-density= True
+    print("u_mat2 in pre:",u_mat2[icor].shape)
+    if p["model"]["density_density"]:
+        print("inside function")
+        for icor in range(ncor):
+            umat = umat2dd(u_mat2[icor][:])
+            #umat=newumat(umat2)
+            u_mat2[icor][:] = umat
+        print("u_mat2 in pre after:",u_mat2[icor].shape)
+
     f["DCore"]["Umat"] = u_mat2
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
     del f
