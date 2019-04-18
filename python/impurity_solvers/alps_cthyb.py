@@ -23,7 +23,7 @@ import os
 import shutil
 from itertools import product
 
-from pytriqs.gf import *
+from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 

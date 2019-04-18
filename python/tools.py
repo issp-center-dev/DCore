@@ -27,7 +27,7 @@ from itertools import *
 from pytriqs.utility.h5diff import compare, failures
 from pytriqs.utility.h5diff import h5diff as h5diff_org
 from pytriqs.archive.hdf_archive import HDFArchive
-from pytriqs.gf import *
+from .pytriqs_gf_compat import *
 from pytriqs.operators import *
 import scipy
 

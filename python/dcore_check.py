@@ -20,7 +20,7 @@ from __future__ import print_function
 
 from itertools import *
 
-from pytriqs.gf import *
+from .pytriqs_gf_compat import *
 
 from dmft_core import DMFTCoreSolver
 from matplotlib.gridspec import GridSpec
