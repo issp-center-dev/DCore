@@ -76,20 +76,19 @@ def assign_from_numpy_array(g, data, names):
     print(data.shape)
     print("norb:", norb)
 
-    #check number of Matsubara frequency
+    # check number of Matsubara frequency
     assert data.shape[2]*2 == g[names[0]].data.shape[0]
     print(g[names[0]].data.shape)
 
     for spin in range(2):
         for orb in range(norb):
             print(orb, spin, names[spin])
-            #positive frequency
+            # positive frequency
             g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
-            #negative frequency
+            # negative frequency
             g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
 
 
-# TODO: clean up
 def dcore2alpscore(dcore_U):
 
     dcore_U_len = len(dcore_U)
@@ -104,7 +103,6 @@ def dcore2alpscore(dcore_U):
         alps_J[i, j] = dcore_U[i, j, j, i].real
     return alps_U, alps_Uprime, alps_J
 
-# TODO: clean up
 def write_Umatrix(U, Uprime, J, norb):
     Uout = numpy.zeros((norb, 2, norb, 2))
 
@@ -131,21 +129,6 @@ def write_Umatrix(U, Uprime, J, norb):
             for j in range(2*norb):
                 print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
             print("", file=f)
-# TODO: clean up
-##def write_Umatrix(dd_U, norb):
-#def write_Umatrix(U, Uprime, J, norb):
-##    Uout = numpy.zeros((norb, 2, norb, 2))
-
-##    print("dd_U:", dd_U.shape)
-##    print("Uout:", Uout.shape)
-
-##    Uout = dd_U.transpose(1, 0, 3, 2)
-##    Uout = Uout.reshape((2*norb, 2*norb))
-##    with open('./Umatrix', 'w') as f:
-##        for i in range(2*norb):
-##            for j in range(2*norb):
-##                print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
-##            print("", file=f)
 
 
 class ALPSCTHYBSEGSolver(SolverBase):
@@ -177,10 +160,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
                 return internal_params[key]
         print (params_kw)
 
-        # TODO: density_density
         umat_check = umat2dd(self.u_mat)
-        assert numpy.allclose(umat_check, self.u_mat), "Please set density_density = True when you run ALPS/cthyb-seg as an impurity solver!"
-
+        assert numpy.allclose(umat_check, self.u_mat), "Please set density_density = True when you run ALPS/cthyb-seg!"
 
         # (1) Set configuration for the impurity solver
         # input:
@@ -256,11 +237,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
                     print(' {:.15e}'.format(Delta_tau_data[itau, f1, f1].real), file=f, end="")
                 print("", file=f)
 
-        # TODO: clean
         U, Uprime, J = dcore2alpscore(self.u_mat)
         write_Umatrix(U, Uprime, J, self.n_orb)
-        ## print("umat_check:", umat_check.shape)
-        ## write_Umatrix(umat_check, self.n_orb)  # TODO:correct?
 
         with open('./MUvector', 'w') as f:
             for orb in range(self.n_orb):

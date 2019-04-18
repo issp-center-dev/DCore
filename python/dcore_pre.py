@@ -232,9 +232,7 @@ def __generate_umat(p):
     for icor in range(ncor):
         u_mat2[icor] = to_spin_full_U_matrix(u_mat[icor])
 
-    # TODO: Umat new func if density-density= True
     if p["model"]["density_density"]:
-        print("inside function")
         for icor in range(ncor):
             umat = umat2dd(u_mat2[icor][:])
             u_mat2[icor][:] = umat
