@@ -12,9 +12,9 @@ ${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages/dcore FILES_MATCHING PATTERN
 # Copy all Python files for ctest into a build directory
 file(GLOB_RECURSE all_py_files RELATIVE ${CMAKE_SOURCE_DIR}/python *.py)
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/py_source.tar
-    COMMAND ${CMAKE_COMMAND} -E tar cvf ${CMAKE_BINARY_DIR}/py_source.tar ${all_py_files} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/py_source.tar ${all_py_files} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/python/dcore
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR}/python/dcore tar xvf ${CMAKE_BINARY_DIR}/py_source.tar
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR}/python/dcore tar xf ${CMAKE_BINARY_DIR}/py_source.tar
     COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/py_source.tar
     DEPENDS ${all_py_files}
 )
