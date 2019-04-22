@@ -358,14 +358,15 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
 
     omega_imag = data[:, 0]
     nomega = len(omega_imag)
-    if not numpy.allclose(omega_imag, numpy.array([x for x in Sigma_iw_sh[0].mesh]).imag):
+    if not numpy.allclose(omega_imag, numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag):
         raise RuntimeError("Mesh is not compatible!")
 
     for iom in range(nomega):
         icol = 1
         for ish in range(n_sh):
             for sp in spin_names:
-                Sigma_iw_sh[ish][sp].tail.zero()
+                # FIXME: How to set zero to tail in TRIQS 2.x?
+                #Sigma_iw_sh[ish][sp].tail.zero()
                 block_dim = Sigma_iw_sh[ish][sp].data.shape[1]
                 for iorb, jorb in product(range(block_dim), repeat=2):
                     re = data[iom, icol]
