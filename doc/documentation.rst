@@ -16,6 +16,9 @@ Structure of :program:`DCore`
 Tutorial
 --------
 
+.. todo:: UPDATE ALL TUTORIALS!
+
+
 .. toctree::
    :maxdepth: 2
 
@@ -38,6 +41,7 @@ Reference manual
    reference/programs
    reference/input
    reference/output
+   reference/impuritysolvers
 
 Reference of python module (for developers)
 -------------------------------------------

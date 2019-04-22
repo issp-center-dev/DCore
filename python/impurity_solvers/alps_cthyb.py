@@ -31,7 +31,13 @@ from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
 
+def remove_positive_eigenvalues(Delta_tau):
+    ntau = Delta_tau.shape[0]
 
+    for itau in range(ntau):
+        evals, evecs = numpy.linalg.eigh(Delta_tau[itau, :, :])
+        evals[evals>0] = 0.0
+        Delta_tau[itau, :, :] = evecs.dot(numpy.diag(evals).dot(evecs.transpose().conjugate()))
 
 def to_numpy_array(g, block_names):
     """
@@ -147,13 +153,14 @@ class ALPSCTHYBSolver(SolverBase):
         H0 = (H0[:, index])[index, :]
 
         # Compute the hybridization function from G0:
-        #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
-        # H0 is extracted from the tail of the Green's function.
+        #     Delta(iwn_n) = iw_n + mu - H0 - G0^{-1}(iw_n)
+        # H0 -mu is extracted from the tail of G0. (correct?)
         self._Delta_iw = delta(self._G0_iw)
         Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         for name in self.block_names:
             Delta_tau[name] << InverseFourier(self._Delta_iw[name])
         Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
+        remove_positive_eigenvalues(Delta_tau_data)
 
         # non-zero elements of U matrix
         # Note: notation differences between ALPS/CT-HYB and TRIQS!
@@ -172,13 +179,15 @@ class ALPSCTHYBSolver(SolverBase):
         if rot is None:
             rot_mat_alps = numpy.identity(2*self.n_orb, dtype=complex)
         else:
+            assert isinstance(rot, dict)
             if self.use_spin_orbit:
-                rot_single_block = rot
+                assert len(rot) == 1
+                rot_single_block = rot['ud']
             else:
                 rot_single_block = block_diag(*[rot[name] for name in self.block_names])
             rot_mat_alps = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
-            for i, j in product(range(2*self.n_orb), repeat=2):
-                rot_mat_alps[conv(i), conv(j)] = rot_single_block[i,j]
+            for i, iv in product(range(2*self.n_orb), repeat=2):
+                rot_mat_alps[conv(i), iv] = rot_single_block[i, iv]
 
         # Set up input parameters for ALPS/CT-HYB
         p_run = {
@@ -270,6 +279,7 @@ class ALPSCTHYBSolver(SolverBase):
 
 
         # Solve Dyson's eq to obtain Sigma_iw
+        # Sigma_iw = G0_iw^{-1} - G_imp_iw^{-1}
         self._Sigma_iw = dyson(G0_iw=self._G0_iw, G_iw=self._Gimp_iw)
 
 

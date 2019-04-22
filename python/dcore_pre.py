@@ -23,15 +23,17 @@ import numpy
 import re
 import ast
 from pytriqs.archive.hdf_archive import HDFArchive
-from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
-from pytriqs.applications.dft.converters.hk_converter import HkConverter
 from program_options import create_parser
-import pytriqs.utility.mpi as mpi
 from pytriqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 
-from .tools import *
+from converters.wannier90_converter import Wannier90Converter
 
-from .lattice_model import create_lattice_model
+from .tools import *
+from .sumkdft import SumkDFTCompat
+
+from lattice_models import create_lattice_model
+from lattice_models.tools import print_local_fields
+from .program_options import parse_parameters
 
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
@@ -46,10 +48,10 @@ def __generate_umat(p):
     # Add U-matrix block (Tentative)
     # ####  The format of this block is not fixed  ####
     #
-    ncor = p["model"]['ncor']
-    kanamori = numpy.zeros((ncor, 3), numpy.float_)
-    slater_f = numpy.zeros((ncor, 4), numpy.float_)
-    slater_l = numpy.zeros(ncor, numpy.int_)
+    nsh = p['model']['n_inequiv_shells']
+    kanamori = numpy.zeros((nsh, 3), numpy.float_)
+    slater_f = numpy.zeros((nsh, 4), numpy.float_)
+    slater_l = numpy.zeros(nsh, numpy.int_)
     #
     # Read interaction from input file
     #
@@ -65,7 +67,7 @@ def __generate_umat(p):
             sys.exit(-1)
 
         kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
-        if len(kanamori_list) != ncor:
+        if len(kanamori_list) != nsh:
             print("\nError! The length of \"kanamori\" is wrong.")
             sys.exit(-1)
 
@@ -89,7 +91,7 @@ def __generate_umat(p):
 
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_uj"])
-        if len(f_list) != ncor:
+        if len(f_list) != nsh:
             print("\nError! The length of \"slater_uj\" is wrong.")
             sys.exit(-1)
 
@@ -118,9 +120,9 @@ def __generate_umat(p):
 
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_f"])
-        slater_f = numpy.zeros((ncor, 4), numpy.float_)
-        slater_l = numpy.zeros(ncor, numpy.int_)
-        if len(f_list) != ncor:
+        slater_f = numpy.zeros((nsh, 4), numpy.float_)
+        slater_l = numpy.zeros(nsh, numpy.int_)
+        if len(f_list) != nsh:
             print("\nError! The length of \"slater_f\" is wrong.")
             sys.exit(-1)
 
@@ -145,51 +147,48 @@ def __generate_umat(p):
     else:
         print("Error ! Invalid interaction : ", p["model"]["interaction"])
         sys.exit(-1)
+
     #
     # Generate and Write U-matrix
     #
     print("\n  @ Write the information of interactions")
     f = HDFArchive(p["model"]["seedname"]+'.h5', 'a')
 
-    corr_shells = f["dft_input"]["corr_shells"]
-    norb = [corr_shells[icor]["dim"] for icor in range(ncor)]
-    if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
-        for icor in range(ncor):
-            norb[icor] /= 2
+    norb = p['model']['norb_inequiv_sh']
 
     if not ("DCore" in f):
         f.create_group("DCore")
     #
-    u_mat = [numpy.zeros((norb[icor], norb[icor], norb[icor], norb[icor]), numpy.complex_) for icor in range(ncor)]
+    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
     if p["model"]["interaction"] == 'kanamori':
-        for icor in range(ncor):
-            for iorb in range(norb[icor]):
-                for jorb in range(norb[icor]):
-                    u_mat[icor][iorb, jorb, iorb, jorb] = kanamori[icor, 1]
-                    u_mat[icor][iorb, jorb, jorb, iorb] = kanamori[icor, 2]
-                    u_mat[icor][iorb, iorb, jorb, jorb] = kanamori[icor, 2]
-            for iorb in range(norb[icor]):
-                u_mat[icor][iorb, iorb, iorb, iorb] = kanamori[icor, 0]
+        for ish in range(nsh):
+            for iorb in range(norb[ish]):
+                for jorb in range(norb[ish]):
+                    u_mat[ish][iorb, jorb, iorb, jorb] = kanamori[ish, 1]
+                    u_mat[ish][iorb, jorb, jorb, iorb] = kanamori[ish, 2]
+                    u_mat[ish][iorb, iorb, jorb, jorb] = kanamori[ish, 2]
+            for iorb in range(norb[ish]):
+                u_mat[ish][iorb, iorb, iorb, iorb] = kanamori[ish, 0]
     elif p["model"]["interaction"] == 'slater_uj' or p["model"]["interaction"] == 'slater_f':
-        for icor in range(ncor):
-            if slater_l[icor] == 0:
+        for ish in range(nsh):
+            if slater_l[ish] == 0:
                 umat_full = numpy.zeros((1, 1, 1, 1), numpy.complex_)
-                umat_full[0, 0, 0, 0] = slater_f[icor, 0]
+                umat_full[0, 0, 0, 0] = slater_f[ish, 0]
             else:
-                umat_full = U_matrix(l=slater_l[icor], radial_integrals=slater_f[icor, :], basis='cubic')
+                umat_full = U_matrix(l=slater_l[ish], radial_integrals=slater_f[ish, :], basis='cubic')
             #
             # For t2g or eg, compute submatrix
             #
-            if slater_l[icor]*2+1 != norb[icor]:
-                if slater_l[icor] == 2 and norb[icor] == 2:
-                    u_mat[icor] = eg_submatrix(umat_full)
-                elif slater_l[icor] == 2 and norb[icor] == 3:
-                    u_mat[icor] = t2g_submatrix(umat_full)
+            if slater_l[ish]*2+1 != norb[ish]:
+                if slater_l[ish] == 2 and norb[ish] == 2:
+                    u_mat[ish] = eg_submatrix(umat_full)
+                elif slater_l[ish] == 2 and norb[ish] == 3:
+                    u_mat[ish] = t2g_submatrix(umat_full)
                 else:
-                    print("Error ! Unsupported pair of l and norb : ", slater_l[icor], norb[icor])
+                    print("Error ! Unsupported pair of l and norb : ", slater_l[ish], norb[ish])
                     sys.exit(-1)
             else:
-                u_mat[icor] = umat_full
+                u_mat[ish] = umat_full
     elif p["model"]["interaction"] == 'respack':
         w90u = Wannier90Converter(seedname=p["model"]["seedname"])
         nr_u, rvec_u, rdeg_u, nwan_u, hamr_u = w90u.read_wannier90hr(p["model"]["seedname"] + "_ur.dat")
@@ -213,56 +212,28 @@ def __generate_umat(p):
         # Map into 4-index U at each correlated shell
         #
         start = 0
-        for icor in range(ncor):
-            for iorb in range(norb[icor]):
-                for jorb in range(norb[icor]):
-                    u_mat[icor][iorb, jorb, iorb, jorb] = umat2[start+iorb, start+jorb]
-                    u_mat[icor][iorb, jorb, jorb, iorb] = jmat2[start+iorb, start+jorb]
-                    u_mat[icor][iorb, iorb, jorb, jorb] = jmat2[start+iorb, start+jorb]
-            for iorb in range(norb[icor]):
-                u_mat[icor][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
-            start += norb[icor]
+        for ish in range(nsh):
+            for iorb in range(norb[ish]):
+                for jorb in range(norb[ish]):
+                    u_mat[ish][iorb, jorb, iorb, jorb] = umat2[start+iorb, start+jorb]
+                    u_mat[ish][iorb, jorb, jorb, iorb] = jmat2[start+iorb, start+jorb]
+                    u_mat[ish][iorb, iorb, jorb, jorb] = jmat2[start+iorb, start+jorb]
+            for iorb in range(norb[ish]):
+                u_mat[ish][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
+            start += norb[ish]
     #
-    for icor in range(ncor):
-        u_mat[icor][:, :, :, :].imag = 0.0
+    for ish in range(nsh):
+        u_mat[ish][:, :, :, :].imag = 0.0
     #
     # Spin & Orb
     #
-    u_mat2 = [numpy.zeros((norb[icor]*2, norb[icor]*2, norb[icor]*2, norb[icor]*2), numpy.complex_)
-              for icor in range(ncor)]
-    for icor in range(ncor):
-        u_mat2[icor] = to_spin_full_U_matrix(u_mat[icor])
+    u_mat2 = [numpy.zeros((norb[ish]*2, norb[ish]*2, norb[ish]*2, norb[ish]*2), numpy.complex_)
+              for ish in range(nsh)]
+    for ish in range(nsh):
+        u_mat2[ish] = to_spin_full_U_matrix(u_mat[ish])
     f["DCore"]["Umat"] = u_mat2
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
     del f
-
-
-def read_potential(filename, mat):
-    if not os.path.exists(filename):
-        print("Error: file '{}' not found".format(filename))
-        exit(1)
-    print("Reading '{}'...".format(filename))
-
-    try:
-        with open(filename, 'r') as f:
-            for line in f:
-                # skip comment line
-                if line[0] == '#':
-                    continue
-
-                array = line.split()
-                assert len(array) == 5
-                sp = int(array[0])
-                o1 = int(array[1])
-                o2 = int(array[2])
-                val = complex(float(array[3]), float(array[4]))
-                if mat[sp, o1, o2] != 0:
-                    raise Exception("duplicate components")
-                mat[sp, o1, o2] = val
-    except Exception as e:
-        print("Error:", e)
-        print(line, end="")
-        exit(1)
 
 
 def __generate_local_potential(p):
@@ -273,20 +244,24 @@ def __generate_local_potential(p):
     local_potential_factor = p["model"]["local_potential_factor"]
 
     ncor = p["model"]['ncor']
+    n_inequiv_shells = p["model"]['n_inequiv_shells']
     spin_orbit = p["model"]["spin_orbit"]
 
     # read parameters from DFT data
-    with HDFArchive(p["model"]["seedname"] + '.h5', 'r') as f:
-        corr_shells = f["dft_input"]["corr_shells"]
-    dim_crsh = [corr_shell["dim"] for corr_shell in corr_shells]
+    skc = SumkDFTCompat(p["model"]["seedname"] + '.h5')
+
+    assert skc.n_inequiv_shells == n_inequiv_shells
+
+    corr_shells = skc.corr_shells
+    dim_sh = [corr_shells[skc.inequiv_to_corr[ish]]['dim'] for ish in range(n_inequiv_shells)]
 
     # set factor
     try:
         fac = ast.literal_eval(local_potential_factor)
         if isinstance(fac, float):
-            fac = [fac] * ncor
+            fac = [fac] * n_inequiv_shells
         elif isinstance(fac, list) or isinstance(fac, tuple):
-            assert len(fac) == ncor
+            assert len(fac) == n_inequiv_shells
         else:
             raise Exception("local_potential_factor should be float or list of length %d" % ncor)
     except Exception as e:
@@ -301,16 +276,16 @@ def __generate_local_potential(p):
     # pot.shape = (2, orb1, orb2)     w/  spin-orbit
     #             (1, 2*orb1, 2*orb2) w/o spin-orbit
     if not spin_orbit:
-        pot = [numpy.zeros((2, dim_crsh[icor], dim_crsh[icor]), numpy.complex_) for icor in range(ncor)]
+        pot = [numpy.zeros((2, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
     else:
-        pot = [numpy.zeros((1, dim_crsh[icor], dim_crsh[icor]), numpy.complex_) for icor in range(ncor)]
+        pot = [numpy.zeros((1, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
 
     # read potential matrix
     if local_potential_matrix != 'None':
         try:
             files = ast.literal_eval(local_potential_matrix)
             assert isinstance(files, dict)
-            assert all([ish < ncor for ish in files.keys()])
+            assert all([ish < n_inequiv_shells for ish in files.keys()])
         except Exception as e:
             print("Error: local_potential_matrix =", local_potential_matrix)
             print(e)
@@ -321,7 +296,7 @@ def __generate_local_potential(p):
             pot[ish] *= fac[ish]
 
     # print potential
-    print("\n--- potential matrix")
+    print("\n--- potential matrix for inequivalent shells")
     for ish, pot_ish in enumerate(pot):
         print("ish =", ish)
         for sp in range(pot_ish.shape[0]):
@@ -365,6 +340,7 @@ def dcore_pre(filename):
     #
     pars.read(filename)
     p = pars.as_dict()
+    parse_parameters(p)
     ncor = p["model"]['ncor']
     #
     # Summary of input parameters
@@ -377,32 +353,20 @@ def dcore_pre(filename):
     for k, v in p["system"].items():
         print("      {0} = {1}".format(k, v))
 
+    if os.path.exists(p['model']['seedname'] + '.h5'):
+        print("Removing the existing model HDF5 file...")
+        os.remove(p['model']['seedname'] + '.h5')
+
     #
     # One-body term
     #
     print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
-    seedname = p["model"]["seedname"]
     lattice_model = create_lattice_model(p)
     lattice_model.generate_model_file()
 
-    #
     # Interaction
     #
     __generate_umat(p)
-    #
-    # Spin-Orbit case
-    #
-    if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
-        f = HDFArchive(seedname + '.h5', 'a')
-        f["dft_input"]["SP"] = 1
-        f["dft_input"]["SO"] = 1
-
-        corr_shells = f["dft_input"]["corr_shells"]
-        for icor in range(ncor):
-            corr_shells[icor]["SO"] = 1
-        f["dft_input"]["corr_shells"] = corr_shells
-
-        del f
 
     #
     # Local potential
@@ -410,8 +374,16 @@ def dcore_pre(filename):
     __generate_local_potential(p)
 
     #
+    # Check one-body term
+    #
+    print('')
+    print('@@@@@@@@@@@@@@@@@@@ Check Model-HDF5 file @@@@@@@@@@@@@@@@@@@@')
+    print_local_fields(p['model']['seedname'] + '.h5')
+
+    #
     # Finish
     #
+
     print("\n@@@@@@@@@@@@@@@@@@@@@@  Done  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 
@@ -438,5 +410,4 @@ if __name__ == '__main__':
     if os.path.isfile(args.path_input_file) is False:
         print("Input file is not exist.")
         sys.exit(-1)
-    if mpi.is_master_node():
-        dcore_pre(args.path_input_file)
+    dcore_pre(args.path_input_file)

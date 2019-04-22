@@ -246,7 +246,17 @@ class DMFTBSESolver(DMFTCoreSolver):
         params['n_wf_G2'] = self._params['bse']['num_wf']
         params['div'] = lattice_model.nkdiv()
         params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
-        sumkdft.run(self._seedname + '.h5', './work/sumkdft_bse', self._mpirun_command, params)
+        params['use_temp_file'] = self._params['bse']['use_temp_file']
+        if self._params['bse']['X0q_qpoints_saved'] == 'quadrant':
+            params['X0q_qpoints_saved'] = 'quadrant'
+        else:
+            q_points = []
+            with open(self._params['bse']['X0q_qpoints_saved'], 'r') as f:
+                for line in f:
+                    q_str = line.split()[1]
+                    q_points.append(tuple(map(int, q_str.split('.'))))
+            params['X0q_qpoints_saved'] = q_points
+        sumkdft.run(os.path.abspath(self._seedname + '.h5'), './work/sumkdft_bse', self._mpirun_command, params)
 
     def _calc_bse_xloc(self):
         """
@@ -285,7 +295,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         # FIXME:
         #     Saving data should be done for all **correlated_shells** (not for inequiv_shells)
         #     Namely, we need a loop for correlated shells when n_inequiv_shells < n_corr_shells
-        assert self._n_inequiv_shells == self._n_corr_shells
+        #assert self._n_inequiv_shells == self._n_corr_shells
 
         #
         # X_loc
@@ -314,7 +324,9 @@ class DMFTBSESolver(DMFTCoreSolver):
             subtract_disconnected(x_loc, g_imp, self.spin_block_names)
 
             # save X_loc
-            bse.save_xloc(x_loc, icrsh=self._sk.inequiv_to_corr[ish])
+            for icrsh in range(self._n_corr_shells):
+                if ish == self._sk.corr_to_inequiv[icrsh]:
+                    bse.save_xloc(x_loc, icrsh=icrsh)
 
     def calc_bse(self):
         """
