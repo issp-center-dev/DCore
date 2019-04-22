@@ -23,16 +23,22 @@ set(PYTHON_INTERPRETER ${PYTHON_EXECUTABLE})
 
 message(STATUS "Installing DCore into ${CMAKE_INSTALL_PREFIX}...")
 
+# Add pytriqs to PYTHONPATH
+if (NOT TRIQS_PATH)
+    message(FATAL_ERROR "Set TRIQS_PATH to the install directory of TRIQS (e.g. /opt/triqs).")
+endif()
+set(TRIQS_SITE_PACKAGES ${TRIQS_PATH}/lib/python2.7/site-packages)
+set(ENV{PYTHONPATH} ${TRIQS_SITE_PACKAGES}:$ENV{PYTHONPATH})
+
 # Check version of TRIQS
 execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/show_triqs_version.py OUTPUT_VARIABLE TRIQS_VERSION)
-if (TRIQS_VERSION STREQUAL "1.4" OR TRIQS_VERSION MATCHES "^2.1.")
+if (TRIQS_VERSION STREQUAL "NOT_FOUND")
+    message(FATAL_ERROR "TRIQS not found! Set TRIQS_PATH properly.")
+elseif (TRIQS_VERSION STREQUAL "1.4" OR TRIQS_VERSION MATCHES "^2.1.")
     message(STATUS "Found TRIQS Version ${TRIQS_VERSION}")
 else()
     message(WARNING "TRIQS Version ${TRIQS_VERSION} may be imcompatible with DCore.")
 endif()
-
-# Find where the pytriqs is installed
-execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/show_triqs_site_packages.py OUTPUT_VARIABLE TRIQS_SITE_PACKAGES)
 
 set(DCORE_SITE_PACKAGES "${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages")
 set(DCORE_DEP_PYTHONPATH "${DCORE_SITE_PACKAGES}:${TRIQS_SITE_PACKAGES}")

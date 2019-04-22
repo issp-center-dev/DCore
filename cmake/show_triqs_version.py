@@ -1,3 +1,7 @@
 from __future__ import print_function
-from pytriqs import version
-print(version.version, end='')
+try:
+    from pytriqs import version
+except ImportError:
+    print('NOT_FOUND', end='')
+else:
+    print(version.version, end='')
