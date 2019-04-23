@@ -1,1 +1,1 @@
-triqs_add_python_test(alps_cthyb)
+add_python_test(alps_cthyb)

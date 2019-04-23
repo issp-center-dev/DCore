@@ -18,7 +18,7 @@
 from __future__ import print_function
 
 import unittest
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import pytriqs.operators.util as op
 
 from dcore.impurity_solvers.alps_cthyb import *
@@ -65,6 +65,9 @@ class TestMethods(unittest.TestCase):
 
         # Block structure of Green's functions
         gf_struct = op.set_operator_structure(spin_names, orb_names, off_diag=off_diag)
+        # Convert to dict
+        if isinstance(gf_struct, list):
+            gf_struct = {x[0]: x[1] for x in gf_struct}
 
         # Local interaction Hamiltonian
         U_mat = to_spin_full_U_matrix(op.U_matrix(l=l, U_int=U, J_hund=J, basis='spherical'))

@@ -44,12 +44,12 @@ def test_spin_moments_sh():
 
 def test_save_load_Sigma_iw():
     from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt
-    from pytriqs.gf.local import GfImFreq
+    from dcore.pytriqs_gf_compat import GfImFreq
 
     nsh = 2
     norb = 2
     beta = 10.0
-    n_points = 100
+    n_points = 10
 
     for spin_names in [['ud'], ['up', 'down']]:
         gf_struct = {sp : numpy.arange(norb) for sp in spin_names}
@@ -68,10 +68,12 @@ def test_save_load_Sigma_iw():
 
         load_Sigma_iw_sh_txt('Sigma_iw_sh.txt', Sigma_iw_sh_loaded, spin_names)
 
-        mesh_points = lambda mesh: numpy.array([x for x in mesh])
+        mesh_points = lambda mesh: numpy.array([complex(x) for x in mesh])
 
         for ish in range(nsh):
             for sp in spin_names:
+                #print(Sigma_iw_sh[ish][sp].data)
+                #print(Sigma_iw_sh_loaded[ish][sp].data)
                 numpy.allclose(mesh_points(Sigma_iw_sh[ish][sp].mesh), mesh_points(Sigma_iw_sh_loaded[ish][sp].mesh))
                 numpy.allclose(Sigma_iw_sh[ish][sp].data, Sigma_iw_sh_loaded[ish][sp].data)
 
