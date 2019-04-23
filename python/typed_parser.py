@@ -228,7 +228,18 @@ class TypedParser(object):
 
         :return: dict object
         """
-        return copy.deepcopy(self.__results)
+
+        # convert OrderedDict to ordinary dict recursively
+        def convert_ordered_dict_to_dict(obj):
+            if isinstance(obj, OrderedDict):
+                r = {}
+                for key, val in obj.items():
+                    r[key] = convert_ordered_dict_to_dict(val)
+                return r
+            else:
+                return copy.deepcopy(obj)
+
+        return convert_ordered_dict_to_dict(self.__results)
 
     def print_options(self):
         """
