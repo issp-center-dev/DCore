@@ -19,6 +19,7 @@ import os
 import copy
 from enum import Enum
 from warnings import warn
+from collections import OrderedDict
 
 try:
     import configparser
@@ -100,8 +101,8 @@ class TypedParser(object):
         self.__config_parser = configparser.ConfigParser()
         self.__config_parser.optionxform = str
 
-        self.__definitions = {}
-        self.__results = {}
+        self.__definitions = OrderedDict()
+        self.__results = OrderedDict()
 
         self.__read = False
 
@@ -121,10 +122,10 @@ class TypedParser(object):
             raise RuntimeError("Do not add option after an input file has been read!")
 
         if section not in self.__definitions:
-            self.__definitions[section] = {}
+            self.__definitions[section] = OrderedDict()
 
         if section not in self.__results:
-            self.__results[section] = {}
+            self.__results[section] = OrderedDict()
 
         self.__definitions[section][option] = {'dtype' : dtype,
                                                'description' : string,
