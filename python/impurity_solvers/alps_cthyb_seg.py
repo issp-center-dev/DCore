@@ -236,7 +236,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             return
 
         # Invoke subprocess
-        exec_path = _read('exec_path')
+        exec_path = os.path.expandvars(_read('exec_path'))
         if exec_path == '':
             raise RuntimeError("Please set exec_path!")
         if not os.path.exists(exec_path):

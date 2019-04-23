@@ -203,55 +203,70 @@ class DMFTCoreCheck(object):
         """
         plot renormalization factor as a function of iteration number
         """
-        self.__plot_init()
 
         iter = [ itr for itr in range(1, self.n_iter+1) ]
-        label_all = []
         z_all = []
+        label_orb_diag = []
+        z_orb_diag = []
+
+        # plot
+        linestyles = ['-', ':', '--', '-.', '-', ':']
+        markers = ['v', 'x']
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+        def get_ls(idx):
+            return linestyles[idx%len(linestyles)]
+
+        def get_c(idx):
+            return colors[idx%len(colors)]
 
         w0 = self.n_iw
         for ish in range(self.n_sh):
+            self.__plot_init()
+            self.plt.figure(figsize=(8, 10))
+            gs = GridSpec(2, 1)
+
+            ax1 = self.plt.subplot(gs[0])
+            ax2 = self.plt.subplot(gs[1])
+
             norb = self.shell_info[ish]['block_dim']
-            for isp, iorb, jorb in product(self.spin_names, range(norb), range(norb)):
-                sigma0 = numpy.array([ self.solver.Sigma_iw_sh(itr)[ish][isp].data[w0, iorb, jorb].imag
-                                       for itr in range(1, self.n_iter+1) ])
-                z = 1./(1-sigma0/numpy.pi*self.beta)
-                z_all.append(z)
-                label_all.append("shell=%d, spin=%s, %d, %d" %(ish,isp,iorb,jorb))
+            for isp, spn in enumerate(self.spin_names):
+                for iorb in range(norb):
+                    sigma0 = numpy.array([ self.solver.Sigma_iw_sh(itr)[ish][spn].data[w0, iorb, iorb].imag
+                                           for itr in range(1, self.n_iter+1) ])
+                    z = 1./(1-sigma0/numpy.pi*self.beta)
+                    z_orb_diag.append(z)
+                    label_orb_diag.append("shell=%d, spin=%s, %d" %(ish,spn,iorb))
+    
+                    label = "shell=%d, spin=%s, %d" %(ish,spn,iorb)
+                    ax1.plot(iter, z, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+                    diff = abs(numpy.array(z[1:])-numpy.array(z[:-1]))
+                    ax2.plot(iter[1:], diff, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+
+            filename = basename + '-ish{}'.format(ish) + fig_ext
+            ax1.set_xlabel("iterations")
+            ax1.set_ylabel("Renormalization factor")
+            ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+
+            # diff
+            ax2.set_xlabel("iterations")
+            ax2.set_ylabel("diff")
+            ax2.set_yscale("log")
+            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+
+            self.plt.tight_layout()
+            self.plt.savefig(filename)
+            print(" Output " + filename)
 
         # save data
         filename = basename + ".dat"
         with open(filename, "w") as f:
             for i, itr in enumerate(iter):
                 print(itr, file=f, end="")
-                for z in z_all:
+                for z in z_orb_diag:
                     print("", z[i], file=f, end="")
                 print("", file=f)
         print(" Output " + filename)
 
-        # plot
-        filename = basename + fig_ext
-        self.plt.figure(figsize=(8, 10))
-        gs = GridSpec(2, 1)
-
-        self.plt.subplot(gs[0])
-        for z, label in zip(z_all, label_all):
-            self.plt.plot(iter, z, label=label, marker="o")
-        self.plt.xlabel("iterations")
-        self.plt.ylabel("Renormalization factor")
-        self.plt.legend()
-
-        # diff
-        self.plt.subplot(gs[1])
-        for z, label in zip(z_all, label_all):
-            self.plt.plot(iter[1:], abs(numpy.array(z[1:])-numpy.array(z[:-1])), label=label, marker="o")
-        self.plt.xlabel("iterations")
-        self.plt.ylabel("diff")
-        self.plt.yscale("log")
-        self.plt.legend()
-
-        self.plt.savefig(filename)
-        print(" Output " + filename)
 
 
 def dcore_check(ini_file, prefix, fig_ext):
@@ -281,7 +296,6 @@ if __name__ == '__main__':
         description='script for checking the convergence of dcore.',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
-        epilog=generate_all_description()
     )
     parser.add_argument('path_input_file',
                         action='store',

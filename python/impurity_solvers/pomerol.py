@@ -106,7 +106,7 @@ class PomerolSolver(SolverBase):
         #   self.use_spin_orbit
 
         # print("params_kw =", params_kw)
-        exec_path = params_kw['exec_path']
+        exec_path = os.path.expandvars(params_kw['exec_path'])
 
         # for BSE
         flag_vx = params_kw.get('flag_vx', 0)
