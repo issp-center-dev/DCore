@@ -19,6 +19,7 @@ import os
 import copy
 from enum import Enum
 from warnings import warn
+from collections import OrderedDict
 
 try:
     import configparser
@@ -100,8 +101,8 @@ class TypedParser(object):
         self.__config_parser = configparser.ConfigParser()
         self.__config_parser.optionxform = str
 
-        self.__definitions = {}
-        self.__results = {}
+        self.__definitions = OrderedDict()
+        self.__results = OrderedDict()
 
         self.__read = False
 
@@ -121,10 +122,10 @@ class TypedParser(object):
             raise RuntimeError("Do not add option after an input file has been read!")
 
         if section not in self.__definitions:
-            self.__definitions[section] = {}
+            self.__definitions[section] = OrderedDict()
 
         if section not in self.__results:
-            self.__results[section] = {}
+            self.__results[section] = OrderedDict()
 
         self.__definitions[section][option] = {'dtype' : dtype,
                                                'description' : string,
@@ -227,7 +228,18 @@ class TypedParser(object):
 
         :return: dict object
         """
-        return copy.deepcopy(self.__results)
+
+        # convert OrderedDict to ordinary dict recursively
+        def convert_ordered_dict_to_dict(obj):
+            if isinstance(obj, OrderedDict):
+                r = {}
+                for key, val in obj.items():
+                    r[key] = convert_ordered_dict_to_dict(val)
+                return r
+            else:
+                return copy.deepcopy(obj)
+
+        return convert_ordered_dict_to_dict(self.__results)
 
     def print_options(self):
         """
