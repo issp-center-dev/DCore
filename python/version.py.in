@@ -1,6 +1,4 @@
 version = "@DCORE_VERSION@"
-triqs_hash = "@TRIQS_GIT_HASH@"
-dft_tools_hash = "@DCORE_GIT_HASH@"
 
 def show_version():
   print "\nYou are using the DCore version %s\n"%version

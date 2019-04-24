@@ -25,24 +25,30 @@ import subprocess
 from itertools import *
 
 from pytriqs.utility.h5diff import compare, failures
+from pytriqs.utility.h5diff import h5diff as h5diff_org
 from pytriqs.archive.hdf_archive import HDFArchive
-from pytriqs.gf.local import *
+from .pytriqs_gf_compat import *
 from pytriqs.operators import *
+import scipy
 
 """
 THIS MODULE  MUST NOT DEPEND ON MPI!
 """
 
-def h5diff(f1, f2, key, precision=1.e-6):
+def h5diff(f1, f2, key=None, precision=1.e-6):
     """
 
     Modified version of pytriqs.utility.h5diff.h5diff
     key is the path of the data set to be compared: e.g., "dmft_out/Sigma_iw"
 
     """
+    if key is None:
+        h5diff_org(os.path.abspath(f1), os.path.abspath(f2), precision)
+        return
+
     keys = key.split("/")
-    h1 = HDFArchive(f1,'r')
-    h2 = HDFArchive(f2,'r')
+    h1 = HDFArchive(os.path.abspath(f1),'r')
+    h2 = HDFArchive(os.path.abspath(f2),'r')
 
     for k in keys:
         h1 = h1[k]
@@ -103,7 +109,8 @@ def make_block_gf(gf_class, gf_struct, beta, n_points):
     for name, indices in gf_struct.items():
         assert isinstance(name, str)
         block_names.append(name)
-        blocks.append(gf_class(indices=indices, beta=beta, n_points=n_points, name=name))
+        indices_str = list(map(str, indices))
+        blocks.append(gf_class(indices=indices_str, beta=beta, n_points=n_points, name=name))
     return BlockGf(name_list=block_names, block_list=blocks, make_copies=True)
 
 
@@ -218,3 +225,167 @@ def umat2dd(dcore_U):
             Uout[i, j, k, l] = dcore_U[i, j, k, l]
 
     return Uout
+
+def pauli_matrix():
+    pauli_mat = []
+    pauli_mat.append(numpy.array([[0, 1], [1,0]], dtype=complex))
+    pauli_mat.append(numpy.array([[0, -1J], [1J, 0]], dtype=complex))
+    pauli_mat.append(numpy.array([[1, 0], [0, -1]], dtype=complex))
+    return pauli_mat
+
+def spin_moments_sh(dm_sh):
+    """
+    Compute spin moments on shells.
+    dm_sh must contain density matrices.
+    A fully polarized S=1/2 spin gives 1/2.
+    """
+
+    pauli_mat = pauli_matrix()
+
+    assert numpy.allclose(numpy.dot(pauli_mat[0],pauli_mat[1]), 1J*pauli_mat[2])
+
+    spin_moments = []
+    for ish in range(len(dm_sh)):
+        dm_dict = dm_sh[ish]
+        if len(dm_dict) == 1:
+            dm = dm_dict['ud']
+        else:
+            dm = scipy.linalg.block_diag(dm_dict['up'], dm_dict['down'])
+
+        assert dm.shape[0] == dm.shape[1]
+
+        norb = dm.shape[0]//2
+ 
+        dm = dm.reshape((2, norb, 2, norb))
+
+        s = numpy.array([0.5*numpy.einsum('st, sntn', pauli_mat[i], dm).real for i in range(3)])
+        spin_moments.append(s)
+
+    return spin_moments
+
+
+def read_potential(filename, mat):
+    if not os.path.exists(filename):
+        print("Error: file '{}' not found".format(filename))
+        exit(1)
+    print("Reading '{}'...".format(filename))
+
+    filled = numpy.full(mat.shape, False)
+    try:
+        with open(filename, 'r') as f:
+            for line in f:
+                # skip comment line
+                if line[0] == '#':
+                    continue
+
+                array = line.split()
+                assert len(array) == 5
+                sp = int(array[0])
+                o1 = int(array[1])
+                o2 = int(array[2])
+                val = complex(float(array[3]), float(array[4]))
+                if filled[sp, o1, o2]:
+                    raise Exception("duplicate components: " + line)
+                mat[sp, o1, o2] = val
+                filled[sp, o1, o2] = True
+    except Exception as e:
+        print("Error:", e)
+        print(line, end="")
+        exit(1)
+
+
+def save_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
+    """
+    Save a list of self-energy in a text file
+
+    :param filename:
+    :param Sigma_iw_sh:
+    :param spin_names: ['up', 'down'] or ['ud']
+    """
+
+    n_sh = len(Sigma_iw_sh)
+
+    assert isinstance(spin_names, list)
+
+    with open(filename, 'w') as fo:
+        print("# Local self energy at imaginary frequency", file=fo)
+        #
+        # Column information
+        #
+        print("# [Column] Data", file=fo)
+        print("# [1] Frequency", file=fo)
+        icol = 1
+        for ish in range(n_sh):
+            for sp in spin_names:
+                block_dim = Sigma_iw_sh[ish][sp].data.shape[1]
+                for iorb, jorb in product(range(block_dim), repeat=2):
+                    icol += 1
+                    print("# [%d] Re(Sigma_{shell=%d, spin=%s, %d, %d})" % (icol, ish, sp, iorb, jorb), file=fo)
+                    icol += 1
+                    print("# [%d] Im(Sigma_{shell=%d, spin=%s, %d, %d})" % (icol, ish, sp, iorb, jorb), file=fo)
+
+        #
+        # Write data
+        #
+        omega = [x for x in Sigma_iw_sh[0].mesh]
+        for iom in range(len(omega)):
+            print("%f " % omega[iom].imag, end="", file=fo)
+            for ish in range(n_sh):
+                for sp in spin_names:
+                    block_dim = Sigma_iw_sh[ish][sp].data.shape[1]
+                    for iorb, jorb in product(range(block_dim), repeat=2):
+                        print("%f %f " % (Sigma_iw_sh[ish][sp].data[iom, iorb, jorb].real,
+                                          Sigma_iw_sh[ish][sp].data[iom, iorb, jorb].imag), end="", file=fo)
+            print("", file=fo)
+
+
+def readline_ignoring_comment(f):
+    """
+    Read a line ignoring lines starting with '#' or '%'
+
+    :param f:
+    :return:
+    """
+
+    while True:
+        line = f.readline()
+        is_comment = line.startswith('#')
+        if not line or not is_comment:
+            break
+    return line
+
+
+def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
+    """
+    Load a list of self-energy from a text file.
+    Tails will be set to zero.
+
+    :param filename:
+    :param Sigma_iw_sh: All elements must be allocated to correct shapes
+    :param spin_names: ['up', 'down'] or ['ud']
+    """
+
+    n_sh = len(Sigma_iw_sh)
+
+    assert isinstance(spin_names, list)
+
+    data = numpy.loadtxt(filename)
+
+    omega_imag = data[:, 0]
+    nomega = len(omega_imag)
+    if not numpy.allclose(omega_imag, numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag):
+        raise RuntimeError("Mesh is not compatible!")
+
+    for iom in range(nomega):
+        icol = 1
+        for ish in range(n_sh):
+            for sp in spin_names:
+                # FIXME: How to set zero to tail in TRIQS 2.x?
+                #Sigma_iw_sh[ish][sp].tail.zero()
+                block_dim = Sigma_iw_sh[ish][sp].data.shape[1]
+                for iorb, jorb in product(range(block_dim), repeat=2):
+                    re = data[iom, icol]
+                    icol += 1
+                    imag = data[iom, icol]
+                    icol += 1
+                    Sigma_iw_sh[ish][sp].data[iom, iorb, jorb] = complex(re, imag)

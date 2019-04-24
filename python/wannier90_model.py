@@ -23,7 +23,7 @@ import numpy
 import sys
 import re
 
-from pytriqs.applications.dft.converters.wannier90_converter import Wannier90Converter
+from converters.wannier90_converter import Wannier90Converter
 from pytriqs.archive import HDFArchive
 import pytriqs.utility.mpi as mpi
 

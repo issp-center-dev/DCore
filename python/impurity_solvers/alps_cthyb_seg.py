@@ -20,7 +20,7 @@ import numpy
 from scipy.linalg import block_diag
 import os
 from itertools import product
-from pytriqs.gf.local import *
+from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd

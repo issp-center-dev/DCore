@@ -24,16 +24,17 @@ import numpy
 import copy
 
 from pytriqs.archive import HDFArchive
-from pytriqs.gf.local import *
+from .pytriqs_gf_compat import *
 from pytriqs.operators import *
 
 from dmft_core import DMFTCoreSolver
 from sumkdft import SumkDFTCompat
-from program_options import create_parser
+from program_options import create_parser, parse_parameters
 
 from .tools import launch_mpi_subprocesses
 import impurity_solvers
 from . import sumkdft
+from lattice_models import create_lattice_model
 
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
@@ -65,7 +66,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['Sigma_w_sh'] = Sigma_w_sh
         params['mesh'] = mesh
         params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos', self._mpirun_command, params)
         return r['dos'], r['dosproj'], r['dosproj_orb']
 
     def calc_dos0(self, mesh, broadening):
@@ -86,7 +87,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['mu'] = self._params['system']['mu']
         params['mesh'] = mesh
         params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos0', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos0', self._mpirun_command, params)
         return r['dos0'], r['dosproj0'], r['dosproj_orb0']
 
     def calc_spaghettis(self, Sigma_w_sh, mesh, broadening):
@@ -102,7 +103,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['Sigma_w_sh'] = Sigma_w_sh
         params['mesh'] = mesh
         params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_spaghettis', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_spaghettis', self._mpirun_command, params)
         return r['akw']
 
     def calc_momentum_distribution(self):
@@ -116,7 +117,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params = self._make_sumkdft_params()
         params['calc_mode'] = 'momentum_distribution'
         params['mu'] = self._chemical_potential
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_momentum_distribution', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_momentum_distribution', self._mpirun_command, params)
         return r['den'], r['ev0']
 
     def calc_Sigma_w(self, mesh):
@@ -482,6 +483,7 @@ def dcore_post(filename, np=1):
     #
     pars.read(filename)
     p = pars.as_dict()
+    parse_parameters(p)
     seedname = p["model"]["seedname"]
     p["mpi"]["num_processes"] = np
     mpirun_command = p['mpi']['command'].replace('#', str(p['mpi']['num_processes']))
@@ -525,76 +527,72 @@ def dcore_post(filename, np=1):
     print("\n    [tool] block")
     for k, v in p["tool"].items():
         print("      {0} = {1}".format(k, v))
+
+    #
+    # Construct lattice model
+    #
+    lattice_model = create_lattice_model(p)
+
     #
     # Construct parameters for the A(k,w)
     #
-    print("\n################  Constructing k-path  ##################")
-    nk_line = p["tool"]["nk_line"]
-    n_k = (nnode - 1)*nk_line + 1
-    print("\n   Total number of k =", str(n_k))
-    kvec = numpy.zeros((n_k, 3), numpy.float_)
-    ikk = 0
-    for inode in range(nnode - 1):
-        for ik in range(nk_line + 1):
-            if inode != 0 and ik == 0:
-                continue
-            for i in range(3):
-                kvec[ikk, i] = float((nk_line - ik)) * knode[inode, i] + float(ik) * knode[inode + 1, i]
-                kvec[ikk, i] = 2.0 * numpy.pi * kvec[ikk, i] / float(nk_line)
-            ikk += 1
-    #
-    # Compute x-position for plotting band
-    #
-    dk = numpy.zeros(3, numpy.float_)
-    dk_cart = numpy.zeros(3, numpy.float_)
-    xk = numpy.zeros(n_k, numpy.float_)
-    xk_label = numpy.zeros(nnode, numpy.float_)
-    xk[0] = 0.0
-    ikk = 0
-    for inode in range(nnode - 1):
-        dk[:] = knode[inode+1, :] - knode[inode, :]
-        dk_cart[:] = numpy.dot(dk[:], bvec[:, :])
-        klength = numpy.sqrt(numpy.dot(dk_cart[:], dk_cart[:])) / nk_line
-        xk_label[inode] = xk[ikk]
-        for ik in range(nk_line):
-            xk[ikk+1] = xk[ikk] + klength
-            ikk += 1
-    xk_label[nnode-1] = xk[n_k-1]
-    #
-    # HDF5 file for band
-    #
-    #
-    # Compute k-dependent Hamiltonian
-    #
-    print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
-    if p["model"]["lattice"] == 'wannier90':
-        hopping, n_orbitals, proj_mat = __generate_wannier90_model(mpirun_command_np1, p["model"], n_k, kvec)
+    if not lattice_model.is_Hk_supported():
+        print('')
+        print('Skipping A(k,w)')
+        print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
     else:
-        hopping, n_orbitals, proj_mat = __generate_lattice_model(p["model"], n_k, kvec)
-    #
-    # Output them into seedname.h5
-    #
-    with HDFArchive(seedname+'.h5', 'a') as f:
-        if not ("dft_bands_input" in f):
-            f.create_group("dft_bands_input")
-        f["dft_bands_input"]["hopping"] = hopping
-        f["dft_bands_input"]["n_k"] = n_k
-        f["dft_bands_input"]["n_orbitals"] = n_orbitals
-        f["dft_bands_input"]["proj_mat"] = proj_mat
-    print("    Done")
+        print("\n################  Constructing k-path  ##################")
+        nk_line = p["tool"]["nk_line"]
+        n_k = (nnode - 1)*nk_line + 1
+        print("\n   Total number of k =", str(n_k))
+        kvec = numpy.zeros((n_k, 3), numpy.float_)
+        ikk = 0
+        for inode in range(nnode - 1):
+            for ik in range(nk_line + 1):
+                if inode != 0 and ik == 0:
+                    continue
+                for i in range(3):
+                    kvec[ikk, i] = float((nk_line - ik)) * knode[inode, i] + float(ik) * knode[inode + 1, i]
+                    kvec[ikk, i] = 2.0 * numpy.pi * kvec[ikk, i] / float(nk_line)
+                ikk += 1
+        #
+        # Compute x-position for plotting band
+        #
+        dk = numpy.zeros(3, numpy.float_)
+        dk_cart = numpy.zeros(3, numpy.float_)
+        xk = numpy.zeros(n_k, numpy.float_)
+        xk_label = numpy.zeros(nnode, numpy.float_)
+        xk[0] = 0.0
+        ikk = 0
+        for inode in range(nnode - 1):
+            dk[:] = knode[inode+1, :] - knode[inode, :]
+            dk_cart[:] = numpy.dot(dk[:], bvec[:, :])
+            klength = numpy.sqrt(numpy.dot(dk_cart[:], dk_cart[:])) / nk_line
+            xk_label[inode] = xk[ikk]
+            for ik in range(nk_line):
+                xk[ikk+1] = xk[ikk] + klength
+                ikk += 1
+        xk_label[nnode-1] = xk[n_k-1]
 
-    #
-    # Plot
-    #
+        #
+        # HDF5 file for band
+        #
+        #
+        # Compute k-dependent Hamiltonian and save into seedname.h5
+        #
+        print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
+        lattice_model.write_dft_band_input_data(p, kvec)
 
-    dct = DMFTCoreTools(seedname, p, n_k, xk)
-    dct.post()
-    dct.momentum_distribution()
+        #
+        # Plot
+        #
+        dct = DMFTCoreTools(seedname, p, n_k, xk)
+        dct.post()
+        dct.momentum_distribution()
 
-    #
-    # Output gnuplot script
-    #
-    if p["model"]["lattice"] != 'bethe':
+        #
+        # Output gnuplot script
+        #
         print("\n#############   Generate GnuPlot Script  ########################\n")
         with open(seedname + '_akw.gp', 'w') as f:
             print("set size 0.95, 1.0", file=f)
@@ -620,8 +618,9 @@ def dcore_post(filename, np=1):
             print("\"{0}_akw0.dat\" u 1:($2-{1}):(0) every 5 w p lc 5".format(
                     seedname, p['system']['mu']), file=f)
             print("pause -1", file=f)
-        print("    Usage:")
-        print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))
+            print("    Usage:")
+            print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))
+
     #
     # Finish
     #

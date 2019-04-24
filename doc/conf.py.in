@@ -3,7 +3,7 @@
 # TRIQS documentation build configuration file
 
 import sys
-sys.path.insert(0, "@TRIQS_SPHINXEXT_PATH@/numpydoc")
+#sys.path.insert(0, "@TRIQS_SPHINXEXT_PATH@/numpydoc")
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
@@ -13,14 +13,15 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
-              'numpydoc',
-              'sphinxcontrib.spelling']
+              #'numpydoc',
+              #'sphinxcontrib.spelling'
+]
 
 source_suffix = '.rst'
 todo_include_todos = True
 
-spelling_lang='en_US'
-spelling_word_list_filename='spelling_wordlist.txt'
+#spelling_lang='en_US'
+#spelling_word_list_filename='spelling_wordlist.txt'
 
 
 project = u'DCore'
@@ -31,8 +32,8 @@ release = '@DCORE_RELEASE@'
 #mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
 templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
 
-html_theme = 'triqs'
-html_theme_path = ['@TRIQS_THEMES_PATH@']
+html_theme = 'classic'
+#html_theme_path = ['@TRIQS_THEMES_PATH@']
 html_show_sphinx = False
 html_context = {'header_title': 'DCore',
                 'header_subtitle': 'integrated DMFT software for CORrelated Electrons',
@@ -46,7 +47,7 @@ html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
 
 htmlhelp_basename = 'DCoredoc'
 
-intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None), 'triqslibs': ('http://triqs.ipht.cnrs.fr/1.x', None), 'triqscthyb': ('https://triqs.ipht.cnrs.fr/1.x/applications/cthyb/', None), 'triqsdfttools': ('https://triqs.ipht.cnrs.fr/1.x/applications/dft_tools/', None)}
+#intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None), 'triqslibs': ('http://triqs.ipht.cnrs.fr/1.x', None), 'triqscthyb': ('https://triqs.ipht.cnrs.fr/1.x/applications/cthyb/', None), 'triqsdfttools': ('https://triqs.ipht.cnrs.fr/1.x/applications/dft_tools/', None)}
 
 def setup(app):
     app.add_stylesheet('dcore.css')
