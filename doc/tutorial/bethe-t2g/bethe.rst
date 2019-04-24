@@ -33,35 +33,37 @@ DMFT loop : ``dcore``
 ---------------------
 
 The DMFT loop is performed by ``dcore`` program.
-In this tutorial, we use continuous-time QMC implementation of ALPSCore/CT-HYB.
+In this tutorial, we use continuous-time QMC implementation of ALPS/CT-HYB.
 The runtime of the impurity solver is set to 300 sec.
-You should not use the Hubbard-I solver for a metallic system because the Hubbard-I solver always gives an insulating self-energy.
-One can run the program by
+You should not use the Hubbard-I solver for a metallic system.
+One can run the program with 24 MPI processes as follows.
 
 .. code-block:: bash
 
-   $ dcore dmft_bethe.ini
+   $ export MPIRUN="mpirun"
+   $ dcore dmft_bethe.ini --np 24
 
 .. Then it generates the result HDF5 file.
 
-We run this sample with 24 MPI processes.
+Any environment variables in ``command`` of the mpi section and ``exec_path`` of the impurity_solver section are expanded at runtime.
+In addition, ``#`` in ``command`` of the mpi section is replaced by the number of processes specified at runtime (24 in this case).
+In the above example, we defined the environment varible ``MPIRUN``.
+
+Note that ``dcore`` must be lauched without using the mpirun command as
+it launches MPI processes internally for heavy tasks.
+The QMC solver is executed with the number of MPI processes as well.
+
+.. We run this sample with 24 MPI processes.
 Each self-consistent step takes around 5 min,
 most of which is spent for solving an effective impurity problem by QMC.
 40 iterations take around 200 min.
 Results for the self-energy and Green's function in each iteration are accumulated into a h5 file named *seedname*.out.h5 (``bethe.out.h5`` in the present case).
 
-One can check convergence of DMFT loop by using ``dcore_check`` program.
-You can run it with the following command, if X window system is available:
+One can check the convergence of DMFT iterations by using ``dcore_check`` program as follows.
 
 .. code-block:: bash
 
    $ dcore_check dmft_bethe.ini
-
-If X window is not available or you prefer plotting in a file, use ``--output`` option to specify output file name
-
-.. code-block:: bash
-
-   $ dcore_check dmft_bethe.ini --output=convergence.png
 
 The extension can be pdf, eps, jpg, png, etc.
 
@@ -71,82 +73,80 @@ The extension can be pdf, eps, jpg, png, etc.
 
 ::
 
-  Total number of Iteration: 40
+    @ Reading dmft_bethe.ini ...
+  Loading Sigma_iw...
+  Loading dc_imp and dc_energ...
+    Total number of Iteration: 40
 
-  Iter  Chemical-potential
-  1 -0.751277456949
-  2 0.433793958315
-  3 1.2459725253
-  4 1.85732193608
-  5 2.36220722607
-  6 2.77062276749
-  7 3.09108807381
-  8 3.36629802149
-  9 3.58851057325
-  10 3.7695090938
-  11 3.90938635404
-  12 4.00410075355
-  13 4.09341242903
-  14 4.12292839182
-  15 4.15049754864
-  16 4.20834882743
-  17 4.25119528758
-  18 4.27064749027
-  19 4.27850735354
-  20 4.27969108336
-  21 4.27273280534
-  22 4.3030438833
-  23 4.29424976349
-  24 4.32252238768
-  25 4.31798807725
-  26 4.34401171006
-  27 4.34281367005
-  28 4.35844282894
-  29 4.347290631
-  30 4.32740842847
-  31 4.32654893316
-  32 4.32403615806
-  33 4.34877682256
-  34 4.35656979282
-  35 4.35943070738
-  36 4.36991558208
-  37 4.35933570028
-  38 4.35062637919
-  39 4.34769943323
-  40 4.35412706392
+    Iter  Chemical-potential
+    1 -0.751277456949
+    2 0.434702172833
+    3 1.24052366776
+    4 1.87430591459
+    5 2.3902083604
+    6 2.80560950907
+    7 3.15120273079
+    8 3.39906953401
+    9 3.59109395044
+    10 3.77841000694
+    11 3.94933085606
+    12 4.04565623891
+    13 4.14089310218
+    14 4.21761388235
+    15 4.19672207134
+    16 4.22954996706
+    17 4.21218913905
+    18 4.23609175782
+    19 4.29360816707
+    20 4.30206162285
+    21 4.30581583599
+    22 4.31236778925
+    23 4.3507968933
+    24 4.34734048538
+    25 4.34881158874
+    26 4.35435696735
+    27 4.32563489267
+    28 4.3284996731
+    29 4.32645567868
+    30 4.31936571106
+    31 4.30926807535
+    32 4.34097777828
+    33 4.3454259465
+    34 4.29481990383
+    35 4.32541999195
+    36 4.33632971069
+    37 4.38081434746
+    38 4.38713422713
+    39 4.34154680207
+    40 4.38279281529
+   Output check/sigma.dat
+   Output check/sigma_ave.png
+   Output check/iter_mu.dat
+   Output check/iter_mu.png
+   Output check/iter_sigma-ish0.png
+   Output check/iter_sigma.dat
+
+    Done
 
 .. We also can see the imaginary-time self-energy at last seven iterations.
 
-``dcore_check`` also plots the self-energy for the last seven iterations in Matsubara-frequency domain.
+``dcore_check`` generates several figures as well as data files in text format.
+For instance, ``check/iter_sigma-ish0.png`` shows how the renormalization factor converges for each orbital.
 
-.. image:: convergence.png
+.. image:: check/iter_sigma-ish0.png
    :width: 800
    :align: center
 
-If those results are not converged, one can repeat the DMFT iteration using the same ini file. ``dcore`` program automatically finds results in the previous run and continue iterations.
+If those results are not converged, one can restart DMFT iterations.
 
-``dcore_check`` also writes the self-energy obtained in the last iteration into a text file named *seedname* _sigma.dat (``bethe_sigma.dat`` in the present case).
-You can plot the data for positive Matsubara frequencies as follows (like Fig. 3 of PRL 101, 166405 (2008)).
+You can plot the data for positive Matsubara frequencies as follows (like Fig. 3 of PRL 101, 166405 (2008)) using
+:download:`a gnuplot command file <plot.plt>`.
 
-.. code-block:: gnuplot
-
-   gnuplot> set xlabel "Energy"
-   gnuplot> beta = 50.0
-
-   gnuplot> set xr [0:2]
-   gnuplot> set yr [0:3]
-
-   gnuplot> set xlabel "(w_n)^{0.5}"
-   gnuplot> set ylabel "- Im Sigma(i w_n)"
-
-   gnuplot> plot \
-   gnuplot> "bethe_sigma.dat" u (($1)**0.5):($1 > 0 ? -$3 : 1/0) t "DCore" w lp, \
-   gnuplot> "sigma-PRL101-166405.txt" u (((2*$0+1)*pi/beta)**0.5):($1) t "PRL 101, 166405 (2008)" w lp
 
 The reference data extracted from PRL 101, 166405 (2008) are available 
 :download:`here <sigma-PRL101-166405.txt>`.
+The plot should look like the following.
 
-
-.. image:: sigma.png
+.. image:: sigma.svg
    :width: 600
    :align: center

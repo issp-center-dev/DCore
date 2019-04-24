@@ -168,3 +168,6 @@ def parse_parameters(params):
     # Set [model][norb_corr_sh]
     equiv_sh = params['model']['equiv_sh']
     params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][equiv_sh[icrsh]] for icrsh in range(ncor)])
+
+    # Expand enviroment variables
+    params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])

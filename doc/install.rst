@@ -140,7 +140,7 @@ Installation steps
 
      -- Build files have been written to: /.../dcore.build
 
-#. Compile the code by
+#. Build DCore by
 
    ::
 
@@ -157,64 +157,38 @@ Installation steps
    ::
 
      Running tests...
-     Test project /Users/k-yoshimi/CLionProjects/DCore/build
+     /usr/local/Cellar/cmake/3.13.4/bin/ctest --force-new-ctest-process
+     Test project /Users/hiroshi/build/dcore
            Start  1: typed_parser
-      1/21 Test  #1: typed_parser .....................   Passed    0.62 sec
-           Start  2: openmx
-      2/21 Test  #2: openmx ...........................   Passed    0.66 sec
-           Start  3: respack
-      3/21 Test  #3: respack ..........................   Passed    0.64 sec
-           Start  4: pre_preset
-      4/21 Test  #4: pre_preset .......................   Passed    0.91 sec
-           Start  5: pre_wannier
-      5/21 Test  #5: pre_wannier ......................   Passed    2.42 sec
-           Start  6: pre_wannier_so
-      6/21 Test  #6: pre_wannier_so ...................   Passed    0.77 sec
-           Start  7: pre_respack
-      7/21 Test  #7: pre_respack ......................   Passed    0.86 sec
-           Start  8: pre_respack_so
-      8/21 Test  #8: pre_respack_so ...................   Passed    0.75 sec
-           Start  9: main_chain_hubbardI
-      9/21 Test  #9: main_chain_hubbardI ..............   Passed    2.92 sec
-           Start 10: main_chain_hubbardI_so
-     10/21 Test #10: main_chain_hubbardI_so ...........   Passed    3.51 sec
-           Start 11: main_chain_triqsqmc
-     11/21 Test #11: main_chain_triqsqmc ..............***Failed    0.70 sec
-           Start 12: main_chain_triqsqmc_so
-     12/21 Test #12: main_chain_triqsqmc_so ...........***Failed    0.68 sec
-           Start 13: check_chain_hubbardI
-     13/21 Test #13: check_chain_hubbardI .............   Passed    1.49 sec
-           Start 14: check_chain_hubbardI_so
-     14/21 Test #14: check_chain_hubbardI_so ..........   Passed    1.48 sec
-           Start 15: check_chain_triqsqmc
-     15/21 Test #15: check_chain_triqsqmc .............***Failed    0.74 sec
-           Start 16: check_chain_triqsqmc_so
-     16/21 Test #16: check_chain_triqsqmc_so ..........***Failed    0.76 sec
-           Start 17: check_chain_alpsqmc
-     17/21 Test #17: check_chain_alpsqmc ..............***Failed    0.73 sec
-           Start 18: post_chain_hubbardI
-     18/21 Test #18: post_chain_hubbardI ..............   Passed    2.28 sec
-           Start 19: post_chain_hubbardI_so
-     19/21 Test #19: post_chain_hubbardI_so ...........   Passed    2.18 sec
-           Start 20: post_chain_triqsqmc
-     20/21 Test #20: post_chain_triqsqmc ..............***Failed    0.71 sec
-           Start 21: post_chain_triqsqmc_so
-     21/21 Test #21: post_chain_triqsqmc_so ...........***Failed    0.72 sec
-
-     67% tests passed, 7 tests failed out of 21
-
-     Total Test time (real) =  26.56 sec
-
-     The following tests FAILED:
-     	 11 - main_chain_triqsqmc (Failed)
-     	 12 - main_chain_triqsqmc_so (Failed)
-     	 15 - check_chain_triqsqmc (Failed)
-     	 16 - check_chain_triqsqmc_so (Failed)
-     	 17 - check_chain_alpsqmc (Failed)
-     	 20 - post_chain_triqsqmc (Failed)
-     	 21 - post_chain_triqsqmc_so (Failed)
-
-   In the above example, all tests related to QMC are failed, because only the Hubbard-I solver is installed. The tests from 1 to 8 should be passed regardless of impurity solvers you installed.
+      1/12 Test  #1: typed_parser .....................   Passed    1.38 sec
+           Start  2: tools
+      2/12 Test  #2: tools ............................   Passed    0.75 sec
+           Start  3: openmx
+      3/12 Test  #3: openmx ...........................   Passed    0.70 sec
+           Start  4: respack
+      4/12 Test  #4: respack ..........................   Passed    0.81 sec
+           Start  5: pre_preset
+      5/12 Test  #5: pre_preset .......................   Passed    1.69 sec
+           Start  6: pre_wannier
+      6/12 Test  #6: pre_wannier ......................   Passed    3.02 sec
+           Start  7: pre_wannier_so
+      7/12 Test  #7: pre_wannier_so ...................   Passed    0.95 sec
+           Start  8: pre_respack
+      8/12 Test  #8: pre_respack ......................   Passed    0.94 sec
+           Start  9: pre_respack_so
+      9/12 Test  #9: pre_respack_so ...................   Passed    1.03 sec
+           Start 10: alps_cthyb
+     10/12 Test #10: alps_cthyb .......................   Passed    3.02 sec
+           Start 11: chain_hubbardI_so
+     11/12 Test #11: chain_hubbardI_so ................   Passed   28.28 sec
+           Start 12: chain_hubbardI
+     12/12 Test #12: chain_hubbardI ...................   Passed   23.49 sec
+     
+     100% tests passed, 0 tests failed out of 12
+   
+     Total Test time (real) =  66.11 sec
+  
+   In the above example, all tests have passed in 66 sec.
 
 #. Finally, install by
 
