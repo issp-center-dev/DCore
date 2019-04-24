@@ -20,7 +20,7 @@ from __future__ import print_function
 import numpy
 from itertools import product
 
-from pytriqs.gf.local import *
+from ..pytriqs_gf_compat import *
 # from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 

@@ -28,7 +28,7 @@ with open("dmft.ini", 'w') as f:
     print("seedname = chain", file=f)
     print("nelec = 5.0", file=f)
     print("ncor = 2", file=f)
-    print("norb = 6, 8", file=f)
+    print("norb = 3, 4", file=f)
     print("kanamori = [(3.0, 2.0, 0.5), (5.0, 3.0, 1.0)]", file=f)
     print("spin_orbit = True", file=f)
     print("", file=f)

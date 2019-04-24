@@ -18,7 +18,7 @@
 from __future__ import print_function
 
 import unittest
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import pytriqs.operators.util as op
 
 from dcore.impurity_solvers.alps_cthyb import *
@@ -32,16 +32,17 @@ class TestMethods(unittest.TestCase):
         super(TestMethods, self).__init__(*args, **kwargs)
 
     def test_copy_between_numpy_blockgf(self):
+        block_names = ['up', 'down']
         g1 = GfImFreq(indices=[0, 1], beta=beta, n_points=n_iw, name="up")
         g1.data[:,:,:] = numpy.random.rand(g1.data.shape[0], g1.data.shape[1], g1.data.shape[2])
         g2 = GfImFreq(indices=[0, 1], beta=beta, n_points=n_iw, name="down")
         g2.data[:,:,:] = numpy.random.rand(g2.data.shape[0], g2.data.shape[1], g2.data.shape[2])
         G = BlockGf(name_list=('up', 'down'), block_list=(g1, g2), make_copies=False)
 
-        data = to_numpy_array(G)
+        data = to_numpy_array(G, block_names)
 
         G_reconst = G.copy()
-        assign_from_numpy_array(G_reconst, data)
+        assign_from_numpy_array(G_reconst, data, block_names)
 
         for name, g in G:
             numpy.allclose(G[name].data, G_reconst[name].data, 1e-10)
@@ -64,6 +65,9 @@ class TestMethods(unittest.TestCase):
 
         # Block structure of Green's functions
         gf_struct = op.set_operator_structure(spin_names, orb_names, off_diag=off_diag)
+        # Convert to dict
+        if isinstance(gf_struct, list):
+            gf_struct = {x[0]: x[1] for x in gf_struct}
 
         # Local interaction Hamiltonian
         U_mat = to_spin_full_U_matrix(op.U_matrix(l=l, U_int=U, J_hund=J, basis='spherical'))

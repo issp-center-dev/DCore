@@ -1,7 +1,0 @@
-================== ========== =================== =============================================================================================================
-Name               Type       Default             Description                                                                                                  
-================== ========== =================== =============================================================================================================
-basis_rotation     Bool       True                If True, impurity models are solved in the basis that diagonalizes the local non-interacting Hamiltonian.    
-name               String     TRIQS/hubbard-I     Name of impurity solver. Available options are TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb.                     
-================== ========== =================== =============================================================================================================
-

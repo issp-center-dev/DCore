@@ -20,14 +20,10 @@ from __future__ import print_function
 import numpy
 from scipy.linalg import block_diag
 import os
-#import shlex
 import shutil
-import copy
-import sys
-#import subprocess
 from itertools import product
 
-from pytriqs.gf.local import *
+from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
@@ -35,9 +31,15 @@ from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
 
+def remove_positive_eigenvalues(Delta_tau):
+    ntau = Delta_tau.shape[0]
 
+    for itau in range(ntau):
+        evals, evecs = numpy.linalg.eigh(Delta_tau[itau, :, :])
+        evals[evals>0] = 0.0
+        Delta_tau[itau, :, :] = evecs.dot(numpy.diag(evals).dot(evecs.transpose().conjugate()))
 
-def to_numpy_array(g):
+def to_numpy_array(g, block_names):
     """
     Convert BlockGf object to numpy.
     Rearrange spins and orbitals so that up and down spins appear alternatingly.
@@ -48,15 +50,15 @@ def to_numpy_array(g):
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks must be 1 or 2.")
 
-    names = [name for name, block in g]
     n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
 
     # FIXME: Bit ugly
-    n_data = g[names[0]].data.shape[0]
+    n_data = g[block_names[0]].data.shape[0]
 
     data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=complex)
     offset = 0
-    for name, block in g:
+    for name in block_names:
+        block = g[name]
         block_dim = len(block.indices)
         data[:, offset:offset + block_dim, offset:offset + block_dim] = block.data
         offset += block_dim
@@ -71,7 +73,7 @@ def to_numpy_array(g):
     return (data[:, :, index])[:, index, :]
 
 
-def assign_from_numpy_array(g, data):
+def assign_from_numpy_array(g, data, block_names):
     """
     Does inversion of to_numpy_array
     """
@@ -79,10 +81,9 @@ def assign_from_numpy_array(g, data):
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks must be 1 or 2.")
 
-    names = [name for name, block in g]
     n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
 
-    assert data.shape[0] == g[names[0]].data.shape[0]
+    assert data.shape[0] == g[block_names[0]].data.shape[0]
 
     norb = int(n_spin_orbital/2)
     index = numpy.zeros((n_spin_orbital), dtype=int)
@@ -91,7 +92,8 @@ def assign_from_numpy_array(g, data):
     data_rearranged = data[:, :, index][:, index, :]
 
     offset = 0
-    for name, block in g:
+    for name in block_names:
+        block = g[name]
         block_dim = len(block.indices)
         block.data[:,:,:] = data_rearranged[:, offset:offset + block_dim, offset:offset + block_dim]
         for i in range(block.data.shape[0]):
@@ -151,13 +153,14 @@ class ALPSCTHYBSolver(SolverBase):
         H0 = (H0[:, index])[index, :]
 
         # Compute the hybridization function from G0:
-        #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
-        # H0 is extracted from the tail of the Green's function.
+        #     Delta(iwn_n) = iw_n + mu - H0 - G0^{-1}(iw_n)
+        # H0 -mu is extracted from the tail of G0. (correct?)
         self._Delta_iw = delta(self._G0_iw)
         Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
-        for name, block in self._Delta_iw:
+        for name in self.block_names:
             Delta_tau[name] << InverseFourier(self._Delta_iw[name])
-        Delta_tau_data = to_numpy_array(Delta_tau)
+        Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
+        remove_positive_eigenvalues(Delta_tau_data)
 
         # non-zero elements of U matrix
         # Note: notation differences between ALPS/CT-HYB and TRIQS!
@@ -176,13 +179,15 @@ class ALPSCTHYBSolver(SolverBase):
         if rot is None:
             rot_mat_alps = numpy.identity(2*self.n_orb, dtype=complex)
         else:
+            assert isinstance(rot, dict)
             if self.use_spin_orbit:
-                rot_single_block = rot
+                assert len(rot) == 1
+                rot_single_block = rot['ud']
             else:
                 rot_single_block = block_diag(*[rot[name] for name in self.block_names])
             rot_mat_alps = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
-            for i, j in product(range(2*self.n_orb), repeat=2):
-                rot_mat_alps[conv(i), conv(j)] = rot_single_block[i,j]
+            for i, iv in product(range(2*self.n_orb), repeat=2):
+                rot_mat_alps[conv(i), iv] = rot_single_block[i, iv]
 
         # Set up input parameters for ALPS/CT-HYB
         p_run = {
@@ -262,17 +267,19 @@ class ALPSCTHYBSolver(SolverBase):
 
             # G(tau) with 1/iwn tail
             gtau = f['gtau']['data']
-            assign_from_numpy_array(self._G_tau, gtau)
-            for name, g in self._G_tau:
+            assign_from_numpy_array(self._G_tau, gtau, self.block_names)
+            for name in self.block_names:
+                g = self._G_tau[name]
                 g.tail.zero()
                 g.tail[1] = numpy.identity(g.N1)
 
             # G_iw with 1/iwn tail
-            for name, g in self._G_tau:
+            for name in self.block_names:
                 self._Gimp_iw[name] << Fourier(g)
 
 
         # Solve Dyson's eq to obtain Sigma_iw
+        # Sigma_iw = G0_iw^{-1} - G_imp_iw^{-1}
         self._Sigma_iw = dyson(G0_iw=self._G0_iw, G_iw=self._Gimp_iw)
 
 

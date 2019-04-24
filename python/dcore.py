@@ -39,6 +39,7 @@ def dcore(filename, np=1):
     #
     pars.read(filename)
     params = pars.as_dict()
+    parse_parameters(params)
 
     params["mpi"]["num_processes"] = np
 
@@ -67,7 +68,7 @@ if __name__ == '__main__':
                         default=None,
                         type=str,
                         help="input file name.")
-    parser.add_argument('--np', default=1, help='Number of MPI processes')
+    parser.add_argument('--np', default=1, help='Number of MPI processes', required=True)
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:

@@ -25,6 +25,7 @@ import time
 import __builtin__
 import numpy
 import copy
+import ast
 
 from .program_options import *
 
@@ -55,7 +56,6 @@ def is_hermite_conjugate(Sigma_iw):
             if not numpy.allclose(g.data[i + n_points, :, :], g.data[n_points - i - 1, :, :].conj().transpose()):
                 return False
     return True
-
 
 
 def create_solver_params(ini_dict):
@@ -124,7 +124,10 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     if not mesh is None and not Solver.is_gf_realomega_available():
         raise RuntimeError("Error: requested real-frequency quantities for an imaginary-time solver.")
 
+    # Correct?
+    # G0_iw^{-1} = Gloc_iw + Sigma_iw
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
+    assert is_hermite_conjugate(G0_iw)
     sol.set_G0_iw(G0_iw)
 
     # Compute rotation matrix to the diagonal basis if supported
@@ -220,6 +223,13 @@ class DMFTCoreSolver(object):
         with HDFArchive(seedname+'.h5', 'r') as h:
             self._Umat = h["DCore"]["Umat"]
 
+            # LocalPotential: convert to data structure similar to Sigma_iw_sh
+            local_pot = h["DCore"]["LocalPotential"]
+            def array2dict(array):
+                # [sp, orb1, orb1] -> {sp_name: [orb1, orb2]}
+                return {sp: array[i] for i, sp in enumerate(self._spin_block_names)}
+            self._local_potential = [array2dict(local_pot_sh) for local_pot_sh in local_pot]
+
         # local quantities at ineuivalent shells
         self._sh_quant = [ShellQuantity(self._gf_struct[ish], self._beta, self._n_iw, self._n_tau) for ish in range(self._n_inequiv_shells)]
 
@@ -261,7 +271,7 @@ class DMFTCoreSolver(object):
         with HDFArchive(output_file, 'r') as f:
             ar = f[output_group]
             if 'iterations' not in ar:
-                raise RuntimeError("Failed to restart the previous simulation!")
+                raise RuntimeError("Failed to restart the previous simulation! Data not found!")
 
             self._previous_runs = ar['iterations']
             if ar['iterations'] <= 0:
@@ -306,11 +316,55 @@ class DMFTCoreSolver(object):
 
         self._previous_runs = 0
 
-        #Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
-        #print("")
-        #print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
-        #print("")
-        #self.calc_dc_imp(dm_corr_sh, set_initial_Sigma_iw=True)
+        # Set double-counting correction
+        #     First, compute G_loc without self-energy
+        if self._params['system']['with_dc']:
+            print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
+            Gloc_iw_sh, dm_sh = self.calc_Gloc()
+            self.set_dc_imp(dm_sh)
+
+        # Set initial value to self-energy
+        if self._params["control"]["initial_static_self_energy"] != "None":
+            print("@@@@@@@@@@@@@@@@@@@@@@@@  Setting initial value to self-energy @@@@@@@@@@@@@@@@@@@@@@@@")
+            try:
+                files = ast.literal_eval(self._params["control"]["initial_static_self_energy"])
+                assert isinstance(files, dict)
+                assert all([ish < self.n_inequiv_shells for ish in files.keys()])
+            except Exception as e:
+                print("Error in parsing initial_static_self_energy!")
+                print(e)
+                exit(1)
+
+            if self.use_spin_orbit:
+                init_se = [numpy.zeros((1, self._dim_sh[ish], self._dim_sh[ish]), numpy.complex) for ish in range(self.n_inequiv_shells)]
+            else:
+                init_se = [numpy.zeros((2, self._dim_sh[ish], self._dim_sh[ish]), numpy.complex) for ish in range(self.n_inequiv_shells)]
+
+            for ish, file in files.items():
+                read_potential(file, init_se[ish])
+
+            print("\n--- initial self-energy matrix")
+            for ish, init_se_ish in enumerate(init_se):
+                print("ish =", ish)
+                for sp in range(init_se_ish.shape[0]):
+                    print("sp =", sp)
+                    print(init_se_ish[sp])
+
+            for ish in range(self.n_inequiv_shells):
+                for isp, sp in enumerate(self._spin_block_names):
+                    self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
+
+        elif self._params["control"]["initial_self_energy"] != "None":
+            Sigma_iw_sh_tmp = [self._sh_quant[ish].Sigma_iw for ish in range(self.n_inequiv_shells)]
+            load_Sigma_iw_sh_txt(self._params["control"]["initial_self_energy"], Sigma_iw_sh_tmp, self.spin_block_names)
+            print('')
+            print('Loading {} ...'.format(self._params["control"]["initial_self_energy"]), end=' ')
+            for ish in range(self.n_inequiv_shells):
+                self._sh_quant[ish].Sigma_iw << Sigma_iw_sh_tmp[ish]
+            print('Done')
+
+        self._sanity_check()
+
 
     def _sanity_check(self):
         """
@@ -322,12 +376,21 @@ class DMFTCoreSolver(object):
 
         raise_if_mpi_imported()
 
+        for ish in range(self._n_inequiv_shells):
+            for sp1 in self._spin_block_names:
+                if not numpy.allclose(self._dc_imp[ish][sp1], self._dc_imp[ish][sp1].conjugate().transpose()):
+                    raise RuntimeError("dc_imp is not hermite!")
+
+            if not is_hermite_conjugate(self._sh_quant[ish].Sigma_iw):
+                raise RuntimeError("Sigma_iw is not hermite conjugate!")
+
     def _make_sumkdft_params(self):
         return {
             'beta'          : self._params['system']['beta'],
             'prec_mu'       : self._params['system']['prec_mu'],
             'with_dc'       : self._params['system']['with_dc'],
             'Sigma_iw_sh'   : [s.Sigma_iw for s in self._sh_quant],
+            'potential'     : self._local_potential,
             'dc_imp'        : self._dc_imp,
             'dc_energ'      : self._dc_energ,
             'mu'            : self._chemical_potential,
@@ -347,7 +410,7 @@ class DMFTCoreSolver(object):
         params['calc_mode'] = 'Gloc'
         if (not self._params['system']['fix_mu']) and (not self._read_only):
             params['adjust_mu'] = True
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft', self._mpirun_command, params)
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft', self._mpirun_command, params)
 
         if params['adjust_mu']:
             self._chemical_potential = r['mu']
@@ -356,136 +419,24 @@ class DMFTCoreSolver(object):
         if self._params['system']['fix_mu'] or self._read_only:
             assert self._chemical_potential == mu_old
 
-        return r['Gloc_iw_sh'], r['dm_corr_sh']
-
-    def calc_dos(self, Sigma_w_sh, mesh, broadening):
-        """
-
-        Compute dos in real frequency.
-
-        :param Sigma_w_sh: list
-           List of real-frequency self-energy
-
-        :param broadening: float
-           Broadening factor
-
-        :return: tuple
-           Results are 'dos', 'dosproj', 'dosproj_orb'.
-
-        """
-
-        params = self._make_sumkdft_params()
-        params['calc_mode'] = 'dos'
-        params['mu'] = self._chemical_potential
-        params['Sigma_w_sh'] = Sigma_w_sh
-        params['mesh'] = mesh
-        params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos', self._mpirun_command, params)
-        return r['dos'], r['dosproj'], r['dosproj_orb']
-
-    def calc_dos0(self, mesh, broadening):
-        """
-
-        Compute dos in real frequency.
-
-        :param broadening: float
-           Broadening factor
-
-        :return: tuple
-           Results are 'dos0', 'dosproj0', 'dosproj_orb0'.
-
-        """
-
-        params = self._make_sumkdft_params()
-        params['calc_mode'] = 'dos0'
-        params['mu'] = self._params['system']['mu']
-        params['mesh'] = mesh
-        params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_dos0', self._mpirun_command, params)
-        return r['dos0'], r['dosproj0'], r['dosproj_orb0']
-
-    def calc_spaghettis(self, Sigma_w_sh, mesh, broadening):
-        """
-
-        Compute A(k, omega)
-
-        """
-
-        params = self._make_sumkdft_params()
-        params['calc_mode'] = 'spaghettis'
-        params['mu'] = self._chemical_potential
-        params['Sigma_w_sh'] = Sigma_w_sh
-        params['mesh'] = mesh
-        params['broadening'] = broadening
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_spaghettis', self._mpirun_command, params)
-        return r['akw']
-
-    def calc_momentum_distribution(self):
-        """
-
-        Compute momentum distributions and eigen values of H(k)
-        Data are taken from bands_data.
-
-        """
-
-        params = self._make_sumkdft_params()
-        params['calc_mode'] = 'momentum_distribution'
-        params['mu'] = self._chemical_potential
-        r = sumkdft.run(self._seedname+'.h5', './work/sumkdft_momentum_distribution', self._mpirun_command, params)
-        return r['den'], r['ev0']
-
-    def calc_bse(self):
-        """
-
-        Compute data for BSE
-
-        """
-        from .lattice_model import create_lattice_model
-
-        lattice_model = create_lattice_model(self._params)
-
-        params = self._make_sumkdft_params()
-        params['calc_mode'] = 'bse'
-        params['mu'] = self._chemical_potential
-        params['list_wb'] = numpy.arange(self._params['bse']['num_wb']).tolist()
-        params['n_wf_G2'] = self._params['bse']['num_wf']
-        params['div'] = lattice_model.nkdiv()
-        params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
-        sumkdft.run(self._seedname+'.h5', './work/sumkdft_bse', self._mpirun_command, params)
-
-    def calc_Sigma_w(self, mesh):
-        """
-        Compute Sigma_w for computing band structure
-        For an imaginary-time solver, a list of Nones will be returned.
-
-        :param mesh: (float, float, int)
-            real-frequency mesh (min, max, num_points)
-        
-        :return: list of Sigma_w
-
-        """
-
-        solver_name = self._params['impurity_solver']['name']
-        Solver = impurity_solvers.solver_classes[solver_name]
-        if Solver.is_gf_realomega_available():
-            Gloc_iw_sh, _ = self.calc_Gloc()
-            _, _, sigma_w = self.solve_impurity_models(Gloc_iw_sh, -1, mesh)
-            return sigma_w
-        else:
-            return [None] * self.n_inequiv_shells
+        return r['Gloc_iw_sh'], r['dm_sh']
 
 
-    def print_density_matrix(self, dm_corr_sh):
+    def print_density_matrix(self, dm_sh):
+        smoments = spin_moments_sh(dm_sh)
         print("\nDensity Matrix")
-        for icrsh in range(self._n_corr_shells):
-            print("\n  Shell ", icrsh)
+        for ish in range(self._n_inequiv_shells):
+            print("\n  Inequivalent Shell ", ish)
             for sp in self._spin_block_names:
                 print("\n    Spin ", sp)
-                for i1 in range(self._sk.corr_shells[icrsh]['dim']):
+                for i1 in range(self._dim_sh[ish]):
                     print("          ", end="")
-                    for i2 in range(self._sk.corr_shells[icrsh]['dim']):
-                        print("{0:.3f} ".format(dm_corr_sh[icrsh][sp][i1, i2]), end="")
+                    for i2 in range(self._dim_sh[ish]):
+                        print("{0:.3f} ".format(dm_sh[ish][sp][i1, i2]), end="")
                     print("")
+                evals, evecs = numpy.linalg.eigh(dm_sh[ish][sp])
+                print('    Eigenvalues: ', evals)
+            print('    Sx, Sy, Sz : {} {} {}'.format(smoments[ish][0], smoments[ish][1], smoments[ish][2]))
 
 
     def solve_impurity_models(self, Gloc_iw_sh, iteration_number, mesh=None):
@@ -498,6 +449,8 @@ class DMFTCoreSolver(object):
             (om_min, om_max, n_om)
         :return:
         """
+
+        self._sanity_check()
 
         solver_name = self._params['impurity_solver']['name']
         Sigma_iw_sh = []
@@ -526,7 +479,7 @@ class DMFTCoreSolver(object):
         else:
             return Sigma_iw_sh, Gimp_iw_sh, Sigma_w_sh
 
-    def calc_dc_imp(self, dm_corr_sh, set_initial_Sigma_iw=True):
+    def set_dc_imp(self, dm_sh):
         """
 
         Compute Double-counting term (Hartree-Fock term)
@@ -543,7 +496,7 @@ class DMFTCoreSolver(object):
             dim_tot = self._dim_sh[ish]
             num_orb = int(u_mat.shape[0] / 2)
 
-            dens_mat = dm_corr_sh[self._sk.inequiv_to_corr[ish]]
+            dens_mat = dm_sh[self._sk.inequiv_to_corr[ish]]
 
             print("")
             print("    DC for inequivalent shell {0}".format(ish))
@@ -587,9 +540,6 @@ class DMFTCoreSolver(object):
                         u_mat[i1, 0:num_orb, 0:num_orb, i2]
                         * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
                     )
-                if set_initial_Sigma_iw:
-                    # fixed a bug in v1.0
-                    self._sh_quant[ish].Sigma_iw['ud'] << dc_imp_sh['ud']
                 self._dc_imp.append(dc_imp_sh)
             else:
                 dc_imp_sh = {}
@@ -607,22 +557,17 @@ class DMFTCoreSolver(object):
                         #
                         dc_imp_sh[sp1][i1, i2] += \
                             - numpy.sum(u_mat[i1, 0:num_orb, 0:num_orb, i2] * dens_mat[sp1][:, :])
-                if set_initial_Sigma_iw:
-                    # fixed a bug in v1.0
-                    for sp in self._spin_block_names:
-                        self._sh_quant[ish].Sigma_iw[sp] << dc_imp_sh[sp]
                 self._dc_imp.append(dc_imp_sh)
 
-            if set_initial_Sigma_iw:
-                print("\n      DC Self Energy:")
-                for sp1 in self._spin_block_names:
-                    print("        Spin {0}".format(sp1))
-                    for i1 in range(dim_tot):
-                        print("          ", end="")
-                        for i2 in range(dim_tot):
-                            print("{0:.3f} ".format(self._dc_imp[ish][sp1][i1, i2]), end="")
-                        print("")
-                print("")
+            print("\n      DC Self Energy:")
+            for sp1 in self._spin_block_names:
+                print("        Spin {0}".format(sp1))
+                for i1 in range(dim_tot):
+                    print("          ", end="")
+                    for i2 in range(dim_tot):
+                        print("{0:.3f} ".format(self._dc_imp[ish][sp1][i1, i2]), end="")
+                    print("")
+            print("")
 
 
     def do_steps(self, max_step):
@@ -644,6 +589,8 @@ class DMFTCoreSolver(object):
 
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
+            self._sanity_check()
+
             sys.stdout.flush()
             print("")
             print("#####################################################################")
@@ -653,20 +600,14 @@ class DMFTCoreSolver(object):
             print("")
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Chemical potential and G0_imp  @@@@@@@@@@@@@@@@@@@@@@@@")
             print("")
+            sys.stdout.flush()
 
             # Compute Gloc_iw where the chemical potential is adjusted if needed
-            Gloc_iw_sh, dm_corr_sh = self.calc_Gloc()
-            self.print_density_matrix(dm_corr_sh)
+            Gloc_iw_sh, dm_sh = self.calc_Gloc()
+            self.print_density_matrix(dm_sh)
 
             for ish in range(self._n_inequiv_shells):
                 print("\n    Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
-
-            # Compute DC corrections and initial guess to self-energy
-            if iteration_number == 1 and not previous_present and with_dc:
-                print("")
-                print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
-                print("")
-                self.calc_dc_imp(dm_corr_sh, set_initial_Sigma_iw=True)
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
 
@@ -745,7 +686,7 @@ class DMFTCoreSolver(object):
     def inequiv_shell_info(self, ish):
         info = {}
         if self._use_spin_orbit:
-            info['num_orb'] = int(self._dim_sh[ish]/2)
+            info['num_orb'] = self._dim_sh[ish]//2
         else:
             info['num_orb'] = self._dim_sh[ish]
 
@@ -754,7 +695,7 @@ class DMFTCoreSolver(object):
         return info
 
     def corr_shell_info(self, ish):
-        return self.inequiv_shell_info(ish)
+        return self.inequiv_shell_info(self._sk.corr_to_inequiv[ish])
 
     def Sigma_iw_sh(self, iteration_number):
         Sigma_iw_sh = []

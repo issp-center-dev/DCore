@@ -3,4 +3,4 @@ FILE(COPY  stan_ref_chain.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(COPY  stan_ref_cubic.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(COPY stan_ref_square.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-triqs_add_python_test(pre_preset)
+add_python_test(pre_preset)

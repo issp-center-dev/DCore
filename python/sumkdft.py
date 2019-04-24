@@ -23,6 +23,7 @@ import sys
 import os
 import shlex
 import subprocess
+import numpy
 
 from pytriqs.archive import HDFArchive
 from .tools import launch_mpi_subprocesses
@@ -47,7 +48,10 @@ def read_dft_input_data(file, subgrp, things_to_read):
 
 
 class SumkDFTCompat(object):
-    def __init__(self, hdf_file):
+    """
+    Reading data from a SumkDFT HDF5 file
+    """
+    def __init__(self, hdf_file, subgrp='dft_input'):
 
         things_to_read = ['energy_unit', 'n_k', 'k_dep_projection', 'SP', 'SO', 'charge_below', 'density_required',
                           'symm_op', 'n_shells', 'shells', 'n_corr_shells', 'corr_shells', 'use_rotations', 'rot_mat',
@@ -55,7 +59,7 @@ class SumkDFTCompat(object):
                           'hopping',
                           'n_inequiv_shells', 'corr_to_inequiv', 'inequiv_to_corr']
 
-        dft_data = read_dft_input_data(hdf_file, subgrp='dft_input', things_to_read=things_to_read)
+        dft_data = read_dft_input_data(hdf_file, subgrp, things_to_read=things_to_read)
 
         for k, v in dft_data.items():
             setattr(self, k, v)
@@ -94,25 +98,36 @@ def run(model_file, work_dir, mpirun_command, params):
     # Prepare input files
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
-    with HDFArchive(work_dir + '/input.h5', 'w') as h:
+
+    cwd_org = os.getcwd()
+    os.chdir(work_dir)
+
+    if os.path.exists('./input.h5'):
+        os.remove('./input.h5')
+    if os.path.exists('./output.h5'):
+        os.remove('./output.h5')
+
+    with HDFArchive('./input.h5', 'w') as h:
         h['params'] = params
 
     commands = [sys.executable, "-m", "dcore.sumkdft"]
     commands.append(model_file)
-    commands.append(os.path.abspath(work_dir + '/input.h5'))
-    commands.append(os.path.abspath(work_dir + '/output.h5'))
+    commands.append(os.path.abspath('./input.h5'))
+    commands.append(os.path.abspath('./output.h5'))
 
-    with open(work_dir + '/output', 'w') as output_file:
+    with open('./output', 'w') as output_file:
         launch_mpi_subprocesses(mpirun_command, commands, output_file)
 
-    with open(work_dir + '/output', 'r') as output_file:
+    with open('./output', 'r') as output_file:
         for line in output_file:
             print(line, end='')
 
     results = {}
-    with HDFArchive(os.path.abspath(work_dir + '/output.h5'), 'r') as h:
+    with HDFArchive(os.path.abspath('./output.h5'), 'r') as h:
         for k in h.keys():
             results[k] = h[k]
+
+    os.chdir(cwd_org)
 
     return results
 
@@ -136,11 +151,24 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
 
     results = {}
 
+    def add_potential(_sigma, _pot):
+        sigma_plus_pot = _sigma.copy()
+        for sp, sigma in sigma_plus_pot:
+            sigma += _pot[sp]
+        return sigma_plus_pot
+
     def setup_sk(sk, iwn_or_w_or_none):
         if iwn_or_w_or_none == 'iwn':
-            sk.set_Sigma(params['Sigma_iw_sh'])
+            assert len(params['Sigma_iw_sh']) == len(params['potential'])
+            Sigma_iw_sh_plus_pot = [add_potential(sigma, pot)
+                                    for sigma, pot in zip(params['Sigma_iw_sh'], params['potential'])]
+            sk.set_Sigma(Sigma_iw_sh_plus_pot)
         elif iwn_or_w_or_none == 'w':
-            sk.set_Sigma([params['Sigma_w_sh'][ish] for ish in range(sk.n_inequiv_shells)])
+            # sk.set_Sigma([params['Sigma_w_sh'][ish] for ish in range(sk.n_inequiv_shells)])
+            Sigma_w_sh = [params['Sigma_w_sh'][ish] for ish in range(sk.n_inequiv_shells)]
+            Sigma_w_sh_plus_pot = [add_potential(sigma, pot)
+                                   for sigma, pot in zip(Sigma_w_sh, params['potential'])]
+            sk.set_Sigma(Sigma_w_sh_plus_pot)
         elif iwn_or_w_or_none == "none":
             pass
         else:
@@ -161,7 +189,11 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
 
         # Local Green's function and Density matrix
         results['Gloc_iw_sh'] = sk.extract_G_loc(with_dc=with_dc)
-        results['dm_corr_sh'] = sk.density_matrix(beta=beta)
+        dm = sk.density_matrix(beta=beta)
+        for ish in range(len(dm)):
+            for b in dm[ish].keys():
+                dm[ish][b] = numpy.conj(dm[ish][b])
+        results['dm_sh'] = dm
 
     elif params['calc_mode'] == 'dos':
         # Compute dos
@@ -202,20 +234,33 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
     elif params['calc_mode'] == 'bse':
         # chi0
         from dft_tools.sumk_dft_chi import SumkDFTChi
+        # save div data (overwrite if data exist)
         if mpi.is_master_node():
             with HDFArchive(model_hdf5_file, 'a') as ar:
                 if 'dft_input_chi' in ar:
                    del ar['dft_input_chi']
-                if not 'dft_input_chi' in ar:
-                    ar.create_group('dft_input_chi')
-                ar['dft_input_chi']['div'] = params['div']
+                ar.create_group('dft_input_chi')
+                ar['dft_input_chi']['div'] = numpy.array(params['div'])
+        # check if IBZ and FBZ data are saved separately
+        dft_data_fbz = 'dft_input'
+        if mpi.is_master_node():
+            with HDFArchive(model_hdf5_file, 'r') as ar:
+                if 'dft_input_fbz' in ar:
+                    dft_data_fbz = 'dft_input_fbz'
+        dft_data_fbz = mpi.bcast(dft_data_fbz)
         sk = SumkDFTChi(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0,
-                        dft_data_fbz='dft_input')
+                        dft_data_fbz=dft_data_fbz)
         setup_sk(sk, 'iwn')
+
+        temp_file = None
+        if params['use_temp_file']:
+            temp_file = 'G_k_iw_temp.h5'
+
         sk.save_X0q_for_bse(list_wb=params['list_wb'],
                             n_wf_cutoff=params['n_wf_G2'],
-                            qpoints_saved='quadrant',
+                            qpoints_saved=params['X0q_qpoints_saved'],
                             h5_file=params['bse_h5_out_file'],
+                            temp_file=temp_file,
                             nonlocal_order_parameter=False)
     else:
         raise RuntimeError("Unknown calc_mode: " + str(params['calc_mode']))
