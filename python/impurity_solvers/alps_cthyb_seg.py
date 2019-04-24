@@ -23,7 +23,7 @@ from itertools import product
 from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd
 from .base import SolverBase
 
 
@@ -76,43 +76,52 @@ def assign_from_numpy_array(g, data, names):
     print(data.shape)
     print("norb:", norb)
 
-    #check number of Matsubara frequency
+    # check number of Matsubara frequency
     assert data.shape[2]*2 == g[names[0]].data.shape[0]
     print(g[names[0]].data.shape)
 
     for spin in range(2):
         for orb in range(norb):
             print(orb, spin, names[spin])
-            #positive frequency
+            # positive frequency
             g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
-            #negative frequency
+            # negative frequency
             g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
 
 
 def dcore2alpscore(dcore_U):
 
     dcore_U_len = len(dcore_U)
-    alps_U  = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
+    alps_U = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
     alps_Uprime = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
     alps_J = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
 
-    #m_range = range(size)
+    # m_range = range(size)
     for i, j in product(range(dcore_U_len), range(dcore_U_len)):
         alps_U[i, j] = dcore_U[i, j, i, j].real - dcore_U[i, j, j, i].real
         alps_Uprime[i, j] = dcore_U[i, j, i, j].real
         alps_J[i, j] = dcore_U[i, j, j, i].real
-
     return alps_U, alps_Uprime, alps_J
 
-
 def write_Umatrix(U, Uprime, J, norb):
-    Uout = numpy.zeros((2, norb, 2, norb))
+    Uout = numpy.zeros((norb, 2, norb, 2))
+
+    # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
+    # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
+    def func(u):
+        uout = u.reshape((2, norb, 2, norb)).transpose(1, 0, 3, 2)
+        return uout
+
+    U_four = func(U)
+    Uprime_four = func(Uprime)
+    J_four = func(J)
+
     for a1, a2 in product(range(norb), repeat=2):
-        for s1, s2 in product(range(2), repeat=2): #spin-1/2
-            if s1 == s2:
-                Uout[s1, a1, s2, a2] = U[2*a1+s1, 2*a2+s2]
+        for s1, s2 in product(range(2), repeat=2):  # spin-1/2
+            if a1 == a2:
+                Uout[a1, s1, a2, s2] = U_four[a1, s1, a2, s2]
             else:
-                Uout[s1, a1, s2, a2] = Uprime[2*a1+s1, 2*a2+s2] - J[2*a1+s1, 2*a2+s2]
+                Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
 
     Uout = Uout.reshape((2*norb, 2*norb))
     with open('./Umatrix', 'w') as f:
@@ -150,6 +159,10 @@ class ALPSCTHYBSEGSolver(SolverBase):
             else:
                 return internal_params[key]
         print (params_kw)
+
+        umat_check = umat2dd(self.u_mat)
+        assert numpy.allclose(umat_check, self.u_mat), "Please set density_density = True when you run ALPS/cthyb-seg!"
+
         # (1) Set configuration for the impurity solver
         # input:
         #   self.beta
@@ -189,6 +202,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # (1c) Set U_{ijkl} for the solver
         # Set up input parameters and files for ALPS/CTHYB-SEG
 
+
         p_run = {
             'SEED'                            : params_kw['random_seed_offset'],
             'FLAVORS'                         : self.n_orb*2,
@@ -225,7 +239,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         U, Uprime, J = dcore2alpscore(self.u_mat)
         write_Umatrix(U, Uprime, J, self.n_orb)
-        
+
         with open('./MUvector', 'w') as f:
             for orb in range(self.n_orb):
                 for spin in range(2):

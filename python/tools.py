@@ -211,6 +211,21 @@ def extract_H0(G0_iw, hermitianize=True):
 
     return data
 
+
+def umat2dd(dcore_U):
+
+    n_orb = dcore_U.shape[0]/2  # spin-1/2
+
+    # extract density-density part
+    dcore_U_len = len(dcore_U)
+    Uout = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb))
+
+    for i, j, k, l in product(range(dcore_U_len), range(dcore_U_len), range(dcore_U_len), range(dcore_U_len)):
+        if (i == k and j == l) or (i == l and j == k):
+            Uout[i, j, k, l] = dcore_U[i, j, k, l]
+
+    return Uout
+
 def pauli_matrix():
     pauli_mat = []
     pauli_mat.append(numpy.array([[0, 1], [1,0]], dtype=complex))

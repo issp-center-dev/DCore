@@ -221,7 +221,6 @@ def __generate_umat(p):
             for iorb in range(norb[ish]):
                 u_mat[ish][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
             start += norb[ish]
-    #
     for ish in range(nsh):
         u_mat[ish][:, :, :, :].imag = 0.0
     #
@@ -231,6 +230,11 @@ def __generate_umat(p):
               for ish in range(nsh)]
     for ish in range(nsh):
         u_mat2[ish] = to_spin_full_U_matrix(u_mat[ish])
+
+    if p["model"]["density_density"]:
+        for ish in range(nsh):
+            umat = umat2dd(u_mat2[ish][:])
+            u_mat2[ish][:] = umat
     f["DCore"]["Umat"] = u_mat2
     print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
     del f
