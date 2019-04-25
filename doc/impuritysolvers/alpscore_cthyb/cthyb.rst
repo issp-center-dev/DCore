@@ -3,31 +3,33 @@
 CT-QMC: ``ALPS/CT-HYB``
 =======================
 
-This impurity solver implements the CT-HYB QMC algorithm and is used by DCore developers on a regular basis.
+`ALPS/CT-HYB solver <https://github.com/ALPSCore/CT-HYB>`_ implements the CT-HYB QMC algorithm and is developed by H. Shinaoka, E. Gull and P. Werner.
+The spin-orbit coupling is supported by default.
+One can call ALPS/CT-HYB from DCore through the "ALPS/cthyb" interface.
+For the moment, this interface is the first choice for QMC solvers in DCore
+as it is used by developers of DCore on a regular basis.
 
+A minimum working example is the following.
+We assumed that the executable is installed at "$HOME/opt/CT-HYB/bin/hybmat".
+The solver runs for 300 seconds.
 
-Basic parameters for QMC
-------------------------
+.. code-block:: ini
 
-DCore invokes the `ALPSCore/CT-HYB solver <https://github.com/ALPSCore/CT-HYB>`_ developed by H. Shinaoka, E. Gull and P. Werner
-via a `triqs-compatible Python interface <https://github.com/shinaoka/triqs_interface>`_.
-In the following, we give a short description on some of the parameters (see `the official document <https://github.com/shinaoka/triqs_interface/blob/master/README.md>`_ for more details).
+  [impurity_solver]
+  name = ALPS/cthyb
+  timelimit{int} = 300
+  exec_path{str} = $HOME/opt/CT-HYB/bin/hybmat
 
-In DCore calculations, you may specify the following two parameters.
+ALPS/CT-HYB have many input parameters.  
+Please refer to `the reference manual <https://github.com/ALPSCore/CT-HYB/wiki/Input-parameters>`_ for a list of available input parameters.
+The DCore interface supports support all of them.
+For instance, one can enable verbose model as follows.
+Note that one must specify type for input parameters of ALPS/CT-HYB.
 
- * ``max_time{int}``
+.. code-block:: ini
 
-   **This parameter affects the statistical error and run time.**
-   **In most cases, this is the only one parameter you have to specify.**
- 
-   Total simulation time (in units of second) including thermalization process.
-   Please run longer to reduce statistical noise.
+  [impurity_solver]
+  verbose{int} = 1
 
- 
- * ``thermalization_time{int}``
-
-   **This parameter affects the systematical error.**
- 
-   Length of the thermalization steps in units of second.
-   The default value is 10 % of max_time, which is a reasonable choice in most cases.
-   Thus, we recommend to use the default value unless the solver complains about thermalization time.
+The DCore interface generates input files for ALPS/CT-HYB into a working directory at work/imp_shell<ish>_ite<ite> (ish is the index of the shell and ite is the iteration).
+Then, ALPS/CT-HYB is excecuted in the working directory.
