@@ -1,7 +1,7 @@
 .. _howtocthyb:
 
-How to choose parameters for TRIQS/cthyb
-========================================
+CT-QMC: ``TRIQS/cthyb``
+=======================
 
 Basic parameters for QMC
 ------------------------

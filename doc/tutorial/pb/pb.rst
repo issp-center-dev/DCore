@@ -1,7 +1,7 @@
 .. _pbtutorial:
 
-Pb with spin-orbit interaction
-==============================
+Spin-orbit interaction: The case with Pb
+========================================
 
 In this tutorial, we perform the DMFT calculation of Pb with the spin-orbit interaction.
 

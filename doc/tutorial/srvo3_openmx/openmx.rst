@@ -1,5 +1,5 @@
-Tutorial with OpenMX
-====================
+OpenMX
+======
 
 OpenMX is a first-principles program package based on
 the numerical localized basis set and pseudopotentials.

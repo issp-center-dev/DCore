@@ -1,5 +1,5 @@
-Tutorial with single-band 2D Hubbard model
-==========================================
+The first example: 2D Hubbard model
+===================================
 
 The first example is the two-dimensional Hubbard model.
 We use the Hubbard-I approximation for solving the effective impurity problem and see the emergence of the Mott gap.

@@ -1,5 +1,5 @@
-Tutorial with t2g Bethe lattice
-===============================
+Multiorbital model by a QMC solver
+==================================
 
 :download:`dmft_bethe.ini <dmft_bethe.ini>`
 
