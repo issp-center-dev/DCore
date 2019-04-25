@@ -31,8 +31,12 @@ from .pytriqs_gf_compat import *
 from pytriqs.operators import *
 import scipy
 
+from pytriqs import version
+
+triqs_major_version = int(version.version.split('.')[0])
+
 """
-THIS MODULE  MUST NOT DEPEND ON MPI!
+THIS MODULE MUST NOT DEPEND ON MPI!
 """
 
 def h5diff(f1, f2, key=None, precision=1.e-6):
@@ -79,18 +83,6 @@ def to_spin_full_U_matrix(u_matrix):
 
     return u_matrix_spin_full.reshape((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb))
 
-
-def make_real(bGf):
-    for name, g in bGf:
-        if type(g) == GfImFreq:
-            bGf[name] = g.make_real_in_tau()
-        elif type(g) == GfImTime:
-            g.data[:,:,:] = g.data.real
-            g.tail.data[:,:] = g.tail.data.real
-        else:
-            raise RuntimeError("Unsupported type " + str(type(g)))
-
-
 def make_block_gf(gf_class, gf_struct, beta, n_points):
     """
     Make a BlockGf object
@@ -113,11 +105,46 @@ def make_block_gf(gf_class, gf_struct, beta, n_points):
         blocks.append(gf_class(indices=indices_str, beta=beta, n_points=n_points, name=name))
     return BlockGf(name_list=block_names, block_list=blocks, make_copies=True)
 
+def get_block_size(g):
+    """
+    Get block size of g
+
+    Parameters
+    ----------
+    g : object of GfImFreq, GfImTime or GfLegendre
+
+    Returns
+    -------
+    block_size : int
+        block of g (e.g. number of orbitals)
+    """
+
+    if triqs_major_version == 1:
+        assert isinstance(g, GfImFreq) or isinstance(g, GfImTime) or isinstance(g, GfLegendre), 'Unsupported type {}'.format(type(g))
+        return len(g.indices)
+    elif triqs_major_version >= 2:
+        assert len(g.indices[0]) == len(g.indices[1])
+        return len(g.indices[0])
+
+def extract_H0_from_tail(G0_iw):
+    if isinstance(G0_iw, BlockGf):
+        return {name:extract_H0_from_tail(b) for name, b in G0_iw}
+    elif isinstance(G0_iw.mesh, MeshImFreq):
+        if triqs_major_version == 1:
+            return numpy.array(G0_iw.tail[2])
+        elif triqs_major_version >= 2:
+           import pytriqs.gf.gf_fnt as gf_fnt
+           assert len(G0_iw.target_shape) in [0,2], "extract_H0_from_tail(G0_iw) requires a matrix or scalar_valued Green function"
+           assert gf_fnt.is_gf_hermitian(G0_iw), "extract_H0_from_tail(G0_iw) requires a Green function with the property G0_iw[iw][i,j] = conj(G0_iw[-iw][j,i])"
+           tail, err = gf_fnt.fit_hermitian_tail(G0_iw)
+           if err > 1e-5:
+               print("WARNING: delta extraction encountered a sizeable tail-fit error: ", err)
+           return tail[2]
+    else:
+        raise RuntimeError('extract_H0_from_tail does not support type {}'.format(type(G0_iw)))
 
 def compute_diag_basis(G0_iw):
-    H_loc0 = {}
-    for name, block in G0_iw:
-        H_loc0[name] = numpy.array(block.tail[2])
+    H_loc0 = extract_H0_from_tail(G0_iw)
     rot = {}
     for sp in H_loc0.keys():
         eigval, rot[sp] = numpy.linalg.eigh(H_loc0[sp])
@@ -185,19 +212,20 @@ def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
         print("Command: ", ' '.join(commands))
         raise RuntimeError("Error occurred while executing MPI program! Output messages may be found in {}!".format(os.path.abspath(output_file.name)))
 
-def extract_H0(G0_iw, hermitianize=True):
+def extract_H0(G0_iw, block_names, hermitianize=True):
     """
     Extract non-interacting Hamiltonian elements from G0_iw
     """
 
-    H0 = [numpy.array(block.tail[2]) for name, block in G0_iw]
+    assert isinstance(block_names, list)
+
+    H0_dict  = extract_H0_from_tail(G0_iw)
+    H0 = [H0_dict[b] for b in block_names]
 
     n_spin_orb = numpy.sum([b.shape[0] for b in H0])
 
     if G0_iw.n_blocks > 2:
         raise RuntimeError("n_blocks must be 1 or 2.")
-
-    names = [name for name, block in G0_iw]
 
     data = numpy.zeros((n_spin_orb, n_spin_orb), dtype=complex)
     offset = 0

@@ -27,7 +27,7 @@ from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size
 from .base import SolverBase
 
 
@@ -50,16 +50,17 @@ def to_numpy_array(g, block_names):
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks must be 1 or 2.")
 
-    n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
+    block_sizes = [get_block_size(g[name]) for name in block_names]
+    n_spin_orbital = numpy.sum(block_sizes)
 
     # FIXME: Bit ugly
     n_data = g[block_names[0]].data.shape[0]
 
     data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=complex)
     offset = 0
-    for name in block_names:
+    for ib, name in enumerate(block_names):
         block = g[name]
-        block_dim = len(block.indices)
+        block_dim = block_sizes[ib]
         data[:, offset:offset + block_dim, offset:offset + block_dim] = block.data
         offset += block_dim
 
@@ -142,7 +143,7 @@ class ALPSCTHYBSolver(SolverBase):
         # Non-interacting part of the local Hamiltonian including chemical potential
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin2, spin1, spin2, ...
-        H0 = extract_H0(self._G0_iw)
+        H0 = extract_H0(self._G0_iw, self.block_names)
 
         # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
         # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...

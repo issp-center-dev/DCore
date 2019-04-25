@@ -13,6 +13,9 @@ enable_testing()
 
 find_package(PythonInterp REQUIRED)
 message(STATUS "Found python executable: ${PYTHON_EXECUTABLE}")
+if (${PYTHON_VERSION_MAJOR} EQUAL 3)
+    message(FATAL_ERROR "Python 3.x is not supported!")
+endif()
 
 set(PYTHON_INTERPRETER ${PYTHON_EXECUTABLE})
 
