@@ -87,10 +87,10 @@ class Wannier90Model(LatticeModel):
     def __init__(self, params):
         super(Wannier90Model, self).__init__(params)
 
-        self._nkdiv = _set_nk(params["system"]["nk"],
-                             params["system"]["nk0"],
-                             params["system"]["nk1"],
-                             params["system"]["nk2"])
+        self._nkdiv = _set_nk(params["model"]["nk"],
+                             params["model"]["nk0"],
+                             params["model"]["nk1"],
+                             params["model"]["nk2"])
         self._spin_orbit = params['model']['spin_orbit']
 
 

@@ -118,7 +118,7 @@ class BetheModel(LatticeModel):
     """
     def __init__(self, params):
         super(BetheModel, self).__init__(params)
-        self._nk = params["system"]["nk"]
+        self._nk = params["model"]["nk"]
 
     @classmethod
     def name(cls):
@@ -141,7 +141,7 @@ class BetheModel(LatticeModel):
     def generate_model_file(self):
         p = self._params
         seedname = p["model"]["seedname"]
-        Hk, weight = _generate_bethe_lattice_model(int(p['model']['norb']), p['model']['t'], p['system']['nk'])
+        Hk, weight = _generate_bethe_lattice_model(int(p['model']['norb']), p['model']['t'], p['model']['nk'])
         _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, weight)
 
         if p['model']['spin_orbit']:
@@ -159,7 +159,7 @@ class NNNHoppingModel(LatticeModel):
     def __init__(self, params):
         super(NNNHoppingModel, self).__init__(params)
 
-        self._nk = params["system"]["nk"]
+        self._nk = params["model"]["nk"]
 
     @classmethod
     def name(cls):
@@ -212,7 +212,7 @@ class NNNHoppingModel(LatticeModel):
         spin_orbit = p['model']['spin_orbit']
         spatial_dim = self.__class__.spatial_dim()
         norb = int(p['model']['norb'])
-        nk = p['system']['nk']
+        nk = p['model']['nk']
         nkbz = nk**spatial_dim
         Hk = numpy.zeros((nkbz, norb, norb), dtype=complex)
         nkdiv = self.nkdiv()
