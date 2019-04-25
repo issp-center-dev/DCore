@@ -80,7 +80,7 @@ class TestMethods(unittest.TestCase):
             b << (D/2.0)**2 * SemiCircular(D)
 
         # Random local transfer matrix
-        H0 = [numpy.random.rand(len(b.indices), len(b.indices)) for name, b in Delta_iw]
+        H0 = [numpy.random.rand(2*n_orbs, 2*n_orbs) for name, b in Delta_iw]
         H0 = [h + h.conjugate().transpose() for h in H0]
 
         G0_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
