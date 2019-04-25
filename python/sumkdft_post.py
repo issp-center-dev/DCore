@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import numpy
 
-from pytriqs.applications.dft.sumk_dft_tools import SumkDFTTools
+from .dft_tools_compat import SumkDFTTools
 import pytriqs.utility.mpi as mpi
 
 class SumkDFTDCorePost(SumkDFTTools):
