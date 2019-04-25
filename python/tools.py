@@ -144,10 +144,7 @@ def extract_H0_from_tail(G0_iw):
         raise RuntimeError('extract_H0_from_tail does not support type {}'.format(type(G0_iw)))
 
 def compute_diag_basis(G0_iw):
-    H_loc0 = {}
-    #for name, block in G0_iw:
-        #H_loc0[name] = numpy.array(block.tail[2])
-    H_loc0[name] = extract_H0_from_tail(G0_iw)
+    H_loc0 = extract_H0_from_tail(G0_iw)
     rot = {}
     for sp in H_loc0.keys():
         eigval, rot[sp] = numpy.linalg.eigh(H_loc0[sp])
