@@ -3,18 +3,46 @@
 Input-file format
 =================
 
-The input file is constructed of five blocks, ``[model]``, ``[system]``, ``[impurity]``, ``[control]`` and ``[tool]``.
-The example of the input file is shown as follows:
+The input file consists of five parameter blocks named ``[model]``, ``[system]``, ``[impurity_solver]``, ``[control]``, and ``[tool]``.
 
-.. literalinclude:: ../tutorial/nis/nis.ini
-   :language: ini
+..
+    The example of the input file is shown as follows:
 
-The details of each block will be described below.
+    .. literalinclude:: ../tutorial/nis/nis.ini
+       :language: ini
+
+The following table shows which blocks are used by each program.
+
+..
+    .. csv-table::
+        :header: "", [model], [system], [impurity_solver], [control], [tool]
+        :widths: 5, 5, 5, 5, 5, 5
+
+        ``dcore_pre``, Yes,
+        ``dcore``, , Yes, Yes, Yes, Yes
+        ``dcore_check``, Yes,,, Yes
+        ``dcore_post``, Yes,, Yes,, Yes
+
+.. csv-table::
+    :header: "", ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_post``
+    :widths: 5, 5, 5, 5, 5
+
+    [model], Yes,, Yes, Yes
+    [system],, Yes
+    [impurity_solver],, Yes,, Yes
+    [control],, Yes, Yes
+    [tool],, Yes,, Yes
+
+For example, we can see that ``dcore_pre`` needs to be re-executed only when [model] block is changed.
+We can change
+
+The parameters included in each block are explained below.
+
 
 [model] block
 ~~~~~~~~~~~~~
 
-``dcore_pre``, ``dcore_check`` and ``dcore_post`` read this block.
+.. ``dcore_pre``, ``dcore_check`` and ``dcore_post`` read this block.
 
 .. include:: model_desc.txt
 
@@ -190,7 +218,7 @@ you specify the parameter ``density-density`` as
 [system] block
 ~~~~~~~~~~~~~~
 
-``dcore`` read this block.
+.. ``dcore`` read this block.
 
 .. include:: system_desc.txt
 
@@ -213,7 +241,7 @@ where :math:`\langle \cdots \rangle_0` indicates the expectation value at the in
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-dcore and dcore_post read this block.
+.. ``dcore`` and ``dcore_post`` read this block.
 
 .. include:: impurity_solver_desc.txt
 
@@ -226,13 +254,13 @@ For more details, please see the reference page of
 [control] block
 ~~~~~~~~~~~~~~~
 
-dcore reads this block.
+.. ``dcore`` reads this block.
 
 .. include:: control_desc.txt
 
 [tool] block
 ~~~~~~~~~~~~
 
-dcore_check and dcore_post read this block.
+.. ``dcore_check`` and ``dcore_post`` read this block.
 
 .. include:: tool_desc.txt
