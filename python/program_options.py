@@ -44,6 +44,10 @@ def create_parser():
     parser.add_option("model", "equiv", str, "None",
                       "Equivalence of each correlated shell. Please, be careful to use it (See below).")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
+    parser.add_option("model", "nk", int, 8, "Number of *k* along each line")
+    parser.add_option("model", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
+    parser.add_option("model", "nk1", int, 0, "Number of *k* along b_1 (for lattice = wannier90, external)")
+    parser.add_option("model", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
     parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case (See :ref:`pbtutorial`).")
     parser.add_option("model", "time_reversal", bool, False, "If true, an average over spin components are taken.")
     parser.add_option("model", "interaction", str, "kanamori",
@@ -66,21 +70,10 @@ def create_parser():
     parser.add_option("system", "n_tau", int, 10000, "Number of imaginary-time points")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
     parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
-    parser.add_option("system", "nk", int, 8, "Number of *k* along each line")
-    parser.add_option("system", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
-    parser.add_option("system", "nk1", int, 0, "Number of *k* along b_1 (for lattice = wannier90, external)")
-    parser.add_option("system", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
     parser.add_option("system", "prec_mu", float, 0.0001,
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction (See below)")
-    parser.add_option("system", "perform_tail_fit", bool, False, "Whether or not perform the tail-fit.")
-    parser.add_option("system", "fit_max_moment", int, 2, "Highest moment to fit in the tail of Sigma_iw.")
-    parser.add_option("system", "fit_min_w", float, 5.0, "Matsubara frequency from which tail fitting should start.")
-    parser.add_option("system", "fit_max_w", float, 10.0, "Matsubara frequency at which tail fitting should end.")
-    parser.add_option("system", "n_l", int, 0,
-                      "The number of the Legendre polynomial for QMC. If not, the solver's default value is used.",
-                      OptionStatus.RETIRED)
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',

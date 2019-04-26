@@ -43,10 +43,10 @@ class ExternalModel(LatticeModel):
             raise Exception("Prepare, in advance, '%s' file which stores DFT data in 'dft_input' subgroup" % h5_file)
 
         # set nkdiv
-        self._nkdiv = _set_nk(params["system"]["nk"],
-                             params["system"]["nk0"],
-                             params["system"]["nk1"],
-                             params["system"]["nk2"])
+        self._nkdiv = _set_nk(params["model"]["nk"],
+                             params["model"]["nk0"],
+                             params["model"]["nk1"],
+                             params["model"]["nk2"])
 
     @classmethod
     def name(self):
