@@ -65,8 +65,6 @@ One can check the convergence of DMFT iterations by using ``dcore_check`` progra
 
    $ dcore_check dmft_bethe.ini
 
-The extension can be pdf, eps, jpg, png, etc.
-
 .. We can find the following standard output.
 
 ``dcore_check`` program prints the value of the chemical potential at each iteration on the standard output:
