@@ -13,25 +13,15 @@ The input file consists of five parameter blocks named ``[model]``, ``[system]``
 
 The following table shows which blocks are used by each program.
 
-..
-    .. csv-table::
-        :header: "", [model], [system], [impurity_solver], [control], [tool]
-        :widths: 5, 5, 5, 5, 5, 5
-
-        ``dcore_pre``, Yes,
-        ``dcore``, , Yes, Yes, Yes, Yes
-        ``dcore_check``, Yes,,, Yes
-        ``dcore_post``, Yes,, Yes,, Yes
-
 .. csv-table::
     :header: "", ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_post``
     :widths: 5, 5, 5, 5, 5
 
-    [model], Yes,, Yes, Yes
-    [system],, Yes
+    [model], Yes, Yes, Yes, Yes
+    [system],, Yes, Yes, Yes
     [impurity_solver],, Yes,, Yes
-    [control],, Yes, Yes
-    [tool],, Yes,, Yes
+    [control],, Yes
+    [tool],,,, Yes
 
 For example, we can see that ``dcore_pre`` needs to be re-executed only when [model] block is changed.
 We can change
