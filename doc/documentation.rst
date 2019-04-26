@@ -52,6 +52,7 @@ Reference manual
 
 Impurity solvers
 ----------------
+.. _impuritysolvers:
 
 .. toctree::
    :maxdepth: 1

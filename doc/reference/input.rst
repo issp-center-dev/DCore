@@ -24,13 +24,13 @@ The following table shows which blocks are used by each program.
     [tool],,,, Yes
 
 For example, we can see that ``dcore_pre`` needs to be re-executed only when [model] block is changed.
-We can change
 
 The parameters included in each block are explained below.
 
-
 [model] block
 ~~~~~~~~~~~~~
+
+This block includes parameters for defining a model to be solved.
 
 .. ``dcore_pre``, ``dcore_check`` and ``dcore_post`` read this block.
 
@@ -198,7 +198,7 @@ you specify the parameter ``density-density`` as
 
 ::
 
-   density-density = True
+   density_density = True
 
 .. note::
 
@@ -207,6 +207,8 @@ you specify the parameter ``density-density`` as
 
 [system] block
 ~~~~~~~~~~~~~~
+
+This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.
 
 .. ``dcore`` read this block.
 
@@ -231,18 +233,23 @@ where :math:`\langle \cdots \rangle_0` indicates the expectation value at the in
 [impurity_solver] block
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+This block specifies an impurity solver to be used and necessary parameters for running the solver program.
+
 .. ``dcore`` and ``dcore_post`` read this block.
 
 .. include:: impurity_solver_desc.txt
 
-**... and other parameters (Solver dependent)**.
-We have to specify additional parameters with types (e.g. ``n_cycles{int} = 500000``).
-For more details, please see the reference page of
-`TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html#solve-parameters>`_,
-`ALPS/cthyb <https://github.com/shinaoka/triqs_interface#program-parameters>`_, etc..
+Additionally, we have to specify solver-dependent parameters in the way like ``n_cycles{int} = 500000``.
+For details, see :ref:`the reference manual for each solver<impuritysolvers>`.
+
+..
+    `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html#solve-parameters>`_,
+    `ALPS/cthyb <https://github.com/shinaoka/triqs_interface#program-parameters>`_, etc..
 
 [control] block
 ~~~~~~~~~~~~~~~
+
+This block includes parameters that control the self-consistency loop of DMFT.
 
 .. ``dcore`` reads this block.
 
@@ -250,6 +257,8 @@ For more details, please see the reference page of
 
 [tool] block
 ~~~~~~~~~~~~
+
+This block includes parameters that are solely used by ``dcore_post``.
 
 .. ``dcore_check`` and ``dcore_post`` read this block.
 
