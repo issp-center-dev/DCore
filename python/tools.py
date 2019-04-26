@@ -23,6 +23,7 @@ import numpy
 import shlex
 import subprocess
 from itertools import *
+import ast
 
 from pytriqs.utility.h5diff import compare, failures
 from pytriqs.utility.h5diff import h5diff as h5diff_org
@@ -320,6 +321,59 @@ def read_potential(filename, mat):
         print("Error:", e)
         print(line, end="")
         exit(1)
+
+
+def set_potential(input_str, name, n_inequiv_shells, dim_sh, spin_orbit):
+    """
+
+    Parameters
+    ----------
+    input_str
+    name
+    n_inequiv_shells
+    dim_sh
+    spin_orbit
+
+    Returns
+    -------
+    numpy.ndarray with complex type
+
+        shape = (2, norb, norb)     w/  spin-orbit
+                (1, 2*norb, 2*norb) w/o spin-orbit
+
+    """
+
+    print("\nInterpreting {} = {}".format(name, repr(input_str)))
+
+    # init potential matrix
+    if spin_orbit:
+        pot = [numpy.zeros((1, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
+    else:
+        pot = [numpy.zeros((2, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
+
+    # read potential matrix
+    if input_str != 'None':
+        try:
+            files = ast.literal_eval(input_str)
+            assert isinstance(files, dict), "should be dictionary"
+            assert all([ish < n_inequiv_shells for ish in files.keys()]), "The keys must fulfill: key < n_inequiv_shells"
+        except Exception as e:
+            print("Error: %s =" % name, input_str)
+            print(e)
+            exit(1)
+
+        for ish, file in files.items():
+            read_potential(file, pot[ish])
+
+    # print potential
+    print("\n--- results for %s" % name)
+    for ish, pot_ish in enumerate(pot):
+        print("ish =", ish)
+        for sp in range(pot_ish.shape[0]):
+            print("sp =", sp)
+            print(pot_ish[sp])
+
+    return pot
 
 
 def save_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):

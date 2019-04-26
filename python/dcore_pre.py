@@ -276,36 +276,11 @@ def __generate_local_potential(p):
     # print factor
     print("fac =", fac)
 
-    # init potential
-    # pot.shape = (2, orb1, orb2)     w/  spin-orbit
-    #             (1, 2*orb1, 2*orb2) w/o spin-orbit
-    if not spin_orbit:
-        pot = [numpy.zeros((2, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
-    else:
-        pot = [numpy.zeros((1, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
+    # set potential matrix
+    pot = set_potential(local_potential_matrix, "local_potential_matrix", n_inequiv_shells, dim_sh, spin_orbit)
 
-    # read potential matrix
-    if local_potential_matrix != 'None':
-        try:
-            files = ast.literal_eval(local_potential_matrix)
-            assert isinstance(files, dict)
-            assert all([ish < n_inequiv_shells for ish in files.keys()])
-        except Exception as e:
-            print("Error: local_potential_matrix =", local_potential_matrix)
-            print(e)
-            exit(1)
-
-        for ish, file in files.items():
-            read_potential(file, pot[ish])
-            pot[ish] *= fac[ish]
-
-    # print potential
-    print("\n--- potential matrix for inequivalent shells")
-    for ish, pot_ish in enumerate(pot):
-        print("ish =", ish)
-        for sp in range(pot_ish.shape[0]):
-            print("sp =", sp)
-            print(pot_ish[sp])
+    for ish in range(n_inequiv_shells):
+        pot[ish] *= fac[ish]
 
     # check if potential matrix is hermitian
     def is_hermitian(mat):
