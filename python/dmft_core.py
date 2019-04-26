@@ -326,29 +326,9 @@ class DMFTCoreSolver(object):
         # Set initial value to self-energy
         if self._params["control"]["initial_static_self_energy"] != "None":
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Setting initial value to self-energy @@@@@@@@@@@@@@@@@@@@@@@@")
-            try:
-                files = ast.literal_eval(self._params["control"]["initial_static_self_energy"])
-                assert isinstance(files, dict)
-                assert all([ish < self.n_inequiv_shells for ish in files.keys()])
-            except Exception as e:
-                print("Error in parsing initial_static_self_energy!")
-                print(e)
-                exit(1)
-
-            if self.use_spin_orbit:
-                init_se = [numpy.zeros((1, self._dim_sh[ish], self._dim_sh[ish]), numpy.complex) for ish in range(self.n_inequiv_shells)]
-            else:
-                init_se = [numpy.zeros((2, self._dim_sh[ish], self._dim_sh[ish]), numpy.complex) for ish in range(self.n_inequiv_shells)]
-
-            for ish, file in files.items():
-                read_potential(file, init_se[ish])
-
-            print("\n--- initial self-energy matrix")
-            for ish, init_se_ish in enumerate(init_se):
-                print("ish =", ish)
-                for sp in range(init_se_ish.shape[0]):
-                    print("sp =", sp)
-                    print(init_se_ish[sp])
+            init_se = set_potential(self._params["control"]["initial_static_self_energy"],
+                                    "initial_static_self_energy",
+                                    self.n_inequiv_shells, self._dim_sh, self.use_spin_orbit)
 
             for ish in range(self.n_inequiv_shells):
                 for isp, sp in enumerate(self._spin_block_names):
