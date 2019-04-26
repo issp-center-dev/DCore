@@ -31,8 +31,6 @@ with open("dmft.ini", 'w') as f:
     print("norb = 3, 4", file=f)
     print("kanamori = [(3.0, 2.0, 0.5), (5.0, 3.0, 1.0)]", file=f)
     print("spin_orbit = True", file=f)
-    print("", file=f)
-    print("[system]", file=f)
     print("nk0 = 40", file=f)
     print("nk1 = 1", file=f)
     print("nk2 = 1", file=f)

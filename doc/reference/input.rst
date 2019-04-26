@@ -190,7 +190,7 @@ you specify the parameter ``density-density`` as
 [system] block
 ~~~~~~~~~~~~~~
 
-``dcore_pre`` and ``dcore`` read this block.
+``dcore`` read this block.
 
 .. include:: system_desc.txt
 
