@@ -32,7 +32,13 @@ release = '@DCORE_RELEASE@'
 #mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
 templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
 
-html_theme = 'classic'
+#html_theme = 'classic'
+#html_theme = 'sphinxdoc'
+
+html_theme = 'wild'
+import wild_sphinx_theme
+html_theme_path = [wild_sphinx_theme.get_theme_dir()]
+
 #html_theme_path = ['@TRIQS_THEMES_PATH@']
 html_show_sphinx = False
 html_context = {'header_title': 'DCore',
@@ -49,5 +55,5 @@ htmlhelp_basename = 'DCoredoc'
 
 #intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None), 'triqslibs': ('http://triqs.ipht.cnrs.fr/1.x', None), 'triqscthyb': ('https://triqs.ipht.cnrs.fr/1.x/applications/cthyb/', None), 'triqsdfttools': ('https://triqs.ipht.cnrs.fr/1.x/applications/dft_tools/', None)}
 
-def setup(app):
-    app.add_stylesheet('dcore.css')
+#def setup(app):
+#    app.add_stylesheet('dcore.css')
