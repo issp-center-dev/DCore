@@ -90,6 +90,8 @@ Prerequisites
 
    - `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
 
+   - `ALPS/CT-HYB-SEGMENT <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_
+
    - `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
      [Note: checkout tag **1.4.2** on master branch, or download the released package from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_]
    and others. Please see a complete list of the supported impurity solvers in :doc:`reference/impuritysolvers`.
@@ -106,7 +108,7 @@ Prerequisites
    .. note::
 
       One must build TRIQS, TRIQS/DFTTools, and TRIQS solvers using the same C++ compiler with the same C++ standard (C++14).
-      One does not necessarily have to build ALPS/CT-HYB with the same C++ compiler as that used for TRIQS.
+      One does not necessarily have to build ALPS/CT-HYB and/or ALPS/CT-HYB-SEGMENT with the same C++ compiler as that used for TRIQS.
 
    .. note::
 
