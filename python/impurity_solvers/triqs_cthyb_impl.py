@@ -37,6 +37,9 @@ def main(input_file, output_file):
     Solve the impurity problem.
     """
 
+    import time
+    t_start = time.time()
+
     with HDFArchive(os.path.abspath(input_file), 'r') as h:
         rot = h['rot'] if 'rot' in h else None
         beta = h['beta']
@@ -85,6 +88,9 @@ def main(input_file, output_file):
             h['Sigma_iw'] = Sigma_iw
             h['Gimp_iw'] = G_iw
 
+    t_end = time.time()
+    if mpi.is_master_node():
+        print('TRIQS/cthyb ran for {} seconds.'.format(t_end-t_start))
 
 
 if __name__ == '__main__':
