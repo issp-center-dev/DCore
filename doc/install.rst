@@ -34,14 +34,14 @@ You can download the source files in two ways.
 Prerequisites
 -------------
 
-#. **[mandatory]** ``DCore`` is implemented using :ref:`TRIQS <triqslibs:welcome>` library.
+#. **[mandatory]** ``DCore`` is implemented using `TRIQS <https://triqs.github.io/triqs/>`_ library.
    You first need to install ``TRIQS`` library prior to installing all other programs.
    In the following, we suppose that ``TRIQS`` is installed in directory *path_to_triqs*.
 
    .. note::
 
      ``DCore`` supports ``TRIQS`` version **1.4.2** (the current version 2.0 is not supported).
-     Since the installation manual in :ref:`TRIQS <triqslibs:welcome>` is not compatible with **1.4.2**, we briefly describe below how to install it.
+     Since the installation manual in the TRIQS official website is not compatible with **1.4.2**, we briefly describe below how to install it.
 
      #. You can download the zip file or tar file from https://github.com/TRIQS/triqs/releases/tag/1.4.2.
         The version **1.4.2** is not compatible with the latest version of h5py (>=2.8.0).
@@ -58,7 +58,7 @@ Prerequisites
           $ make install
 
 #. **[mandatory]**
-   You also need :ref:`DFTTools <triqsdfttools:dft>`, which runs on the ``TRIQS`` library.
+   You also need `DFTTools <https://triqs.github.io/dft_tools>`_, which runs on the ``TRIQS`` library.
 
    .. note::
 
@@ -86,15 +86,12 @@ Prerequisites
 #. **[optional]** You will also need at least one impurity solver.
    At present, ``DCore`` supports the following programs:
 
-   - `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
+   * `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
+   * `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
+   * `ALPS/CT-HYB-SEGMENT <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_
+   * `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
 
-   - `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
-
-   - `ALPS/CT-HYB-SEGMENT <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_
-
-   - `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
-     [Note: checkout tag **1.4.2** on master branch, or download the released package from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_]
-   and others. Please see a complete list of the supported impurity solvers in :doc:`reference/impuritysolvers`.
+[Note: checkout tag **1.4.2** on master branch, or download the released package from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_] and others. Please see :ref:`a complete list of the supported impurity solvers <impuritysolvers>`.
 
    .. note::
 
@@ -216,3 +213,4 @@ Installation steps
 ..      $ git co 1.4
 ..
 .. Then follow the steps 2 to 5 described above to compile the code.
+

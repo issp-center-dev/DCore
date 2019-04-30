@@ -56,7 +56,6 @@ Note that ``dcore`` must be lauched without using the mpirun command as
 it launches MPI processes internally for heavy tasks.
 The QMC solver is executed with the number of MPI processes as well.
 
-.. We run this sample with 24 MPI processes.
 Each self-consistent step takes around 5 min,
 most of which is spent for solving an effective impurity problem by QMC.
 40 iterations take around 200 min.
@@ -151,3 +150,4 @@ The plot should look like the following.
 .. image:: sigma.svg
    :width: 600
    :align: center
+
