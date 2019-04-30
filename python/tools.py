@@ -524,3 +524,28 @@ def load_giw(h5file, path, g):
     omega_imag = numpy.array([complex(x) for x in g.mesh]).imag
     if not numpy.allclose(omega_imag, h5file[path + '/wn'][()]):
         raise RuntimeError("Mesh is not compatible!")
+
+
+def make_empty_dir(dir_path):
+    """
+
+    Prepare a working directory as an empty directory.
+    Any existing file or directory at the specified path is removed.
+
+    Parameters
+    ----------
+    dir_path : str
+        Path to a directory
+
+    """
+    import shutil
+
+    if os.path.exists(dir_path):
+        if os.path.isfile(dir_path):
+            os.remove(dir_path)
+        elif os.path.isdir(dir_path):
+            shutil.rmtree(dir_path)
+        else:
+            raise RuntimeError("Failed to remove " + dir_path)
+
+    os.makedirs(dir_path)

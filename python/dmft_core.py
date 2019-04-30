@@ -138,8 +138,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
 
     work_dir_org = os.getcwd()
     work_dir = 'work/imp_shell'+str(ish)+"_ite"+str(ite)
-    if not os.path.isdir(work_dir):
-        os.makedirs(work_dir)
+    make_empty_dir(work_dir)
     os.chdir(work_dir)
 
     if not mesh is None:
