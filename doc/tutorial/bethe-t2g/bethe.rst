@@ -27,7 +27,7 @@ The script ``dcore_pre`` is invoked for this purpose:
 .. Then it outputs model HDF5 file (``bethe.h5``).
 .. Parameters in [model] and [system] blocks are reads in the input file.
 
-If succeeded, a h5 file named *seedname*.h5 (``bethe.h5`` in the present case) is generated.
+If successful, a h5 file named *seedname*.h5 (``bethe.h5`` in the present case) is generated.
 
 DMFT loop : ``dcore``
 ---------------------
@@ -37,6 +37,9 @@ In this tutorial, we use continuous-time QMC implementation of ALPS/CT-HYB.
 The runtime of the impurity solver is set to 300 sec.
 You should not use the Hubbard-I solver for a metallic system.
 One can run the program with 24 MPI processes as follows.
+For solving the same model with TRIQS/cthyb, use 
+:download:`this input file <triqs_cthyb/dmft_bethe.ini>` instead.
+
 
 .. code-block:: bash
 
