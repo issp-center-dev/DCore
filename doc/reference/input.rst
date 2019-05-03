@@ -17,11 +17,12 @@ The following table shows which blocks are used by each program.
     :header: "", ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_post``
     :widths: 5, 5, 5, 5, 5
 
-    [model], Yes, Yes, Yes, Yes
-    [system],, Yes, Yes, Yes
-    [impurity_solver],, Yes,, Yes
-    [control],, Yes
-    [tool],,,, Yes
+    [model]          ,  Yes, Yes, Yes, Yes
+    [system]         ,     , Yes, Yes, Yes
+    [impurity_solver],     , Yes,    , Yes
+    [control]        ,     , Yes
+    [tool]           ,     ,    ,    , Yes
+    [mpi]            ,     , Yes,    , Yes
 
 For example, we can see that ``dcore_pre`` needs to be re-executed only when [model] block is changed.
 
@@ -295,3 +296,10 @@ This block includes parameters that are solely used by ``dcore_post``.
 .. ``dcore_check`` and ``dcore_post`` read this block.
 
 .. include:: tool_desc.txt
+
+[mpi] block
+------------
+
+This block includes parameters which are read by ``dcore`` and ``dcore_post``.
+
+.. include:: mpi_desc.txt
