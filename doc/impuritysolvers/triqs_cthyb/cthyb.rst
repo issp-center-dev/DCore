@@ -3,6 +3,25 @@
 CT-QMC: ``TRIQS/cthyb``
 =======================
 
+Install
+-------
+
+Follow the installation guide in `TRIQS/cthyb <https://triqs.github.io/cthyb/1.4/>`_.
+
+.. note::
+
+    - Checkout tag **1.4.2** on master branch, or download the released package
+      from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_.
+
+    - Be sure to use the same C++ compiler as the one used to build the ``TRIQS`` library.
+
+    - If you want to treat the spin-orbit coupling in ``TRIQS/cthyb`` solver,
+      it must be built with the following CMake options:
+
+      ::
+
+        -DHYBRIDISATION_IS_COMPLEX=ON -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON
+
 Basic parameters for QMC
 ------------------------
 

@@ -34,8 +34,9 @@ You can download the source files in two ways.
 Prerequisites
 -------------
 
-#. **[mandatory]** ``DCore`` is implemented using `TRIQS <https://triqs.github.io/triqs/>`_ library.
-   You first need to install ``TRIQS`` library prior to installing all other programs.
+#. You first need to install `TRIQS <https://triqs.github.io/triqs/>`_ library prior to installing all other programs,
+   since ``DCore`` is implemented using ``TRIQS``.
+
    In the following, we suppose that ``TRIQS`` is installed in directory *path_to_triqs*.
 
    .. note::
@@ -57,8 +58,7 @@ Prerequisites
           $ make test
           $ make install
 
-#. **[mandatory]**
-   You also need `DFTTools <https://triqs.github.io/dft_tools>`_, which runs on the ``TRIQS`` library.
+#. You also need `DFTTools <https://triqs.github.io/dft_tools>`_, which runs on the ``TRIQS`` library.
 
    .. note::
 
@@ -83,38 +83,28 @@ Prerequisites
           $ make test
           $ make install
 
-#. **[optional]** You will also need at least one impurity solver.
-   At present, ``DCore`` supports the following programs:
+#. You will also need at least one impurity solver.
 
+   For example, the following programs are supported at present:
+
+   * :doc:`ALPS/CT-HYB<impuritysolvers/alpscore_cthyb/cthyb>`
+   * :doc:`ALPS/CT-HYB-SEGMENT<impuritysolvers/alpscore_ctseg/ctseg>`
+   * :doc:`TRIQS/cthyb<impuritysolvers/triqs_cthyb/cthyb>`
+   * :doc:`Hubbard-I solver<impuritysolvers/triqs_hubbard_one/hubbard_one>`
+
+   See :ref:`here <impuritysolvers>` for a complete list of supported impurity solvers and their user manuals.
+
+..
    * `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
    * `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
    * `ALPS/CT-HYB-SEGMENT <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_
    * `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
 
-[Note: checkout tag **1.4.2** on master branch, or download the released package from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_] and others. Please see :ref:`a complete list of the supported impurity solvers <impuritysolvers>`.
-
-   .. note::
-
-      If you want to treat the spin-orbit coupling in ``TRIQS/cthyb`` solver,
-      it must be built with the following CMake options:
-
-      ::
-
-         -DHYBRIDISATION_IS_COMPLEX=ON -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON
-
+..
    .. note::
 
       One must build TRIQS, TRIQS/DFTTools, and TRIQS solvers using the same C++ compiler with the same C++ standard (C++14).
       One does not necessarily have to build ALPS/CT-HYB and/or ALPS/CT-HYB-SEGMENT with the same C++ compiler as that used for TRIQS.
-
-   .. note::
-
-      ``ALPS/CT-HYB`` is developed by one of the main developers of DCore, H. Shinaoka.
-      Both of ``ALPS/CT-HYB`` and ``TRIQS/cthyb`` implement the hybridization-expansion continuous-time quantum Monte Carlo method.
-      The main difference is the reliability of measurement of the single-particle Green's function.
-      ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
-      The non-worm conventional sampling, which is implemented in ``TRIQS/cthyb``,
-      may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).
 
 Installation steps
 ------------------
