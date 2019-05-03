@@ -115,6 +115,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
 
     """
 
+    assert isinstance(basis_rot, str)
 
     Solver = impurity_solvers.solver_classes[solver_name]
 
@@ -132,7 +133,12 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     sol.set_G0_iw(G0_iw)
 
     # Compute rotation matrix to the diagonal basis if supported
-    rot = compute_diag_basis(G0_iw) if basis_rot else None
+    if basis_rot == 'None':
+        rot = None
+    elif basis_rot == 'Hloc':
+        rot = compute_diag_basis(G0_iw)
+    else:
+        raise RuntimeError("Invalid basis_rot : {}".format(basis_rot))
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
