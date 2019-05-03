@@ -8,6 +8,8 @@ Output-file format
 
 -   *seedname*.h5
 
+    .. todo:: Update dcore_pre.txt
+
     It has two groups, ``dft_input`` and ``Dcore``.
     See `DFTTools <https://triqs.ipht.cnrs.fr/applications/dft_tools/reference/h5structure.html>`_ for the details of the data structure in ``dft_input`` group.
     The data included in ``Dcore`` group is list below:
@@ -18,6 +20,8 @@ Output-file format
 ~~~~~~~~~
 
 -   *seedname*.out.h5
+
+    .. todo:: Update dcore_out.txt
 
     All data are stored in ``dmft_out`` group.
     The following list summarizes data structure in the ``dmft_out`` group:
@@ -83,3 +87,19 @@ Output-file format
 
 ``dcore_post``
 ~~~~~~~~~~~~~~
+
+-   *seedname*\_dos.dat
+
+    .. todo:: paste data
+
+-   *seedname*\_dos0.dat
+
+    .. todo:: paste data
+
+-   *seedname*\_akw.dat
+
+    .. todo:: paste data
+
+-   *seedname*\_akw0.dat
+
+    .. todo:: paste data
