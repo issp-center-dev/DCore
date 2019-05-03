@@ -44,7 +44,7 @@ Reference manual
 ----------------
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    reference/programs
    reference/input
