@@ -66,13 +66,14 @@ Impurity solvers
    impuritysolvers/null
    impuritysolvers/how_to_integrate
 
-FAQs
-----
+..
+    FAQs
+    ----
 
-.. toctree::
-   :maxdepth: 2
+    .. toctree::
+       :maxdepth: 2
 
-   faqs/faqs
+       faqs/faqs
 
 To be completed
 ---------------

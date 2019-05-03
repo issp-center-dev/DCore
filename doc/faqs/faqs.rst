@@ -1,6 +1,24 @@
 .. Frequently-Asked Questions
 .. ==========================
 
+FAQs
+====
+
+.. contents::
+   :local:
+   :depth: 2
+
+Install
+-------
+
+``dcore``
+---------
+
+How should I judge convergence of the DMFT loop?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use the ``dcore_check`` and look at the generated figures.
+We do not implement automatic convergence check, because results by QMC solvers include statistical errors and simple convergence criteria does not work.
 
 Impurity solvers
 ----------------

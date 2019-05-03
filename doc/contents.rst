@@ -8,5 +8,6 @@ Table of contents
    install
    documentation
    presentation
+   faqs/faqs
    issues
    about
