@@ -50,9 +50,10 @@ Reference manual
    reference/input
    reference/output
 
+.. _impuritysolvers:
+
 Impurity solvers
 ----------------
-.. _impuritysolvers:
 
 .. toctree::
    :maxdepth: 1

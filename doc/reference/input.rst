@@ -1,5 +1,3 @@
-.. _inputformat:
-
 Input-file format
 =================
 
