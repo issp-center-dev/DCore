@@ -9,6 +9,10 @@ One can call ALPS/CT-HYB from DCore through the "ALPS/cthyb" interface.
 For the moment, this interface is the first choice for QMC solvers in DCore
 as it is used by developers of DCore on a regular basis.
 
+The old triqs_interface for DCore v1.x has retired.
+The new interface involved in DCore 2.x requires only the installation of ALPS/CT-HYB 1.x.
+Please follow `the instruction on the official site <https://github.com/ALPSCore/CT-HYB/wiki>`_.
+
 A minimum working example is the following.
 We assumed that the executable is installed at "$HOME/opt/CT-HYB/bin/hybmat".
 The solver runs for 300 seconds.
