@@ -40,9 +40,9 @@ This block includes parameters for defining a model to be solved.
 lattice
 ^^^^^^^
 
-A model for DCore is defined in this block.
-You can choose the type of lattice by setting ``lattice``.
-The following preset models are defined:
+.. You can choose the type of lattice by setting ``lattice``.
+
+For model calculations, the following preset models are defined:
 
 * **chain**
 
@@ -50,17 +50,28 @@ The following preset models are defined:
 
 * **cubic**
 
-* **bethe**: Semicircular DOS with energy ranges [-2t:2t].
-
-* **external**:
-
-    .. todo:: explain lattice=external
-
-* **wannier90**: Read hopping parameters from the Wannier90 output.
+* **bethe** (semicircular DOS with energy ranges [-2t:2t])
 
 .. image:: model.png
    :width: 700
    :align: center
+
+For DFT+DMFT calculations, hopping parameters in the Wannier90 format can be imported by
+
+* **wannier90**
+
+  Place the Wannier90 file in the current directory with the name *seedname*\_hr.dat.
+
+For experts, the lattice data may be prepared by your own. In this case, use
+
+* **external**
+
+  In this mode, you should make all necessary data in ``dft_input`` group of *seedname*.h5.
+  The data structure follows **DFTTools**. For details, see
+  `the reference manual of DFTTools <https://triqs.github.io/dft_tools/1.4/reference/h5structure.html>`_.
+
+
+  The pre-process ``dcore_pre`` does not touch the data in ``dft_input`` group, and write only additional data such as interactions into ``DCore`` group.
 
 interaction
 ^^^^^^^^^^^
