@@ -30,8 +30,9 @@ No, it is not implemented yet.
 If you want to compute it, you need to access to G(k,iw) in HDF5 file, and take summation over k and iw in an appropiate way.
 
 
-Installation
-------------
+..
+    Installation
+    ------------
 
 
 
@@ -65,6 +66,8 @@ The DMFT loop does not converge
 If the chemical potential and/or self-energy look oscillating as a function of the iteration number, decrease ``sigma_mix`` parameter in [control] block.
 
 You might also need to improve the accuracy of QMC sampling by increasing the measurement time.
+
+If the oscillation persists, consider expanding the unitcell to address a symmetry broken solution.
 
 
 Can I enforce zero magnetic moment?
