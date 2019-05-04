@@ -107,7 +107,7 @@ Then, we use gnuplot as
 
 .. code-block:: gnuplot
 
-   gnuplot> plot [0:10][-0.6:0] \
+   plot [0:10][-0.6:0] \
    "cyc3000_warm5000_len50.dat" u 1:3 w l lw 3, \
    "cyc10000_warm5000_len50.dat" u 1:3 w l lw 3, \
    "cyc30000_warm5000_len50.dat" u 1:3 w l lw 3, \
@@ -308,10 +308,10 @@ Then, we use GnuPlot as
 
 .. code-block:: gnuplot
 
-   gnuplot> set xlabel "Order of polynomial"
-   gnuplot> set ylabel "Coefficient"
-   gnuplot> set logscale y
-   gnuplot> plot \
+   set xlabel "Order of polynomial"
+   set ylabel "Coefficient"
+   set logscale y
+   plot \
    "l_cyc3000_warm5000_len50.dat" u 1:(abs($2)) w l lw 3, \
    "l_cyc10000_warm5000_len50.dat" u 1:(abs($2)) w l lw 3, \
    "l_cyc30000_warm5000_len50.dat" u 1:(abs($2)) w l lw 3, \

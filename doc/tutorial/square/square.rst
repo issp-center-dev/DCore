@@ -116,9 +116,9 @@ We can plot it using gnuplot as follows:
 
 .. code-block:: gnuplot
 
-   gnuplot> set xlabel "Energy"
-   gnuplot> set ylabel "DOS"
-   gnuplot> plot "square_dos.dat" w l
+   set xlabel "Energy"
+   set ylabel "DOS"
+   plot "square_dos.dat" w l
 
 .. image:: dos.png
    :width: 700
