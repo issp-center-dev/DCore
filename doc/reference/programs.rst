@@ -64,12 +64,16 @@ This program is used to check the convergence of the DMFT loop.
 
 ::
 
-   $ dcore_check input.ini
+    $ dcore_check input.ini [--prefix PREFIX] [--ext EXT]
+
+Here ``PREFIX`` is the prefix for all output files,
+and ``EXT`` is the file extension of output figures (png, pdf, eps, jpg, etc).
+The default values are ``PREFIX=check/`` and ``EXT=png``.
+All results are stored in **check** directory without specified.
 
 ..
     ``dcore_check`` shows the history of the calculation of the chemical potential and the average of the self energy for imaginary frequencies,
 
-All results are stored in **check** directory.
 Three kinds of figures will be included:
 
 - **iter_mu.png**
