@@ -77,9 +77,26 @@ See :doc:`../reference/input`.
 Can I fix the sign of the magnetic moment in ordered states?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Yes. Set the initial static self-energy using `initial_static_self_energy`` parameter in [control] block.
+Yes. Set the initial static self-energy using ``initial_static_self_energy`` parameter in [control] block.
 This works as a local potential in the first iteration.
 See :doc:`../reference/input` for details.
+
+
+Can I set an initial self-energy for the DMFT loop?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Yes. Use ``initial_self_energy`` parameter in [control] block.
+See :doc:`../reference/input`.
+
+Let's say you want to start the DMFT loop using results obtained for different parameter set.
+To do this, you perform ``dcore_check`` after convergence, and copy **sigma.dat** into a new working directory (with the name sigma_init.dat below).
+Then, assign this file to ``initial_self_energy`` parameter as
+
+::
+
+    [control]
+    initial_self_energy = sigma_init.dat
+
 
 
 ``dcore_check``
@@ -118,7 +135,7 @@ Solver-dependent parameter is not recognized
 The variable type should be specified to be recognized as a solver parameter.
 For example, integer variable with name *num* is written as
 
-.. code-block:: python
+::
 
     [impurity_solver]
     num{int} = 100
