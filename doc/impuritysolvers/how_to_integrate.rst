@@ -1,8 +1,8 @@
 How to integrate your own solver
 ================================
 
-You can use your own impurity solver by wrap the executable as appropriate.
-For this purpose, we provide the null solver as a template of wrapper code.
+You can use your own impurity solver from DCore by wrapping the executable as appropriate.
+The null solver serves as a template of wrapper code.
 
     :download:`null_solver.py <../../python/dcore/impurity_solvers/null_solver.py>`
 
@@ -85,8 +85,8 @@ Edit the template
         with open('./output', 'w') as output_f:
             launch_mpi_subprocesses(mpirun_command, [exec_path, 'input.ini'], output_f)
 
-    The second argument to the function ``launch_mpi_subprocesses`` is the actual command that is executed as a subprocess of **DCore**.
-    Options and arguments to the solver should be aligned as list elements (following ``subprocess`` module in python).
+    The second argument to the function ``launch_mpi_subprocesses`` is the actual command and arguments used for invoking MPI processes from **DCore**.
+    These options and arguments to the solver must be given as a list (refer to ``subprocess`` module in Python).
 
 -   Convert output of the solver
 
