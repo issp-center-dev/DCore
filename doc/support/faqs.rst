@@ -1,8 +1,8 @@
 .. Frequently-Asked Questions
 .. ==========================
 
-FAQs
-====
+FAQ/Troubleshooting
+===================
 
 .. contents::
    :local:
@@ -34,6 +34,20 @@ Installation
 ------------
 
 
+
+
+
+
+``dcore_pre``
+-------------
+
+When should I re-execute ``dcore_pre``?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When you change any parameters in **[model] block**.
+``dcore_pre`` will re-construct the model database in *seedname*.h5.
+
+For changes of parameters other than [model] block, on the other hand, you can restart ``dcore``, skipping ``dcore_pre``.
 
 
 ``dcore``

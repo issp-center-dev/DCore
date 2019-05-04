@@ -7,7 +7,10 @@ Table of contents
    index
    install
    documentation
+   support
+   about
+
+..
    presentation
    faqs/faqs
    issues
-   about
