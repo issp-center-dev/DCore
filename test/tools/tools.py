@@ -18,7 +18,7 @@
 from __future__ import print_function
 
 import numpy
-import scipy
+import h5py
 
 def test_spin_moments_sh():
     from dcore.tools import spin_moments_sh
@@ -44,6 +44,7 @@ def test_spin_moments_sh():
 
 def test_save_load_Sigma_iw():
     from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt
+    from dcore.tools import make_block_gf, save_giw, load_giw
     from dcore.pytriqs_gf_compat import GfImFreq
 
     nsh = 2
@@ -62,6 +63,7 @@ def test_save_load_Sigma_iw():
 
         save_Sigma_iw_sh_txt('Sigma_iw_sh.txt', Sigma_iw_sh, spin_names)
 
+
         Sigma_iw_sh_loaded = [s.copy() for s in Sigma_iw_sh]
         for ish in range(nsh):
             Sigma_iw_sh_loaded[ish].zero()
@@ -72,11 +74,20 @@ def test_save_load_Sigma_iw():
 
         for ish in range(nsh):
             for sp in spin_names:
-                #print(Sigma_iw_sh[ish][sp].data)
-                #print(Sigma_iw_sh_loaded[ish][sp].data)
                 numpy.allclose(mesh_points(Sigma_iw_sh[ish][sp].mesh), mesh_points(Sigma_iw_sh_loaded[ish][sp].mesh))
                 numpy.allclose(Sigma_iw_sh[ish][sp].data, Sigma_iw_sh_loaded[ish][sp].data)
 
+        # HDF5
+        Sigma_iw_sh0 = Sigma_iw_sh[0][spin_names[0]]
+        with h5py.File('sigma.h5', 'w') as ar:
+            save_giw(ar, '/sigma_iw',  Sigma_iw_sh0)
+
+        Sigma_iw_sh0_loaded = Sigma_iw_sh0.copy()
+        with h5py.File('sigma.h5', 'r') as ar:
+            load_giw(ar, '/sigma_iw', Sigma_iw_sh0_loaded)
+
+
+        numpy.allclose(Sigma_iw_sh0.data, Sigma_iw_sh0_loaded.data)
 
 test_spin_moments_sh()
 test_save_load_Sigma_iw()

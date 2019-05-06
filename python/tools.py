@@ -471,3 +471,50 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
                     imag = data[iom, icol]
                     icol += 1
                     Sigma_iw_sh[ish][sp].data[iom, iorb, jorb] = complex(re, imag)
+
+
+def save_giw(h5file, path, g):
+    """
+
+    Save an object of GfImFreq to a HDF5 file
+
+    Parameters
+    ----------
+    h5file : HDF5 archive (h5py)
+    path : str
+    g : GfImFreq
+      object to be saved
+
+    """
+
+    assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
+
+    h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
+    h5file[path + '/data'] = g.data.view(float).reshape(g.data.shape + (2,))
+    h5file[path + '/wn'] = numpy.array([x for x in g.mesh]).imag
+
+
+def load_giw(h5file, path, g):
+    """
+
+    Load data to an object of GfImFreq from a HDF5 file
+    The mesh and shape of g must be set in advance.
+
+    Parameters
+    ----------
+    h5file : HDF5 archive (h5py)
+    path : str
+    g : GfImFreq
+      data will be loaded to g
+
+    """
+
+    assert isinstance(g, GfImFreq)
+    assert h5file[path + '/__version'][()] == 'DCore_GfImFreq_v1'
+
+    data = h5file[path + '/data'][()]
+    g.data[...] = data.view(complex).reshape(data.shape[:-1])
+
+    omega_imag = numpy.array([complex(x) for x in g.mesh]).imag
+    if not numpy.allclose(omega_imag, h5file[path + '/wn'][()]):
+        raise RuntimeError("Mesh is not compatible!")
