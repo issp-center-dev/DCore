@@ -31,12 +31,14 @@ from program_options import *
 
 class DMFTCoreCheck(object):
 
-    def __init__(self, ini_file):
+    def __init__(self, ini_file, max_n_iter):
         """
         Parameters
         ----------
         ini_file : string
             Input-file name
+        max_n_iter : int
+            Max number of iterations to be processed
         """
 
         if os.path.isfile(ini_file) is False:
@@ -64,7 +66,7 @@ class DMFTCoreCheck(object):
         #
         self.p['control']['restart'] = True
         self.solver = DMFTCoreSolver(self.p["model"]["seedname"], self.p, read_only=True)
-        self.n_iter = self.solver.iteration_number
+        self.n_iter = min(max_n_iter, self.solver.iteration_number)
         self.n_sh = self.solver.n_inequiv_shells
         self.spin_names = self.solver.spin_block_names
         self.shell_info = [self.solver.inequiv_shell_info(ish) for ish in range(self.n_sh)]
@@ -269,7 +271,7 @@ class DMFTCoreCheck(object):
 
 
 
-def dcore_check(ini_file, prefix, fig_ext):
+def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
 
     # add a dot to the extension, e.g., 'png' --> '.png'
     ext = fig_ext if fig_ext[0] == '.' else '.' + fig_ext
@@ -279,7 +281,7 @@ def dcore_check(ini_file, prefix, fig_ext):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-    check = DMFTCoreCheck(ini_file)
+    check = DMFTCoreCheck(ini_file, max_n_iter)
     check.print_chemical_potential()
     check.write_sigma_text(basename=prefix+"sigma")
     check.plot_sigma_ave(basename=prefix+"sigma_ave", fig_ext=ext)
@@ -315,6 +317,12 @@ if __name__ == '__main__':
                         type=str,
                         help='file extension of output figures (png, pdf, eps, jpg, etc)'
                         )
+    parser.add_argument('--max_n_iter',
+                        action='store',
+                        default=10000,
+                        type=int,
+                        help='Max number of iterations to be processed'
+                        )
     # for backward compatibility
     # parser.add_argument('--output',
     #                     action='store',
@@ -328,7 +336,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    dcore_check(args.path_input_file, args.prefix, args.ext)
+    dcore_check(args.path_input_file, args.prefix, args.ext, args.max_n_iter)
 
     # Finish
     print("\n  Done\n")

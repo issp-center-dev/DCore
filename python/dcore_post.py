@@ -486,7 +486,7 @@ def dcore_post(filename, np=1):
         with open(seedname + '_akw.gp', 'w') as f:
             print("set size 0.95, 1.0", file=f)
             print("set xtics (\\", file=f)
-            if p["model"]["spin_orbit"] or p["model"]["non_colinear"]:
+            if p["model"]["spin_orbit"]:
                 for inode in range(nnode-1):
                     print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
                 print("  \"{0}\"  {1} \\".format(klabel[nnode-1], xk_label[nnode-1]), file=f)

@@ -441,6 +441,7 @@ class DMFTCoreSolver(object):
         Gimp_iw_sh = []
         Sigma_w_sh = []
         for ish in range(self._n_inequiv_shells):
+            print('')
             print("Solving impurity model for inequivalent shell " + str(ish) + " ...")
             sys.stdout.flush()
             Sigma_iw, Gimp_iw, Sigma_w = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,

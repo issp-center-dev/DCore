@@ -236,7 +236,7 @@ def __generate_umat(p):
             umat = umat2dd(u_mat2[ish][:])
             u_mat2[ish][:] = umat
     f["DCore"]["Umat"] = u_mat2
-    print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
+    print("\n    Written to {0}".format(p["model"]["seedname"]+'.h5'))
     del f
 
 
@@ -296,7 +296,7 @@ def __generate_local_potential(p):
     # write potential matrix
     with HDFArchive(p["model"]["seedname"] + '.h5', 'a') as f:
         f["DCore"]["LocalPotential"] = pot
-    print("\n    Wrote to {0}".format(p["model"]["seedname"]+'.h5'))
+    print("\n    Written to {0}".format(p["model"]["seedname"]+'.h5'))
 
 
 def dcore_pre(filename):
