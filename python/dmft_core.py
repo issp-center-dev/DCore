@@ -614,7 +614,7 @@ class DMFTCoreSolver(object):
                 print("\nTotal charge of impurity problem : %.6f" % new_Gimp_iw[ish].total_density())
 
             # Symmetrize over spin components
-            if self._params["model"]["time_reversal"]:
+            if self._params["control"]["time_reversal"]:
                 print("Averaging self-energy and impurity Green's function over spin components...")
 
                 if self._params["model"]["spin_orbit"]:
