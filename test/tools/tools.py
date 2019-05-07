@@ -60,6 +60,7 @@ def test_save_load_Sigma_iw():
         for ish in range(nsh):
             for sp in spin_names:
                 Sigma_iw_sh[ish][sp].data[:,:,:] = numpy.random.randn(2*n_points, norb, norb) + 1J * numpy.random.randn(2*n_points, norb, norb)
+                Sigma_iw_sh[ish][sp].tail.data[...] = numpy.random.randn(*Sigma_iw_sh[ish][sp].tail.data.shape)
 
         save_Sigma_iw_sh_txt('Sigma_iw_sh.txt', Sigma_iw_sh, spin_names)
 
@@ -88,6 +89,7 @@ def test_save_load_Sigma_iw():
 
 
         numpy.allclose(Sigma_iw_sh0.data, Sigma_iw_sh0_loaded.data)
+        numpy.allclose(Sigma_iw_sh0.tail.data, Sigma_iw_sh0_loaded.tail.data)
 
 test_spin_moments_sh()
 test_save_load_Sigma_iw()
