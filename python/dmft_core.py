@@ -106,7 +106,7 @@ class ShellQuantity(object):
         #self.Gimp_iw = self.Sigma_iw.copy()
 
 
-def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau, Sigma_iw, Gloc_iw, mesh, ish, ite):
+def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau, Sigma_iw, Gloc_iw, mesh, ish, work_dir):
     """
 
     Solve an impurity model
@@ -137,7 +137,6 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     s_params['random_seed_offset'] = 1000 * ish
 
     work_dir_org = os.getcwd()
-    work_dir = 'work/imp_shell'+str(ish)+"_ite"+str(ite)
     make_empty_dir(work_dir)
     os.chdir(work_dir)
 
@@ -420,7 +419,9 @@ class DMFTCoreSolver(object):
                     print("")
                 evals, evecs = numpy.linalg.eigh(dm_sh[ish][sp])
                 print('    Eigenvalues: ', evals)
-            print('    Sx, Sy, Sz : {} {} {}'.format(smoments[ish][0], smoments[ish][1], smoments[ish][2]))
+            print('')
+            print('    Magnetic moment (only spin contribution, S=1/2 gives 0.5)')
+            print('      mx,my,mz= {} {} {}'.format(smoments[ish][0], smoments[ish][1], smoments[ish][2]))
 
 
     def solve_impurity_models(self, Gloc_iw_sh, iteration_number, mesh=None):
@@ -442,12 +443,14 @@ class DMFTCoreSolver(object):
         Sigma_w_sh = []
         for ish in range(self._n_inequiv_shells):
             print('')
-            print("Solving impurity model for inequivalent shell " + str(ish) + " ...")
+            work_dir = 'work/imp_shell'+str(ish)+'_ite'+str(iteration_number)
+            print('Solving impurity model for inequivalent shell {} in {}...'.format(ish, work_dir))
+            print('')
             sys.stdout.flush()
             Sigma_iw, Gimp_iw, Sigma_w = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
                              self._params["impurity_solver"]["basis_rotation"], self._Umat[ish], self._gf_struct[ish],
                                  self._beta, self._n_iw, self._n_tau,
-                                 self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, iteration_number)
+                                 self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, work_dir)
             if not is_hermite_conjugate(Sigma_iw):
                 raise RuntimeError("Sigma_iw is not hermite conjugate!")
             if not is_hermite_conjugate(Gimp_iw):
@@ -592,7 +595,7 @@ class DMFTCoreSolver(object):
             self.print_density_matrix(dm_sh)
 
             for ish in range(self._n_inequiv_shells):
-                print("\n    Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
+                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
 

@@ -266,18 +266,14 @@ class ALPSCTHYBSolver(SolverBase):
             if numpy.abs(sign) < 0.01:
                 print("Average sign may be too small!")
 
-            # G(tau) with 1/iwn tail
+            # G(tau) and G_iw with 1/iwn tail
             gtau = f['gtau']['data']
             assign_from_numpy_array(self._G_tau, gtau, self.block_names)
             for name in self.block_names:
                 g = self._G_tau[name]
                 g.tail.zero()
                 g.tail[1] = numpy.identity(g.N1)
-
-            # G_iw with 1/iwn tail
-            for name in self.block_names:
                 self._Gimp_iw[name] << Fourier(g)
-
 
         # Solve Dyson's eq to obtain Sigma_iw
         # Sigma_iw = G0_iw^{-1} - G_imp_iw^{-1}
