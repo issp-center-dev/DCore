@@ -1,13 +1,12 @@
 CT-QMC with segment implementation: ``ALPS/CT-HYB-SEGMENT``
 ===========================================================
 
-This impurity solver implements the CT-HYB-SEGMENT algorithm.
+`ALPS/CT-HYB-SEGMENT solver <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_ implements the CT-HYB QMC algorithm and is developed by H. Hafermann, P. Werner, E. Gull.
 Only density-density interactions are taken into account.
-The off-diagonal components of the Green's functions are not computed correctly.
 
-A minimum working example is the following.
+A minimum working example is the following. Please be sure to turn on density_density option in model block (otherwise the simulation fails).
 We assumed that the executable is installed at "$HOME/opt/CT-HYB/bin/alps_cthyb".
-The solver runs for 300 seconds.
+The solver terminates after MAX_TIME (300 seconds in the following example) or the total number of SWEEPS has been reached.
 
 
 .. code-block:: ini
