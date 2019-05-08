@@ -20,7 +20,7 @@ Define lattice model
 ---------------------------
 
 First, we define the hopping matrix of the 3D Hubbard model with a 2x2x2 unit cell.
-Running `mk_hr.py <mk_hr.py>`_ generates a text file (cubic_hr.dat) in the Wannier90 format.
+Running :download:`mk_hr.py <mk_hr.py>` generates a text file (cubic_hr.dat) in the Wannier90 format.
 The unit cell contains eight sites whose internal coordinates are (0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1), (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1).
 
 We now assume an antiferromagnetic order at :math:`q=(\pi, \pi, \pi)`.
@@ -34,14 +34,14 @@ Generate initial guess for self-energy
 --------------------------------------
 
 Second, we generate intial guesses for the (static) self-energies on the two inequivalent shells.
-Running `mk_init_se.py` generates `init_se_up.txt` and `init_se_down.txt`.
+Running :download:`mk_init_se.py <mk_init_se.py>` generates `init_se_up.txt` and `init_se_down.txt`.
 
 .. code-block:: bash
 
    python mk_init_se.py
 
 Self-consistent calculations
----------------------------
+------------------------------
 Now, DMFT calculations can be done as usual.
 
 .. code-block:: bash
