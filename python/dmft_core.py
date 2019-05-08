@@ -26,6 +26,7 @@ import __builtin__
 import numpy
 import copy
 import ast
+import h5py
 
 from .program_options import *
 
@@ -285,14 +286,18 @@ class DMFTCoreSolver(object):
 
             iterations = ar['iterations']
 
-            print("Loading Sigma_iw... ")
-            for ish in range(self._n_inequiv_shells):
-                self._sh_quant[ish].Sigma_iw << ar['Sigma_iw'][str(iterations)][str(ish)]
-
             print("Loading dc_imp and dc_energ... ")
             self._dc_imp = ar['dc_imp'][str(iterations)]
             self._dc_energ = ar['dc_energ'][str(iterations)]
             self._chemical_potential = ar['chemical_potential'][str(iterations)]
+
+        # Load self-energy
+        print("Loading Sigma_iw... ")
+        with h5py.File(self._output_file, 'r') as ar:
+            for ish in range(self._n_inequiv_shells):
+                for bname, g in self._sh_quant[ish].Sigma_iw:
+                    path = output_group + '/Sigma_iw/ite{}/sh{}/{}'.format(iterations, ish, bname)
+                    load_giw(ar, path, g)
 
     def _prepare_output_file__from_scratch(self):
         """
@@ -633,13 +638,13 @@ class DMFTCoreSolver(object):
                 ar[output_group]['chemical_potential'][str(iteration_number)] = self._chemical_potential
                 ar[output_group]['dc_imp'][str(iteration_number)] = self._dc_imp
                 ar[output_group]['dc_energ'][str(iteration_number)] = self._dc_energ
+
+            # Save the history of Sigma in DCore format
+            with h5py.File(self._output_file, 'a') as ar:
                 for ish in range(self._n_inequiv_shells):
-                    #
-                    # Save the history of Sigma
-                    #
-                    if not (str(iteration_number) in ar[output_group]['Sigma_iw']):
-                        ar[output_group]['Sigma_iw'].create_group(str(iteration_number))
-                    ar[output_group]['Sigma_iw'][str(iteration_number)][str(ish)] = self._sh_quant[ish].Sigma_iw
+                    for bname, g in self._sh_quant[ish].Sigma_iw:
+                        path = output_group + '/Sigma_iw/ite{}/sh{}/{}'.format(iteration_number, ish, bname)
+                        save_giw(ar, path, g)
 
             sys.stdout.flush()
 
@@ -685,13 +690,13 @@ class DMFTCoreSolver(object):
 
     def Sigma_iw_sh(self, iteration_number):
         Sigma_iw_sh = []
-        with HDFArchive(self._output_file, 'r') as ar:
+        with h5py.File(self._output_file, 'r') as ar:
             for ish in range(self._n_inequiv_shells):
-                Sigma_iw_sh.append(ar[self._output_group]['Sigma_iw'][str(iteration_number)][str(ish)])
+                Sigma_iw = make_block_gf(GfImFreq, self._gf_struct[ish], self._beta, self._n_iw)
+                for bname, g in Sigma_iw:
+                    path = self._output_group + '/Sigma_iw/ite{}/sh{}/{}'.format(iteration_number, ish, bname)
+                    load_giw(ar, path, g)
+                Sigma_iw_sh.append(Sigma_iw)
         return Sigma_iw_sh
-
-    #@property
-    #def sumkdft_compat(self):
-        #return self._sk
 
 
