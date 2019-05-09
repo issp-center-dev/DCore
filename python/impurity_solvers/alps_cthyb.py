@@ -104,13 +104,14 @@ def assign_from_numpy_array(g, data, block_names):
 
 class ALPSCTHYBSolver(SolverBase):
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
         Initialize the solver.
 
         """
 
-        super(ALPSCTHYBSolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+        super(ALPSCTHYBSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
+        self.n_tau = max(10001, 5 * n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """

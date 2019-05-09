@@ -36,7 +36,7 @@ class SolverBase(object):
     All solvers must inherit from this class!
     """
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
         Initialize the solver.
 
@@ -57,9 +57,6 @@ class SolverBase(object):
         n_iw : integer, optional
                Number of Matsubara frequencies used for the Green's functions.
                Used for input and output.
-        n_tau : integer, optional
-               Number of imaginary time points used for the Green's functions.
-               Used for input and output.
         """
 
         assert isinstance(gf_struct, dict)
@@ -76,7 +73,6 @@ class SolverBase(object):
         self.gf_struct = gf_struct
         self.u_mat = u_mat
         self.n_iw = n_iw
-        self.n_tau = n_tau
         self.dims = numpy.array([len(indices) for name, indices in self.gf_struct.items()])
         self.n_flavors = numpy.sum(self.dims)
         self.use_spin_orbit = (len(gf_struct) == 1)
@@ -96,7 +92,6 @@ class SolverBase(object):
         # Default value of Sigma_iw is 0, which will be used for the first iteration of DMFT self-consistent procedure.
         self._Sigma_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
         self._Sigma_iw.zero()
-        self._G_tau = make_block_gf(GfImTime, gf_struct, beta, n_tau)
         self._Gimp_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
         self._Sigma_w = None
         #"self._G_l = None # Please define it if Legendre basis is used
@@ -244,14 +239,14 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs):
 
 class PytriqsMPISolver(SolverBase):
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
 
         Initialize the solver.
 
         """
 
-        super(PytriqsMPISolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+        super(PytriqsMPISolver, self).__init__(beta, gf_struct, u_mat, n_iw)
 
     def _impl_module_name(self):
         return ""
@@ -266,7 +261,6 @@ class PytriqsMPISolver(SolverBase):
             h['gf_struct'] = self.gf_struct
             h['u_mat'] = self.u_mat
             h['n_iw'] = self.n_iw
-            h['n_tau'] = self.n_tau
             if not rot is None:
                 h['rot'] = rot
             h['G0_iw'] = self._G0_iw

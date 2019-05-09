@@ -133,12 +133,14 @@ def write_Umatrix(U, Uprime, J, norb):
 
 class ALPSCTHYBSEGSolver(SolverBase):
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
         Initialize the solver.
         """
 
-        super(ALPSCTHYBSEGSolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+        super(ALPSCTHYBSEGSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
+
+        self.n_tau = max(10001, 5 * n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """
@@ -173,7 +175,6 @@ class ALPSCTHYBSEGSolver(SolverBase):
         #   self.n_orb
         #   self.n_flavor
         #   self.gf_struct
-        #   self.n_tau
 
         # (1a) If H0 is necessary:
         # Non-interacting part of the local Hamiltonian including chemical potential

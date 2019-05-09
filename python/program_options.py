@@ -64,7 +64,6 @@ def create_parser():
     # [system]
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
-    parser.add_option("system", "n_tau", int, 10000, "Number of imaginary-time points")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
     parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
     parser.add_option("system", "prec_mu", float, 0.0001,

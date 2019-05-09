@@ -30,12 +30,12 @@ from .base import SolverBase
 
 class NullSolver(SolverBase):
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
         Initialize the solver.
         """
 
-        super(NullSolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+        super(NullSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """
@@ -56,7 +56,6 @@ class NullSolver(SolverBase):
         #   self.n_orb
         #   self.n_flavor
         #   self.gf_struct
-        #   self.n_tau
         #   self.use_spin_orbit
 
         # (1a) If H0 is necessary:
@@ -70,7 +69,7 @@ class NullSolver(SolverBase):
         #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
         # H0 is extracted from the tail of the Green's function.
         self._Delta_iw = delta(self._G0_iw)
-        Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
+        Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta)
         for name, block in self._Delta_iw:
             Delta_tau[name] << InverseFourier(self._Delta_iw[name])
 
