@@ -1,5 +1,8 @@
-Pb with spin-orbit interaction (multi-atom with QMC)
-====================================================
+..
+    Pb with spin-orbit interaction (multi-atom with QMC)
+
+Multi-atoms: Revisiting Pb
+==========================
 
 In this tutorial, we perform the DMFT calculation of Pb with the spin-orbit interaction.
 We compute fcc-Pb, however, we treat it as a four-atom system in the simple cubic cell.

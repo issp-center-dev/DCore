@@ -88,6 +88,3 @@ class NullSolver(SolverBase):
 
     def name(self):
         return "null"
-
-    def get_Delta_iw(self):
-        return self._Delta_iw.copy()

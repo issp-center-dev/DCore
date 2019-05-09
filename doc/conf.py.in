@@ -47,6 +47,8 @@ html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
 
 htmlhelp_basename = 'DCoredoc'
 
+rst_epilog = '.. |BRANCH| replace:: {}'.format('@GIT_BRANCH_NAME@')
+
 #intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None), 'triqslibs': ('http://triqs.ipht.cnrs.fr/1.x', None), 'triqscthyb': ('https://triqs.ipht.cnrs.fr/1.x/applications/cthyb/', None), 'triqsdfttools': ('https://triqs.ipht.cnrs.fr/1.x/applications/dft_tools/', None)}
 
 def setup(app):

@@ -1,14 +1,28 @@
 find_package(Sphinx REQUIRED)
 message(STATUS "Found sphinx at ${SPHINX_EXECUTABLE}")
 
+find_package (Git)
+if (GIT_FOUND)
+      message("git found: ${GIT_EXECUTABLE} in version ${GIT_VERSION_STRING}")
+endif(GIT_FOUND)
+
+# Get branch name and substitute to GIT_BRANCH_NAME
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} 
+    --git-dir=${CMAKE_SOURCE_DIR}/.git --work-tree=${CMAKE_SOURCE_DIR} rev-parse --abbrev-ref HEAD
+    RESULT_VARIABLE result
+    OUTPUT_VARIABLE GIT_BRANCH_NAME)
+string(STRIP ${GIT_BRANCH_NAME} GIT_BRANCH_NAME)
+message(STATUS "git branch name is ${GIT_BRANCH_NAME}")
+
 # generate the conf.py
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
 
 # all rst files of the documentation
-file(GLOB_RECURSE doc_sources *.rst)
+file(GLOB_RECURSE doc_sources *.rst EXCLUDE *.swp)
 
 # Make a local copy of doc/* as doc_source
-file(GLOB_RECURSE all_doc_files RELATIVE ${CMAKE_SOURCE_DIR}/doc *)
+file(GLOB_RECURSE all_doc_files RELATIVE ${CMAKE_SOURCE_DIR}/doc * EXCLUDE *.swp)
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc_source.tar DEPENDS ${all_doc_files} COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/doc_source.tar ${all_doc_files} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/doc)
 add_custom_target(make_doc_local_copy_dir ALL COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/doc_source)
 add_custom_target(copy_tar_doc ALL DEPENDS ${CMAKE_BINARY_DIR}/doc_source.tar make_doc_local_copy_dir COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/doc_source.tar WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/doc_source)
