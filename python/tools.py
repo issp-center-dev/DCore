@@ -437,7 +437,7 @@ def readline_ignoring_comment(f):
     return line
 
 
-def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
+def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
     """
     Load a list of self-energy from a text file.
     Tails will be set to zero.
@@ -445,6 +445,7 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
     :param filename:
     :param Sigma_iw_sh: All elements must be allocated to correct shapes
     :param spin_names: ['up', 'down'] or ['ud']
+    :param atol: absolute torelance for imaginary frequencies
     """
 
     n_sh = len(Sigma_iw_sh)
@@ -455,7 +456,7 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
 
     omega_imag = data[:, 0]
     nomega = len(omega_imag)
-    if not numpy.allclose(omega_imag, numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag):
+    if not numpy.allclose(omega_imag, numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag, rtol=1, atol=atol_omega):
         raise RuntimeError("Mesh is not compatible!")
 
     for iom in range(nomega):
