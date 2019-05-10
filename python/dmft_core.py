@@ -46,19 +46,6 @@ def __gettype(name):
         return t
     raise ValueError(name)
 
-def is_hermite_conjugate(Sigma_iw):
-    """
-    Check if Sigma(iw_n) or G(iwn_n) is Hermite conjugate.
-    """
-    flag = True
-    for name, g in Sigma_iw:
-        n_points = int(g.data.shape[0]/2)
-        for i in range(n_points):
-            if not numpy.allclose(g.data[i + n_points, :, :], g.data[n_points - i - 1, :, :].conj().transpose()):
-                return False
-    return True
-
-
 def create_solver_params(ini_dict):
     """
     Parse a dict and create parameters for an impurity solver.
@@ -129,7 +116,9 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     # Correct?
     # G0_iw^{-1} = Gloc_iw + Sigma_iw
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
-    assert is_hermite_conjugate(G0_iw)
+    diff = make_hermite_conjugate(G0_iw)
+    if diff > 1e-8:
+        raise RuntimeError('G0(iwn) is not hermite!')
     sol.set_G0_iw(G0_iw)
 
     # Compute rotation matrix to the diagonal basis if supported
@@ -296,6 +285,9 @@ class DMFTCoreSolver(object):
                 for bname, g in self._sh_quant[ish].Sigma_iw:
                     path = output_group + '/Sigma_iw/ite{}/sh{}/{}'.format(iterations, ish, bname)
                     load_giw(ar, path, g)
+                diff = make_hermite_conjugate(self._sh_quant[ish].Sigma_iw)
+                if diff > 1e-8:
+                    print('Sigma_iw at shell {} is not exactly hermite: diff = {}, symmetrizing...'.format(ish, diff))
 
     def _prepare_output_file__from_scratch(self):
         """
@@ -370,7 +362,7 @@ class DMFTCoreSolver(object):
                 if not numpy.allclose(self._dc_imp[ish][sp1], self._dc_imp[ish][sp1].conjugate().transpose()):
                     raise RuntimeError("dc_imp is not hermite!")
 
-            if not is_hermite_conjugate(self._sh_quant[ish].Sigma_iw):
+            if make_hermite_conjugate(self._sh_quant[ish].Sigma_iw, check_only=True) > 1e-8:
                 raise RuntimeError("Sigma_iw is not hermite conjugate!")
 
     def _make_sumkdft_params(self):
@@ -457,9 +449,9 @@ class DMFTCoreSolver(object):
                              self._params["impurity_solver"]["basis_rotation"], self._Umat[ish], self._gf_struct[ish],
                                  self._beta, self._n_iw, self._n_tau,
                                  self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, work_dir)
-            if not is_hermite_conjugate(Sigma_iw):
+            if make_hermite_conjugate(Sigma_iw) > 1e-8:
                 raise RuntimeError("Sigma_iw is not hermite conjugate!")
-            if not is_hermite_conjugate(Gimp_iw):
+            if make_hermite_conjugate(Gimp_iw) > 1e-8:
                 raise RuntimeError("Gimp_iw is not hermite conjugate!")
 
             Sigma_iw_sh.append(Sigma_iw)

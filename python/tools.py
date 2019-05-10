@@ -550,3 +550,26 @@ def make_empty_dir(dir_path):
             raise RuntimeError("Failed to remove " + dir_path)
 
     os.makedirs(dir_path)
+
+
+def make_hermite_conjugate(Sigma_iw, check_only=False):
+    """
+    Make Sigma(iw_n) or G(iwn_n) hermite
+    Return max difference.
+    """
+    flag = True
+    max_diff = 0.0
+    for name, g in Sigma_iw:
+        # symmetrize tail
+        for i in range(g.tail.data.shape[0]):
+            g.tail.data[i, :, :] = 0.5 * (g.tail.data[i, :, :] + g.tail.data[i, :, :].conjugate().transpose())
+
+        n_points = g.data.shape[0]//2
+        for i in range(n_points):
+            diff = numpy.amax(numpy.abs(g.data[i + n_points, :, :]-g.data[n_points - i - 1, :, :].conj().transpose()))
+            max_diff = max(max_diff, diff)
+            if not check_only:
+                g.data[i + n_points, :, :] = g.data[n_points - i - 1, :, :].conj().transpose()
+    return max_diff
+
+
