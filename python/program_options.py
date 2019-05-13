@@ -157,7 +157,7 @@ def parse_parameters(params):
         raise RuntimeError("Wrong number of entries in norb!")
 
     # Set [model][norb_corr_sh]
-    equiv_sh = params['model']['corr_to_inequiv']
+    corr_to_inequiv = params['model']['corr_to_inequiv']
     params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][corr_to_inequiv[icrsh]] for icrsh in range(ncor)])
 
     # Expand enviroment variables
