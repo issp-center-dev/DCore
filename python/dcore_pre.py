@@ -22,6 +22,7 @@ import os
 import numpy
 import re
 import ast
+import h5py
 from pytriqs.archive.hdf_archive import HDFArchive
 from program_options import create_parser
 from pytriqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
@@ -342,6 +343,19 @@ def dcore_pre(filename):
     print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
     lattice_model = create_lattice_model(p)
     lattice_model.generate_model_file()
+
+    # Check if H(k) is hermite
+    with h5py.File(p['model']['seedname'] + '.h5', 'r') as f:
+        hk = float_to_complex_array(f['/dft_input/hopping'][()])
+        for ik in range(hk.shape[0]):
+            for ib in range(hk.shape[1]):
+                diff = numpy.amax(numpy.abs(hk[ik,ib,:,:] - hk[ik,ib,:,:].conjugate().transpose()))/numpy.amax(numpy.abs(hk[ik,ib,:,:]))
+                message = 'H(k) is not hermite at ik={} and iblock={}, relative diff is {}.' .format(ik, ib, diff)
+                if diff > 1e-2:
+                    raise RuntimeError('Error: {}'.format(message))
+                elif diff > 1e-8:
+                    print('Warning: {}'.format(message))
+
 
     # Interaction
     #

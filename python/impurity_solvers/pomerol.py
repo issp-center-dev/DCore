@@ -77,12 +77,12 @@ def decompose_index(index, n_orb):
 
 class PomerolSolver(SolverBase):
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
         Initialize the solver.
         """
 
-        super(PomerolSolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+        super(PomerolSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """
@@ -102,7 +102,6 @@ class PomerolSolver(SolverBase):
         #   self.n_orb
         #   self.n_flavor
         #   self.gf_struct
-        #   self.n_tau
         #   self.use_spin_orbit
 
         # print("params_kw =", params_kw)

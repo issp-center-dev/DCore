@@ -80,20 +80,14 @@ class ShellQuantity(object):
 
     """
 
-    def __init__(self, gf_struct, beta, n_iw, n_tau):
+    def __init__(self, gf_struct, beta, n_iw):
         # Self-energy
         self.Sigma_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
         for name, g in self.Sigma_iw:
             g.zero()
 
-        # Lattice Green's function projected onto an impurity
-        #self.Gloc_iw = self.Sigma_iw.copy()
 
-        # Impurity Green's function
-        #self.Gimp_iw = self.Sigma_iw.copy()
-
-
-def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau, Sigma_iw, Gloc_iw, mesh, ish, work_dir):
+def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, Sigma_iw, Gloc_iw, mesh, ish, work_dir):
     """
 
     Solve an impurity model
@@ -108,7 +102,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
 
     raise_if_mpi_imported()
 
-    sol = Solver(beta, gf_struct, Umat, n_iw, n_tau)
+    sol = Solver(beta, gf_struct, Umat, n_iw)
 
     if not mesh is None and not Solver.is_gf_realomega_available():
         raise RuntimeError("Error: requested real-frequency quantities for an imaginary-time solver.")
@@ -174,7 +168,6 @@ class DMFTCoreSolver(object):
 
         self._beta = float(params['system']['beta'])
         self._n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
-        self._n_tau = int(params['system']['n_tau'])  # Number of tau points
 
         # MPI commands
         if 'num_processes' in params['mpi']:
@@ -225,7 +218,7 @@ class DMFTCoreSolver(object):
             self._local_potential = [array2dict(local_pot_sh) for local_pot_sh in local_pot]
 
         # local quantities at ineuivalent shells
-        self._sh_quant = [ShellQuantity(self._gf_struct[ish], self._beta, self._n_iw, self._n_tau) for ish in range(self._n_inequiv_shells)]
+        self._sh_quant = [ShellQuantity(self._gf_struct[ish], self._beta, self._n_iw) for ish in range(self._n_inequiv_shells)]
 
         # DC correction at correlated shells
         self._dc_imp = []
@@ -344,7 +337,10 @@ class DMFTCoreSolver(object):
                 self._sh_quant[ish].Sigma_iw << Sigma_iw_sh_tmp[ish]
             print('Done')
 
-        self._sanity_check()
+        for ish in range(self.n_inequiv_shells):
+            diff = make_hermite_conjugate(self._sh_quant[ish].Sigma_iw)
+            if diff > 1e-8:
+                print('Sigma(iwn) at ish = {} is not hermite (diff={}) but symmetrized.'.format(ish, diff))
 
 
     def _sanity_check(self):
@@ -447,7 +443,7 @@ class DMFTCoreSolver(object):
             sys.stdout.flush()
             Sigma_iw, Gimp_iw, Sigma_w = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
                              self._params["impurity_solver"]["basis_rotation"], self._Umat[ish], self._gf_struct[ish],
-                                 self._beta, self._n_iw, self._n_tau,
+                                 self._beta, self._n_iw,
                                  self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, work_dir)
             if make_hermite_conjugate(Sigma_iw) > 1e-8:
                 raise RuntimeError("Sigma_iw is not hermite conjugate!")

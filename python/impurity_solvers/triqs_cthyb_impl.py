@@ -46,7 +46,6 @@ def main(input_file, output_file):
         gf_struct = h['gf_struct']
         u_mat = h['u_mat']
         n_iw = h['n_iw']
-        n_tau = h['n_tau']
         G0_iw = h['G0_iw']
         params = h['params']
 
@@ -60,7 +59,7 @@ def main(input_file, output_file):
     h_int = make_h_int(u_mat_rot, gf_struct)
 
     # Create a working horse
-    S = TRIQSCTHYBSolver(beta, gf_struct, n_iw, n_tau)
+    S = TRIQSCTHYBSolver(beta, gf_struct, n_iw)
     S.G0_iw << G0_iw_rot
 
     if 'random_seed' in params:

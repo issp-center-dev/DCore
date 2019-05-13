@@ -104,13 +104,14 @@ def assign_from_numpy_array(g, data, block_names):
 
 class ALPSCTHYBSolver(SolverBase):
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
         Initialize the solver.
 
         """
 
-        super(ALPSCTHYBSolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+        super(ALPSCTHYBSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
+        self.n_tau = max(10001, 5 * n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """
@@ -259,6 +260,7 @@ class ALPSCTHYBSolver(SolverBase):
         # Read the computed Green's function in Legendre basis and compute G(iwn)
         if not os.path.exists('./input.out.h5'):
             raise RuntimeError("Output HDF5 file of ALPS/CT-HYB does not exist. Something went wrong!")
+        G_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         with HDFArchive('input.out.h5', 'r') as f:
             # Sign
             sign = f['Sign']
@@ -268,9 +270,9 @@ class ALPSCTHYBSolver(SolverBase):
 
             # G(tau) and G_iw with 1/iwn tail
             gtau = f['gtau']['data']
-            assign_from_numpy_array(self._G_tau, gtau, self.block_names)
+            assign_from_numpy_array(G_tau, gtau, self.block_names)
             for name in self.block_names:
-                g = self._G_tau[name]
+                g = G_tau[name]
                 g.tail.zero()
                 g.tail[1] = numpy.identity(g.N1)
                 self._Gimp_iw[name] << Fourier(g)

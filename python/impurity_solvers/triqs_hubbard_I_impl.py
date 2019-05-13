@@ -317,7 +317,6 @@ def main(input_file, output_file):
         gf_struct = h['gf_struct']
         u_mat = h['u_mat']
         n_iw = h['n_iw']
-        n_tau = h['n_tau']
         G0_iw = h['G0_iw']
         params = h['params']
 

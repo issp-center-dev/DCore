@@ -473,10 +473,10 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
                     icol += 1
                     Sigma_iw_sh[ish][sp].data[iom, iorb, jorb] = complex(re, imag)
 
-def __complex_to_float_array(a):
+def complex_to_float_array(a):
     return a.view(float).reshape(a.shape + (2,))
 
-def __float_to_complex_array(a):
+def float_to_complex_array(a):
     return a.view(complex).reshape(a.shape[:-1])
 
 def save_giw(h5file, path, g):
@@ -496,8 +496,8 @@ def save_giw(h5file, path, g):
     assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
 
     h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
-    h5file[path + '/data'] = __complex_to_float_array(g.data)
-    h5file[path + '/tail'] = __complex_to_float_array(g.tail.data)
+    h5file[path + '/data'] = complex_to_float_array(g.data)
+    h5file[path + '/tail'] = complex_to_float_array(g.tail.data)
     h5file[path + '/wn'] = numpy.array([x for x in g.mesh]).imag
 
 
@@ -519,8 +519,8 @@ def load_giw(h5file, path, g):
     assert isinstance(g, GfImFreq)
     assert h5file[path + '/__version'][()] == 'DCore_GfImFreq_v1'
 
-    g.data[...] = __float_to_complex_array(h5file[path + '/data'][()])
-    g.tail.data[...] = __float_to_complex_array(h5file[path + '/tail'][()])
+    g.data[...] = float_to_complex_array(h5file[path + '/data'][()])
+    g.tail.data[...] = float_to_complex_array(h5file[path + '/tail'][()])
 
     omega_imag = numpy.array([complex(x) for x in g.mesh]).imag
     if not numpy.allclose(omega_imag, h5file[path + '/wn'][()]):

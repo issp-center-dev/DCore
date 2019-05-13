@@ -21,14 +21,14 @@ from .base import PytriqsMPISolver
 
 class TRIQSHubbardISolver(PytriqsMPISolver):
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025, n_tau=10001):
+    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
 
         Initialize the solver.
 
         """
 
-        super(TRIQSHubbardISolver, self).__init__(beta, gf_struct, u_mat, n_iw, n_tau)
+        super(TRIQSHubbardISolver, self).__init__(beta, gf_struct, u_mat, n_iw)
 
     def _impl_module_name(self):
         return "dcore.impurity_solvers.triqs_hubbard_I_impl"
