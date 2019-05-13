@@ -75,8 +75,8 @@ Impurity solvers
 
        faqs/faqs
 
-To be completed
----------------
+..
+    To be completed
+    ---------------
 
-.. todolist::
-
+    .. todolist::
