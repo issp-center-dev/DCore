@@ -337,7 +337,10 @@ class DMFTCoreSolver(object):
                 self._sh_quant[ish].Sigma_iw << Sigma_iw_sh_tmp[ish]
             print('Done')
 
-        self._sanity_check()
+        for ish in range(self.n_inequiv_shells):
+            diff = make_hermite_conjugate(self._sh_quant[ish].Sigma_iw)
+            if diff > 1e-8:
+                print('Sigma(iwn) at ish = {} is not hermite (diff={}) but symmetrized.'.format(ish, diff))
 
 
     def _sanity_check(self):
