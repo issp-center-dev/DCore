@@ -32,7 +32,10 @@ release = '@DCORE_RELEASE@'
 #mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
 templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
 
-html_theme = 'classic'
+html_theme = 'wild'
+import wild_sphinx_theme
+html_theme_path = [wild_sphinx_theme.get_theme_dir()]
+
 #html_theme_path = ['@TRIQS_THEMES_PATH@']
 html_show_sphinx = False
 html_context = {'header_title': 'DCore',
