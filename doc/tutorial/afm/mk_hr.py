@@ -31,7 +31,7 @@ for ir, (X, Y, Z) in enumerate(product(range(-1,2), repeat=3)):
             HamR_full[ir, i_lsite, i_rsite] = - t
 
 print('Use the following line for input of DCore')
-print('equiv = ', ", ".join([str(numpy.sum(p)%2) for p in pos_in_unit_cell]))
+print('corr_to_inequiv = ', ", ".join([str(numpy.sum(p)%2) for p in pos_in_unit_cell]))
 
 # Write data to *_hr.dat
 with file(filename, 'w') as f:

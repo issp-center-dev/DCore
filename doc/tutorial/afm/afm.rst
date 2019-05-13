@@ -24,7 +24,7 @@ Running :download:`mk_hr.py <mk_hr.py>` generates a text file (cubic_hr.dat) in 
 The unit cell contains eight sites whose internal coordinates are (0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1), (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1).
 
 We now assume an antiferromagnetic order at :math:`q=(\pi, \pi, \pi)`.
-To this end, we assign the eight sites (correlated shells) to two inequivalent shells by using the `equiv` parameter in the model section.
+To this end, we assign the eight sites (correlated shells) to two inequivalent shells by using the `corr_to_inequiv` parameter in the model section.
 
 .. code-block:: bash
 
