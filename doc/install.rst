@@ -34,14 +34,15 @@ You can download the source files in two ways.
 Prerequisites
 -------------
 
-#. **[mandatory]** ``DCore`` is implemented using :ref:`TRIQS <triqslibs:welcome>` library.
-   You first need to install ``TRIQS`` library prior to installing all other programs.
+#. You first need to install `TRIQS <https://triqs.github.io/triqs/>`_ library prior to installing all other programs,
+   since ``DCore`` is implemented using ``TRIQS``.
+
    In the following, we suppose that ``TRIQS`` is installed in directory *path_to_triqs*.
 
    .. note::
 
      ``DCore`` supports ``TRIQS`` version **1.4.2** (the current version 2.0 is not supported).
-     Since the installation manual in :ref:`TRIQS <triqslibs:welcome>` is not compatible with **1.4.2**, we briefly describe below how to install it.
+     Since the installation manual in the TRIQS official website is not compatible with **1.4.2**, we briefly describe below how to install it.
 
      #. You can download the zip file or tar file from https://github.com/TRIQS/triqs/releases/tag/1.4.2.
         The version **1.4.2** is not compatible with the latest version of h5py (>=2.8.0).
@@ -57,8 +58,7 @@ Prerequisites
           $ make test
           $ make install
 
-#. **[mandatory]**
-   You also need :ref:`DFTTools <triqsdfttools:dft>`, which runs on the ``TRIQS`` library.
+#. You also need `DFTTools <https://triqs.github.io/dft_tools>`_, which runs on the ``TRIQS`` library.
 
    .. note::
 
@@ -83,39 +83,28 @@ Prerequisites
           $ make test
           $ make install
 
-#. **[optional]** You will also need at least one impurity solver.
-   At present, ``DCore`` supports the following programs:
+#. You will also need at least one impurity solver.
 
-   - `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
+   For example, the following programs are supported at present:
 
-   - `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
+   * :doc:`ALPS/CT-HYB<impuritysolvers/alpscore_cthyb/cthyb>`
+   * :doc:`ALPS/CT-HYB-SEGMENT<impuritysolvers/alpscore_ctseg/ctseg>`
+   * :doc:`TRIQS/cthyb<impuritysolvers/triqs_cthyb/cthyb>`
+   * :doc:`Hubbard-I solver<impuritysolvers/triqs_hubbard_one/hubbard_one>`
 
-   - `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
-     [Note: checkout tag **1.4.2** on master branch, or download the released package from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_]
-   and others. Please see a complete list of the supported impurity solvers in :doc:`reference/impuritysolvers`.
+   See :ref:`here <impuritysolvers>` for a complete list of supported impurity solvers and their user manuals.
 
-   .. note::
+..
+   * `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_
+   * `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB>`_
+   * `ALPS/CT-HYB-SEGMENT <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_
+   * `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/index.html>`_
 
-      If you want to treat the spin-orbit coupling in ``TRIQS/cthyb`` solver,
-      it must be built with the following CMake options:
-
-      ::
-
-         -DHYBRIDISATION_IS_COMPLEX=ON -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON
-
+..
    .. note::
 
       One must build TRIQS, TRIQS/DFTTools, and TRIQS solvers using the same C++ compiler with the same C++ standard (C++14).
-      One does not necessarily have to build ALPS/CT-HYB with the same C++ compiler as that used for TRIQS.
-
-   .. note::
-
-      ``ALPS/CT-HYB`` is developed by one of the main developers of DCore, H. Shinaoka.
-      Both of ``ALPS/CT-HYB`` and ``TRIQS/cthyb`` implement the hybridization-expansion continuous-time quantum Monte Carlo method.
-      The main difference is the reliability of measurement of the single-particle Green's function.
-      ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
-      The non-worm conventional sampling, which is implemented in ``TRIQS/cthyb``,
-      may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).
+      One does not necessarily have to build ALPS/CT-HYB and/or ALPS/CT-HYB-SEGMENT with the same C++ compiler as that used for TRIQS.
 
 Installation steps
 ------------------
@@ -214,3 +203,4 @@ Installation steps
 ..      $ git co 1.4
 ..
 .. Then follow the steps 2 to 5 described above to compile the code.
+
