@@ -92,12 +92,11 @@ def run(model_file, work_dir, mpirun_command, params):
 
     """
 
-    from .tools import raise_if_mpi_imported
+    from .tools import raise_if_mpi_imported, make_empty_dir
     raise_if_mpi_imported()
 
     # Prepare input files
-    if not os.path.exists(work_dir):
-        os.makedirs(work_dir)
+    make_empty_dir(work_dir)
 
     cwd_org = os.getcwd()
     os.chdir(work_dir)

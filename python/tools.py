@@ -437,7 +437,7 @@ def readline_ignoring_comment(f):
     return line
 
 
-def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
+def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
     """
     Load a list of self-energy from a text file.
     Tails will be set to zero.
@@ -445,6 +445,7 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
     :param filename:
     :param Sigma_iw_sh: All elements must be allocated to correct shapes
     :param spin_names: ['up', 'down'] or ['ud']
+    :param atol: absolute torelance for imaginary frequencies
     """
 
     n_sh = len(Sigma_iw_sh)
@@ -455,7 +456,7 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
 
     omega_imag = data[:, 0]
     nomega = len(omega_imag)
-    if not numpy.allclose(omega_imag, numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag):
+    if not numpy.allclose(omega_imag, numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag, rtol=1, atol=atol_omega):
         raise RuntimeError("Mesh is not compatible!")
 
     for iom in range(nomega):
@@ -524,3 +525,51 @@ def load_giw(h5file, path, g):
     omega_imag = numpy.array([complex(x) for x in g.mesh]).imag
     if not numpy.allclose(omega_imag, h5file[path + '/wn'][()]):
         raise RuntimeError("Mesh is not compatible!")
+
+
+def make_empty_dir(dir_path):
+    """
+
+    Prepare a working directory as an empty directory.
+    Any existing file or directory at the specified path is removed.
+
+    Parameters
+    ----------
+    dir_path : str
+        Path to a directory
+
+    """
+    import shutil
+
+    if os.path.exists(dir_path):
+        if os.path.isfile(dir_path):
+            os.remove(dir_path)
+        elif os.path.isdir(dir_path):
+            shutil.rmtree(dir_path)
+        else:
+            raise RuntimeError("Failed to remove " + dir_path)
+
+    os.makedirs(dir_path)
+
+
+def make_hermite_conjugate(Sigma_iw, check_only=False):
+    """
+    Make Sigma(iw_n) or G(iwn_n) hermite
+    Return max difference.
+    """
+    flag = True
+    max_diff = 0.0
+    for name, g in Sigma_iw:
+        # symmetrize tail
+        for i in range(g.tail.data.shape[0]):
+            g.tail.data[i, :, :] = 0.5 * (g.tail.data[i, :, :] + g.tail.data[i, :, :].conjugate().transpose())
+
+        n_points = g.data.shape[0]//2
+        for i in range(n_points):
+            diff = numpy.amax(numpy.abs(g.data[i + n_points, :, :]-g.data[n_points - i - 1, :, :].conj().transpose()))
+            max_diff = max(max_diff, diff)
+            if not check_only:
+                g.data[i + n_points, :, :] = g.data[n_points - i - 1, :, :].conj().transpose()
+    return max_diff
+
+

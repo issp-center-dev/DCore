@@ -58,8 +58,6 @@ def create_parser():
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
     parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
-    parser.add_option("model", "non_colinear", bool, False,
-                      "Set True for the case that non-colinear DMFT from the COLINEAR DFT calculation.")
     parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: 'filename'} to specify local potential matrix of ish-th shell")
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
@@ -155,7 +153,7 @@ def parse_parameters(params):
     nsh = params['model']['n_inequiv_shells']
     params['model']['norb_inequiv_sh'] = numpy.array(map(int, re.findall(r'\d+', params['model']['norb'])))
     if len(params['model']['norb_inequiv_sh']) != nsh:
-        raise RuntimeError("Invalid number of elements in norb_inequiv_sh!")
+        raise RuntimeError("Wrong number of entries in norb!")
 
     # Set [model][norb_corr_sh]
     equiv_sh = params['model']['equiv_sh']

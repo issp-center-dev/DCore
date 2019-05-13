@@ -103,12 +103,9 @@ class Wannier90Model(LatticeModel):
 
     def generate_model_file(self):
         #
-        # non_colinear flag is used only for the case that COLINEAR DFT calculation
         #
         p = self._params
         seedname = self._params["model"]["seedname"]
-        if p["model"]["spin_orbit"] and p["model"]["non_colinear"]:
-            raise RuntimeError("The options spin_orbit and non_colinear are not compatible!")
         with open(seedname+'.inp', 'w') as f:
             _generate_w90_converter_input(self.nkdiv(), p, f)
 
@@ -116,12 +113,7 @@ class Wannier90Model(LatticeModel):
         converter = Wannier90Converter(seedname=seedname)
         converter.convert_dft_input()
 
-        if p['model']['non_colinear']:
-            from ..manip_database import turn_on_spin_orbit
-            print('')
-            print('Turning on spin_orbit...')
-            turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
-        elif p["model"]["spin_orbit"]:
+        if p["model"]["spin_orbit"]:
             with HDFArchive(seedname + '.h5', 'a') as f:
                 f["dft_input"]["SP"] = 1
                 f["dft_input"]["SO"] = 1
@@ -137,9 +129,11 @@ class Wannier90Model(LatticeModel):
                 n_k, nb, n_corr, max_dim_sh, max_n_orb = proj_mat.shape
                 assert nb == 1
                 # (n_k, nb, n_corr, orb, spin, orb, spin) => (n_k, nb, n_corr, spin, orb, spin, orb)
+                assert max_dim_sh//2 > 0
                 proj_mat = proj_mat.reshape((n_k, nb, n_corr, max_dim_sh//2, 2, max_n_orb//2, 2))
                 proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
-                f['dft_input']['proj_mat'] = proj_mat.reshape((n_k, 1, n_corr, max_dim_sh, max_n_orb))
+                proj_mat = proj_mat.reshape((n_k, 1, n_corr, max_dim_sh, max_n_orb))
+                f['dft_input']['proj_mat'] = proj_mat
 
 
     def write_dft_band_input_data(self, params, kvec):
@@ -199,11 +193,13 @@ class Wannier90Model(LatticeModel):
         proj_mat = numpy.zeros([n_k, nblock, ncor, numpy.max(dim_Hk), nwan], complex)
         for icor in range(ncor):
             proj_mat[:, :, icor, 0:dim_Hk[icor], offset:offset+dim_Hk[icor]] = numpy.identity(dim_Hk[icor])
-            offset += n_spin_orb_sh[icor]
+            offset += dim_Hk[icor]
+
         # Make proj_mat compatible with DCore's block structure
-        proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk)//2, 2, nwan//2, 2))
-        proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
-        proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk), nwan))
+        if spin_orbit:
+            proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk)//2, 2, nwan//2, 2))
+            proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
+            proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk), nwan))
 
         #
         # Output them into seedname.h5
@@ -216,12 +212,3 @@ class Wannier90Model(LatticeModel):
             f['dft_bands_input']['n_orbitals'] = numpy.full((n_k, nblock), nwan, dtype=int)
             f['dft_bands_input']['proj_mat'] = proj_mat
         print('    Done')
-
-        #
-        # Extend spin block if needed
-        #
-        if params['model']['non_colinear']:
-            from ..manip_database import turn_on_spin_orbit
-            print('')
-            print('Turning on non_collinear...')
-            turn_on_spin_orbit(seedname + '.h5', seedname + '.h5', update_dft_input=False, update_dft_bands_input=True)
