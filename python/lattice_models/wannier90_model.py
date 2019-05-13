@@ -43,7 +43,7 @@ def _generate_w90_converter_input(nkdiv, params, f):
     # Equivalence of each shell
     #
     ncor = params['model']['ncor']
-    equiv_sh = params['model']['equiv_sh']
+    corr_to_inequiv = params['model']['corr_to_inequiv']
     if params['model']['spin_orbit']:
         dim_Hk = 2 * params['model']['norb_corr_sh']
     else:
@@ -57,8 +57,8 @@ def _generate_w90_converter_input(nkdiv, params, f):
     print("    ncor = {0}".format(ncor))
     print("    n_inequiv_sh = {0}".format(params['model']['n_inequiv_shells']))
     for i in range(ncor):
-        assert equiv_sh[i] >= 0
-        print("    dim[{0}], equiv[{0}] = {1}, {2}".format(i, dim_Hk[i], equiv_sh[i]))
+        assert corr_to_inequiv[i] >= 0
+        print("    dim[{0}], equiv[{0}] = {1}, {2}".format(i, dim_Hk[i], corr_to_inequiv[i]))
     print("")
 
     #
@@ -68,7 +68,7 @@ def _generate_w90_converter_input(nkdiv, params, f):
     print(params["model"]["nelec"], file=f)
     print(ncor, file=f)
     for i in range(ncor):
-        print("{0} {1} {2} {3} 0 0".format(i, equiv_sh[i], 0, dim_Hk[i]), file=f)
+        print("{0} {1} {2} {3} 0 0".format(i, corr_to_inequiv[i], 0, dim_Hk[i]), file=f)
 
 
 def _set_nk(nk, nk0, nk1, nk2):

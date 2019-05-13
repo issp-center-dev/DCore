@@ -41,8 +41,8 @@ def create_parser():
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "norb", str, "1",
                       "Number of orbitals at each correlated shell (*ncor* integers separated by commas or spaces.)")
-    parser.add_option("model", "equiv", str, "None",
-                      "Equivalence of each correlated shell. Please, be careful to use it (See below).")
+    parser.add_option("model", "corr_to_inequiv", str, "None",
+                      "Mapping from correlated shells to equivalent shells")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
     parser.add_option("model", "nk", int, 8, "Number of *k* along each line")
     parser.add_option("model", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
@@ -136,17 +136,19 @@ def parse_parameters(params):
 
     ncor = params['model']['ncor']
 
-    # Set [model][equiv_sh] and [model][n_inequiv_shells]
-    if params['model']['equiv'] == 'None':
-        params['model']['equiv_sh'] = numpy.arange(ncor)
+    # Set [model][corr_to_inequiv] and [model][n_inequiv_shells]
+    if params['model']['corr_to_inequiv'] == 'None':
+        params['model']['corr_to_inequiv'] = numpy.arange(ncor)
         params['model']['n_inequiv_shells'] = ncor
     else:
-        equiv_str_list = re.findall(r'[^\s,]+', params['model']['equiv'])
-        equiv_sh = numpy.array(list(map(int, equiv_str_list)))
-        if len(equiv_sh) != ncor:
-            raise RuntimeError("Invalid number of elements in equiv!")
-        params['model']['equiv_sh'] = equiv_sh
-        params['model']['n_inequiv_shells'] = len(numpy.unique(equiv_sh))
+        equiv_str_list = re.findall(r'[^\s,]+', params['model']['corr_to_inequiv'])
+        corr_to_inequiv = numpy.array(list(map(int, equiv_str_list)))
+        if len(corr_to_inequiv) != ncor:
+            raise RuntimeError("Invalid number of elements in corr_to_inequiv!")
+        params['model']['corr_to_inequiv'] = corr_to_inequiv
+        params['model']['n_inequiv_shells'] = len(numpy.unique(corr_to_inequiv))
+        if numpy.amin(corr_to_inequiv) < 0 or numpy.amin(corr_to_inequiv) > params['model']['n_inequiv_shells']:
+            raise RuntimeError('Elements of corr_to_inequiv must be in the range of [0, n_inequiv_shells-1]!')
 
     # Set [model][norb_inequiv_sh]
     nsh = params['model']['n_inequiv_shells']
@@ -155,8 +157,8 @@ def parse_parameters(params):
         raise RuntimeError("Wrong number of entries in norb!")
 
     # Set [model][norb_corr_sh]
-    equiv_sh = params['model']['equiv_sh']
-    params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][equiv_sh[icrsh]] for icrsh in range(ncor)])
+    equiv_sh = params['model']['corr_to_inequiv']
+    params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][corr_to_inequiv[icrsh]] for icrsh in range(ncor)])
 
     # Expand enviroment variables
     params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])

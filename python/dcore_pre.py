@@ -350,11 +350,11 @@ def dcore_pre(filename):
         for ik in range(hk.shape[0]):
             for ib in range(hk.shape[1]):
                 diff = numpy.amax(numpy.abs(hk[ik,ib,:,:] - hk[ik,ib,:,:].conjugate().transpose()))/numpy.amax(numpy.abs(hk[ik,ib,:,:]))
-                message = 'Warning: H(k) is not hermite at ik={} and iblock={}, relative diff is {}.' .format(ik, ib, diff)
+                message = 'H(k) is not hermite at ik={} and iblock={}, relative diff is {}.' .format(ik, ib, diff)
                 if diff > 1e-2:
-                    raise RuntimeError(message)
+                    raise RuntimeError('Error: {}'.format(message))
                 elif diff > 1e-8:
-                    print(message)
+                    print('Warning: {}'.format(message))
 
 
     # Interaction
