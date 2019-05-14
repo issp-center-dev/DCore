@@ -3,6 +3,8 @@
 CT-QMC: ``TRIQS/cthyb``
 =======================
 
+.. include:: ../../warning_compatibility.rst
+
 Install
 -------
 
