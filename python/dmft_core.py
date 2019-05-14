@@ -233,9 +233,19 @@ class DMFTCoreSolver(object):
         # Read or set up seedname.out.h5
         #
         if self._params['control']['restart']:
-            self._read_output_file__restart()
-            assert self._previous_runs >= 1
+            if os.path.exists(self._output_file):
+                self._read_output_file__restart()
+                assert self._previous_runs >= 1
+            else:
+                print("Creating {}...".format(self._output_file))
+                self._prepare_output_file__from_scratch()
+                assert self._previous_runs == 0
         else:
+            if os.path.exists(self._output_file):
+                import shutil
+                print("Moving {} to {}...".format(self._output_file, self._output_file + '.bak'))
+                shutil.move(self._output_file, self._output_file + '.bak')
+
             self._prepare_output_file__from_scratch()
             assert self._previous_runs == 0
 
@@ -243,6 +253,8 @@ class DMFTCoreSolver(object):
 
 
         self._sanity_check()
+
+
 
 
     def _read_output_file__restart(self):
@@ -287,7 +299,7 @@ class DMFTCoreSolver(object):
         Set up an output HDF5 file.
         """
 
-        assert not self._params['control']['restart']
+        assert not os.path.exists(self._output_file)
 
         self._chemical_potential = self._params['system']['mu']
 
