@@ -3,6 +3,8 @@
 Downfolding with RESPACK (SrVO\ :sub:`3`)
 =========================================
 
+.. include:: ../../warning_compatibility.rst
+
 .. note::
 
    This tutorial requires large computational resources or the long simulation time.

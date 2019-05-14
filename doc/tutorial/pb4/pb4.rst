@@ -4,6 +4,8 @@
 Multi-atoms: Revisiting Pb
 ==========================
 
+.. include:: ../../warning_compatibility.rst
+
 In this tutorial, we perform the DMFT calculation of Pb with the spin-orbit interaction.
 We compute fcc-Pb, however, we treat it as a four-atom system in the simple cubic cell.
 This redundancy is just for demonstrating **how we compute multi-shell system with SOI**.

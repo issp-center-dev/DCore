@@ -1,6 +1,8 @@
 NiS
 ===
 
+.. include:: ../../warning_compatibility.rst
+
 Crystal structure of NiS (drawn by `VESTA <http://jp-minerals.org/vesta/en/>`_).
 
 .. image:: struct_nis.png

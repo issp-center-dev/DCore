@@ -3,6 +3,8 @@
 Spin-orbit interaction: The case with Pb
 ========================================
 
+.. include:: ../../warning_compatibility.rst
+
 In this tutorial, we perform the DMFT calculation of Pb with the spin-orbit interaction.
 
 SCF calculation of Quantum ESPRESSO

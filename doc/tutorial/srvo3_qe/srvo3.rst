@@ -3,6 +3,8 @@
 SrVO\ :sub:`3`
 ==============
 
+.. include:: ../../warning_compatibility.rst
+
 .. note::
 
    This tutorial requires large computational resources or long simulation time.
