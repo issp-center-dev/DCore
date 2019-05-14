@@ -245,7 +245,8 @@ class DMFTCoreTools:
         # Print band-structure into file
         #
         mesh = [x.real for x in sigma_w_sh[0].mesh]
-        with open(self._prefix + self._seedname + '_akw.dat', 'w') as f:
+        filename = self._prefix + self._seedname + '_akw.dat'
+        with open(filename, 'w') as f:
             offset = 0.0
             for isp in self._solver.spin_block_names:
                 for ik in range(self._n_k):
@@ -254,7 +255,7 @@ class DMFTCoreTools:
                     print("", file=f)
                 offset = self._xk[self._n_k-1] * 1.1
                 print("", file=f)
-        print("\n    Output {0}".format(self._seedname + '_akw.dat'))
+        print("\n    Output {0}".format(filename))
 
     def momentum_distribution(self):
         """
@@ -273,8 +274,9 @@ class DMFTCoreTools:
         #
         # Output momentum distribution to file
         #
-        print("\n Output Momentum distribution : ", self._seedname + "_momdist.dat")
-        with open(self._prefix + self._seedname + "_momdist.dat", 'w') as fo:
+        filename = self._prefix + self._seedname + "_momdist.dat"
+        print("\n Output Momentum distribution : ", filename)
+        with open(filename, 'w') as fo:
             print("# Momentum distribution", file=fo)
             #
             # Column information
@@ -454,9 +456,8 @@ def dcore_post(filename, np=1, prefix="./"):
         # Output gnuplot script
         #
         print("\n#############   Generate GnuPlot Script  ########################\n")
-        filename = prefix + seedname + '_akw.gp'
-        # with open(seedname + '_akw.gp', 'w') as f:
-        with open(filename, 'w') as f:
+        file_akw_gp = prefix + seedname + '_akw.gp'
+        with open(file_akw_gp, 'w') as f:
             print("set size 0.95, 1.0", file=f)
             print("set xtics (\\", file=f)
             if p["model"]["spin_orbit"]:
@@ -479,8 +480,7 @@ def dcore_post(filename, np=1, prefix="./"):
             print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)
             print("    Usage:")
-            # print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))
-            print("\n      $ gnuplot {0}".format(filename))
+            print("\n      $ gnuplot {0}".format(file_akw_gp))
 
     #
     # Finish
