@@ -2,6 +2,8 @@
 Name                Type          Description                                                                                     
 =================== ============= ================================================================================================
 Umat                numpy.complex The values of :math:`U^i_{\alpha\beta\gamma\delta}`, where :math:`i` corresponds to the kind of
-                                  correlated shell and :math:`\alpha, \beta, \gamma, \delta` denote orbitals at each correlated
-                                  shell.  
+                                  correlated shell and :math:`\alpha, \beta, \gamma, \delta` denote the spin-orbital indices at
+                                  each correlated shell.
+LocalPotential      numpy.complex The values of :math:`V^i_{s, o1, o2}`, where :math:`s` denotes the spin, and :math:`o1, o2`
+                                  denote orbitals. If SO coupling is considered, the spin is included in the orbital indices.
 =================== ============= ================================================================================================
