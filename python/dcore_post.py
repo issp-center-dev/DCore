@@ -122,7 +122,7 @@ class DMFTPostSolver(DMFTCoreSolver):
 
 
 class DMFTCoreTools:
-    def __init__(self, seedname, params, n_k, xk):
+    def __init__(self, seedname, params, n_k, xk, prefix):
         """
         Class of posting tool for DCore.
 
@@ -149,6 +149,7 @@ class DMFTCoreTools:
         self._seedname = seedname
         self._n_k = n_k
         self._xk = xk
+        self._prefix = prefix
 
         self._params['control']['restart'] = True
         self._solver = DMFTPostSolver(seedname, self._params, output_file=seedname+'.out.h5')
@@ -230,7 +231,7 @@ class DMFTCoreTools:
         #
         print("\n#############  Compute (partial) DOS  ################\n")
         dos, dosproj, dosproj_orb = self._solver.calc_dos(sigma_w_sh, mesh, self._broadening)
-        self.print_dos(dos, dosproj_orb, self._seedname+'_dos.dat')
+        self.print_dos(dos, dosproj_orb, self._prefix + self._seedname+'_dos.dat')
 
         #
         # Band structure
@@ -244,7 +245,7 @@ class DMFTCoreTools:
         # Print band-structure into file
         #
         mesh = [x.real for x in sigma_w_sh[0].mesh]
-        with open(self._seedname + '_akw.dat', 'w') as f:
+        with open(self._prefix + self._seedname + '_akw.dat', 'w') as f:
             offset = 0.0
             for isp in self._solver.spin_block_names:
                 for ik in range(self._n_k):
@@ -273,7 +274,7 @@ class DMFTCoreTools:
         # Output momentum distribution to file
         #
         print("\n Output Momentum distribution : ", self._seedname + "_momdist.dat")
-        with open(self._seedname + "_momdist.dat", 'w') as fo:
+        with open(self._prefix + self._seedname + "_momdist.dat", 'w') as fo:
             print("# Momentum distribution", file=fo)
             #
             # Column information
@@ -316,7 +317,7 @@ def __print_paramter(p, param_name):
 
 
 
-def dcore_post(filename, np=1):
+def dcore_post(filename, np=1, prefix="./"):
     """
     Main routine for the post-processing tool
 
@@ -341,6 +342,12 @@ def dcore_post(filename, np=1):
     p["mpi"]["num_processes"] = np
     mpirun_command = p['mpi']['command'].replace('#', str(p['mpi']['num_processes']))
     mpirun_command_np1 = p['mpi']['command'].replace('#', '1')
+
+    # make directory
+    dir = os.path.dirname(prefix)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
     #
     # Nodes for k-point path
     # knode=(label, k0, k1, k2) in the fractional coordinate
@@ -439,7 +446,7 @@ def dcore_post(filename, np=1):
         #
         # Plot
         #
-        dct = DMFTCoreTools(seedname, p, n_k, xk)
+        dct = DMFTCoreTools(seedname, p, n_k, xk, prefix)
         dct.post()
         dct.momentum_distribution()
 
@@ -447,7 +454,9 @@ def dcore_post(filename, np=1):
         # Output gnuplot script
         #
         print("\n#############   Generate GnuPlot Script  ########################\n")
-        with open(seedname + '_akw.gp', 'w') as f:
+        filename = prefix + seedname + '_akw.gp'
+        # with open(seedname + '_akw.gp', 'w') as f:
+        with open(filename, 'w') as f:
             print("set size 0.95, 1.0", file=f)
             print("set xtics (\\", file=f)
             if p["model"]["spin_orbit"]:
@@ -470,7 +479,8 @@ def dcore_post(filename, np=1):
             print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)
             print("    Usage:")
-            print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))
+            # print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))
+            print("\n      $ gnuplot {0}".format(filename))
 
     #
     # Finish
@@ -497,9 +507,15 @@ if __name__ == '__main__':
                         help="input file name."
                         )
     parser.add_argument('--np', help='Number of MPI processes', required=True)
+    parser.add_argument('--prefix',
+                        action='store',
+                        default='post/',
+                        type=str,
+                        help='prefix for output files'
+                        )
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
         print("Input file is not exist.")
         sys.exit(-1)
-    dcore_post(args.path_input_file, int(args.np))
+    dcore_post(args.path_input_file, int(args.np), args.prefix)
