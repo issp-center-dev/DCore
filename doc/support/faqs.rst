@@ -73,7 +73,7 @@ If the oscillation persists, consider expanding the unitcell to address a symmet
 Can I enforce zero magnetic moment?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Yes. Use ``time_reversal`` flag in [model] block.
+Yes. Use ``time_reversal`` flag in [control] block.
 See :doc:`../reference/input`.
 
 
@@ -144,8 +144,6 @@ For example, integer variable with name *num* is written as
     num{int} = 100
 
 The type can be int, str, and float.
-
-.. todo:: other type?
 
 Can I use my impurity solver?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
