@@ -1,6 +1,5 @@
 #
 # DCore -- Integrated DMFT software for correlated electrons
-# Copyright (C) 2017 The University of Tokyo
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# This code is partly from the TRIQS (Toolbox for Research on Interacting Quantum Systems).
+
 from __future__ import print_function
 
 import argparse

@@ -7,14 +7,29 @@ License
 The DCore package is published under the 
 `GNU General Public License, version 3 <http://www.gnu.org/licenses/gpl.html>`_.
 
-Copyright (C) 2017 The University of Tokyo
+The following files are from the TRIQS (Toolbox for Research on Interacting Quantum Systems).
 
-This package is developed under the support of "Project for advancement of software usability in materials science" by The Institute for Solid State Physics, The University of Tokyo.
+- https://github.com/issp-center-dev/DCore/blob/develop_v2/python/impurity_solvers/triqs_hubbard_I_impl.py
+- https://github.com/issp-center-dev/DCore/tree/develop_v2/python/converters
+
+We would like to express our sincere gratitude to TRIQS's developers.
+
+This package of ver.1.0 was developed under the support of "Project for advancement of software usability in materials science" by The Institute for Solid State Physics, The University of Tokyo. The copyright of DCore ver.1.0 belongs to The University of Tokyo.
 
 Authors & Quotation
 -------------------
 
-**Developers**: H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, T. Kato
+**Developers**:
+
+- ver. 2.0
+
+  H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, N. Takemori
+
+- ver. 1.1 (released on 2019/1/25)
+     
+- ver. 1.0 (released on 2018/3/24)
+
+  H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, T. Kato
 
 **Related papers**:
 This package depends on TRIQS libraries and applications.
