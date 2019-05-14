@@ -50,7 +50,6 @@ class SumkDFTDCorePost(SumkDFTTools):
             subgrp=self.bands_data, things_to_read=things_to_read)
 
         den = numpy.zeros([self.n_k, 2-self.SO, self.n_orbitals[0, 0], self.n_orbitals[0, 0]], numpy.complex_)
-        ev0 = numpy.zeros([self.n_k, 1, self.n_orbitals[0, 0]], numpy.float_)
 
         spn = self.spin_block_names[self.SO]
 
@@ -66,14 +65,12 @@ class SumkDFTDCorePost(SumkDFTTools):
                 # eigenvalue
                 #
                 #  ev[ik, isp, :] =  numpy.linalg.eigvalsh(g_latt[spn[isp]].data[len(g_latt[spn[isp]].mesh)/2, :, :])
-            ev0[ik, :, :] = numpy.linalg.eigvalsh(self.hopping[ik, :, :, :])
         #
         # Collect density matrix across processes
         #
         den = mpi.all_reduce(mpi.world, den, lambda x, y: x + y)
-        ev0 = mpi.all_reduce(mpi.world, ev0, lambda x, y: x + y)
 
-        return den, ev0
+        return den
 
 
 # TODO: chi_0 etc.

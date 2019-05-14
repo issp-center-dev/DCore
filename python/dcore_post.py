@@ -69,27 +69,6 @@ class DMFTPostSolver(DMFTCoreSolver):
         r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos', self._mpirun_command, params)
         return r['dos'], r['dosproj'], r['dosproj_orb']
 
-    def calc_dos0(self, mesh, broadening):
-        """
-
-        Compute dos in real frequency.
-
-        :param broadening: float
-           Broadening factor
-
-        :return: tuple
-           Results are 'dos0', 'dosproj0', 'dosproj_orb0'.
-
-        """
-
-        params = self._make_sumkdft_params()
-        params['calc_mode'] = 'dos0'
-        params['mu'] = self._params['system']['mu']
-        params['mesh'] = mesh
-        params['broadening'] = broadening
-        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos0', self._mpirun_command, params)
-        return r['dos0'], r['dosproj0'], r['dosproj_orb0']
-
     def calc_spaghettis(self, Sigma_w_sh, mesh, broadening):
         """
 
@@ -118,7 +97,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['calc_mode'] = 'momentum_distribution'
         params['mu'] = self._chemical_potential
         r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_momentum_distribution', self._mpirun_command, params)
-        return r['den'], r['ev0']
+        return r['den']
 
     def calc_Sigma_w(self, mesh):
         """
@@ -253,9 +232,6 @@ class DMFTCoreTools:
         dos, dosproj, dosproj_orb = self._solver.calc_dos(sigma_w_sh, mesh, self._broadening)
         self.print_dos(dos, dosproj_orb, self._seedname+'_dos.dat')
 
-        dos0, dosproj0, dosproj_orb0 = self._solver.calc_dos0(mesh, self._broadening)
-        self.print_dos(dos0, dosproj_orb0, self._seedname+'_dos0.dat')
-
         #
         # Band structure
         #
@@ -285,7 +261,7 @@ class DMFTCoreTools:
         """
         print("\n#############  Momentum Distribution  ################\n")
 
-        den, ev0 = self._solver.calc_momentum_distribution()
+        den = self._solver.calc_momentum_distribution()
 
         spn = self._solver.spin_block_names
 
@@ -322,18 +298,6 @@ class DMFTCoreTools:
                         for jorb in range(n_orbitals):
                             print("%f %f " % (den[ik, isp, iorb, jorb].real,
                                               den[ik, isp, iorb, jorb].imag), end="", file=fo)
-                print("", file=fo)
-        #
-        # Output eigenvalue to a file
-        #
-        with open(self._seedname + "_akw0.dat", 'w') as fo:
-            offset = 0.0
-            for isp in spn:
-                for iorb in range(n_orbitals):
-                    for ik in range(n_k):
-                        print("%f %f" % (self._xk[ik]+offset, ev0[ik, 0, iorb]), file=fo)
-                    print("", file=fo)
-                offset = self._xk[n_k-1]*1.1
                 print("", file=fo)
 
 
@@ -503,9 +467,7 @@ def dcore_post(filename, np=1):
             print("unset key", file=f)
             print("set ylabel \"Energy\"", file=f)
             print("set cblabel \"A(k,w)\"", file=f)
-            print("splot \"{0}_akw.dat\", \\".format(seedname), file=f)
-            print("\"{0}_akw0.dat\" u 1:($2-{1}):(0) every 5 w p lc 5".format(
-                    seedname, p['system']['mu']), file=f)
+            print("splot \"{0}_akw.dat\"".format(seedname), file=f)
             print("pause -1", file=f)
             print("    Usage:")
             print("\n      $ gnuplot {0}".format(seedname + '_akw.gp'))

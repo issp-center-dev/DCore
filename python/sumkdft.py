@@ -84,10 +84,10 @@ def run(model_file, work_dir, mpirun_command, params):
         results
 
     params contains the following parameters.
-        calc_mode   : str, 'Gloc', 'dos', 'dos0', 'spaghettis' or 'momentum_distribution' (mandatory)
+        calc_mode   : str, 'Gloc', 'dos', 'spaghettis' or 'momentum_distribution' (mandatory)
         mu          : float, chemical potential. If mu is not given, mu will be adjusted (optional).
         prec_mu     : float, precision of adjustment of chemical potential (optional)
-        broadening  : float, broadening parameter for DOS (must be set when calc_mode = dos, dos0, spaghettis)
+        broadening  : float, broadening parameter for DOS (must be set when calc_mode = dos, spaghettis)
         mesh        : (float, float, int) real-frequency mesh (optional)
 
     """
@@ -204,17 +204,6 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
                              mesh=params['mesh'],
                              with_Sigma=True, with_dc=with_dc, save_to_file=False)
 
-    elif params['calc_mode'] == 'dos0':
-        # Compute non-interacting dos
-        from .sumkdft_post import SumkDFTDCorePost
-        sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
-        setup_sk(sk, "none")
-        results['dos0'], results['dosproj0'], results['dosproj_orb0'] = \
-            sk.dos_wannier_basis(broadening=params['broadening'],
-                             mu=params['mu'],
-                             mesh=params['mesh'],
-                             with_Sigma=False, with_dc=False, save_to_file=False)
-
     elif params['calc_mode'] == 'spaghettis':
         # A(k, omega)
         from .sumkdft_post import SumkDFTDCorePost
@@ -227,7 +216,7 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         from .sumkdft_post import SumkDFTDCorePost
         sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
         setup_sk(sk, 'iwn')
-        results['den'], results['ev0'] = \
+        results['den'] = \
             sk.calc_momentum_distribution(mu=params["mu"], beta=beta, with_Sigma=True, with_dc=True)
 
     elif params['calc_mode'] == 'bse':
