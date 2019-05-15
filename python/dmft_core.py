@@ -282,6 +282,8 @@ class DMFTCoreSolver(object):
             self._dc_imp = ar['dc_imp'][str(iterations)]
             self._dc_energ = ar['dc_energ'][str(iterations)]
             self._chemical_potential = ar['chemical_potential'][str(iterations)]
+            if self._params['system']['fix_mu'] and self._chemical_potential != self._params['system']['mu']:
+                raise RuntimeError('Wrong chemical potential {} found in {}! Given mu in system block = {}.'.format(self._chemical_potential, output_file, self._params['system']['mu']))
 
         # Load self-energy
         print("Loading Sigma_iw... ")

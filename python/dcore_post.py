@@ -236,7 +236,7 @@ class DMFTCoreTools:
         #
         # Band structure
         #
-        if self._params["model"]["lattice"] == 'bethe':
+        if self._xk is None:
             return
         #
         print("\n#############  Compute Band Structure  ################\n")
@@ -402,6 +402,8 @@ def dcore_post(filename, np=1, prefix="./"):
         print('')
         print('Skipping A(k,w)')
         print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
+        n_k = 0
+        xk = None
     else:
         print("\n################  Constructing k-path  ##################")
         nk_line = p["tool"]["nk_line"]
@@ -446,13 +448,6 @@ def dcore_post(filename, np=1, prefix="./"):
         lattice_model.write_dft_band_input_data(p, kvec)
 
         #
-        # Plot
-        #
-        dct = DMFTCoreTools(seedname, p, n_k, xk, prefix)
-        dct.post()
-        dct.momentum_distribution()
-
-        #
         # Output gnuplot script
         #
         print("\n#############   Generate GnuPlot Script  ########################\n")
@@ -481,6 +476,15 @@ def dcore_post(filename, np=1, prefix="./"):
             print("pause -1", file=f)
             print("    Usage:")
             print("\n      $ gnuplot {0}".format(file_akw_gp))
+
+
+    #
+    # Plot
+    #
+    dct = DMFTCoreTools(seedname, p, n_k, xk, prefix)
+    dct.post()
+    if lattice_model.is_Hk_supported():
+        dct.momentum_distribution()
 
     #
     # Finish
