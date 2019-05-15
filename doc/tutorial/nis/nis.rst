@@ -134,9 +134,12 @@ First, compute the band structure with the following input file:
 
    $ mpiexec -np 4 bands.x -in bands_nis.in
 
-.. code-block:: gnuplot
+.. .. code-block:: gnuplot
+.. code-block:: guess
 
-   plot [][3:13] "bands.out.gnu" u 1:2 w p tit "Orig", 10.913 tit "E_F", "nis_band.dat" u ($1*0.549):2 tit "Wannier" w l
+
+   plot [][3:13] "bands.out.gnu" u 1:2 w p tit "Orig", 10.913 tit "E_F",\
+    "nis_band.dat" u ($1*0.549):2 tit "Wannier" w l
 
 .. image:: band_nis.png
    :width: 500

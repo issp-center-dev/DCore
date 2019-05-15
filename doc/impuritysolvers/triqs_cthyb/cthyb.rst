@@ -308,7 +308,8 @@ For examples, we run the bash script as
 
 Then, we use GnuPlot as
 
-.. code-block:: gnuplot
+.. .. code-block:: gnuplot
+.. code-block:: guess
 
    set xlabel "Order of polynomial"
    set ylabel "Coefficient"
