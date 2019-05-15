@@ -1,7 +1,10 @@
 .. _structure:
 
-Overview and data flow
-----------------------
+Minimum introduction: Structure of DCore
+========================================
+
+Data flow
+---------
 
 **DCore** contains a set of programs which perform dynamical mean-field theory (DMFT) calculations for models and materials.
 The structure of programs and data flow is summarized below.
