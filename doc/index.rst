@@ -14,10 +14,6 @@ What is DCore?
 This package consists of programs with text-based and hdf5-based interface.
 These programs enable users to perform DMFT calculations and analyze results without writing computer code.
 
-.. image:: concept.png
-   :width: 500
-   :align: center
-
 License
 -------
 
