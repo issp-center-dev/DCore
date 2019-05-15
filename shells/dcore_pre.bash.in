@@ -1,5 +1,5 @@
 #!/bin/bash
 
-export PYTHONPATH=@DCORE_SITE_PACKAGES@:$PYTHONPATH
+export PYTHONPATH=@DCORE_DEP_PYTHONPATH@:$PYTHONPATH
 
-@TRIQS_PATH@/bin/pytriqs -m dcore.dcore_pre $@
+@PYTHON_INTERPRETER@ -m dcore.dcore_pre $@

@@ -50,5 +50,21 @@ def detect_undefined_option():
     assert thrown
 
 
+def float_tuple():
+    t = FloatTuple('(1, 2, 3,)')
+    assert str(t) == '(1.0 , 2.0 , 3.0)'
+
+    t2 = FloatTuple(t)
+    assert str(t2) == str(t)
+
+def int_tuple():
+    t = IntTuple('(1, 2, 3,)')
+    assert str(t) == '(1 , 2 , 3)'
+
+    t2 = IntTuple((10, 10, 10))
+
+
 read_file()
 detect_undefined_option()
+float_tuple()
+int_tuple()

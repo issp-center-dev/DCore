@@ -4,4 +4,4 @@ FILE(COPY srvo3_hr_ref.dat DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(COPY srvo3_band_ref.dat DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 FILE(COPY ../../tools/openmx2dcore.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-triqs_add_python_test(openmx)
+add_python_test(openmx)

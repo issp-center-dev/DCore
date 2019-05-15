@@ -19,11 +19,58 @@ import os
 import copy
 from enum import Enum
 from warnings import warn
+from collections import OrderedDict
 
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+
+class TypedTuple(object):
+    def __init__(self, data, elem_type):
+        if isinstance(data, str):
+            chars_ignore = ['(', ')', '[', ']', ' ']
+            for c in chars_ignore:
+                data = data.replace(c, '')
+            data = data.strip(',')
+
+            self._data = tuple([elem_type(x) for x in data.split(',')])
+        elif isinstance(data, tuple):
+            for x in data:
+                if not isinstance(x, elem_type):
+                    raise RuntimeError("Invalid element in tuple.")
+            self._data = data
+        else:
+            raise RuntimeError("Invalid data for Tuple")
+
+    def __repr__(self):
+        """
+        Return a string representation like (1, 2, 3).
+
+        :return: str
+        """
+        return '(' + ' , '.join([str(x) for x in self._data]) + ')'
+
+    def to_tuple(self):
+        assert isinstance(self._data, tuple)
+        return self._data
+
+class IntTuple(TypedTuple):
+    def __init__(self, data):
+        if isinstance(data, IntTuple):
+            self._data = data._data
+            assert isinstance(self._data, tuple)
+        else:
+            super(IntTuple, self).__init__(data, int)
+
+class FloatTuple(TypedTuple):
+    def __init__(self, data):
+        if isinstance(data, FloatTuple):
+            self._data = data._data
+            assert isinstance(self._data, tuple)
+        else:
+            super(FloatTuple, self).__init__(data, float)
+
 
 class OptionStatus(Enum):
     VALID = 0
@@ -54,8 +101,8 @@ class TypedParser(object):
         self.__config_parser = configparser.ConfigParser()
         self.__config_parser.optionxform = str
 
-        self.__definitions = {}
-        self.__results = {}
+        self.__definitions = OrderedDict()
+        self.__results = OrderedDict()
 
         self.__read = False
 
@@ -75,10 +122,10 @@ class TypedParser(object):
             raise RuntimeError("Do not add option after an input file has been read!")
 
         if section not in self.__definitions:
-            self.__definitions[section] = {}
+            self.__definitions[section] = OrderedDict()
 
         if section not in self.__results:
-            self.__results[section] = {}
+            self.__results[section] = OrderedDict()
 
         self.__definitions[section][option] = {'dtype' : dtype,
                                                'description' : string,
@@ -120,7 +167,7 @@ class TypedParser(object):
                 self.__results[sect] = {}
 
             for opt in self.__config_parser.options(sect):
-                value = self.__config_parser.get(sect, opt)
+                value = self.__config_parser.get(sect, opt).strip('\'').strip('"')
                 if sect in self.__definitions and opt in self.__definitions[sect]:
                     # if an option is pre-defined.
                     if self.__definitions[sect][opt]['status'] == OptionStatus.DEPRECATED:
@@ -181,7 +228,18 @@ class TypedParser(object):
 
         :return: dict object
         """
-        return copy.deepcopy(self.__results)
+
+        # convert OrderedDict to ordinary dict recursively
+        def convert_ordered_dict_to_dict(obj):
+            if isinstance(obj, OrderedDict):
+                r = {}
+                for key, val in obj.items():
+                    r[key] = convert_ordered_dict_to_dict(val)
+                return r
+            else:
+                return copy.deepcopy(obj)
+
+        return convert_ordered_dict_to_dict(self.__results)
 
     def print_options(self):
         """

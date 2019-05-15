@@ -1,7 +1,0 @@
-============= =========== ========= ============================================================================
-Name          Type        Default   Description                                                                 
-============= =========== ========= ============================================================================
-max_step      Integer     100       Maximum steps of DMFT loops                                                 
-restart       Bool        False     Whether or not restart from a previous calculation stored in a HDF file.    
-sigma_mix     Float       0.5       Mixing parameter for self-energy                                            
-============= =========== ========= ============================================================================

@@ -1,5 +1,7 @@
-Tutorial with OpenMX
-====================
+OpenMX
+======
+
+.. include:: ../../warning_compatibility.rst
 
 OpenMX is a first-principles program package based on
 the numerical localized basis set and pseudopotentials.
