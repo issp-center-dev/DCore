@@ -51,7 +51,7 @@ Files that have empty Reference in this table are explained in the following.
 -   solver_dependent_output
 
     All solver-dependent output are stored in the working directory such as **work/imp_shell#_iter#** (#'s are replaced with numbers).
-    See :ref:`Impurity solvers <impuritysolvers>` for details.
+    See :doc:`../impuritysolvers` for details.
 
 ``dcore_check``
 ~~~~~~~~~~~~~~~

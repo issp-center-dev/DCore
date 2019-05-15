@@ -92,7 +92,7 @@ Prerequisites
    * :doc:`TRIQS/cthyb<impuritysolvers/triqs_cthyb/cthyb>`
    * :doc:`Hubbard-I solver<impuritysolvers/triqs_hubbard_one/hubbard_one>`
 
-   See :ref:`here <impuritysolvers>` for a complete list of supported impurity solvers and their user manuals.
+   See :doc:`impuritysolvers` for a complete list of supported impurity solvers and their user manuals.
 
 ..
    * `Hubbard-I solver <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/>`_

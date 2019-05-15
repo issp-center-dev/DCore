@@ -1,5 +1,3 @@
-.. _impuritysolvers:
-
 Impurity solvers
 ================
 

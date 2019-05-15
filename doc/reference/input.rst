@@ -282,7 +282,7 @@ This block specifies an impurity solver to be used and necessary parameters for 
 .. include:: impurity_solver_desc.txt
 
 Additionally, we have to specify solver-dependent parameters in the way like ``n_cycles{int} = 500000``.
-For details, see :ref:`the reference manual for each solver<impuritysolvers>`.
+For details, see :doc:`the reference manual for each solver <../impuritysolvers>`.
 
 ..
     `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html#solve-parameters>`_,
