@@ -31,11 +31,10 @@ with open("nis.ini", 'w') as f:
     print("norb = [5, 5]", file=f)
     print("interaction = slater_uj", file=f)
     print("slater_uj = [(2, 1.0, 0.0), (2, 1.0, 0.0)]", file=f)
-    print("", file=f)
-    print("[system]", file=f)
     print("nk0 = 4", file=f)
     print("nk1 = 4", file=f)
     print("nk2 = 3", file=f)
+    print("", file=f)
 
 dcore_pre("nis.ini")
 

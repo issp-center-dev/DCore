@@ -19,7 +19,9 @@ png
 wannier
 Pade
 cthyb
+cthyb-seg
 CT-HYB
+CT-HYB-SEGMENT
 triqs
 TRIQS
 hubbard-I

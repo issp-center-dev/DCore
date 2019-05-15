@@ -3,6 +3,8 @@
 SrVO\ :sub:`3`
 ==============
 
+.. include:: ../../warning_compatibility.rst
+
 .. note::
 
    This tutorial requires large computational resources or long simulation time.
@@ -121,7 +123,8 @@ First, compute the band structure with the following input file:
 
    $ mpiexec -np 4 bands.x -in bands_srvo3.in
 
-.. code-block:: gnuplot
+.. .. code-block:: gnuplot
+.. code-block:: guess
 
    plot [][11:18] "bands.out.gnu" u 1:2 w p tit "Orig", 12.3116 tit "E_F", "srvo3_band.dat" u ($1*0.6146):2 tit "Wannier" w l
 

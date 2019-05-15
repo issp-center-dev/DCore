@@ -1,7 +1,7 @@
 .. _DFTDMFTtutorial:
 
-Tutorial with QuantumESPRESSO and wannier90
-===========================================
+QuantumESPRESSO + Wannier90
+===========================
 
 Quantum ESPRESSO is a first-principles program package based on
 the plane wave and pseudopotentials.

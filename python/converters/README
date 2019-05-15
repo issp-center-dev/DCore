@@ -1,0 +1,4 @@
+The three files in this directory were imported from https://github.com/TRIQS/dft_tools/tree/master/python/converters. (d00575632c4c0aa0fd2ca6f09c)
+
+Differences from the original files:
+* Removed mpi
