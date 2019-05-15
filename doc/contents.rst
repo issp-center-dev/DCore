@@ -5,10 +5,10 @@ Table of contents
    :maxdepth: 2
 
    index
+   about
    install
    documentation
    support
-   about
 
 .. note::
 

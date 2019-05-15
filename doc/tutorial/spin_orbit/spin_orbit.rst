@@ -1,10 +1,4 @@
 Spin-Orbit Coupling
 ===================
 
-
-Pre-process : ``dcore_pre``
----------------------------
-
-DMFT loop : ``dcore``
----------------------
-
+.. todo:: tutorial for spin-orbit coupling
