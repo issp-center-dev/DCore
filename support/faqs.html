@@ -1,0 +1,247 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>FAQ/Troubleshooting &#8212; DCore 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/dcore.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reporting issues" href="issues.html" />
+    <link rel="prev" title="Support" href="../support.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="issues.html" title="Reporting issues"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../support.html" title="Support"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../contents.html">DCore 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../support.html" accesskey="U">Support</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="faq-troubleshooting">
+<h1>FAQ/Troubleshooting<a class="headerlink" href="#faq-troubleshooting" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#general" id="id1">General</a><ul>
+<li><a class="reference internal" href="#can-dcore-compute-the-double-occupancy" id="id2">Can <strong>DCore</strong> compute the double occupancy?</a></li>
+<li><a class="reference internal" href="#can-dcore-compute-the-internal-energy" id="id3">Can <strong>DCore</strong> compute the internal energy?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dcore-pre" id="id4"><code class="docutils literal"><span class="pre">dcore_pre</span></code></a><ul>
+<li><a class="reference internal" href="#when-should-i-re-execute-dcore-pre" id="id5">When should I re-execute <code class="docutils literal"><span class="pre">dcore_pre</span></code>?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dcore" id="id6"><code class="docutils literal"><span class="pre">dcore</span></code></a><ul>
+<li><a class="reference internal" href="#how-should-i-judge-convergence-of-the-dmft-loop" id="id7">How should I judge convergence of the DMFT loop?</a></li>
+<li><a class="reference internal" href="#the-dmft-loop-does-not-converge" id="id8">The DMFT loop does not converge</a></li>
+<li><a class="reference internal" href="#can-i-enforce-zero-magnetic-moment" id="id9">Can I enforce zero magnetic moment?</a></li>
+<li><a class="reference internal" href="#can-i-fix-the-sign-of-the-magnetic-moment-in-ordered-states" id="id10">Can I fix the sign of the magnetic moment in ordered states?</a></li>
+<li><a class="reference internal" href="#can-i-set-an-initial-self-energy-for-the-dmft-loop" id="id11">Can I set an initial self-energy for the DMFT loop?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dcore-check" id="id12"><code class="docutils literal"><span class="pre">dcore_check</span></code></a><ul>
+<li><a class="reference internal" href="#can-i-change-the-file-format-for-figures" id="id13">Can I change the file format for figures?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#impurity-solvers" id="id14">Impurity solvers</a><ul>
+<li><a class="reference internal" href="#what-is-the-difference-between-alpscore-ct-hyb-and-triqs-cthyb" id="id15">What is the difference between ALPSCore/CT-HYB and TRIQS/cthyb?</a></li>
+<li><a class="reference internal" href="#solver-dependent-parameter-is-not-recognized" id="id16">Solver-dependent parameter is not recognized</a></li>
+<li><a class="reference internal" href="#can-i-use-my-impurity-solver" id="id17">Can I use my impurity solver?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="general">
+<h2><a class="toc-backref" href="#id1">General</a><a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="can-dcore-compute-the-double-occupancy">
+<h3><a class="toc-backref" href="#id2">Can <strong>DCore</strong> compute the double occupancy?</a><a class="headerlink" href="#can-dcore-compute-the-double-occupancy" title="Permalink to this headline">¶</a></h3>
+<p>It depends on impurity solvers.
+For example, ALPSCore/CT-HYB-SEGMENT supports it, but other CT-QMC codes do not at present.</p>
+<p>In general, capability of computing <strong>local</strong> physical quantities totally depends on impurity solvers.
+See the documentation of each solver for which local quantities can be computed.</p>
+</div>
+<div class="section" id="can-dcore-compute-the-internal-energy">
+<h3><a class="toc-backref" href="#id3">Can <strong>DCore</strong> compute the internal energy?</a><a class="headerlink" href="#can-dcore-compute-the-internal-energy" title="Permalink to this headline">¶</a></h3>
+<p>No, it is not implemented yet.</p>
+<p>If you want to compute it, you need to access to G(k,iw) in HDF5 file, and take summation over k and iw in an appropiate way.</p>
+</div>
+</div>
+<div class="section" id="dcore-pre">
+<h2><a class="toc-backref" href="#id4"><code class="docutils literal"><span class="pre">dcore_pre</span></code></a><a class="headerlink" href="#dcore-pre" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="when-should-i-re-execute-dcore-pre">
+<h3><a class="toc-backref" href="#id5">When should I re-execute <code class="docutils literal"><span class="pre">dcore_pre</span></code>?</a><a class="headerlink" href="#when-should-i-re-execute-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<p>When you change any parameters in <strong>[model] block</strong>.
+<code class="docutils literal"><span class="pre">dcore_pre</span></code> will re-construct the model database in <em>seedname</em>.h5.</p>
+<p>For changes of parameters other than [model] block, on the other hand, you can restart <code class="docutils literal"><span class="pre">dcore</span></code>, skipping <code class="docutils literal"><span class="pre">dcore_pre</span></code>.</p>
+</div>
+</div>
+<div class="section" id="dcore">
+<h2><a class="toc-backref" href="#id6"><code class="docutils literal"><span class="pre">dcore</span></code></a><a class="headerlink" href="#dcore" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="how-should-i-judge-convergence-of-the-dmft-loop">
+<h3><a class="toc-backref" href="#id7">How should I judge convergence of the DMFT loop?</a><a class="headerlink" href="#how-should-i-judge-convergence-of-the-dmft-loop" title="Permalink to this headline">¶</a></h3>
+<p>Use the <code class="docutils literal"><span class="pre">dcore_check</span></code> and look at the generated figures.
+We do not implement automatic convergence check, because results by QMC solvers include statistical errors and simple convergence criteria does not work.</p>
+</div>
+<div class="section" id="the-dmft-loop-does-not-converge">
+<h3><a class="toc-backref" href="#id8">The DMFT loop does not converge</a><a class="headerlink" href="#the-dmft-loop-does-not-converge" title="Permalink to this headline">¶</a></h3>
+<p>If the chemical potential and/or self-energy look oscillating as a function of the iteration number, decrease <code class="docutils literal"><span class="pre">sigma_mix</span></code> parameter in [control] block.</p>
+<p>You might also need to improve the accuracy of QMC sampling by increasing the measurement time.</p>
+<p>If the oscillation persists, consider expanding the unitcell to address a symmetry broken solution.</p>
+</div>
+<div class="section" id="can-i-enforce-zero-magnetic-moment">
+<h3><a class="toc-backref" href="#id9">Can I enforce zero magnetic moment?</a><a class="headerlink" href="#can-i-enforce-zero-magnetic-moment" title="Permalink to this headline">¶</a></h3>
+<p>Yes. Use <code class="docutils literal"><span class="pre">time_reversal</span></code> flag in [control] block.
+See <a class="reference internal" href="../reference/input.html"><span class="doc">Input-file format</span></a>.</p>
+</div>
+<div class="section" id="can-i-fix-the-sign-of-the-magnetic-moment-in-ordered-states">
+<h3><a class="toc-backref" href="#id10">Can I fix the sign of the magnetic moment in ordered states?</a><a class="headerlink" href="#can-i-fix-the-sign-of-the-magnetic-moment-in-ordered-states" title="Permalink to this headline">¶</a></h3>
+<p>Yes. Set the initial static self-energy using <code class="docutils literal"><span class="pre">initial_static_self_energy</span></code> parameter in [control] block.
+This works as a local potential in the first iteration.
+See <a class="reference internal" href="../reference/input.html"><span class="doc">Input-file format</span></a> for details.</p>
+</div>
+<div class="section" id="can-i-set-an-initial-self-energy-for-the-dmft-loop">
+<h3><a class="toc-backref" href="#id11">Can I set an initial self-energy for the DMFT loop?</a><a class="headerlink" href="#can-i-set-an-initial-self-energy-for-the-dmft-loop" title="Permalink to this headline">¶</a></h3>
+<p>Yes. Use <code class="docutils literal"><span class="pre">initial_self_energy</span></code> parameter in [control] block.
+See <a class="reference internal" href="../reference/input.html"><span class="doc">Input-file format</span></a>.</p>
+<p>Let’s say you want to start the DMFT loop using results obtained for different parameter set.
+To do this, you perform <code class="docutils literal"><span class="pre">dcore_check</span></code> after convergence, and copy <strong>sigma.dat</strong> into a new working directory (with the name sigma_init.dat below).
+Then, assign this file to <code class="docutils literal"><span class="pre">initial_self_energy</span></code> parameter as</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">control</span><span class="p">]</span>
+<span class="n">initial_self_energy</span> <span class="o">=</span> <span class="n">sigma_init</span><span class="o">.</span><span class="n">dat</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="dcore-check">
+<h2><a class="toc-backref" href="#id12"><code class="docutils literal"><span class="pre">dcore_check</span></code></a><a class="headerlink" href="#dcore-check" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="can-i-change-the-file-format-for-figures">
+<h3><a class="toc-backref" href="#id13">Can I change the file format for figures?</a><a class="headerlink" href="#can-i-change-the-file-format-for-figures" title="Permalink to this headline">¶</a></h3>
+<p>Yes. Use <code class="docutils literal"><span class="pre">--ext</span></code> option to specify the file extension.
+If you prefer PDF, for example, the command reads</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ dcore_check input.init --ext pdf
+</pre></div>
+</div>
+<p>The argument of <code class="docutils literal"><span class="pre">--ext</span></code> can be png, pdf, eps, jpg, … (the ones supported by <code class="docutils literal"><span class="pre">matplotlib</span></code> module).</p>
+</div>
+</div>
+<div class="section" id="impurity-solvers">
+<h2><a class="toc-backref" href="#id14">Impurity solvers</a><a class="headerlink" href="#impurity-solvers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="what-is-the-difference-between-alpscore-ct-hyb-and-triqs-cthyb">
+<h3><a class="toc-backref" href="#id15">What is the difference between ALPSCore/CT-HYB and TRIQS/cthyb?</a><a class="headerlink" href="#what-is-the-difference-between-alpscore-ct-hyb-and-triqs-cthyb" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal"><span class="pre">ALPS/CT-HYB</span></code> is developed by one of the main developers of DCore, H. Shinaoka.
+Both of <code class="docutils literal"><span class="pre">ALPS/CT-HYB</span></code> and <code class="docutils literal"><span class="pre">TRIQS/cthyb</span></code> implement the hybridization-expansion continuous-time quantum Monte Carlo method.
+The main difference is the reliability of measurement of the single-particle Green’s function.
+ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
+The non-worm conventional sampling, which is implemented in <code class="docutils literal"><span class="pre">TRIQS/cthyb</span></code>,
+may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).</p>
+</div>
+<div class="section" id="solver-dependent-parameter-is-not-recognized">
+<h3><a class="toc-backref" href="#id16">Solver-dependent parameter is not recognized</a><a class="headerlink" href="#solver-dependent-parameter-is-not-recognized" title="Permalink to this headline">¶</a></h3>
+<p>The variable type should be specified to be recognized as a solver parameter.
+For example, integer variable with name <em>num</em> is written as</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
+<span class="n">num</span><span class="p">{</span><span class="nb">int</span><span class="p">}</span> <span class="o">=</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>The type can be int, str, and float.</p>
+</div>
+<div class="section" id="can-i-use-my-impurity-solver">
+<h3><a class="toc-backref" href="#id17">Can I use my impurity solver?</a><a class="headerlink" href="#can-i-use-my-impurity-solver" title="Permalink to this headline">¶</a></h3>
+<p>Yes. Follow the instruction in <a class="reference internal" href="../impuritysolvers/how_to_integrate.html"><span class="doc">How to integrate your own solver</span></a></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo_dcore1.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../contents.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference Manual</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../support.html">Support</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">FAQ/Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="issues.html">Reporting issues</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../support.html"
+                        title="previous chapter">Support</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="issues.html"
+                        title="next chapter">Reporting issues</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="issues.html" title="Reporting issues"
+             >next</a></li>
+        <li class="right" >
+          <a href="../support.html" title="Support"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../contents.html">DCore 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../support.html" >Support</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

@@ -6,7 +6,12 @@ Table of contents
 
    index
    install
-   documentation
-   presentation
-   issues
-   about
+   tutorial
+   reference
+   support
+
+.. note::
+
+    Some pages are not completed yet in this beta version.
+    Those will be updated by the next major release.
+    :doc:`TODO list (for developers) <todolist>`

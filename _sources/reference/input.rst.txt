@@ -1,44 +1,78 @@
-.. _inputformat:
-
 Input-file format
 =================
 
-The input file is constructed of five blocks, ``[model]``, ``[system]``, ``[impurity]``, ``[control]`` and ``[tool]``.
-The example of the input file is shown as follows:
+The input file consists of five parameter blocks named ``[model]``, ``[system]``, ``[impurity_solver]``, ``[control]``, and ``[tool]``.
 
-.. literalinclude:: ../tutorial/nis/nis.ini
-   :language: ini
+..
+    The example of the input file is shown as follows:
 
-The details of each block will be described below.
+    .. literalinclude:: ../tutorial/nis/nis.ini
+       :language: ini
+
+The following table shows which blocks are used by each program.
+
+.. csv-table::
+    :header: "", ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_post``
+    :widths: 5, 5, 5, 5, 5
+
+    [model]          ,  Yes, Yes, Yes, Yes
+    [system]         ,     , Yes, Yes, Yes
+    [impurity_solver],     , Yes,    , Yes
+    [control]        ,     , Yes
+    [tool]           ,     ,    ,    , Yes
+    [mpi]            ,     , Yes,    , Yes
+
+For example, we can see that ``dcore_pre`` needs to be re-executed only when [model] block is changed.
+
+The parameters included in each block are explained below.
 
 [model] block
-~~~~~~~~~~~~~
+-------------
 
-``dcore_pre``, ``dcore_check`` and ``dcore_post`` read this block.
+This block includes parameters for defining a model to be solved.
+
+.. ``dcore_pre``, ``dcore_check`` and ``dcore_post`` read this block.
 
 .. include:: model_desc.txt
 
-A model for DCore is defined in this block.
-You can choose the type of lattice by setting ``lattice``.
-The following preset models are defined:
+lattice
+^^^^^^^
 
-* chain
+.. You can choose the type of lattice by setting ``lattice``.
 
-* square
+For model calculations, the following preset models are defined:
 
-* cubic
+* **chain**
 
-* bethe
-  
-  Semicircular DOS with energy ranges [-2t:2t].
+* **square**
 
-* wannier90
-  
-  Read hopping parameters from the Wannier90 output.
+* **cubic**
+
+* **bethe** (semicircular DOS with energy ranges [-2t:2t])
 
 .. image:: model.png
    :width: 700
    :align: center
+
+For DFT+DMFT calculations, hopping parameters in the Wannier90 format can be imported by
+
+* **wannier90**
+
+  Place the Wannier90 file in the current directory with the name *seedname*\_hr.dat.
+
+For experts, the lattice data may be prepared by your own. In this case, use
+
+* **external**
+
+  In this mode, you should make all necessary data in ``dft_input`` group of *seedname*.h5.
+  The data structure follows **DFTTools**. For details, see
+  `the reference manual of DFTTools <https://triqs.github.io/dft_tools/1.4/reference/h5structure.html>`_.
+
+
+  The pre-process ``dcore_pre`` does not touch the data in ``dft_input`` group, and write only additional data such as interactions into ``DCore`` group.
+
+interaction
+^^^^^^^^^^^
 
 Model Hamiltonian is defined as
    
@@ -176,21 +210,49 @@ If you want to treat only the density-density part
    U^{i}_{\alpha \beta \beta \alpha}
    c_{i \alpha \sigma}^\dagger c_{i \beta \sigma}^\dagger c_{i \alpha \sigma} c_{i \beta \sigma},
 
-you specify the parameter ``density-density`` as
+you specify the parameter ``density_density`` as
 
 ::
 
-   density-density = True
+   density_density = True
 
 .. note::
 
    It can not be used in conjunction to the Hubbard-I solver or
    the double-counting correction.
 
-[system] block
-~~~~~~~~~~~~~~
+local potential
+^^^^^^^^^^^^^^^
 
-``dcore_pre`` and ``dcore`` read this block.
+An arbitrary local potential can be implemented using parameters ``local_potential_*``.
+The format looks like
+
+::
+
+    [model]
+    local_potential_matrix = {0: 'pot0.txt', 1: 'pot1.txt'}
+    local_potential_factor = 0.01
+
+Here, ``local_potential_matrix`` describes, in the python dictionary format, a set of the inequivalent shell index *ish* and the filename which defines the local potential matrix.
+The parameter ``local_potential_factor`` defines a prefactor to the potential matrix.
+
+For example, the Zeeman term along z-axis for S=1/2 is represented by
+
+::
+
+    $ cat pot0.txt
+    # spin orb1 orb2  Re Im
+    0 0 0   0.5 0.
+    1 0 0  -0.5 0.
+
+and the magnetic field is specified by ``local_potential_factor``.
+
+[system] block
+--------------
+
+This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.
+
+.. ``dcore`` read this block.
 
 .. include:: system_desc.txt
 
@@ -211,28 +273,42 @@ the self-energy.
 where :math:`\langle \cdots \rangle_0` indicates the expectation value at the initial (Kohn-Sham) state.
    
 [impurity_solver] block
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
-dcore and dcore_post read this block.
+This block specifies an impurity solver to be used and necessary parameters for running the solver program.
+
+.. ``dcore`` and ``dcore_post`` read this block.
 
 .. include:: impurity_solver_desc.txt
 
-**... and other parameters (Solver dependent)**.
-We have to specify additional parameters with types (e.g. ``n_cycles{int} = 500000``).
-For more details, please see the reference page of
-`TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html#solve-parameters>`_,
-`ALPS/cthyb <https://github.com/shinaoka/triqs_interface#program-parameters>`_, etc..
+Additionally, we have to specify solver-dependent parameters in the way like ``n_cycles{int} = 500000``.
+For details, see :doc:`the reference manual for each solver <../impuritysolvers>`.
+
+..
+    `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html#solve-parameters>`_,
+    `ALPS/cthyb <https://github.com/shinaoka/triqs_interface#program-parameters>`_, etc..
 
 [control] block
-~~~~~~~~~~~~~~~
+---------------
 
-dcore reads this block.
+This block includes parameters that control the self-consistency loop of DMFT.
+
+.. ``dcore`` reads this block.
 
 .. include:: control_desc.txt
 
 [tool] block
-~~~~~~~~~~~~
+------------
 
-dcore_check and dcore_post read this block.
+This block includes parameters that are solely used by ``dcore_post``.
+
+.. ``dcore_check`` and ``dcore_post`` read this block.
 
 .. include:: tool_desc.txt
+
+[mpi] block
+------------
+
+This block includes parameters which are read by ``dcore`` and ``dcore_post``.
+
+.. include:: mpi_desc.txt
