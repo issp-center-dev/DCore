@@ -244,7 +244,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         with open('./MUvector', 'w') as f:
             for orb in range(self.n_orb):
                 for spin in range(2):
-                    print('{:.15e} '.format(H0[2*orb+spin][2*orb+spin].real), file=f, end="")
+                    print('{:.15e} '.format(-H0[2*orb+spin][2*orb+spin].real), file=f, end="")
             print("", file=f)
 
         if _read('dry_run'):
