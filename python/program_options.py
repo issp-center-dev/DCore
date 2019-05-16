@@ -52,8 +52,7 @@ def create_parser():
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
-                      "If true, only the density-density part of the interaction is used (See below).",
-                      OptionStatus.RETIRED)
+                      "If true, only the density-density part of the interaction is used (See below).")
     parser.add_option("model", "kanamori", str, "None",
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
