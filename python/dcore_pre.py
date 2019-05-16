@@ -349,7 +349,10 @@ def dcore_pre(filename):
         hk = float_to_complex_array(f['/dft_input/hopping'][()])
         for ik in range(hk.shape[0]):
             for ib in range(hk.shape[1]):
-                diff = numpy.amax(numpy.abs(hk[ik,ib,:,:] - hk[ik,ib,:,:].conjugate().transpose()))/numpy.amax(numpy.abs(hk[ik,ib,:,:]))
+                max_val = numpy.amax(numpy.abs(hk[ik,ib,:,:]))
+                if max_val < 1e-8:
+                    continue
+                diff = numpy.amax(numpy.abs(hk[ik,ib,:,:] - hk[ik,ib,:,:].conjugate().transpose()))/max_val
                 message = 'H(k) is not hermite at ik={} and iblock={}, relative diff is {}.' .format(ik, ib, diff)
                 if diff > 1e-2:
                     raise RuntimeError('Error: {}'.format(message))
