@@ -20,6 +20,7 @@ The solver terminates after MAX_TIME (300 seconds in the following example) or t
   cthyb.N_MEAS{int} = 50
   cthyb.THERMALIZATION{int}=1000
   cthyb.SWEEPS{int}=100000000
+  cthyb.TEXT_OUTPUT{int} = 0
 
 ALPS/CT-HYB-SEGMENT have many input parameters.  
 Please refer to `the reference manual <https://github.com/ALPSCore/CT-HYB-SEGMENT/wiki/Changes-of-Parameters>`_ for a list of available input parameters.
