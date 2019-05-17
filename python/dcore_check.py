@@ -25,6 +25,7 @@ from .pytriqs_gf_compat import *
 from dmft_core import DMFTCoreSolver
 from matplotlib.gridspec import GridSpec
 import numpy
+import math
 
 from program_options import *
 
@@ -59,7 +60,6 @@ class DMFTCoreCheck(object):
         #output_file = p["model"]["seedname"]+'.out.h5'
         #output_group = 'dmft_out'
         self.beta = self.p["system"]["beta"]
-        self.omega_check = self.p['tool']['omega_check']
 
         #
         # Load DMFT data
@@ -73,6 +73,12 @@ class DMFTCoreCheck(object):
         self.n_iw = self.p["system"]["n_iw"]
 
         print("  Total number of Iteration: {0}".format(self.n_iter))
+
+        # If omega_check is not specified, a fixed number of Matsubara points are taken
+        self.omega_check = self.p['tool']['omega_check']
+        if self.omega_check == 0:
+            nmax = min(30, self.n_iw)
+            self.omega_check = (2*nmax+1) * math.pi / self.beta
 
         # if __plot_init() is called
         self.plot_called = False
