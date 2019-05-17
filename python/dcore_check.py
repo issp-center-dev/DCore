@@ -119,7 +119,7 @@ class DMFTCoreCheck(object):
                 Sigma_iw_sh = self.solver.Sigma_iw_sh(itr)
 
                 itr_sigma[nsigma] = itr
-                sigma_ave.append(GfImFreq(indices=[0], beta=self.beta, n_points=self.p["system"]["n_iw"]))
+                sigma_ave.append(GfImFreq(indices=[0], beta=self.beta, n_points=self.p["system"]["n_iw"], name="$\Sigma_\mathrm{ave}$"))
                 sigma_ave[nsigma].data[:, 0, 0] = 0.0
                 norb_tot = 0
                 for ish in range(self.n_sh):
@@ -141,6 +141,7 @@ class DMFTCoreCheck(object):
         for itr in range(nsigma):
             self.oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
         self.plt.legend(loc=0)
+        self.plt.xlim(0, self.omega_check)
         #
         # Imaginary part
         #
@@ -148,6 +149,7 @@ class DMFTCoreCheck(object):
         for itr in range(nsigma):
             self.oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
         self.plt.legend(loc=0)
+        self.plt.xlim(0, self.omega_check)
 
         filename = basename + fig_ext
         self.plt.savefig(filename)
