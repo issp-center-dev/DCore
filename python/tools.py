@@ -247,7 +247,7 @@ def umat2dd(dcore_U):
 
     # extract density-density part
     dcore_U_len = len(dcore_U)
-    Uout = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb))
+    Uout = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb), dtype=complex)
 
     for i, j, k, l in product(range(dcore_U_len), range(dcore_U_len), range(dcore_U_len), range(dcore_U_len)):
         if (i == k and j == l) or (i == l and j == k):
