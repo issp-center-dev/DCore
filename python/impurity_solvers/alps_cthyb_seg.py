@@ -133,14 +133,15 @@ def write_Umatrix(U, Uprime, J, norb):
 
 class ALPSCTHYBSEGSolver(SolverBase):
 
-    def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
+    def __init__(self, beta, gf_struct, u_mat):
+        #def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
         Initialize the solver.
         """
 
         super(ALPSCTHYBSEGSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
 
-        self.n_tau = max(10001, 5 * n_iw)
+         # self.n_tau = (n_iw)/2+1
 
     def solve(self, rot, mpirun_command, params_kw):
         """
@@ -208,7 +209,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
             'SEED'                            : params_kw['random_seed_offset'],
             'FLAVORS'                         : self.n_orb*2,
             'BETA'                            : self.beta,
-            'N'                               : self.n_tau - 1,
+            'N'                               : self.n_iw/2 - 1,
+            # 'N'                               : self.n_tau - 1,
             'NMATSUBARA'                      : self.n_iw,
             'U_MATRIX'                        : 'Umatrix',
             'MU_VECTOR'                       : 'MUvector',
