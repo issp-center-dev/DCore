@@ -263,7 +263,7 @@ class ALPSCTHYBSolver(SolverBase):
             with open('./freqs_PH.txt', 'w') as f:
                 print(freqs_ph.shape[0], file=f)
                 for i in range(freqs_ph.shape[0]):
-                    print('{} {} {}'.format(-freqs_ph[i,1]-1, -freqs_ph[i,0]-1, -freqs_ph[i,2]), file=f)
+                    print('{} {} {}'.format(*freqs_ph[i,:]), file=f)
 
         if _read('dry_run'):
             return
@@ -308,7 +308,7 @@ class ALPSCTHYBSolver(SolverBase):
                 data_G2 = float_to_complex_array(f['/G2/matsubara/data'][()])
                 data_G2 = data_G2.reshape((self.n_flavors, self.n_flavors, self.n_flavors, self.n_flavors, -1))
                 # from ALPS/CT-HYB to DCore notation
-                self._Xloc_ph_sparse = data_G2.transpose((3,2,1,0,4))/self.beta
+                self._Xloc_ph_sparse = data_G2.transpose((1,0,2,3,4))/self.beta
                 del data_G2
 
         # Solve Dyson's eq to obtain Sigma_iw
