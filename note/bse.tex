@@ -30,19 +30,19 @@
 \subsection{ALPS/CT-HYB}
 \begin{eqnarray}
  G_{pqrs}(\tau_1, \tau_2, \tau_3, \tau_4) &\equiv& \braket{T_\tau c_p(\tau_1) c_q^\dagger(\tau_2) c_r(\tau_3) c_s^\dagger(\tau_4)}\\
- G_{pqrs}(i \omega_n, i \omega_{n^\prime}, i\nu_m) &=& \int_0^\beta  d \tau_{12} d \tau_{34} d \tau_{14} G_{pqrs}(\tau_{12}, \tau_{34}, \tau_{14}) e^{i\omega_n \tau_{12}} e^{i\omega_{n^\prime} \tau_{34}}e^{i \nu_m \tau_{14}}
+ G_{pqrs}(i \omega_n, i \omega_{n^\prime}, i\nu_m) &=& \int_0^\beta  d \tau_{12} d \tau_{34} d \tau_{14} G_{pqrs}(\tau_{12}, \tau_{34}, \tau_{14}, 0) e^{i\omega_n \tau_{12}} e^{i\omega_{n^\prime} \tau_{34}}e^{i \nu_m \tau_{14}}
 \end{eqnarray}
 
 \subsection{Otsuki's BSE}
 
 \begin{align}
 X^\mathrm{loc}_{pqrs}(\tau_1, \tau_2, \tau_3, \tau_4) &\equiv \langle T c^\dagger_p(\tau_1) c_q(\tau_2) c^\dagger_r(\tau_3) c_s(\tau_4)\rangle\nonumber\\
-X^\mathrm{loc}_{pqrs}(i \omega_n, i \omega_{n^\prime}, i\nu_m) &= T \int_0^\beta  d \tau_{12} d \tau_{34} d \tau_{14} X^\mathrm{loc}_{pqrs}(\tau_{12}, \tau_{34}, \tau_{14}) e^{i\omega_n \tau_{12}} e^{i\omega_{n^\prime} \tau_{34}}e^{i \nu_m \tau_{14}}
+X^\mathrm{loc}_{pqrs}(i \omega_n, i \omega_{n^\prime}, i\nu_m) &= T \int_0^\beta  d \tau_{12} d \tau_{34} d \tau_{14} X^\mathrm{loc}_{pqrs}(\tau_{12}, \tau_{34}, \tau_{14}, 0) e^{i\omega_n \tau_{12}} e^{i\omega_{n^\prime} \tau_{34}}e^{i \nu_m \tau_{14}}
 \end{align}
 
 Now, we relate the two notations.
 \begin{align}
-G_{pqrs}(\tau_{12}, \tau_{34}, \tau_{14}) &= X^\mathrm{loc}_{srqp}(-\tau_{34}, -\tau_{12}, -\tau_{14})\\
+G_{pqrs}(\tau_{12}, \tau_{34}, \tau_{14}, 0) &= X^\mathrm{loc}_{srqp}(-\tau_{34}, -\tau_{12}, -\tau_{14, 0})\\
 X^\mathrm{loc}_{pqrs}(\mi \omega_n, \mi \omega_{n^\prime}, \mi \nu_m) &= T G_{srqp}(-\mi \omega_{n^\prime}, -\mi \omega_n, -\mi \nu_m) = T G_{srqp}(\mi \omega_{-n^\prime-1}, \mi \omega_{-n-1}, \mi \nu_{-m}).
 \end{align}
 

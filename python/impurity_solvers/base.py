@@ -30,6 +30,11 @@ import copy
 
 from ..tools import *
 
+class FermionicFrequency(object):
+    """
+    Fermionic Matsubara freqnecy index
+    """
+
 class SolverBase(object):
     """
     This class define the common interface of all solvers.
@@ -144,6 +149,53 @@ class SolverBase(object):
         pass
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
+
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+        """
+        Compute Xloc(n, n', m) in p-h channel
+
+
+        Parameters
+        ----------
+        num_wf:
+            Number of non-negative fermionic frequencies
+        num_wb
+            Number of non-negative bosonic frequencies
+
+        The other parameters are the same as for solve().
+
+        Returns
+        -------
+
+        Xloc(n, n', m) : 3d ndarray of complex type
+            Data for -num_wf <= n, n' < num_wf and m = 0, 1, ..., num_wb-1.
+
+        """
+        pass
+
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
+        """
+        Compute Xloc(n, n', m) in p-h channel only for specified frequency points
+
+        Parameters
+        ----------
+        rot
+        mpirun_command:
+            The same as solve()
+
+        freqs_ph: 2d int ndarray of shape (n_freqs, 3)
+            The three integers at each row represent two fermionic frequencies and one bosonic frequency
+            in the particle-hole convention.
+
+        params_kw:
+            The same as solve()
+
+        Returns
+        -------
+
+        """
+        pass
+
 
     @classmethod
     def is_gf_realomega_available(cls):
