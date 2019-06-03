@@ -36,7 +36,7 @@ def to_numpy_array(g, names):
     """
 
     if g.n_blocks > 2:
-        raise RuntimeError("n_blocks must be 1 or 2.")
+        raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
 
     n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
 
@@ -67,22 +67,22 @@ def assign_from_numpy_array(g, data, names):
     data[spin,orb,iw]
     g[spin].data[iw,orb1,orb2] 
     """
-    print(g.n_blocks)
+    # print(g.n_blocks)
     if g.n_blocks != 2:
-        raise RuntimeError("n_blocks must be 1 or 2.")
+        raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
 
     norb = data.shape[1]
     niw = data.shape[2]
-    print(data.shape)
-    print("norb:", norb)
+    # print(data.shape)
+    # print("norb:", norb)
 
     # check number of Matsubara frequency
     assert data.shape[2]*2 == g[names[0]].data.shape[0]
-    print(g[names[0]].data.shape)
+    # print(g[names[0]].data.shape)
 
     for spin in range(2):
         for orb in range(norb):
-            print(orb, spin, names[spin])
+            # print(orb, spin, names[spin])
             # positive frequency
             g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
             # negative frequency
@@ -244,7 +244,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         with open('./MUvector', 'w') as f:
             for orb in range(self.n_orb):
                 for spin in range(2):
-                    print('{:.15e} '.format(H0[2*orb+spin][2*orb+spin].real), file=f, end="")
+                    print('{:.15e} '.format(-H0[2*orb+spin][2*orb+spin].real), file=f, end="")
             print("", file=f)
 
         if _read('dry_run'):

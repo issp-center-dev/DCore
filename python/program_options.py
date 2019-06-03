@@ -52,8 +52,7 @@ def create_parser():
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
-                      "If true, only the density-density part of the interaction is used (See below).",
-                      OptionStatus.RETIRED)
+                      "If true, only the density-density part of the interaction is used (See below).")
     parser.add_option("model", "kanamori", str, "None",
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
@@ -97,7 +96,7 @@ def create_parser():
     parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
     parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation")
-    parser.add_option("tool", "omega_check", float, 5.0, "Maximum frequency for dcore_check.")
+    parser.add_option("tool", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")

@@ -25,6 +25,7 @@ from .pytriqs_gf_compat import *
 from dmft_core import DMFTCoreSolver
 from matplotlib.gridspec import GridSpec
 import numpy
+import math
 
 from program_options import *
 
@@ -59,7 +60,6 @@ class DMFTCoreCheck(object):
         #output_file = p["model"]["seedname"]+'.out.h5'
         #output_group = 'dmft_out'
         self.beta = self.p["system"]["beta"]
-        self.omega_check = self.p['tool']['omega_check']
 
         #
         # Load DMFT data
@@ -73,6 +73,12 @@ class DMFTCoreCheck(object):
         self.n_iw = self.p["system"]["n_iw"]
 
         print("  Total number of Iteration: {0}".format(self.n_iter))
+
+        # If omega_check is not specified, a fixed number of Matsubara points are taken
+        self.omega_check = self.p['tool']['omega_check']
+        if self.omega_check == 0:
+            nmax = min(30, self.n_iw)
+            self.omega_check = (2*nmax+1) * math.pi / self.beta
 
         # if __plot_init() is called
         self.plot_called = False
@@ -119,7 +125,7 @@ class DMFTCoreCheck(object):
                 Sigma_iw_sh = self.solver.Sigma_iw_sh(itr)
 
                 itr_sigma[nsigma] = itr
-                sigma_ave.append(GfImFreq(indices=[0], beta=self.beta, n_points=self.p["system"]["n_iw"]))
+                sigma_ave.append(GfImFreq(indices=[0], beta=self.beta, n_points=self.p["system"]["n_iw"], name="$\Sigma_\mathrm{ave}$"))
                 sigma_ave[nsigma].data[:, 0, 0] = 0.0
                 norb_tot = 0
                 for ish in range(self.n_sh):
@@ -141,6 +147,7 @@ class DMFTCoreCheck(object):
         for itr in range(nsigma):
             self.oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
         self.plt.legend(loc=0)
+        self.plt.xlim(0, self.omega_check)
         #
         # Imaginary part
         #
@@ -148,6 +155,7 @@ class DMFTCoreCheck(object):
         for itr in range(nsigma):
             self.oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
         self.plt.legend(loc=0)
+        self.plt.xlim(0, self.omega_check)
 
         filename = basename + fig_ext
         self.plt.savefig(filename)

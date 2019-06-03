@@ -20,9 +20,27 @@ The solver terminates after MAX_TIME (300 seconds in the following example) or t
   cthyb.N_MEAS{int} = 50
   cthyb.THERMALIZATION{int}=1000
   cthyb.SWEEPS{int}=100000000
+  cthyb.TEXT_OUTPUT{bool} = False
 
-ALPS/CT-HYB-SEGMENT have many input parameters.  
-Please refer to `the reference manual <https://github.com/ALPSCore/CT-HYB-SEGMENT/wiki/Changes-of-Parameters>`_ for a list of available input parameters.
+ALPS/CT-HYB-SEGMENT has many input parameters.
+A complete list of the parameters can be obtained by the help command
+
+.. code-block:: bash
+
+  $HOME/opt/CT-HYB/bin/alps_cthyb --help
+
+The following optional parameters may be useful:
+
+.. code-block:: ini
+
+  [impurity_solver]
+  cthyb.MEASURE_nn{bool} = True   # static density-density correlation functions
+  cthyb.MEASURE_nnw{bool} = True  # density-density correlation functions in frequency domain
+  cthyb.MEASURE_nnt{bool} = True  # density-density correlation functions <n(0) n(t)>
+  cthyb.MEASURE_g2w{bool} = True  # measure two-particle Green's function in frequency space
+
+Please also refer to `the wiki page <https://github.com/ALPSCore/CT-HYB-SEGMENT/wiki/Changes-of-Parameters>`_ for some descriptions on parameters.
 
 The DCore interface generates input files for ALPS/CT-HYB-SEGMENT into a working directory at work/imp_shell<ish>_ite<ite> (ish is the index of the shell and ite is the iteration).
-Then, ALPS/CT-HYB-SEGMENT is excecuted in the working directory.
+Then, ALPS/CT-HYB-SEGMENT is executed in the working directory, and numerical results are stored there.
+For example, the occupation number and the double occupancy are saved in the file 'observables.dat'.
