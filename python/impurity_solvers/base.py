@@ -30,11 +30,6 @@ import copy
 
 from ..tools import *
 
-class FermionicFrequency(object):
-    """
-    Fermionic Matsubara freqnecy index
-    """
-
 class SolverBase(object):
     """
     This class define the common interface of all solvers.
