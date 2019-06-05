@@ -29,7 +29,7 @@ from .tools import *
 import impurity_solvers
 
 
-def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, n_tau,
+def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
                               Sigma_iw, Gloc_iw, num_wb, num_wf, ish):
     """
 
@@ -41,7 +41,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
 
     raise_if_mpi_imported()
 
-    sol = Solver(beta, gf_struct, Umat, n_iw, n_tau)
+    sol = Solver(beta, gf_struct, Umat, n_iw)
 
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
     sol.set_G0_iw(G0_iw)
@@ -235,7 +235,7 @@ class DMFTBSESolver(DMFTCoreSolver):
             print(" skip")
             return
 
-        from .lattice_model import create_lattice_model
+        from .lattice_models import create_lattice_model
 
         lattice_model = create_lattice_model(self._params)
 
@@ -314,7 +314,6 @@ class DMFTBSESolver(DMFTCoreSolver):
             x_loc, g_imp = calc_g2_in_impurity_model(solver_name, self._solver_params, self._mpirun_command,
                                                      self._params["impurity_solver"]["basis_rotation"],
                                                      self._Umat[ish], self._gf_struct[ish], self._beta, self._n_iw,
-                                                     self._n_tau,
                                                      self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                                                      self._params['bse']['num_wb'],
                                                      self._params['bse']['num_wf'], ish)
