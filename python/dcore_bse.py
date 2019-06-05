@@ -51,9 +51,6 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
-    s_params['num_wb'] = num_wb
-    s_params['num_wf'] = num_wf
-
     work_dir_org = os.getcwd()
     work_dir = 'work/imp_shell' + str(ish) + '_bse'
     if not os.path.isdir(work_dir):
@@ -61,7 +58,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     os.chdir(work_dir)
 
     # Solve the model
-    xloc = sol.calc_g2(rot, mpirun_command, s_params)
+    xloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
 
     os.chdir(work_dir_org)
 

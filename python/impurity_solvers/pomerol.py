@@ -187,7 +187,7 @@ class PomerolSolver(SolverBase):
         g0_inv -= h0_block
         self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
 
-    def calc_g2(self, rot, mpirun_command, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         compute local G2 (X_loc) in p-h channel
             X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
@@ -199,13 +199,11 @@ class PomerolSolver(SolverBase):
         """
 
         params_kw['flag_vx'] = 1
-        assert 'num_wf' in params_kw
-        assert 'num_wb' in params_kw
+        params_kw['num_wf'] = num_wf
+        params_kw['num_wb'] = num_wb
 
         self.solve(rot, mpirun_command, params_kw)
 
-        n_w2f = params_kw.get('num_wf')
-        n_w2b = params_kw.get('num_wb')
         dir_g2 = params_kw.get('dir_g2', './two_particle')
 
         x_loc = {}
@@ -218,7 +216,7 @@ class PomerolSolver(SolverBase):
             # load data as a complex type
             # 1d array --> (wb, wf1, wf2)
             data = numpy.loadtxt(filename).view(complex).reshape(-1)
-            data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
+            data = data.reshape((num_wb, 2*num_wf, 2*num_wf))
 
             x_loc[(i1, i2, i3, i4)] = data / self.beta
         return x_loc
