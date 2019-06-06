@@ -221,5 +221,11 @@ class PomerolSolver(SolverBase):
             x_loc[(i1, i2, i3, i4)] = data / self.beta
         return x_loc
 
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
+        raise NotImplementedError
+
+        # self._solve_impl(rot, mpirun_command, freqs_ph, params_kw)
+        # return self._Xloc_ph_sparse
+
     def name(self):
         return "pomerol"

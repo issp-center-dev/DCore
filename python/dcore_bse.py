@@ -30,7 +30,7 @@ import impurity_solvers
 
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
-                              Sigma_iw, Gloc_iw, num_wb, num_wf, ish):
+                              Sigma_iw, Gloc_iw, num_wb, num_wf, ish, freqs=None):
     """
 
     Calculate G2 in an impurity model
@@ -57,8 +57,25 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
         os.makedirs(work_dir)
     os.chdir(work_dir)
 
+    # True: box sampling,  False: sparse sampling
+    flag_box = freqs is None
+
     # Solve the model
-    xloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
+    if flag_box:
+        xloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
+    else:
+        xloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, s_params)
+
+    # Check results
+    print("\n checking x_loc...")
+    assert isinstance(xloc, dict)
+    for key, data in xloc.items():
+        print("  ", key)
+        if flag_box:
+            assert data.shape == (num_wb, 2*num_wf, 2*num_wf)
+        else:
+            assert data.shape == (len(freqs),)
+    print(" OK")
 
     os.chdir(work_dir_org)
 
@@ -305,6 +322,17 @@ class DMFTBSESolver(DMFTCoreSolver):
         Gloc_iw_sh, _ = self.calc_Gloc()
         solver_name = self._params['impurity_solver']['name']
 
+        flag_sparse = self._params['bse']['sparse_sampling']
+        print("flag_sparse", flag_sparse)
+        if flag_sparse:
+            # generate sampling points of Matsubara frequencies
+            # TODO: sparse: generate freqs
+            # freqs = gen_sparse_freqs(self._params['bse']['sparse_Lambda'],
+            #                          self._params['bse']['sparse_sv_cutoff'])
+            raise NotImplementedError
+        else:
+            freqs = None
+
         for ish in range(self._n_inequiv_shells):
             print("\nSolving impurity model for inequivalent shell " + str(ish) + " ...")
             sys.stdout.flush()
@@ -313,16 +341,19 @@ class DMFTBSESolver(DMFTCoreSolver):
                                                      self._Umat[ish], self._gf_struct[ish], self._beta, self._n_iw,
                                                      self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                                                      self._params['bse']['num_wb'],
-                                                     self._params['bse']['num_wf'], ish)
-            assert isinstance(x_loc, dict)
-            print("\nx_loc.keys() =", x_loc.keys())
+                                                     self._params['bse']['num_wf'], ish, freqs)
 
+            # TODO: sparse: extend subtract_disconnected
             subtract_disconnected(x_loc, g_imp, self.spin_block_names)
 
             # save X_loc
             for icrsh in range(self._n_corr_shells):
                 if ish == self._sk.corr_to_inequiv[icrsh]:
-                    bse.save_xloc(x_loc, icrsh=icrsh)
+                    if flag_sparse:
+                        # TODO: sparse: save x_loc
+                        raise NotImplementedError
+                    else:
+                        bse.save_xloc(x_loc, icrsh=icrsh)
 
     def calc_bse(self):
         """
