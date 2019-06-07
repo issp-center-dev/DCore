@@ -20,6 +20,7 @@ from __future__ import print_function
 import os
 
 from .base import LatticeModel
+from .tools import set_nk
 
 class ExternalModel(LatticeModel):
     """
@@ -43,7 +44,7 @@ class ExternalModel(LatticeModel):
             raise Exception("Prepare, in advance, '%s' file which stores DFT data in 'dft_input' subgroup" % h5_file)
 
         # set nkdiv
-        self._nkdiv = _set_nk(params["model"]["nk"],
+        self._nkdiv = set_nk(params["model"]["nk"],
                              params["model"]["nk0"],
                              params["model"]["nk1"],
                              params["model"]["nk2"])

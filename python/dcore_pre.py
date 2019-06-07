@@ -333,7 +333,7 @@ def dcore_pre(filename):
     for k, v in p["system"].items():
         print("      {0} = {1}".format(k, v))
 
-    if os.path.exists(p['model']['seedname'] + '.h5'):
+    if os.path.exists(p['model']['seedname'] + '.h5') and p['model']['lattice'] != 'external':
         print("Removing the existing model HDF5 file...")
         os.remove(p['model']['seedname'] + '.h5')
 
