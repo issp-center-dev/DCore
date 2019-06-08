@@ -35,17 +35,17 @@ def create_parser(target_sections=None):
     parser.add_option("mpi", "command", str, "mpirun -np #", "Command for executing a MPI job. # will be relaced by the number of processes.")
 
     # [model]
-    parser.add_option("model", "t", float, 1.0, "Transfer integral (Nearest neighbor)")
-    parser.add_option("model", "t'", float, 0.0, "Transfer integral (Second nearest)")
-    parser.add_option("model", "ncor", int, 1, "Number of correlated shells in a unit cell (Only wannier90).")
+    parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "lattice", str, "chain",
                       'Chosen from "chain", "square", "cubic", "bethe", "wannier90", and "external"')
+    parser.add_option("model", "t", float, 1.0, "Transfer integral (Nearest neighbor)")
+    parser.add_option("model", "t'", float, 0.0, "Transfer integral (Second nearest)")
     parser.add_option("model", "nelec", float, 1.0, "Number of electrons per unit cell.")
-    parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "norb", str, "1",
                       "Number of orbitals at each correlated shell (*ncor* integers separated by commas or spaces.)")
+    parser.add_option("model", "ncor", int, 1, "Number of correlated shells in a unit cell (for lattice = wannier90).")
     parser.add_option("model", "corr_to_inequiv", str, "None",
-                      "Mapping from correlated shells to equivalent shells")
+                      "Mapping from correlated shells to equivalent shells (for lattice = wannier90)")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
     parser.add_option("model", "nk", int, 8, "Number of *k* along each line")
     parser.add_option("model", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
@@ -127,6 +127,7 @@ def _cast_to_bool(p):
 def two_options_incompatible(params, option1, option2):
     if _cast_to_bool(params[option1[0]][option1[1]]) and _cast_to_bool(params[option2[0]][option2[1]]):
         raise RuntimeError("[{}][{}] and [{}][{}] cannot be True at the same time!".format(option1[0], option1[1], option2[0], option2[1]))
+
 
 def parse_parameters(params):
     """

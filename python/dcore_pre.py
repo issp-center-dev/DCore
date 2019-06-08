@@ -248,7 +248,6 @@ def __generate_local_potential(p):
     local_potential_matrix = p["model"]["local_potential_matrix"]
     local_potential_factor = p["model"]["local_potential_factor"]
 
-    ncor = p["model"]['ncor']
     n_inequiv_shells = p["model"]['n_inequiv_shells']
     spin_orbit = p["model"]["spin_orbit"]
 
@@ -268,7 +267,7 @@ def __generate_local_potential(p):
         elif isinstance(fac, list) or isinstance(fac, tuple):
             assert len(fac) == n_inequiv_shells
         else:
-            raise Exception("local_potential_factor should be float or list of length %d" % ncor)
+            raise Exception("local_potential_factor should be float or list of length %d" % n_inequiv_shells)
     except Exception as e:
         print("Error: local_potential_factor =", local_potential_factor)
         print(e)
@@ -337,7 +336,6 @@ def dcore_pre(filename):
     pars.read(filename)
     p = pars.as_dict()
     parse_parameters(p)
-    ncor = p["model"]['ncor']
     #
     # Summary of input parameters
     #
