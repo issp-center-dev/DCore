@@ -314,7 +314,7 @@ def dcore_pre(filename):
     #
     # Construct a parser with default values
     #
-    pars = create_parser()
+    pars = create_parser(['model'])
     #
     # Parse keywords and store
     #
@@ -328,9 +328,6 @@ def dcore_pre(filename):
     print("\n  @ Parameter summary")
     print("\n    [model] block")
     for k, v in p["model"].items():
-        print("      {0} = {1}".format(k, v))
-    print("\n    [system] block")
-    for k, v in p["system"].items():
         print("      {0} = {1}".format(k, v))
 
     if os.path.exists(p['model']['seedname'] + '.h5') and p['model']['lattice'] != 'external':

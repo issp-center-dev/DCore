@@ -238,7 +238,7 @@ class DMFTBSESolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
         assert params['control']['restart']
 
-        super(DMFTBSESolver, self).__init__(seedname, params, output_file, output_group, read_only=True)
+        super(DMFTBSESolver, self).__init__(seedname, params, output_file, output_group, read_only=True, restart=True)
 
     def _calc_bse_x0q(self):
         """

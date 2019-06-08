@@ -22,11 +22,14 @@ from typed_parser import *
 import numpy
 import re
 
-def create_parser():
+def create_parser(target_sections=None):
     """
     Create a parser for all program options of DCore
     """
-    parser = TypedParser()
+    if target_sections is None:
+        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'bse'])
+    else:
+        parser = TypedParser(target_sections)
 
     # [mpi]
     parser.add_option("mpi", "command", str, "mpirun -np #", "Command for executing a MPI job. # will be relaced by the number of processes.")
@@ -133,34 +136,37 @@ def parse_parameters(params):
     :return:  None
     """
 
-    two_options_incompatible(params, ('control', 'restart'), ('control', 'initial_static_self_energy'))
-    two_options_incompatible(params, ('control', 'initial_self_energy'), ('control', 'initial_static_self_energy'))
+    if 'control' in params:
+        two_options_incompatible(params, ('control', 'restart'), ('control', 'initial_static_self_energy'))
+        two_options_incompatible(params, ('control', 'initial_self_energy'), ('control', 'initial_static_self_energy'))
 
-    ncor = params['model']['ncor']
+    if 'model' in params:
+        ncor = params['model']['ncor']
 
-    # Set [model][corr_to_inequiv] and [model][n_inequiv_shells]
-    if params['model']['corr_to_inequiv'] == 'None':
-        params['model']['corr_to_inequiv'] = numpy.arange(ncor)
-        params['model']['n_inequiv_shells'] = ncor
-    else:
-        equiv_str_list = re.findall(r'[^\s,]+', params['model']['corr_to_inequiv'])
-        corr_to_inequiv = numpy.array(list(map(int, equiv_str_list)))
-        if len(corr_to_inequiv) != ncor:
-            raise RuntimeError("Invalid number of elements in corr_to_inequiv!")
-        params['model']['corr_to_inequiv'] = corr_to_inequiv
-        params['model']['n_inequiv_shells'] = len(numpy.unique(corr_to_inequiv))
-        if numpy.amin(corr_to_inequiv) < 0 or numpy.amin(corr_to_inequiv) > params['model']['n_inequiv_shells']:
-            raise RuntimeError('Elements of corr_to_inequiv must be in the range of [0, n_inequiv_shells-1]!')
+        # Set [model][corr_to_inequiv] and [model][n_inequiv_shells]
+        if params['model']['corr_to_inequiv'] == 'None':
+            params['model']['corr_to_inequiv'] = numpy.arange(ncor)
+            params['model']['n_inequiv_shells'] = ncor
+        else:
+            equiv_str_list = re.findall(r'[^\s,]+', params['model']['corr_to_inequiv'])
+            corr_to_inequiv = numpy.array(list(map(int, equiv_str_list)))
+            if len(corr_to_inequiv) != ncor:
+                raise RuntimeError("Invalid number of elements in corr_to_inequiv!")
+            params['model']['corr_to_inequiv'] = corr_to_inequiv
+            params['model']['n_inequiv_shells'] = len(numpy.unique(corr_to_inequiv))
+            if numpy.amin(corr_to_inequiv) < 0 or numpy.amin(corr_to_inequiv) > params['model']['n_inequiv_shells']:
+                raise RuntimeError('Elements of corr_to_inequiv must be in the range of [0, n_inequiv_shells-1]!')
 
-    # Set [model][norb_inequiv_sh]
-    nsh = params['model']['n_inequiv_shells']
-    params['model']['norb_inequiv_sh'] = numpy.array(map(int, re.findall(r'\d+', params['model']['norb'])))
-    if len(params['model']['norb_inequiv_sh']) != nsh:
-        raise RuntimeError("Wrong number of entries in norb!")
+        # Set [model][norb_inequiv_sh]
+        nsh = params['model']['n_inequiv_shells']
+        params['model']['norb_inequiv_sh'] = numpy.array(map(int, re.findall(r'\d+', params['model']['norb'])))
+        if len(params['model']['norb_inequiv_sh']) != nsh:
+            raise RuntimeError("Wrong number of entries in norb!")
 
-    # Set [model][norb_corr_sh]
-    corr_to_inequiv = params['model']['corr_to_inequiv']
-    params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][corr_to_inequiv[icrsh]] for icrsh in range(ncor)])
+        # Set [model][norb_corr_sh]
+        corr_to_inequiv = params['model']['corr_to_inequiv']
+        params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][corr_to_inequiv[icrsh]] for icrsh in range(ncor)])
 
-    # Expand enviroment variables
-    params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])
+    if 'mpi' in params:
+        # Expand enviroment variables
+        params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])
