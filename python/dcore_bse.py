@@ -236,8 +236,6 @@ class SaveBSE:
 
 class DMFTBSESolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
-        assert params['control']['restart']
-
         super(DMFTBSESolver, self).__init__(seedname, params, output_file, output_group, read_only=True, restart=True)
 
     def _calc_bse_x0q(self):
@@ -392,7 +390,6 @@ def dcore_bse(filename, np=1):
     #
     # Load DMFT data
     #
-    p['control']['restart'] = True
     solver = DMFTBSESolver(seedname, p, output_file=seedname + '.out.h5')
     if solver.iteration_number == 0:
         raise RuntimeError("Number of iterations is zero!")

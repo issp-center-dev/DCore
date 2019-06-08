@@ -170,7 +170,7 @@ class DMFTCoreSolver(object):
         self._n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
 
         # MPI commands
-        if 'num_processes' in params['mpi']:
+        if 'mpi' in params and 'num_processes' in params['mpi']:
             self._mpirun_command = params['mpi']['command'].replace('#', str(params['mpi']['num_processes']))
 
         self._read_only = read_only
@@ -249,13 +249,10 @@ class DMFTCoreSolver(object):
             self._prepare_output_file__from_scratch()
             assert self._previous_runs == 0
 
-        self._solver_params = create_solver_params(self._params['impurity_solver'])
-
+        if 'impurity_solver' in self._params:
+            self._solver_params = create_solver_params(self._params['impurity_solver'])
 
         self._sanity_check()
-
-
-
 
     def _read_output_file__restart(self):
         """
