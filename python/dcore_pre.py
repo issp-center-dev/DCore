@@ -300,6 +300,22 @@ def __generate_local_potential(p):
     print("\n    Written to {0}".format(p["model"]["seedname"]+'.h5'))
 
 
+def __check_if_Hk_is_hermite(h5file):
+    with h5py.File(h5file, 'r') as f:
+        hk = float_to_complex_array(f['/dft_input/hopping'][()])
+        for ik in range(hk.shape[0]):
+            for ib in range(hk.shape[1]):
+                max_val = numpy.amax(numpy.abs(hk[ik,ib,:,:]))
+                if max_val < 1e-8:
+                    continue
+                diff = numpy.amax(numpy.abs(hk[ik,ib,:,:] - hk[ik,ib,:,:].conjugate().transpose()))/max_val
+                message = 'H(k) is not hermite at ik={} and iblock={}, relative diff is {}.' .format(ik, ib, diff)
+                if diff > 1e-2:
+                    raise RuntimeError('Error: {}'.format(message))
+                elif diff > 1e-8:
+                    print('Warning: {}'.format(message))
+
+
 def dcore_pre(filename):
     """
     Main routine for the pre-processing tool
@@ -330,53 +346,46 @@ def dcore_pre(filename):
     for k, v in p["model"].items():
         print("      {0} = {1}".format(k, v))
 
-    if os.path.exists(p['model']['seedname'] + '.h5') and p['model']['lattice'] != 'external':
-        print("Removing the existing model HDF5 file...")
-        os.remove(p['model']['seedname'] + '.h5')
+    #
+    # remove HDF5 file if exists
+    #
+    h5_file = p['model']['seedname'] + '.h5'
+    if p['model']['lattice'] != 'external':
+        if os.path.exists(h5_file):
+            print("Removing the existing model HDF5 file...")
+            os.remove(h5_file)
 
     #
-    # One-body term
+    # Lattice information
+    #   -> create h5_file/dft_input
     #
     print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
     lattice_model = create_lattice_model(p)
     lattice_model.generate_model_file()
 
-    # Check if H(k) is hermite
-    with h5py.File(p['model']['seedname'] + '.h5', 'r') as f:
-        hk = float_to_complex_array(f['/dft_input/hopping'][()])
-        for ik in range(hk.shape[0]):
-            for ib in range(hk.shape[1]):
-                max_val = numpy.amax(numpy.abs(hk[ik,ib,:,:]))
-                if max_val < 1e-8:
-                    continue
-                diff = numpy.amax(numpy.abs(hk[ik,ib,:,:] - hk[ik,ib,:,:].conjugate().transpose()))/max_val
-                message = 'H(k) is not hermite at ik={} and iblock={}, relative diff is {}.' .format(ik, ib, diff)
-                if diff > 1e-2:
-                    raise RuntimeError('Error: {}'.format(message))
-                elif diff > 1e-8:
-                    print('Warning: {}'.format(message))
-
-
+    #
     # Interaction
+    #   -> create h5_file/DCore/umat
     #
     __generate_umat(p)
 
     #
     # Local potential
+    #   -> create h5_file/DCore/local_potential
     #
     __generate_local_potential(p)
 
     #
-    # Check one-body term
+    # Check HDF5 file
     #
     print('')
     print('@@@@@@@@@@@@@@@@@@@ Check Model-HDF5 file @@@@@@@@@@@@@@@@@@@@')
-    print_local_fields(p['model']['seedname'] + '.h5')
+    __check_if_Hk_is_hermite(h5_file)
+    print_local_fields(h5_file)
 
     #
     # Finish
     #
-
     print("\n@@@@@@@@@@@@@@@@@@@@@@  Done  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 
