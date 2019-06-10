@@ -236,7 +236,7 @@ class PomerolSolver(SolverBase):
 
         x_loc = self.read_xloc(params_kw)
         # 1d array --> (wb, wf1, wf2)
-        for key, data in x_loc.values():
+        for key, data in x_loc.items():
             x_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
         return x_loc
 
