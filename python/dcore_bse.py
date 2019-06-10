@@ -21,6 +21,8 @@ from __future__ import print_function
 import os
 import sys
 import copy
+import numpy
+from pytriqs.archive import HDFArchive
 
 from .dmft_core import DMFTCoreSolver
 from .program_options import create_parser
@@ -185,7 +187,11 @@ def gen_sparse_freqs(boson_freqs, Lambda, sv_cutoff):
 class SaveBSE:
 
     def __init__(self, h5_file, bse_info, n_corr_shells, n_flavors, use_spin_orbit, nonlocal_order_parameter, beta,
-                 spin_names, bse_grp=''):
+                 spin_names, bse_grp='', sparse_grp='bse_sparse'):
+
+        # store all arguments for dump
+        self.args = copy.deepcopy(locals())
+        del self.args['self']
 
         from dft_tools.index_pair import IndexPair, IndexPair2
         from bse_tools.h5bse import h5BSE
@@ -294,6 +300,19 @@ class SaveBSE:
             block_index = self.block2.get_index(icrsh, self.spin_names[0], icrsh, self.spin_names[0])
             self.h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
 
+    def save_sparse_info(self, freqs):
+        grp = self.args['sparse_grp']
+        with HDFArchive(self.args['h5_file'], 'a') as f:
+            if grp not in f:
+                f.create_group(grp)
+            f[grp]['args'] = self.args
+            f[grp]['freqs'] = freqs
+
+    def save_xloc_sparse(self, xloc_ijkl, icrsh):
+        grp = self.args['sparse_grp']
+        with HDFArchive(self.args['h5_file'], 'a') as f:
+            f[grp][str(icrsh)] = xloc_ijkl
+
 
 class DMFTBSESolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
@@ -391,6 +410,7 @@ class DMFTBSESolver(DMFTCoreSolver):
                                      self._params['bse']['sparse_sv_cutoff'])
             # print(freqs.shape)
             # print(freqs)
+            bse.save_sparse_info(freqs)
         else:
             print("\nFrequency sampling: box")
             freqs = None
@@ -415,8 +435,7 @@ class DMFTBSESolver(DMFTCoreSolver):
             for icrsh in range(self._n_corr_shells):
                 if ish == self._sk.corr_to_inequiv[icrsh]:
                     if flag_sparse:
-                        # TODO: sparse: save x_loc
-                        raise NotImplementedError
+                        bse.save_xloc_sparse(x_loc, icrsh=icrsh)
                     else:
                         bse.save_xloc(x_loc, icrsh=icrsh)
 
