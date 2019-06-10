@@ -37,6 +37,9 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
 
     Calculate G2 in an impurity model
 
+    if freqs is None: box frequency sampling
+    else: sparse sampling
+
     """
 
     Solver = impurity_solvers.solver_classes[solver_name]
@@ -69,8 +72,8 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
         # xloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, s_params)
         # TODO: dummy data for the moment
         xloc = {}
-        xloc[(0,0,0,0)] = numpy.zeros(freqs.shape[0])
-        xloc[(0,1,0,1)] = numpy.zeros(freqs.shape[0])
+        xloc[(0,0,0,0)] = numpy.zeros(freqs.shape[0], dtype=complex)
+        xloc[(0,1,0,1)] = numpy.zeros(freqs.shape[0], dtype=complex)
 
     # Check results
     print("\n checking x_loc...")
@@ -88,10 +91,13 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     return xloc, sol.get_Gimp_iw()
 
 
-def subtract_disconnected(xloc, gimp, spin_names):
+def subtract_disconnected(xloc, gimp, spin_names, freqs=None):
     """
     subtract disconnected part from X_loc
         X_loc[(i1, i2, i3, i4)][wb=0, wf1, wf2] - G[(i2, i1)][wf1] * G[(i3, i4)][wf2]
+
+    if freqs is None: box frequency sampling
+    else: sparse sampling
 
     """
 
@@ -113,18 +119,26 @@ def subtract_disconnected(xloc, gimp, spin_names):
         return g_ij[(_i, _j)][w0 + _w]
 
     for (i1, i2, i3, i4), data in xloc.items():
-        n_wf = data.shape[1]
-        assert n_wf == data.shape[2]
-        assert n_wf % 2 == 0
-
         # skip if g_ij has no data
         if (not (i2, i1) in g_ij) or (not (i3, i4) in g_ij):
             continue
 
-        for if1, if2 in product(range(n_wf), repeat=2):
-            wf1 = if1 - n_wf/2
-            wf2 = if2 - n_wf/2
-            data[0, if1, if2] -= g(i2, i1, wf1) * g(i3, i4, wf2)
+        if freqs is None:
+            # box sampling
+            n_wf = data.shape[1]
+            assert n_wf == data.shape[2]
+            assert n_wf % 2 == 0
+
+            for if1, if2 in product(range(n_wf), repeat=2):
+                wf1 = if1 - n_wf/2
+                wf2 = if2 - n_wf/2
+                data[0, if1, if2] -= g(i2, i1, wf1) * g(i3, i4, wf2)
+        else:
+            # sparse sampling
+            assert freqs.shape[0] == data.shape[0]
+            for j, (wb, wf1, wf2) in enumerate(freqs):
+                if wb==0:
+                    data[j] -= g(i2, i1, wf1) * g(i3, i4, wf2)
 
 
 def gen_sparse_freqs_fix_boson(boson_freq, Lambda, sv_cutoff):
@@ -305,7 +319,9 @@ class SaveBSE:
         with HDFArchive(self.args['h5_file'], 'a') as f:
             if grp not in f:
                 f.create_group(grp)
+            # save all arguments in __init__ to re-instantiate
             f[grp]['args'] = self.args
+            # save list of frequencies (sampling points)
             f[grp]['freqs'] = freqs
 
     def save_xloc_sparse(self, xloc_ijkl, icrsh):
@@ -423,13 +439,9 @@ class DMFTBSESolver(DMFTCoreSolver):
                                                      self._Umat[ish], self._gf_struct[ish], self._beta, self._n_iw,
                                                      self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                                                      self._params['bse']['num_wb'],
-                                                     self._params['bse']['num_wf'], ish, freqs)
+                                                     self._params['bse']['num_wf'], ish, freqs=freqs)
 
-            if flag_sparse:
-                # TODO: sparse: extend subtract_disconnected
-                pass
-            else:
-                subtract_disconnected(x_loc, g_imp, self.spin_block_names)
+            subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
 
             # save X_loc
             for icrsh in range(self._n_corr_shells):
