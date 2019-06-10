@@ -64,7 +64,11 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     if flag_box:
         xloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
     else:
-        xloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, s_params)
+        # xloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, s_params)
+        # TODO: dummy data for the moment
+        xloc = {}
+        xloc[(0,0,0,0)] = numpy.zeros(freqs.shape[0])
+        xloc[(0,1,0,1)] = numpy.zeros(freqs.shape[0])
 
     # Check results
     print("\n checking x_loc...")
@@ -74,7 +78,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
         if flag_box:
             assert data.shape == (num_wb, 2*num_wf, 2*num_wf)
         else:
-            assert data.shape == (len(freqs),)
+            assert data.shape == (freqs.shape[0],)
     print(" OK")
 
     os.chdir(work_dir_org)
@@ -119,6 +123,63 @@ def subtract_disconnected(xloc, gimp, spin_names):
             wf1 = if1 - n_wf/2
             wf2 = if2 - n_wf/2
             data[0, if1, if2] -= g(i2, i1, wf1) * g(i3, i4, wf2)
+
+
+def gen_sparse_freqs_fix_boson(boson_freq, Lambda, sv_cutoff):
+    """
+    Generate sparse frequency points (wf1, wf2) for fixed bosonic freq wb
+
+    Parameters
+    ----------
+    boson_freqs: (int) bosonic Matsubara frequency
+    Lambda: (float)
+    sv_cutoff: (float)
+
+    Returns
+    -------
+    freqs: list of tuple [(wf1, wf2),]
+
+    """
+    # import irbasis
+    from irbasis_util.four_point_ph_view import FourPointPHView
+
+    print("  sparse_freqs: boson_freq = %3d," % boson_freq, end="")
+    beta_dummy = 1.0
+    basis = FourPointPHView(boson_freq, Lambda, beta_dummy, sv_cutoff)
+    sp = basis.sampling_points_matsubara(whichl=basis.Nl-1)
+
+    print("  # of points = %d" % len(sp))
+    return sp
+
+
+def gen_sparse_freqs(boson_freqs, Lambda, sv_cutoff):
+    """
+    Generate sparse frequency points (wb, wf1, wf2)
+
+    Parameters
+    ----------
+    boson_freqs: (int) Number of bosonic Matsubara frequencies
+    Lambda: (float)
+    sv_cutoff: (float)
+
+    Returns
+    -------
+    freqs: numpy.array of shape=(N, 3)
+
+    """
+
+    # [wb][i] = tuple(wf1, wf2)
+    freqs2_list = [gen_sparse_freqs_fix_boson(boson_freq, Lambda, sv_cutoff)
+                   for boson_freq in range(boson_freqs)]
+
+    # convert to numpy.array of size [N, 3]
+    freqs = []
+    for wb, freqs2 in enumerate(freqs2_list):
+        freqs3 = [(wb, wf1, wf2) for wf1, wf2 in freqs2]
+        freqs.extend(freqs3)
+    print(" Total sampling points = %d" % len(freqs))
+
+    return numpy.array(freqs)
 
 
 class SaveBSE:
@@ -320,15 +381,18 @@ class DMFTBSESolver(DMFTCoreSolver):
         Gloc_iw_sh, _ = self.calc_Gloc()
         solver_name = self._params['impurity_solver']['name']
 
+        # generate sampling points of Matsubara frequencies
         flag_sparse = self._params['bse']['sparse_sampling']
-        print("flag_sparse", flag_sparse)
         if flag_sparse:
-            # generate sampling points of Matsubara frequencies
-            # TODO: sparse: generate freqs
-            # freqs = gen_sparse_freqs(self._params['bse']['sparse_Lambda'],
-            #                          self._params['bse']['sparse_sv_cutoff'])
-            raise NotImplementedError
+            print("\nFrequency sampling: sparse")
+            # numpy.array of shape=(N, 3)
+            freqs = gen_sparse_freqs(self._params['bse']['num_wb'],
+                                     self._params['bse']['sparse_Lambda'],
+                                     self._params['bse']['sparse_sv_cutoff'])
+            # print(freqs.shape)
+            # print(freqs)
         else:
+            print("\nFrequency sampling: box")
             freqs = None
 
         for ish in range(self._n_inequiv_shells):
@@ -341,8 +405,11 @@ class DMFTBSESolver(DMFTCoreSolver):
                                                      self._params['bse']['num_wb'],
                                                      self._params['bse']['num_wf'], ish, freqs)
 
-            # TODO: sparse: extend subtract_disconnected
-            subtract_disconnected(x_loc, g_imp, self.spin_block_names)
+            if flag_sparse:
+                # TODO: sparse: extend subtract_disconnected
+                pass
+            else:
+                subtract_disconnected(x_loc, g_imp, self.spin_block_names)
 
             # save X_loc
             for icrsh in range(self._n_corr_shells):
