@@ -573,3 +573,19 @@ def make_hermite_conjugate(Sigma_iw, check_only=False):
     return max_diff
 
 
+def mpi_split(work_size, comm_size):
+    """
+    Make Sigma(iw_n) or G(iwn_n) hermite
+    Return max difference.
+    """
+    base = work_size // comm_size
+    leftover = int(work_size % comm_size)
+
+    sizes = numpy.ones(comm_size, dtype=int) * base
+    sizes[:leftover] += 1
+
+    offsets = numpy.zeros(comm_size, dtype=int)
+    offsets[1:] = numpy.cumsum(sizes)[:-1]
+
+    return sizes, offsets
+

@@ -245,7 +245,7 @@ class PomerolSolver(SolverBase):
 
         Parameters
         ----------
-        freqs_ph : numpy.ndarray[N, 3]  frequency points
+        freqs_ph : numpy.ndarray[N, 3]  frequency points (in the order of boson, fermion, fermion)
 
         Returns
         -------

@@ -179,8 +179,9 @@ class SolverBase(object):
             The same as solve()
 
         freqs_ph: 2d int ndarray of shape (n_freqs, 3)
-            The three integers at each row represent two fermionic frequencies and one bosonic frequency
+            The three integers at each row represent one bosonic frequency and two fermionic frequencies
             in the particle-hole convention.
+            These frequencies must be given in the order of (boson, fermion, fermion).
 
         params_kw:
             The same as solve()

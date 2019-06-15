@@ -455,6 +455,38 @@ class DMFTBSESolver(DMFTCoreSolver):
         self._calc_bse_xloc()
 
 
+    def fit_Xloc(self):
+        """
+        Fit sparse data of Xloc
+        """
+
+        # Prepare input files
+        print('')
+        print('Fitting Xloc...')
+        h5_path = os.path.abspath(self._params['bse']['h5_output_file'])
+        work_dir = './work/sparse_fit-D{}'.format(self._params['bse']['sparse_D'])
+        make_empty_dir(work_dir)
+
+        cwd_org = os.getcwd()
+        os.chdir(work_dir)
+
+        for b in range(self._params['bse']['num_wb']):
+            print('  wb={}...'.format(b))
+            with open('./output-wb{}.txt'.format(b), 'w') as fout:
+                commands = [sys.executable, "-m", "dcore.sparse_sampling.ph"]
+                commands.extend(['--Lambda', self._params['bse']['sparse_Lambda']])
+                commands.extend(['--svcutoff', self._params['bse']['sparse_sv_cutoff']])
+                commands.extend(['--D', self._params['bse']['sparse_D']])
+                commands.extend(['--niter', self._params['bse']['sparse_niter']])
+                commands.extend(['--bfreq', b])
+                commands.extend(['--num_wf', self._params['bse']['num_wf']])
+                commands.append(h5_path)
+                commands = map(str, commands)
+                launch_mpi_subprocesses(self._mpirun_command, commands, fout)
+
+        os.chdir(cwd_org)
+
+
 def dcore_bse(filename, np=1):
     """
     Main routine for the BSE post-processing tool
@@ -492,7 +524,11 @@ def dcore_bse(filename, np=1):
     #
     # Compute data for BSE
     #
-    solver.calc_bse()
+    if not p['bse']['only_fit']:
+        solver.calc_bse()
+
+    if p['bse']['sparse_sampling']:
+        solver.fit_Xloc()
 
     #
     # Finish
