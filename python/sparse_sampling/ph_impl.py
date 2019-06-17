@@ -36,7 +36,7 @@ def fit(projectors, xloc_local, D, niter):
     y = xloc_local.transpose((1,0))
     alpha_init = 0
     model = OvercompleteGFModel(num_freqs, num_rep, 2, num_o, linear_dim, projectors, y, alpha_init, D)
-    info = optimize_als(model, niter, rtol=1e-20, optimize_alpha=1e-5, verbose=1, print_interval=1)
+    info = optimize_als(model, niter, rtol=1e-8, optimize_alpha=1e-5, verbose=1, print_interval=1)
 
     return copy.deepcopy(model.x_tensors()), info['rmses'][-1]**2
 
