@@ -472,6 +472,7 @@ class DMFTBSESolver(DMFTCoreSolver):
 
         for b in range(self._params['bse']['num_wb']):
             print('  wb={}...'.format(b))
+            sys.stdout.flush()
             with open('./output-wb{}.txt'.format(b), 'w') as fout:
                 commands = [sys.executable, "-m", "dcore.sparse_sampling.ph"]
                 commands.extend(['--Lambda', self._params['bse']['sparse_Lambda']])
@@ -483,6 +484,7 @@ class DMFTBSESolver(DMFTCoreSolver):
                 commands.append(h5_path)
                 commands = map(str, commands)
                 launch_mpi_subprocesses(self._mpirun_command, commands, fout)
+            sys.stdout.flush()
 
         os.chdir(cwd_org)
 

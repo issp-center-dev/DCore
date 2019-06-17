@@ -114,9 +114,10 @@ if __name__ == '__main__':
     xloc_box_local = predict_xloc(prj_box, xs)
 
     # Note: xloc_box_local (orbital, frequency)
-    xloc_box = comm.gather(xloc_box_local.transpose(), root=0)
+    xloc_box = comm.gather(xloc_box_local, root=0)
     if is_master_node:
-        xloc_box = numpy.array(xloc_box).transpose()
+        # Join arrays along the frequency axis
+        xloc_box = numpy.concatenate(xloc_box, axis=1)
         with h5py.File(args.data_file, 'a') as hf:
             prefix = '/bse_sparse/interpolated/0/{}/D{}'.format(boson_freq, D)
             if prefix in hf:
