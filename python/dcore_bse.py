@@ -163,6 +163,31 @@ def gen_sparse_freqs_fix_boson(boson_freq, Lambda, sv_cutoff):
     print("  # of points = %d" % len(sp))
     return sp
 
+def gen_sparse_freqs_3D(Lambda, sv_cutoff):
+    """
+    Generate sparse frequency points (wb, wf1, wf2) 
+
+    Parameters
+    ----------
+    Lambda: (float)
+    sv_cutoff: (float)
+
+    Returns
+    -------
+    freqs: list of tuple [(wb, wf1, wf2),]
+
+    """
+    # import irbasis
+    from irbasis_util.four_point import FourPoint, to_PH_convention
+
+    beta_dummy = 1.0
+    basis = FourPoint(Lambda, beta_dummy, sv_cutoff)
+    # sp_ffff are in the convetion of four fermion frequencies
+    sp_ffff = basis.sampling_points_matsubara(whichl=basis.Nl-1)
+
+    print("  # of points = %d" % len(sp_ffff))
+    return [to_PH_convention(s) for s in sp_ffff]
+
 
 def gen_sparse_freqs(boson_freqs, Lambda, sv_cutoff):
     """
@@ -416,12 +441,17 @@ class DMFTBSESolver(DMFTCoreSolver):
         flag_sparse = self._params['bse']['sparse_sampling']
         if flag_sparse:
             print("\nFrequency sampling: sparse")
-            # numpy.array of shape=(N, 3)
-            freqs = gen_sparse_freqs(self._params['bse']['num_wb'],
-                                     self._params['bse']['sparse_Lambda'],
-                                     self._params['bse']['sparse_sv_cutoff'])
-            # print(freqs.shape)
-            # print(freqs)
+            if self._params['bse']['sparse_mode'] == 'ph-2D':
+                # numpy.array of shape=(N, 3)
+                freqs = gen_sparse_freqs(self._params['bse']['num_wb'],
+                                         self._params['bse']['sparse_Lambda'],
+                                         self._params['bse']['sparse_sv_cutoff'])
+            elif self._params['bse']['sparse_mode'] == '3D':
+                # numpy.array of shape=(N, 3)
+                freqs = gen_sparse_freqs_3D(self._params['bse']['sparse_Lambda'],
+                        self._params['bse']['sparse_sv_cutoff'])
+            else:
+                raise RuntimeError('Invalid sparse_mode: {}'.format(self._params['bse']['sparse_mode']))
             bse.save_sparse_info(freqs)
         else:
             print("\nFrequency sampling: box")
