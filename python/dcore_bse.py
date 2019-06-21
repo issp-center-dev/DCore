@@ -32,6 +32,9 @@ from . import sumkdft
 from .tools import *
 import impurity_solvers
 
+# from BSE repo
+from bse_tools.h5bse import h5BSE
+
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
                               Sigma_iw, Gloc_iw, num_wb, num_wf, ish, freqs=None):
@@ -231,7 +234,6 @@ class SaveBSE:
         del self.args['self']
 
         from dft_tools.index_pair import IndexPair, IndexPair2
-        from bse_tools.h5bse import h5BSE
 
         self.spin_names = spin_names
         self.use_spin_orbit = use_spin_orbit
@@ -250,21 +252,25 @@ class SaveBSE:
         print(" block2 namelist =", self.block2.namelist)
         print(" inner2 namelist =", self.inner2.namelist)
 
-        self.h5bse = h5BSE(h5_file, bse_grp)
+        self.h5_file = h5_file
+        self.bse_grp = bse_grp
+        h5bse = h5BSE(self.h5_file, self.bse_grp)
         if bse_info == 'check':
             # check equivalence of info
-            assert self.h5bse.get(key=('block_name',)) == self.block2.namelist
-            assert self.h5bse.get(key=('inner_name',)) == self.inner2.namelist
-            assert self.h5bse.get(key=('beta',)) == beta
+            assert h5bse.get(key=('block_name',)) == self.block2.namelist
+            assert h5bse.get(key=('inner_name',)) == self.inner2.namelist
+            assert h5bse.get(key=('beta',)) == beta
         elif bse_info == 'save':
             # save info
-            self.h5bse.save(key=('block_name',), data=self.block2.namelist)
-            self.h5bse.save(key=('inner_name',), data=self.inner2.namelist)
-            self.h5bse.save(key=('beta',), data=beta)
+            h5bse.save(key=('block_name',), data=self.block2.namelist)
+            h5bse.save(key=('inner_name',), data=self.inner2.namelist)
+            h5bse.save(key=('beta',), data=beta)
         else:
             raise ValueError("bse_info =", bse_info)
 
     def save_xloc(self, xloc_ijkl, icrsh):
+
+        h5bse = h5BSE(self.h5_file, self.bse_grp)
 
         n_inner2 = len(self.inner2.namelist)
         n_w2b = xloc_ijkl[xloc_ijkl.keys()[0]].shape[0]
@@ -303,11 +309,13 @@ class SaveBSE:
                 xloc_bse[(s12, s34)][inner12, inner34, :, :] = data_wb[:, :]
 
             # save
-            self.h5bse.save(key=('X_loc', wb), data=xloc_bse)
+            h5bse.save(key=('X_loc', wb), data=xloc_bse)
 
     def save_gamma0(self, u_mat, icrsh):
 
         assert u_mat.shape == (self.n_flavors, )*4
+
+        h5bse = h5BSE(self.h5_file, self.bse_grp)
 
         # transpose U matrix into p-h channel, c_1^+ c_2 c_4^+ c_3
         u_mat_ph1 = u_mat.transpose(0, 2, 3, 1)
@@ -330,12 +338,12 @@ class SaveBSE:
 
                 gamma0[(s12, s34)] = gamma0_orb.reshape((self.n_orb**2, )*2)
 
-            self.h5bse.save(key=('gamma0', ), data=gamma0)
+            h5bse.save(key=('gamma0', ), data=gamma0)
         else:
             gamma0_inner = - u_mat_ph1 + u_mat_ph2
             gamma0_inner = gamma0_inner.reshape((len(self.inner2.namelist), )*2)
             block_index = self.block2.get_index(icrsh, self.spin_names[0], icrsh, self.spin_names[0])
-            self.h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
+            h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
 
     def save_sparse_info(self, freqs):
         grp = self.args['sparse_grp']
@@ -539,12 +547,12 @@ class DMFTBSESolver(DMFTCoreSolver):
             num_wf = self._params['bse']['num_wf']
 
             # get X_loc
-            with h5py.File(h5_path, 'r') as hf:
+            with h5py.File(h5_path, 'r') as f:
                 for b in range(num_wb):
                 # print('  wb={}...'.format(b))
                     prefix = '/bse_sparse/interpolated/{}/wb{}/D{}'.format(ish, b, self._params['bse']['sparse_D'])
-                    assert prefix in hf
-                    for key in hf[prefix].keys():
+                    assert prefix in f
+                    for key in f[prefix].keys():
                         # print(key)
                         key_tuple = ast.literal_eval(key)  # convert string to tuple
                         assert isinstance(key_tuple, tuple)
@@ -552,7 +560,7 @@ class DMFTBSESolver(DMFTCoreSolver):
                         if key_tuple not in x_loc:
                             x_loc[key_tuple] = numpy.zeros((num_wb, 2*num_wf, 2*num_wf), dtype=complex)
 
-                        x_wb_fix = float_to_complex_array(hf[prefix + '/' + key][()])
+                        x_wb_fix = float_to_complex_array(f[prefix + '/' + key][()])
                         assert x_wb_fix.shape == (2*num_wf, 2*num_wf)
                         x_loc[key_tuple][b, :, :] = x_wb_fix
 
