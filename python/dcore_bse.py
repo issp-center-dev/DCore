@@ -543,8 +543,7 @@ class DMFTBSESolver(DMFTCoreSolver):
                 for b in range(num_wb):
                 # print('  wb={}...'.format(b))
                     prefix = '/bse_sparse/interpolated/{}/wb{}/D{}'.format(ish, b, self._params['bse']['sparse_D'])
-                    import pdb; pdb.set_trace()
-                    # assert prefix in hf
+                    assert prefix in hf
                     for key in hf[prefix].keys():
                         # print(key)
                         key_tuple = ast.literal_eval(key)  # convert string to tuple
