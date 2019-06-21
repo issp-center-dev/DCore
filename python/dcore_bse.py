@@ -23,6 +23,8 @@ import sys
 import copy
 import numpy
 from pytriqs.archive import HDFArchive
+import h5py
+import ast
 
 from .dmft_core import DMFTCoreSolver
 from .program_options import create_parser
@@ -350,6 +352,14 @@ class SaveBSE:
         with HDFArchive(self.args['h5_file'], 'a') as f:
             f[grp][str(icrsh)] = xloc_ijkl
 
+    @staticmethod
+    def get_sparse_info(h5_file, sparse_grp='bse_sparse'):
+        with HDFArchive(h5_file, 'r') as f:
+            # if sparse_grp not in f:
+            # save all arguments in __init__ to re-instantiate
+            return f[sparse_grp]['args']
+
+
 
 class DMFTBSESolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
@@ -515,6 +525,42 @@ class DMFTBSESolver(DMFTCoreSolver):
                 commands = map(str, commands)
                 launch_mpi_subprocesses(self._mpirun_command, commands, fout)
             sys.stdout.flush()
+
+        # save interpolated data for BSE
+        print('\n saving Xloc for BSE...')
+        bse_args = SaveBSE.get_sparse_info(h5_path)
+        bse = SaveBSE(**bse_args)
+
+        for ish in range(self._n_inequiv_shells):
+            # print('  ish={}...'.format(ish))
+
+            x_loc = {}
+            num_wb = self._params['bse']['num_wb']
+            num_wf = self._params['bse']['num_wf']
+
+            # get X_loc
+            with h5py.File(h5_path, 'r') as hf:
+                for b in range(num_wb):
+                # print('  wb={}...'.format(b))
+                    prefix = '/bse_sparse/interpolated/{}/wb{}/D{}'.format(ish, b, self._params['bse']['sparse_D'])
+                    import pdb; pdb.set_trace()
+                    # assert prefix in hf
+                    for key in hf[prefix].keys():
+                        # print(key)
+                        key_tuple = ast.literal_eval(key)  # convert string to tuple
+                        assert isinstance(key_tuple, tuple)
+
+                        if key_tuple not in x_loc:
+                            x_loc[key_tuple] = numpy.zeros((num_wb, 2*num_wf, 2*num_wf), dtype=complex)
+
+                        x_wb_fix = float_to_complex_array(hf[prefix + '/' + key][()])
+                        assert x_wb_fix.shape == (2*num_wf, 2*num_wf)
+                        x_loc[key_tuple][b, :, :] = x_wb_fix
+
+            # save X_loc
+            for icrsh in range(self._n_corr_shells):
+                if ish == self._sk.corr_to_inequiv[icrsh]:
+                    bse.save_xloc(x_loc, icrsh=icrsh)
 
         os.chdir(cwd_org)
 
