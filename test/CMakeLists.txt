@@ -16,3 +16,12 @@ add_subdirectory(pre_external)
 add_subdirectory(alps_cthyb)
 add_subdirectory(chain_hubbardI_so)
 add_subdirectory(chain_hubbardI)
+
+
+option(TEST_DEV "Activate developers' test" OFF)
+if(TEST_DEV)
+    message(STATUS "Activated developers' test")
+    add_subdirectory(bse_chi0)
+
+    message(AUTHOR_WARNING "Be sure to include 'bse_home/python' in PYTHONPATH or set 'bse_home' by -DBSE_PATH option")
+endif()
