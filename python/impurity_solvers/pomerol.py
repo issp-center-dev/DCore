@@ -20,6 +20,7 @@ from __future__ import print_function
 import numpy
 from itertools import product
 import os
+import subprocess
 
 from ..pytriqs_gf_compat import *
 # from pytriqs.archive import HDFArchive
@@ -27,6 +28,22 @@ from pytriqs.operators import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
+
+VERSION_REQUIRED = 1.0
+
+
+def check_version(_exec):
+    print(" Checking version...")
+    out = subprocess.check_output([_exec, "--version"])
+    # pomerol2dcore version 1.0
+    print(" |", out, end="")
+    print(" | version required", VERSION_REQUIRED)
+    version = float(out.split()[2])
+    if version >= VERSION_REQUIRED:
+        print(" OK")
+    else:
+        print(" ERROR: requirement not satisfied")
+        exit(1)
 
 
 def assign_from_numpy_array(g_block, data, block_names):
@@ -106,6 +123,7 @@ class PomerolSolver(SolverBase):
 
         # print("params_kw =", params_kw)
         exec_path = os.path.expandvars(params_kw['exec_path'])
+        check_version(exec_path)
 
         # for BSE
         flag_vx = params_kw.get('flag_vx', 0)
