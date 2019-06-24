@@ -70,6 +70,7 @@ if __name__ == '__main__':
     # Fit
     xs, mse = fit(prj, xloc_local, D, args.niter)
 
+    # FIXME: ORDER OF FREQ AND ORBITAL
     xloc_local_fit = predict_xloc(prj, xs)
     xloc_abs_max = comm.allreduce(numpy.amax(numpy.abs(xloc_local)), op=MPI.MAX)
     xloc_abs_diff = comm.allreduce(numpy.amax(numpy.abs(xloc_local-xloc_local_fit)), op=MPI.MAX)
@@ -99,7 +100,7 @@ if __name__ == '__main__':
         # List of frequencies in the notation of four fermionic frequencies
         freqs_box = numpy.empty((n_freqs_box, 4), dtype=int)
         for idx, (i, j) in enumerate(product(range(2*num_wf), repeat=2)):
-            freqs_box[idx, :] = from_PH_convention((i, j, boson_freq))
+            freqs_box[idx, :] = from_PH_convention((i-num_wf, j-num_wf, boson_freq))
         freqs_box_local = freqs_box[offsets_box[rank]:offsets_box[rank]+sizes_box[rank], :]
 
         prj_box = construct_prj_three_freqs(basis, freqs_box_local)

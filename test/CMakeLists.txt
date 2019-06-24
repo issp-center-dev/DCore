@@ -17,12 +17,16 @@ add_subdirectory(alps_cthyb)
 add_subdirectory(chain_hubbardI_so)
 add_subdirectory(chain_hubbardI)
 
-
 option(TEST_DEV "Activate developers' test" OFF)
 if(TEST_DEV)
     message(STATUS "Activated developers' test")
+    if (NOT MPIEXEC)
+        set(MPIEXEC "$MPIRUN -np #")
+        message(STATUS "This MPI command will be used in tests: ${MPIEXEC}")
+    endif()
     add_subdirectory(bse_chi0)
     add_subdirectory(bse_sparse)
 
     message(AUTHOR_WARNING "Be sure to include 'bse_home/python' in PYTHONPATH or set 'bse_home' by -DBSE_PATH option")
+    unset(MPIEXEC CACHE)
 endif()

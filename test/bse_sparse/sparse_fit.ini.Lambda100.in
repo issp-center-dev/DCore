@@ -8,7 +8,7 @@ kanamori = [(8.0, 0.0, 0.0)]
 nk = 1
 
 [mpi]
-command = "mpirun -n #"
+command = @MPIEXEC@
 
 [system]
 beta = 10.0
@@ -27,11 +27,11 @@ max_step = 1
 [bse]
 num_wb = 1
 num_wf = 20
-h5_output_file = dmft_bse.h5.Lambda10
+h5_output_file = dmft_bse.h5.Lambda100
 skip_X0q_if_exists = True
 sparse_sampling = True
-sparse_Lambda = 10
+sparse_Lambda = 100
 # sparse_sv_cutoff = 1e-4
 sparse_D = 10
-sparse_niter = 100
+sparse_niter = 10
 only_fit = False

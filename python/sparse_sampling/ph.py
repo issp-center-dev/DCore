@@ -7,6 +7,7 @@ import h5py
 import argparse
 
 from irbasis_util.four_point_ph_view import FourPointPHView
+from irbasis_util.tensor_regression import predict
 from .tools import fit, construct_prj, predict_xloc
 from ..tools import mpi_split, float_to_complex_array, complex_to_float_array
 
@@ -107,20 +108,21 @@ if __name__ == '__main__':
 
     freqs_f_box = numpy.empty((n_freqs_box, 2), dtype=int)
     for idx, (i, j) in enumerate(product(range(2*num_wf), repeat=2)):
-        freqs_f_box[idx, :] = (i, j)
+        freqs_f_box[idx, :] = (i-num_wf, j-num_wf)
     freqs_f_box_local = freqs_f_box[offsets_box[rank]:offsets_box[rank]+sizes_box[rank], :]
 
     prj_box = construct_prj(phb, freqs_f_box_local)
-    xloc_box_local = predict_xloc(prj_box, xs)
+    # xloc_box_local (frequency, orbital)
+    xloc_box_local = predict(prj_box, xs)
 
-    # Note: xloc_box_local (orbital, frequency)
+    # Note: xloc_box_local (frequency, orbital)
     xloc_box = comm.gather(xloc_box_local, root=0)
     if is_master_node:
         # Join arrays along the frequency axis
-        xloc_box = numpy.concatenate(xloc_box, axis=1)
+        xloc_box = numpy.concatenate(xloc_box, axis=0)
         with h5py.File(args.data_file, 'a') as hf:
             prefix = '/bse_sparse/interpolated/0/wb{}/D{}'.format(boson_freq, D)
             if prefix in hf:
                 del hf[prefix]
             for i, key in enumerate(xloc_keys):
-                hf[prefix + '/' + key] = complex_to_float_array(numpy.array(xloc_box[i, :].reshape((2*num_wf, 2*num_wf))))
+                hf[prefix + '/' + key] = complex_to_float_array(numpy.array(xloc_box[:, i].reshape((2*num_wf, 2*num_wf))))

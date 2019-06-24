@@ -55,8 +55,8 @@ class TestMethods(unittest.TestCase):
             # self.assertTrue(numpy.allclose(xloc_fit[key], self.xloc_ref[key], rtol=1e-2))
             sys.stdout.flush()
 
-    def test_fit_Lambda10(self):
-        self._fit_and_compare(".Lambda10")
+    def test_fit_Lambda100(self):
+        self._fit_and_compare(".Lambda100")
 
 
 if __name__ == '__main__':

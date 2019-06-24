@@ -27,7 +27,7 @@ import h5py
 import ast
 
 from .dmft_core import DMFTCoreSolver
-from .program_options import create_parser
+from .program_options import create_parser, parse_parameters
 from . import sumkdft
 from .tools import *
 import impurity_solvers
@@ -595,6 +595,7 @@ def dcore_bse(filename, np=1):
     #
     pars.read(filename)
     p = pars.as_dict()
+    parse_parameters(p)
     seedname = p["model"]["seedname"]
     p["mpi"]["num_processes"] = np
 
