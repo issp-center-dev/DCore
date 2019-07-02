@@ -573,3 +573,92 @@ def make_hermite_conjugate(Sigma_iw, check_only=False):
     return max_diff
 
 
+def _to_numpy_array(g):
+    """
+    Convert BlockGf object to numpy.
+    If there are two blocks, we assume that they are spin1 and spin2 sectors.
+    """
+
+    block_names = gf_block_names(g.n_blocks==1)
+    block_sizes = [get_block_size(g[name]) for name in block_names]
+    n_spin_orbital = numpy.sum(block_sizes)
+
+    # FIXME: Bit ugly
+    n_data = g[block_names[0]].data.shape[0]
+
+    data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=complex)
+    offset = 0
+    for ib, name in enumerate(block_names):
+        block = g[name]
+        block_dim = block_sizes[ib]
+        data[:, offset:offset + block_dim, offset:offset + block_dim] = block.data
+        offset += block_dim
+    return data
+
+
+def _assign_from_numpy_array(g, data):
+    """
+    Does inversion of to_numpy_array
+    """
+
+    if g.n_blocks > 2:
+        raise RuntimeError("n_blocks must be 1 or 2.")
+
+    block_names = gf_block_names(g.n_blocks==1)
+    n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
+
+    assert data.shape[0] == g[block_names[0]].data.shape[0]
+
+    norb = n_spin_orbital//2
+
+    offset = 0
+    for name in block_names:
+        block = g[name]
+        block_dim = len(block.indices)
+        block.data[:,:,:] = data[:, offset:offset + block_dim, offset:offset + block_dim]
+        for i in range(block.data.shape[0]):
+            block.data[i, :, :] = 0.5 * (block.data[i, :, :] + block.data[i, :, :].transpose().conj())
+        offset += block_dim
+
+
+def _symmetrize(Sigma_iw, s):
+    Sigma_iw_symm = Sigma_iw.copy()
+    for bname, gf in Sigma_iw:
+        U = s[bname].copy()
+        dim_symm = 1
+        gf_symm = gf.copy()
+        while True:
+            gf_rot = gf.copy()
+            gf_rot.from_L_G_R(U.transpose().conjugate(), gf, U)
+            gf_symm += gf_rot
+            dim_symm += 1
+            U = numpy.dot(U, s[bname])
+            if numpy.allclose(U, numpy.identity(U.shape[0])):
+                break
+        gf_symm /= dim_symm
+        Sigma_iw_symm[bname] = gf_symm
+    return Sigma_iw_symm
+
+def symmetrize(Sigma_iw, generators):
+    """
+    Symmetrize Green's function using generators
+
+    Parameters
+    ----------
+    Sigma_iw: BlockGf
+        self-energy
+    generators: list of numpy 2D array
+        generators of symmetrization
+
+    Returns
+    -------
+        Symmetrized self-energy.
+
+    """
+
+    Sigma_iw_symm = Sigma_iw.copy()
+
+    for s in generators:
+        Sigma_iw_symm = _symmetrize(Sigma_iw_symm, s)
+
+    return Sigma_iw_symm

@@ -24,6 +24,7 @@ import re
 import time
 import __builtin__
 import numpy
+import scipy
 import copy
 import ast
 import h5py
@@ -85,6 +86,55 @@ class ShellQuantity(object):
         self.Sigma_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
         for name, g in self.Sigma_iw:
             g.zero()
+
+
+def _load_symm_generators(input_str, spin_orbit, dim_sh):
+    """
+    Load generators for symmetrization
+    
+    Parameters
+    ----------
+    input_str: input string
+    spin_orbit: bool
+      If spin_orbit is on or not
+    dim_sh: int array
+      dim of shells
+
+    Returns
+    -------
+    List of generators
+
+    """
+    nsh = len(dim_sh)
+    results = [[]] * nsh
+
+    if input_str == '' or input_str == 'None':
+        return results
+
+    try:
+        generators_file = ast.literal_eval(input_str)
+    except:
+        raise RuntimeError('Error in parsing {}'.format(input_str))
+
+    assert isinstance(generators_file, list)
+
+    for gen in generators_file:
+        assert isinstance(gen, tuple) or isinstance(gen, list)
+        assert len(gen) == 2
+        assert isinstance(gen[0], int)
+        assert isinstance(gen[1], str)
+
+        ish = gen[0]
+        print('Reading symmetry generator for ish={} from {}'.format(ish, gen[1]))
+        if spin_orbit:
+            gen_mat = numpy.zeros((1, dim_sh[ish], dim_sh[ish]), dtype=complex)
+            read_potential(gen[1], gen_mat)
+            results[ish].append({'ud' : gen_mat[0,:,:]})
+        else:
+            gen_mat = numpy.zeros((2, dim_sh[ish], dim_sh[ish]), dtype=complex)
+            read_potential(gen[1], gen_mat)
+            results[ish].append({'up' : gen_mat[0,:,:], 'down' : gen_mat[1,:,:]})
+    return results
 
 
 def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, Sigma_iw, Gloc_iw, mesh, ish, work_dir):
@@ -583,6 +633,10 @@ class DMFTCoreSolver(object):
         sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
         output_group = self._output_group
 
+        symm_generators = _load_symm_generators(
+            self._params['control']['symmetry_generators'],
+            self._use_spin_orbit, self._dim_sh)
+
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
@@ -626,6 +680,12 @@ class DMFTCoreSolver(object):
                 for ish in range(self._n_inequiv_shells):
                     symmetrize_spin(new_Gimp_iw[ish])
                     symmetrize_spin(new_Sigma_iw[ish])
+
+            for isn in range(self._n_inequiv_shells):
+                if len(symm_generators[ish]) > 0:
+                    symmetrize(new_Gimp_iw[ish], symm_generators[ish])
+                    symmetrize(new_Sigma_iw[ish], symm_generators[ish])
+
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.

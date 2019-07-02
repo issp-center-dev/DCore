@@ -44,7 +44,7 @@ def test_spin_moments_sh():
 
 def test_save_load_Sigma_iw():
     from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt
-    from dcore.tools import make_block_gf, save_giw, load_giw
+    from dcore.tools import make_block_gf, save_giw, load_giw, triqs_major_version
     from dcore.pytriqs_gf_compat import GfImFreq
 
     nsh = 2
@@ -60,7 +60,8 @@ def test_save_load_Sigma_iw():
         for ish in range(nsh):
             for sp in spin_names:
                 Sigma_iw_sh[ish][sp].data[:,:,:] = numpy.random.randn(2*n_points, norb, norb) + 1J * numpy.random.randn(2*n_points, norb, norb)
-                Sigma_iw_sh[ish][sp].tail.data[...] = numpy.random.randn(*Sigma_iw_sh[ish][sp].tail.data.shape)
+                if triqs_major_version == 1:
+                    Sigma_iw_sh[ish][sp].tail.data[...] = numpy.random.randn(*Sigma_iw_sh[ish][sp].tail.data.shape)
 
         save_Sigma_iw_sh_txt('Sigma_iw_sh.txt', Sigma_iw_sh, spin_names)
 
@@ -88,8 +89,52 @@ def test_save_load_Sigma_iw():
             load_giw(ar, '/sigma_iw', Sigma_iw_sh0_loaded)
 
 
-        numpy.allclose(Sigma_iw_sh0.data, Sigma_iw_sh0_loaded.data)
-        numpy.allclose(Sigma_iw_sh0.tail.data, Sigma_iw_sh0_loaded.tail.data)
+        assert numpy.allclose(Sigma_iw_sh0.data, Sigma_iw_sh0_loaded.data)
+        if triqs_major_version == 1:
+            numpy.allclose(Sigma_iw_sh0.tail.data, Sigma_iw_sh0_loaded.tail.data)
+
+
+def test_symmetrization_Sigma_iw():
+    """
+    Consider two-orbital system and symmetrize Sigma over orbitals
+    """
+    from dcore.tools import make_block_gf, triqs_major_version, symmetrize, _to_numpy_array
+    from dcore.pytriqs_gf_compat import GfImFreq
+
+    norb = 2
+    beta = 10.0
+    n_points = 10
+
+    numpy.random.seed(1)
+
+    for spin_names in [['ud'], ['up', 'down']]:
+        # Create generator for symmetrizing two orbitals
+        generator_mat = numpy.zeros((2, norb, 2, norb), dtype=complex)
+        for isp in range(2):
+            generator_mat[isp, :, isp, :] = numpy.array([[0, 1], [1, 0]])
+        #generator_mat = generator_mat.reshape((2*norb, 2*norb))
+
+        # Create Sigma with random data
+        if len(spin_names) == 1:
+            nblock_size = 2*norb
+            gen = {'ud' : generator_mat.reshape(2*norb, 2*norb)}
+        else:
+            nblock_size = norb
+            gen = {'up' : generator_mat[0,:,0,:], 'down' : generator_mat[1,:,1,:]}
+
+        gf_struct = {sp : numpy.arange(nblock_size) for sp in spin_names}
+        Sigma_iw = make_block_gf(GfImFreq, gf_struct, beta, n_points)
+        for sp in spin_names:
+            Sigma_iw[sp].data[:,:,:] = numpy.random.randn(2*n_points, nblock_size, nblock_size) + 1J * numpy.random.randn(2*n_points, nblock_size, nblock_size)
+
+        # Symmetrize
+        Sigma_iw_symm = symmetrize(Sigma_iw, [gen])
+
+        data_symmetrized = _to_numpy_array(Sigma_iw_symm).reshape((2*n_points, 2, norb, 2, norb))
+
+        for isp in range(2):
+            numpy.testing.assert_allclose(data_symmetrized[:, isp, 0, isp, 0], data_symmetrized[:, isp, 1, isp, 1])
 
 test_spin_moments_sh()
 test_save_load_Sigma_iw()
+test_symmetrization_Sigma_iw()
