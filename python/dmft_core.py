@@ -681,11 +681,6 @@ class DMFTCoreSolver(object):
                     symmetrize_spin(new_Gimp_iw[ish])
                     symmetrize_spin(new_Sigma_iw[ish])
 
-            for isn in range(self._n_inequiv_shells):
-                if len(symm_generators[ish]) > 0:
-                    symmetrize(new_Gimp_iw[ish], symm_generators[ish])
-                    symmetrize(new_Sigma_iw[ish], symm_generators[ish])
-
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.
@@ -696,6 +691,11 @@ class DMFTCoreSolver(object):
             else:
                 for ish in range(self._n_inequiv_shells):
                     self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
+
+            # Symmetrization
+            for isn in range(self._n_inequiv_shells):
+                if len(symm_generators[ish]) > 0:
+                    self._sh_quant[ish].Sigma_iw << symmetrize(self._sh_quant[ish].Sigma_iw, symm_generators[ish])
 
             # Write data to the hdf5 archive:
             with HDFArchive(self._output_file, 'a') as ar:
