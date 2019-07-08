@@ -437,7 +437,7 @@ def readline_ignoring_comment(f):
     return line
 
 
-def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
+def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2, interpolation=True):
     """
     Load a list of self-energy from a text file.
     Tails will be set to zero.
@@ -445,7 +445,8 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
     :param filename:
     :param Sigma_iw_sh: All elements must be allocated to correct shapes
     :param spin_names: ['up', 'down'] or ['ud']
-    :param atol: absolute torelance for imaginary frequencies
+    :param atol: absolute tolerance for imaginary frequencies
+    :param interpolation: If true and stored data are for a different beta, the data are interpolated along beta axis.
     """
 
     n_sh = len(Sigma_iw_sh)
@@ -454,22 +455,27 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
 
     data = numpy.loadtxt(filename)
 
-    omega_imag = data[:, 0]
-    nomega = len(omega_imag)
-    if not numpy.allclose(omega_imag, numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag, rtol=1, atol=atol_omega):
-        raise RuntimeError("Mesh is not compatible!")
+    omega_in = data[:, 0]
+    omega_out = numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag
+    nomega_out = len(omega_out)
 
-    for iom in range(nomega):
-        icol = 1
+    if not interpolation:
+        if not numpy.allclose(omega_in, omega_out, rtol=1, atol=atol_omega):
+            raise RuntimeError("Mesh is not compatible!")
+
+    from scipy import interpolate
+    interp = interpolate.interp1d(omega_in, data[:, 1:], axis=0, fill_value=0.0, bounds_error=False)
+
+    for iom in range(nomega_out):
+        data_interp = interp(omega_out[iom])
+        icol = 0
         for ish in range(n_sh):
             for sp in spin_names:
-                # FIXME: How to set zero to tail in TRIQS 2.x?
-                #Sigma_iw_sh[ish][sp].tail.zero()
                 block_dim = Sigma_iw_sh[ish][sp].data.shape[1]
                 for iorb, jorb in product(range(block_dim), repeat=2):
-                    re = data[iom, icol]
+                    re = data_interp[icol]
                     icol += 1
-                    imag = data[iom, icol]
+                    imag = data_interp[icol]
                     icol += 1
                     Sigma_iw_sh[ish][sp].data[iom, iorb, jorb] = complex(re, imag)
 
