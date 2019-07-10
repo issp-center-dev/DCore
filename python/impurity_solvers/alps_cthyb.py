@@ -82,11 +82,12 @@ def assign_from_numpy_array(g, data, block_names):
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks must be 1 or 2.")
 
-    n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
+    block_sizes = [get_block_size(g[name]) for name in block_names]
+    n_spin_orbital = numpy.sum(block_sizes)
 
     assert data.shape[0] == g[block_names[0]].data.shape[0]
 
-    norb = int(n_spin_orbital/2)
+    norb = n_spin_orbital//2
     index = numpy.zeros((n_spin_orbital), dtype=int)
     index[:norb] = 2 * numpy.arange(norb)
     index[norb:] = 2 * numpy.arange(norb) + 1
@@ -95,7 +96,7 @@ def assign_from_numpy_array(g, data, block_names):
     offset = 0
     for name in block_names:
         block = g[name]
-        block_dim = len(block.indices)
+        block_dim = get_block_size(block)
         block.data[:,:,:] = data_rearranged[:, offset:offset + block_dim, offset:offset + block_dim]
         for i in range(block.data.shape[0]):
             block.data[i, :, :] = 0.5 * (block.data[i, :, :] + block.data[i, :, :].transpose().conj())
@@ -273,8 +274,9 @@ class ALPSCTHYBSolver(SolverBase):
             assign_from_numpy_array(G_tau, gtau, self.block_names)
             for name in self.block_names:
                 g = G_tau[name]
-                g.tail.zero()
-                g.tail[1] = numpy.identity(g.N1)
+                if triqs_major_version == 1:
+                    g.tail.zero()
+                    g.tail[1] = numpy.identity(g.N1)
                 self._Gimp_iw[name] << Fourier(g)
 
         # Solve Dyson's eq to obtain Sigma_iw

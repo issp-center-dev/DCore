@@ -499,12 +499,16 @@ def save_giw(h5file, path, g):
 
     """
 
-    assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
+    if triqs_major_version == 1:
+        assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
+    else:
+        assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
 
     h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
     h5file[path + '/data'] = complex_to_float_array(g.data)
-    h5file[path + '/tail'] = complex_to_float_array(g.tail.data)
-    h5file[path + '/wn'] = numpy.array([x for x in g.mesh]).imag
+    if triqs_major_version == 1:
+        h5file[path + '/tail'] = complex_to_float_array(g.tail.data)
+    h5file[path + '/wn'] = numpy.array([complex(x) for x in g.mesh]).imag
 
 
 def load_giw(h5file, path, g):
@@ -522,11 +526,15 @@ def load_giw(h5file, path, g):
 
     """
 
-    assert isinstance(g, GfImFreq)
+    if triqs_major_version == 1:
+        assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
+    else:
+        assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
     assert h5file[path + '/__version'][()] == 'DCore_GfImFreq_v1'
 
     g.data[...] = float_to_complex_array(h5file[path + '/data'][()])
-    g.tail.data[...] = float_to_complex_array(h5file[path + '/tail'][()])
+    if triqs_major_version == 1:
+        g.tail.data[...] = float_to_complex_array(h5file[path + '/tail'][()])
 
     omega_imag = numpy.array([complex(x) for x in g.mesh]).imag
     if not numpy.allclose(omega_imag, h5file[path + '/wn'][()]):
@@ -567,8 +575,9 @@ def make_hermite_conjugate(Sigma_iw, check_only=False):
     max_diff = 0.0
     for name, g in Sigma_iw:
         # symmetrize tail
-        for i in range(g.tail.data.shape[0]):
-            g.tail.data[i, :, :] = 0.5 * (g.tail.data[i, :, :] + g.tail.data[i, :, :].conjugate().transpose())
+        if triqs_major_version == 1:
+            for i in range(g.tail.data.shape[0]):
+                g.tail.data[i, :, :] = 0.5 * (g.tail.data[i, :, :] + g.tail.data[i, :, :].conjugate().transpose())
 
         n_points = g.data.shape[0]//2
         for i in range(n_points):
