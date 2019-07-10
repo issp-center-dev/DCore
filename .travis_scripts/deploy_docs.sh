@@ -8,7 +8,6 @@ if [ "_$TRAVIS_BRANCH" != "_master" ] && [ ${feature_branch} == ${TRAVIS_BRANCH}
 
 
 openssl aes-256-cbc -K $encrypted_0f0c7c69c924_key -iv $encrypted_0f0c7c69c924_iv -in ${ROOTDIR}/.travis_scripts/id_rsa.enc -out ~/.ssh/id_rsa -d
-openssl aes-256-cbc -K "$encrypted_aa0e0f6aad31_key" -iv "$encrypted_aa0e0f6aad31_iv" -in ${ROOTDIR}/.travis_scripts/id_rsa.enc -out ~/.ssh/id_rsa -d
 
 chmod 600 ~/.ssh/id_rsa
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
