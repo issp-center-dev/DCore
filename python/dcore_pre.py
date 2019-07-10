@@ -248,7 +248,6 @@ def __generate_local_potential(p):
     local_potential_matrix = p["model"]["local_potential_matrix"]
     local_potential_factor = p["model"]["local_potential_factor"]
 
-    ncor = p["model"]['ncor']
     n_inequiv_shells = p["model"]['n_inequiv_shells']
     spin_orbit = p["model"]["spin_orbit"]
 
@@ -268,7 +267,7 @@ def __generate_local_potential(p):
         elif isinstance(fac, list) or isinstance(fac, tuple):
             assert len(fac) == n_inequiv_shells
         else:
-            raise Exception("local_potential_factor should be float or list of length %d" % ncor)
+            raise Exception("local_potential_factor should be float or list of length %d" % n_inequiv_shells)
     except Exception as e:
         print("Error: local_potential_factor =", local_potential_factor)
         print(e)
@@ -300,52 +299,8 @@ def __generate_local_potential(p):
     print("\n    Written to {0}".format(p["model"]["seedname"]+'.h5'))
 
 
-def dcore_pre(filename):
-    """
-    Main routine for the pre-processing tool
-
-    Parameters
-    ----------
-    filename : string
-        Input-file name
-    """
-    print("\n@@@@@@@@@@@@@@@@@@@  Reading Input File  @@@@@@@@@@@@@@@@@@@@\n")
-    print("Input File Name : ", filename)
-    #
-    # Construct a parser with default values
-    #
-    pars = create_parser()
-    #
-    # Parse keywords and store
-    #
-    pars.read(filename)
-    p = pars.as_dict()
-    parse_parameters(p)
-    ncor = p["model"]['ncor']
-    #
-    # Summary of input parameters
-    #
-    print("\n  @ Parameter summary")
-    print("\n    [model] block")
-    for k, v in p["model"].items():
-        print("      {0} = {1}".format(k, v))
-    print("\n    [system] block")
-    for k, v in p["system"].items():
-        print("      {0} = {1}".format(k, v))
-
-    if os.path.exists(p['model']['seedname'] + '.h5'):
-        print("Removing the existing model HDF5 file...")
-        os.remove(p['model']['seedname'] + '.h5')
-
-    #
-    # One-body term
-    #
-    print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
-    lattice_model = create_lattice_model(p)
-    lattice_model.generate_model_file()
-
-    # Check if H(k) is hermite
-    with h5py.File(p['model']['seedname'] + '.h5', 'r') as f:
+def __check_if_Hk_is_hermite(h5file):
+    with h5py.File(h5file, 'r') as f:
         hk = float_to_complex_array(f['/dft_input/hopping'][()])
         for ik in range(hk.shape[0]):
             for ib in range(hk.shape[1]):
@@ -360,26 +315,75 @@ def dcore_pre(filename):
                     print('Warning: {}'.format(message))
 
 
+def dcore_pre(filename):
+    """
+    Main routine for the pre-processing tool
+
+    Parameters
+    ----------
+    filename : string
+        Input-file name
+    """
+    print("\n@@@@@@@@@@@@@@@@@@@  Reading Input File  @@@@@@@@@@@@@@@@@@@@\n")
+    print("Input File Name : ", filename)
+    #
+    # Construct a parser with default values
+    #
+    pars = create_parser(['model'])
+    #
+    # Parse keywords and store
+    #
+    pars.read(filename)
+    p = pars.as_dict()
+    parse_parameters(p)
+    #
+    # Summary of input parameters
+    #
+    print("\n  @ Parameter summary")
+    print("\n    [model] block")
+    for k, v in p["model"].items():
+        print("      {0} = {1}".format(k, v))
+
+    #
+    # remove HDF5 file if exists
+    #
+    h5_file = p['model']['seedname'] + '.h5'
+    if p['model']['lattice'] != 'external':
+        if os.path.exists(h5_file):
+            print("Removing the existing model HDF5 file...")
+            os.remove(h5_file)
+
+    #
+    # Lattice information
+    #   -> create h5_file/dft_input
+    #
+    print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
+    lattice_model = create_lattice_model(p)
+    lattice_model.generate_model_file()
+
+    #
     # Interaction
+    #   -> create h5_file/DCore/umat
     #
     __generate_umat(p)
 
     #
     # Local potential
+    #   -> create h5_file/DCore/local_potential
     #
     __generate_local_potential(p)
 
     #
-    # Check one-body term
+    # Check HDF5 file
     #
     print('')
     print('@@@@@@@@@@@@@@@@@@@ Check Model-HDF5 file @@@@@@@@@@@@@@@@@@@@')
-    print_local_fields(p['model']['seedname'] + '.h5')
+    __check_if_Hk_is_hermite(h5_file)
+    print_local_fields(h5_file)
 
     #
     # Finish
     #
-
     print("\n@@@@@@@@@@@@@@@@@@@@@@  Done  @@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 

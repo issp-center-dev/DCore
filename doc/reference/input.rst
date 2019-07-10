@@ -19,7 +19,7 @@ The following table shows which blocks are used by each program.
     [system]         ,     , Yes, Yes, Yes
     [impurity_solver],     , Yes,    , Yes
     [control]        ,     , Yes
-    [tool]           ,     ,    ,    , Yes
+    [tool]           ,     ,    , Yes, Yes
     [mpi]            ,     , Yes,    , Yes
 
 For example, we can see that ``dcore_pre`` needs to be re-executed only when [model] block is changed.

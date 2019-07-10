@@ -49,7 +49,7 @@ class DMFTCoreCheck(object):
         #
         # Construct a parser with default values
         #
-        pars = create_parser()
+        pars = create_parser(['model', 'system', 'tool'])
         #
         # Parse keywords and store
         #
@@ -64,8 +64,7 @@ class DMFTCoreCheck(object):
         #
         # Load DMFT data
         #
-        self.p['control']['restart'] = True
-        self.solver = DMFTCoreSolver(self.p["model"]["seedname"], self.p, read_only=True)
+        self.solver = DMFTCoreSolver(self.p["model"]["seedname"], self.p, read_only=True, restart=True)
         self.n_iter = min(max_n_iter, self.solver.iteration_number)
         self.n_sh = self.solver.n_inequiv_shells
         self.spin_names = self.solver.spin_block_names

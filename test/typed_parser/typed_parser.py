@@ -21,9 +21,13 @@ from dcore.typed_parser import *
 
 
 def read_file():
-    p = TypedParser()
+    p = TypedParser(['sectionA', 'sectionB'])
+
     p.add_option("sectionA", "a", int, -1000, "a in sectionA", OptionStatus.RETIRED)
     p.allow_undefined_options("sectionB")
+
+    # SectionC must be ignored.
+    p.add_option("sectionC", "c", int, -1000, "c in sectionC")
 
     params = p.as_dict()
     assert params["sectionA"]["a"] == -1000
@@ -34,10 +38,12 @@ def read_file():
     assert params["sectionA"]["a"] == 1
     assert params["sectionB"]["b"] == 'B'
 
+    assert "sectionC" not in params
+
 
 # Detect undefined option?
 def detect_undefined_option():
-    p2 = TypedParser()
+    p2 = TypedParser(['sectionAA'])
     with open('parser_test_2.in', 'w') as f:
         print("[sectionAA]", file=f)
         print("aa = 2", file=f)

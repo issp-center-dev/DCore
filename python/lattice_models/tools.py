@@ -108,3 +108,16 @@ def print_local_fields(h5_file, corr_shell_dims=None, subgrp='dft_input'):
         print('      eigenvalues: ', evals)
         print('')
         offset += block_size
+
+
+def set_nk(nk, nk0, nk1, nk2):
+    if abs(nk0) + abs(nk1) + abs(nk2) == 0:
+        # If one of nk0, nk1 and nk2 are set, use nk.
+        nk0 = nk
+        nk1 = nk
+        nk2 = nk
+    elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
+        # if any of nk0, nk1 and nk2 are set, use them.
+        if nk0 * nk1 * nk2 == 0:
+            raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
+    return nk0, nk1, nk2

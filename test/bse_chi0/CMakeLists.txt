@@ -1,0 +1,4 @@
+FILE(COPY dmft_bse.h5.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+FILE(COPY square_2orb.ini DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+add_python_test(bse_chi0)

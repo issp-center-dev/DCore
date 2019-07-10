@@ -148,7 +148,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
 
 
 class DMFTCoreSolver(object):
-    def __init__(self, seedname, params, output_file='', output_group='dmft_out', read_only=False):
+    def __init__(self, seedname, params, output_file='', output_group='dmft_out', read_only=False, restart=False):
         """
 
         if read_only is True, no further SCF loops are performed. Chemical potential is fixed to that in the HDF5 file.
@@ -170,12 +170,12 @@ class DMFTCoreSolver(object):
         self._n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
 
         # MPI commands
-        if 'num_processes' in params['mpi']:
+        if 'mpi' in params and 'num_processes' in params['mpi']:
             self._mpirun_command = params['mpi']['command'].replace('#', str(params['mpi']['num_processes']))
 
         self._read_only = read_only
         if read_only:
-            assert params['control']['restart']
+            assert restart == True
 
         #
         # Read dft input data
@@ -232,7 +232,7 @@ class DMFTCoreSolver(object):
         #
         # Read or set up seedname.out.h5
         #
-        if self._params['control']['restart']:
+        if restart:
             if os.path.exists(self._output_file):
                 self._read_output_file__restart()
                 assert self._previous_runs >= 1
@@ -249,20 +249,15 @@ class DMFTCoreSolver(object):
             self._prepare_output_file__from_scratch()
             assert self._previous_runs == 0
 
-        self._solver_params = create_solver_params(self._params['impurity_solver'])
-
+        if 'impurity_solver' in self._params:
+            self._solver_params = create_solver_params(self._params['impurity_solver'])
 
         self._sanity_check()
-
-
-
 
     def _read_output_file__restart(self):
         """
         Read data from & set up an output HDF5 file.
         """
-
-        assert self._params['control']['restart']
 
         output_file, output_group = self._output_file, self._output_group
 
