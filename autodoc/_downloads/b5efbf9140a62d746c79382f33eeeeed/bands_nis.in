@@ -1,0 +1,6 @@
+&BANDS
+prefix = "nis",
+outdir = "./",
+!filband = "band.dat"
+!lsym = .true.
+/

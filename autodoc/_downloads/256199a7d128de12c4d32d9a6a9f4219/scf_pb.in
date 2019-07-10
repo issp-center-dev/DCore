@@ -1,0 +1,29 @@
+&CONTROL
+ calculation = 'scf'
+      outdir = './'
+  pseudo_dir = './'
+      prefix = 'pb'
+/
+&SYSTEM
+        nbnd = 30
+       ibrav = 0
+         nat = 1
+        ntyp = 1
+     ecutwfc = 40.000000
+     ecutrho = 320.000000
+occupations = 'tetrahedra_opt'
+noncolin = .true.
+lspinorb = .true.
+/
+&ELECTRONS
+/
+CELL_PARAMETERS angstrom
+ 2.470100 2.470100 0.000000
+ 2.470100 0.000000 -2.470100
+ 0.000000 2.470100 -2.470100
+ATOMIC_SPECIES
+ Pb 207.200000 Pb.rel-pbe-dn-kjpaw_psl.0.2.2.UPF
+ATOMIC_POSITIONS crystal
+ Pb 0.000000 0.000000 0.000000
+K_POINTS automatic
+ 8 8 8 0 0 0
