@@ -657,7 +657,7 @@ class DMFTCoreSolver(object):
             self.print_density_matrix(dm_sh)
 
             for ish in range(self._n_inequiv_shells):
-                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
+                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, float(Gloc_iw_sh[ish].total_density())))
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
 

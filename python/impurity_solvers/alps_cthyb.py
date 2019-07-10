@@ -27,7 +27,7 @@ from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array
 from .base import SolverBase
 
 
@@ -74,9 +74,9 @@ def to_numpy_array(g, block_names):
     return (data[:, :, index])[:, index, :]
 
 
-def assign_from_numpy_array(g, data, block_names):
+def assign_from_numpy_array_legendre(g, data, block_names):
     """
-    Does inversion of to_numpy_array
+    Set numpy data to BlockGf of legendre
     """
 
     if g.n_blocks > 2:
@@ -85,21 +85,21 @@ def assign_from_numpy_array(g, data, block_names):
     block_sizes = [get_block_size(g[name]) for name in block_names]
     n_spin_orbital = numpy.sum(block_sizes)
 
-    assert data.shape[0] == g[block_names[0]].data.shape[0]
+    assert data.shape[-1] == g[block_names[0]].data.shape[0]
 
     norb = n_spin_orbital//2
     index = numpy.zeros((n_spin_orbital), dtype=int)
     index[:norb] = 2 * numpy.arange(norb)
     index[norb:] = 2 * numpy.arange(norb) + 1
-    data_rearranged = data[:, :, index][:, index, :]
+    # * Change the order of spins and orbitals
+    # * Move the last index for $l$ to the first index.
+    data_rearranged = (data[:, index, :][index, :, :]).transpose((2,0,1))
 
     offset = 0
     for name in block_names:
         block = g[name]
         block_dim = get_block_size(block)
         block.data[:,:,:] = data_rearranged[:, offset:offset + block_dim, offset:offset + block_dim]
-        for i in range(block.data.shape[0]):
-            block.data[i, :, :] = 0.5 * (block.data[i, :, :] + block.data[i, :, :].transpose().conj())
         offset += block_dim
 
 
@@ -112,7 +112,7 @@ class ALPSCTHYBSolver(SolverBase):
         """
 
         super(ALPSCTHYBSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
-        self.n_tau = max(10001, 5 * n_iw)
+        self.n_tau = max(10001, 10 * n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """
@@ -261,7 +261,8 @@ class ALPSCTHYBSolver(SolverBase):
         # Read the computed Green's function in Legendre basis and compute G(iwn)
         if not os.path.exists('./input.out.h5'):
             raise RuntimeError("Output HDF5 file of ALPS/CT-HYB does not exist. Something went wrong!")
-        G_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
+
+        #G_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         with HDFArchive('input.out.h5', 'r') as f:
             # Sign
             sign = f['Sign']
@@ -269,15 +270,18 @@ class ALPSCTHYBSolver(SolverBase):
             if numpy.abs(sign) < 0.01:
                 print("Average sign may be too small!")
 
-            # G(tau) and G_iw with 1/iwn tail
-            gtau = f['gtau']['data']
-            assign_from_numpy_array(G_tau, gtau, self.block_names)
+            # G_l in Legendre basis
+            gl_data = float_to_complex_array(f['G1_LEGENDRE'])
+            Nl = gl_data.shape[2]
+            G_l = make_block_gf(GfLegendre, self.gf_struct, self.beta, n_points=Nl)
+            assign_from_numpy_array_legendre(G_l, gl_data, self.block_names)
+
+            # G_iw with 1/iwn tail
             for name in self.block_names:
-                g = G_tau[name]
+                self._Gimp_iw[name] << LegendreToMatsubara(G_l[name])
                 if triqs_major_version == 1:
-                    g.tail.zero()
-                    g.tail[1] = numpy.identity(g.N1)
-                self._Gimp_iw[name] << Fourier(g)
+                    self._Gimp_iw[name].tail.zero()
+                    self._Gimp_iw[name].tail[1] = numpy.identity(g.N1)
 
         # Solve Dyson's eq to obtain Sigma_iw
         # Sigma_iw = G0_iw^{-1} - G_imp_iw^{-1}
