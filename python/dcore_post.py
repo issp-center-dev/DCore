@@ -502,6 +502,7 @@ def dcore_post(filename, np=1, prefix="./"):
             print("\n      $ gnuplot {0}".format(file_akw_gp))
 
         nk_mesh = p["tool"]["nk_mesh"]
+        kvec_mesh = None
         if nk_mesh > 0:
             print("\n################  Constructing H(k) for compute A(k, omega) on a mesh  ##################")
             kx = numpy.linspace(0, 2*numpy.pi, nk_mesh+1)[:-1]
