@@ -3,15 +3,15 @@
 # ---------------------------------
 # check path and environment variables
 
-which dcore
-if [ $? = 1 ]; then
-    echo "dcore not found" >&2
-    exit 1
-fi
+. ../tools/tools.sh
 
-if [ -z $NUM_PROC ]; then
-    echo "warning: NUM_PROC is not defined. Default value 1 will be used." >&2
-fi
+# check command
+check_command dcore_pre
+check_command dcore
+check_command dcore_check
+check_command dcore_post
+
+${NUM_PROC:=1}  # set 1 if not defined
 
 # ---------------------------------
 # create and move into a directory
@@ -28,10 +28,10 @@ echo "running dcore_pre..."
 dcore_pre $ini
 
 echo "running dcore..."
-dcore --np ${NUM_PROC:=1} $ini
+dcore --np $NUM_PROC $ini
 
 echo "running dcore_check..."
 dcore_check $ini
 
 echo "running dcore_post..."
-dcore_post --np ${NUM_PROC:=1} $ini
+dcore_post --np $NUM_PROC $ini

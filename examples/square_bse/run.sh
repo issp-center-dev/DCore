@@ -3,38 +3,23 @@
 # ---------------------------------
 # check path and environment variables
 
-which dcore
-if [ $? = 1 ]; then
-    echo "dcore not found" >&2
-    exit 1
-fi
+. ../tools/tools.sh
 
-which BSE
-if [ $? = 1 ]; then
-    echo "BSE not found" >&2
-    exit 1
-fi
+# check command
+check_command dcore
+check_command BSE
+check_command pomerol2dcore
 
-which pomerol2dcore
-if [ $? = 1 ]; then
-    echo "pomerol2dcore not found" >&2
-    exit 1
-fi
+# check environment variable
+check_var BSE_DIR
 
-if [ -z $BSE_DIR ]; then
-    echo "Environment variable BSE_DIR not defined" >&2
-    exit 1
-fi
-
-if [ -z $NUM_PROC ]; then
-    echo "warning: NUM_PROC is not defined. Default value 1 will be used." >&2
-fi
+${NUM_PROC:=1}  # set 1 if not defined
 
 # ---------------------------------
 # create and move into a directory
 
 mkdir -p results
-cp *in results
+#cp *in results
 cd results
 
 # ---------------------------------
@@ -45,7 +30,7 @@ echo "PYTHONPATH = $PYTHONPATH"
 
 dir_script=`dirname $0`
 
-ini=dmft_square.in
+ini=../dmft_square.in
 seedname=square
 
 # ---------------------------------
@@ -61,13 +46,13 @@ echo "running dcore_pre..."
 dcore_pre $ini
 
 echo "running dcore..."
-dcore --np ${NUM_PROC:=1} $ini
+dcore --np $NUM_PROC $ini
 
 echo "running dcore_check..."
 dcore_check $ini
 
 echo "running dcore_bse..."
-dcore_bse --np ${NUM_PROC:=1} $ini
+dcore_bse --np $NUM_PROC $ini
 
 # ---------------------------------
 # BSE
@@ -82,7 +67,7 @@ echo ""
 $BSE_DIR/bin/misc/print_latest_commit.sh
 
 # Generate q_path.dat
-python $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 qpath.in
+python $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
 
 # Plot input to BSE
 $BSE_DIR/python/plot/plot_bse_input.py
