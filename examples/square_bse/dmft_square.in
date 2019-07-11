@@ -1,0 +1,37 @@
+[model]
+seedname = square
+lattice = square
+norb = 1
+nelec = 1.0
+t = -1.0
+kanamori = [(12.0, 0.0, 0.0)]
+nk = 32
+
+#[mpi]
+#command = "mpirun -n #"
+
+[system]
+beta = 10.0
+n_iw = 1024
+prec_mu = 0.001
+mu = 6.0
+fix_mu = True
+
+[impurity_solver]
+name = pomerol
+exec_path{str}=pomerol2dcore
+
+[control]
+max_step = 1
+
+[tool]
+broadening = 0.4
+knode = [(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]
+nk_line = 100
+omega_max =6.0
+omega_min =-5.0
+Nomega = 400
+
+[bse]
+num_wb = 1
+num_wf = 20
