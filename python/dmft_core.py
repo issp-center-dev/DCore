@@ -162,7 +162,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
     diff = make_hermite_conjugate(G0_iw)
     if diff > 1e-8:
-        raise RuntimeError('G0(iwn) is not hermite!')
+        print('Warning G0_iw is not hermite conjugate: {}'.format(diff))
     sol.set_G0_iw(G0_iw)
 
     # Compute rotation matrix to the diagonal basis if supported
@@ -460,6 +460,11 @@ class DMFTCoreSolver(object):
         if self._params['system']['fix_mu'] or self._read_only:
             assert self._chemical_potential == mu_old
 
+        # Make sure Gloc_iw is hermite conjugate (for triqs 2.x)
+        for ish, g in enumerate(r['Gloc_iw_sh']):
+            diff = make_hermite_conjugate(g)
+            if diff > 1e-8:
+                print('Warning Gloc_iw at ish {} is not hermite conjugate: {}'.format(ish, diff))
         return r['Gloc_iw_sh'], r['dm_sh']
 
 
