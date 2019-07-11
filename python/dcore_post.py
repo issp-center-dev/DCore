@@ -22,7 +22,6 @@ import re
 import sys
 import numpy
 import copy
-import ast
 
 from pytriqs.archive import HDFArchive
 from .pytriqs_gf_compat import *
@@ -371,12 +370,14 @@ def dcore_post(filename, np=1, prefix="./"):
     # Reciprocal lattice vectors
     # bvec=[(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
     #
-    #bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
-    bvec_list = ast.literal_eval(p["model"]["bvec"])
-    if isinstance(bvec_list, list) and len(bvec_list) == 3:
-        bvec = numpy.array(bvec_list, dtype=float)
-        assert bvec.shape == (3,3)
-    else:
+    bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
+    bvec = numpy.zeros((3, 3), numpy.float_)
+    try:
+        for i, _list in enumerate(bvec_list):
+            _bvec = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
+            for j in range(3):
+                bvec[i, j] = float(_bvec[j])
+    except RuntimeError:
         raise RuntimeError("Error ! Format of bvec is wrong.")
     #
     # Summary of input parameters
