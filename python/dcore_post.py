@@ -23,6 +23,7 @@ import sys
 import numpy
 import copy
 import ast
+from itertools import product
 
 from pytriqs.archive import HDFArchive
 from .pytriqs_gf_compat import *
@@ -68,11 +69,9 @@ class DMFTPostSolver(DMFTCoreSolver):
         r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos', self._mpirun_command, params)
         return r['dos'], r['dosproj'], r['dosproj_orb']
 
-    def calc_spaghettis(self, Sigma_w_sh, mesh, broadening):
+    def calc_spaghettis(self, Sigma_w_sh, mesh, broadening, kmesh_type):
         """
-
         Compute A(k, omega)
-
         """
 
         params = self._make_sumkdft_params()
@@ -81,6 +80,12 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['Sigma_w_sh'] = Sigma_w_sh
         params['mesh'] = mesh
         params['broadening'] = broadening
+        if kmesh_type == 'line':
+            params['bands_data'] = 'dft_bands_input'
+        elif kmesh_type == 'mesh':
+            params['bands_data'] = 'dft_bands_mesh_input'
+        else:
+            raise RuntimeError('Invalid kmesh_type: {}'.format(kmesh_type))
         r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_spaghettis', self._mpirun_command, params)
         return r['akw']
 
@@ -121,7 +126,7 @@ class DMFTPostSolver(DMFTCoreSolver):
 
 
 class DMFTCoreTools:
-    def __init__(self, seedname, params, n_k, xk, prefix):
+    def __init__(self, seedname, params, n_k, xk, kvec_mesh, prefix):
         """
         Class of posting tool for DCore.
 
@@ -135,6 +140,8 @@ class DMFTCoreTools:
             Number of k points
         :param xk:  integer array
             x-position for plotting band
+        :param kvec_mesh:  float array of dimension (*, 3)
+            k points in fractional coordinates for compute A(k, omega) on a mesh
         """
 
         self._params = copy.deepcopy(params)
@@ -148,7 +155,12 @@ class DMFTCoreTools:
         self._seedname = seedname
         self._n_k = n_k
         self._xk = xk
+        self._kvec_mesh = kvec_mesh
         self._prefix = prefix
+
+        self._nk_mesh = 0
+        if not self._kvec_mesh is None:
+            self._nk_mesh = self._kvec_mesh.shape[0]
 
         self._solver = DMFTPostSolver(seedname, self._params, output_file=seedname+'.out.h5')
         print("iteration :", self._solver.iteration_number)
@@ -230,29 +242,46 @@ class DMFTCoreTools:
         dos, dosproj, dosproj_orb = self._solver.calc_dos(sigma_w_sh, mesh, self._broadening)
         self.print_dos(dos, dosproj_orb, self._prefix + self._seedname+'_dos.dat')
 
+        if self._xk is None:
+            return
+
         #
         # Band structure
         #
-        if self._xk is None:
-            return
-        #
         print("\n#############  Compute Band Structure  ################\n")
-        akw = self._solver.calc_spaghettis(sigma_w_sh, mesh, self._broadening)
-        #
-        # Print band-structure into file
-        #
+        akw = self._solver.calc_spaghettis(sigma_w_sh, mesh, self._broadening, 'line')
         mesh = [x.real for x in sigma_w_sh[0].mesh]
         filename = self._prefix + self._seedname + '_akw.dat'
         with open(filename, 'w') as f:
             offset = 0.0
-            for isp in self._solver.spin_block_names:
+            for bname in self._solver.spin_block_names:
                 for ik in range(self._n_k):
                     for iom in range(self._Nomega):
-                        print("%f %f %f" % (self._xk[ik]+offset, mesh[iom], akw[isp][ik, iom]), file=f)
+                        print("%f %f %f" % (self._xk[ik]+offset, mesh[iom], akw[bname][ik, iom]), file=f)
                     print("", file=f)
                 offset = self._xk[self._n_k-1] * 1.1
                 print("", file=f)
         print("\n    Output {0}".format(filename))
+
+        #
+        # A(k, omega) on a mesh
+        #
+        if self._nk_mesh > 0:
+            print("\n#############  Compute A(k, omega) on a mesh ################\n")
+            akw = self._solver.calc_spaghettis(sigma_w_sh, mesh, self._broadening, 'mesh')
+            mesh = [x.real for x in sigma_w_sh[0].mesh]
+            filename = self._prefix + self._seedname + '_akw_mesh.dat'
+            with open(filename, 'w') as f:
+                print(self._nk_mesh, file=f)
+                for bname in self._solver.spin_block_names:
+                    for ik in range(self._nk_mesh):
+                        for iom in range(self._Nomega):
+                            print("%s %f %f %f    %f %f" % (bname,
+                                                            self._kvec_mesh[ik,0],
+                                                            self._kvec_mesh[ik,1],
+                                                            self._kvec_mesh[ik,2],
+                                                            mesh[iom], akw[bname][ik, iom]), file=f)
+            print("\n    Output {0}".format(filename))
 
     def momentum_distribution(self):
         """
@@ -339,8 +368,6 @@ def dcore_post(filename, np=1, prefix="./"):
     parse_parameters(p)
     seedname = p["model"]["seedname"]
     p["mpi"]["num_processes"] = np
-    mpirun_command = p['mpi']['command'].replace('#', str(p['mpi']['num_processes']))
-    mpirun_command_np1 = p['mpi']['command'].replace('#', '1')
 
     # make directory
     dir = os.path.dirname(prefix)
@@ -399,6 +426,7 @@ def dcore_post(filename, np=1, prefix="./"):
         print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
         n_k = 0
         xk = None
+        kvec_mesh = None
     else:
         print("\n################  Constructing k-path  ##################")
         nk_line = p["tool"]["nk_line"]
@@ -472,11 +500,17 @@ def dcore_post(filename, np=1, prefix="./"):
             print("    Usage:")
             print("\n      $ gnuplot {0}".format(file_akw_gp))
 
+        nk_mesh = p["tool"]["nk_mesh"]
+        if nk_mesh > 0:
+            print("\n################  Constructing H(k) for compute A(k, omega) on a mesh  ##################")
+            kx = numpy.linspace(0, 2*numpy.pi, nk_mesh+1)[:-1]
+            kvec_mesh = numpy.array([kxyz for kxyz in product(kx, repeat=3)])
+            lattice_model.write_dft_band_input_data(p, kvec_mesh, bands_data='dft_bands_mesh_input')
 
     #
     # Plot
     #
-    dct = DMFTCoreTools(seedname, p, n_k, xk, prefix)
+    dct = DMFTCoreTools(seedname, p, n_k, xk, kvec_mesh, prefix)
     dct.post()
     if lattice_model.is_Hk_supported():
         dct.momentum_distribution()

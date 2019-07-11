@@ -101,6 +101,7 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
     parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation")
     parser.add_option("tool", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
+    parser.add_option("tool", "nk_mesh", int, 0, "Number of k points along each axis of a mesh for compute A(k,omega)")
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")
