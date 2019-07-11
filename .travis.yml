@@ -6,6 +6,7 @@ services:
   - docker
 
 before_script:
+  - export ROOTDIR=`pwd`
   - docker-compose rm -f
   - docker-compose pull
   - docker-compose up --build -d
@@ -14,5 +15,8 @@ script:
   - docker exec dcore_container make test
 
 after_script:
+  - cd ${ROOTDIR}
+  - docker cp dcore_container:/home/testuser/opt/DCore/share/doc/dcore ${ROOTDIR}/dcore_doc
   - docker-compose stop
   - docker-compose rm -f
+  - /bin/bash -x ${ROOTDIR}/.travis_scripts/deploy_docs.sh
