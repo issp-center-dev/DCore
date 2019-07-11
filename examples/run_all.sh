@@ -1,25 +1,21 @@
 #!/bin/sh
 
-top=`pwd`
+topdir=`pwd`
 
 for dir in `ls -F | grep /`
 do
-    echo ""
-    echo "#######################################################################"
-    echo "########  RUN EXAMPLE in $dir"
-    echo "#######################################################################"
-    echo ""
-
     cd $dir
-    pwd
 
     if [ -f run.sh ]; then
-        sh run.sh
+        echo "running example in $dir"
+        sh run.sh 1>run.out 2>run.err
+        echo " status: $?"
     fi
 
-    if [ -f check_results.sh ]; then
-        sh check_results.sh
-    fi
+#    if [ -f check_results.sh ]; then
+#        sh check_results.sh 1>check.out 2>check.err
+#        echo " check: $?"
+#    fi
 
-    cd $top
+    cd $topdir
 done
