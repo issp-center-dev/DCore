@@ -1,0 +1,10 @@
+&inputpp 
+   outdir = './'
+   prefix = 'pb'
+   seedname = 'pb'
+   spin_component = 'none'
+   write_mmn = .true.
+   write_amn = .true.
+   wan_mode = 'standalone'
+   write_spn = .true.
+/
