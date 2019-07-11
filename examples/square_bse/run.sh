@@ -14,13 +14,13 @@ check_command pomerol2dcore
 # check environment variable
 check_var BSE_DIR
 
-${NUM_PROC:=1}  # set 1 if not defined
+# set NUM_PROC=1 if not defined
+set_num_proc
 
 # ---------------------------------
 # create and move into a directory
 
 mkdir -p results
-#cp *in results
 cd results
 
 # ---------------------------------

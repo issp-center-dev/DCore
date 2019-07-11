@@ -11,7 +11,8 @@ check_command dcore
 check_command dcore_check
 check_command dcore_post
 
-${NUM_PROC:=1}  # set 1 if not defined
+# set NUM_PROC=1 if not defined
+set_num_proc
 
 # ---------------------------------
 # create and move into a directory

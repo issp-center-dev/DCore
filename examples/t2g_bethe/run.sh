@@ -14,7 +14,8 @@ check_command hybmat
 # check environment variable
 check_var MPIRUN
 
-${NUM_PROC:=1}  # set 1 if not defined
+# set NUM_PROC=1 if not defined
+set_num_proc
 
 # ---------------------------------
 # create and move into a directory
