@@ -24,6 +24,7 @@ import re
 import time
 import __builtin__
 import numpy
+import scipy
 import copy
 import ast
 import h5py
@@ -87,6 +88,55 @@ class ShellQuantity(object):
             g.zero()
 
 
+def _load_symm_generators(input_str, spin_orbit, dim_sh):
+    """
+    Load generators for symmetrization
+    
+    Parameters
+    ----------
+    input_str: input string
+    spin_orbit: bool
+      If spin_orbit is on or not
+    dim_sh: int array
+      dim of shells
+
+    Returns
+    -------
+    List of generators
+
+    """
+    nsh = len(dim_sh)
+    results = [[]] * nsh
+
+    if input_str == '' or input_str == 'None':
+        return results
+
+    try:
+        generators_file = ast.literal_eval(input_str)
+    except:
+        raise RuntimeError('Error in parsing {}'.format(input_str))
+
+    assert isinstance(generators_file, list)
+
+    for gen in generators_file:
+        assert isinstance(gen, tuple) or isinstance(gen, list)
+        assert len(gen) == 2
+        assert isinstance(gen[0], int)
+        assert isinstance(gen[1], str)
+
+        ish = gen[0]
+        print('Reading symmetry generator for ish={} from {}'.format(ish, gen[1]))
+        if spin_orbit:
+            gen_mat = numpy.zeros((1, dim_sh[ish], dim_sh[ish]), dtype=complex)
+            read_potential(gen[1], gen_mat)
+            results[ish].append({'ud' : gen_mat[0,:,:]})
+        else:
+            gen_mat = numpy.zeros((2, dim_sh[ish], dim_sh[ish]), dtype=complex)
+            read_potential(gen[1], gen_mat)
+            results[ish].append({'up' : gen_mat[0,:,:], 'down' : gen_mat[1,:,:]})
+    return results
+
+
 def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw, Sigma_iw, Gloc_iw, mesh, ish, work_dir):
     """
 
@@ -112,7 +162,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
     diff = make_hermite_conjugate(G0_iw)
     if diff > 1e-8:
-        raise RuntimeError('G0(iwn) is not hermite!')
+        print('Warning G0_iw is not hermite conjugate: {}'.format(diff))
     sol.set_G0_iw(G0_iw)
 
     # Compute rotation matrix to the diagonal basis if supported
@@ -405,6 +455,11 @@ class DMFTCoreSolver(object):
         if self._params['system']['fix_mu'] or self._read_only:
             assert self._chemical_potential == mu_old
 
+        # Make sure Gloc_iw is hermite conjugate (for triqs 2.x)
+        for ish, g in enumerate(r['Gloc_iw_sh']):
+            diff = make_hermite_conjugate(g)
+            if diff > 1e-8:
+                print('Warning Gloc_iw at ish {} is not hermite conjugate: {}'.format(ish, diff))
         return r['Gloc_iw_sh'], r['dm_sh']
 
 
@@ -578,6 +633,10 @@ class DMFTCoreSolver(object):
         sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
         output_group = self._output_group
 
+        symm_generators = _load_symm_generators(
+            self._params['control']['symmetry_generators'],
+            self._use_spin_orbit, self._dim_sh)
+
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
@@ -598,7 +657,7 @@ class DMFTCoreSolver(object):
             self.print_density_matrix(dm_sh)
 
             for ish in range(self._n_inequiv_shells):
-                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, Gloc_iw_sh[ish].total_density()))
+                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, float(Gloc_iw_sh[ish].total_density())))
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
 
@@ -622,6 +681,7 @@ class DMFTCoreSolver(object):
                     symmetrize_spin(new_Gimp_iw[ish])
                     symmetrize_spin(new_Sigma_iw[ish])
 
+
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.
             if iteration_number > 1 or previous_present:
@@ -631,6 +691,11 @@ class DMFTCoreSolver(object):
             else:
                 for ish in range(self._n_inequiv_shells):
                     self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
+
+            # Symmetrization
+            for isn in range(self._n_inequiv_shells):
+                if len(symm_generators[ish]) > 0:
+                    self._sh_quant[ish].Sigma_iw << symmetrize(self._sh_quant[ish].Sigma_iw, symm_generators[ish])
 
             # Write data to the hdf5 archive:
             with HDFArchive(self._output_file, 'a') as ar:

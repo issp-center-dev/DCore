@@ -192,7 +192,8 @@ class PomerolSolver(SolverBase):
             gf = gf_1d.reshape((1, self.n_flavors, self.n_flavors, self.n_iw))
         assign_from_numpy_array(self._Gimp_iw, gf, self.block_names)
 
-        set_tail(self._Gimp_iw)
+        if triqs_major_version == 1:
+            set_tail(self._Gimp_iw)
 
         # Compute Sigma_iw
         # NOTE:

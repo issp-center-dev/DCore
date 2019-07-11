@@ -437,7 +437,7 @@ def readline_ignoring_comment(f):
     return line
 
 
-def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
+def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2, interpolation=True):
     """
     Load a list of self-energy from a text file.
     Tails will be set to zero.
@@ -445,7 +445,8 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
     :param filename:
     :param Sigma_iw_sh: All elements must be allocated to correct shapes
     :param spin_names: ['up', 'down'] or ['ud']
-    :param atol: absolute torelance for imaginary frequencies
+    :param atol: absolute tolerance for imaginary frequencies
+    :param interpolation: If true and stored data are for a different beta, the data are interpolated along beta axis.
     """
 
     n_sh = len(Sigma_iw_sh)
@@ -454,22 +455,27 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2):
 
     data = numpy.loadtxt(filename)
 
-    omega_imag = data[:, 0]
-    nomega = len(omega_imag)
-    if not numpy.allclose(omega_imag, numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag, rtol=1, atol=atol_omega):
-        raise RuntimeError("Mesh is not compatible!")
+    omega_in = data[:, 0]
+    omega_out = numpy.array([complex(x) for x in Sigma_iw_sh[0].mesh]).imag
+    nomega_out = len(omega_out)
 
-    for iom in range(nomega):
-        icol = 1
+    if not interpolation:
+        if not numpy.allclose(omega_in, omega_out, rtol=1, atol=atol_omega):
+            raise RuntimeError("Mesh is not compatible!")
+
+    from scipy import interpolate
+    interp = interpolate.interp1d(omega_in, data[:, 1:], axis=0, fill_value=0.0, bounds_error=False)
+
+    for iom in range(nomega_out):
+        data_interp = interp(omega_out[iom])
+        icol = 0
         for ish in range(n_sh):
             for sp in spin_names:
-                # FIXME: How to set zero to tail in TRIQS 2.x?
-                #Sigma_iw_sh[ish][sp].tail.zero()
                 block_dim = Sigma_iw_sh[ish][sp].data.shape[1]
                 for iorb, jorb in product(range(block_dim), repeat=2):
-                    re = data[iom, icol]
+                    re = data_interp[icol]
                     icol += 1
-                    imag = data[iom, icol]
+                    imag = data_interp[icol]
                     icol += 1
                     Sigma_iw_sh[ish][sp].data[iom, iorb, jorb] = complex(re, imag)
 
@@ -493,12 +499,16 @@ def save_giw(h5file, path, g):
 
     """
 
-    assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
+    if triqs_major_version == 1:
+        assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
+    else:
+        assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
 
     h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
     h5file[path + '/data'] = complex_to_float_array(g.data)
-    h5file[path + '/tail'] = complex_to_float_array(g.tail.data)
-    h5file[path + '/wn'] = numpy.array([x for x in g.mesh]).imag
+    if triqs_major_version == 1:
+        h5file[path + '/tail'] = complex_to_float_array(g.tail.data)
+    h5file[path + '/wn'] = numpy.array([complex(x) for x in g.mesh]).imag
 
 
 def load_giw(h5file, path, g):
@@ -516,11 +526,15 @@ def load_giw(h5file, path, g):
 
     """
 
-    assert isinstance(g, GfImFreq)
+    if triqs_major_version == 1:
+        assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
+    else:
+        assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
     assert h5file[path + '/__version'][()] == 'DCore_GfImFreq_v1'
 
     g.data[...] = float_to_complex_array(h5file[path + '/data'][()])
-    g.tail.data[...] = float_to_complex_array(h5file[path + '/tail'][()])
+    if triqs_major_version == 1:
+        g.tail.data[...] = float_to_complex_array(h5file[path + '/tail'][()])
 
     omega_imag = numpy.array([complex(x) for x in g.mesh]).imag
     if not numpy.allclose(omega_imag, h5file[path + '/wn'][()]):
@@ -561,8 +575,9 @@ def make_hermite_conjugate(Sigma_iw, check_only=False):
     max_diff = 0.0
     for name, g in Sigma_iw:
         # symmetrize tail
-        for i in range(g.tail.data.shape[0]):
-            g.tail.data[i, :, :] = 0.5 * (g.tail.data[i, :, :] + g.tail.data[i, :, :].conjugate().transpose())
+        if triqs_major_version == 1:
+            for i in range(g.tail.data.shape[0]):
+                g.tail.data[i, :, :] = 0.5 * (g.tail.data[i, :, :] + g.tail.data[i, :, :].conjugate().transpose())
 
         n_points = g.data.shape[0]//2
         for i in range(n_points):
@@ -572,6 +587,95 @@ def make_hermite_conjugate(Sigma_iw, check_only=False):
                 g.data[i + n_points, :, :] = g.data[n_points - i - 1, :, :].conj().transpose()
     return max_diff
 
+def _to_numpy_array(g):
+    """
+    Convert BlockGf object to numpy.
+    If there are two blocks, we assume that they are spin1 and spin2 sectors.
+    """
+
+    block_names = gf_block_names(g.n_blocks==1)
+    block_sizes = [get_block_size(g[name]) for name in block_names]
+    n_spin_orbital = numpy.sum(block_sizes)
+
+    # FIXME: Bit ugly
+    n_data = g[block_names[0]].data.shape[0]
+
+    data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=complex)
+    offset = 0
+    for ib, name in enumerate(block_names):
+        block = g[name]
+        block_dim = block_sizes[ib]
+        data[:, offset:offset + block_dim, offset:offset + block_dim] = block.data
+        offset += block_dim
+    return data
+
+
+def _assign_from_numpy_array(g, data):
+    """
+    Does inversion of to_numpy_array
+    """
+
+    if g.n_blocks > 2:
+        raise RuntimeError("n_blocks must be 1 or 2.")
+
+    block_names = gf_block_names(g.n_blocks==1)
+    n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
+
+    assert data.shape[0] == g[block_names[0]].data.shape[0]
+
+    norb = n_spin_orbital//2
+
+    offset = 0
+    for name in block_names:
+        block = g[name]
+        block_dim = len(block.indices)
+        block.data[:,:,:] = data[:, offset:offset + block_dim, offset:offset + block_dim]
+        for i in range(block.data.shape[0]):
+            block.data[i, :, :] = 0.5 * (block.data[i, :, :] + block.data[i, :, :].transpose().conj())
+        offset += block_dim
+
+
+def _symmetrize(Sigma_iw, s):
+    Sigma_iw_symm = Sigma_iw.copy()
+    for bname, gf in Sigma_iw:
+        U = s[bname].copy()
+        dim_symm = 1
+        gf_symm = gf.copy()
+        while True:
+            gf_rot = gf.copy()
+            gf_rot.from_L_G_R(U.transpose().conjugate(), gf, U)
+            gf_symm += gf_rot
+            dim_symm += 1
+            U = numpy.dot(U, s[bname])
+            if numpy.allclose(U, numpy.identity(U.shape[0])):
+                break
+        gf_symm /= dim_symm
+        Sigma_iw_symm[bname] = gf_symm
+    return Sigma_iw_symm
+
+def symmetrize(Sigma_iw, generators):
+    """
+    Symmetrize Green's function using generators
+
+    Parameters
+    ----------
+    Sigma_iw: BlockGf
+        self-energy
+    generators: list of numpy 2D array
+        generators of symmetrization
+
+    Returns
+    -------
+        Symmetrized self-energy.
+
+    """
+
+    Sigma_iw_symm = Sigma_iw.copy()
+
+    for s in generators:
+        Sigma_iw_symm = _symmetrize(Sigma_iw_symm, s)
+
+    return Sigma_iw_symm
 
 def mpi_split(work_size, comm_size):
     """
@@ -588,4 +692,3 @@ def mpi_split(work_size, comm_size):
     offsets[1:] = numpy.cumsum(sizes)[:-1]
 
     return sizes, offsets
-
