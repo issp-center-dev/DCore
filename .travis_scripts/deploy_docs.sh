@@ -2,9 +2,9 @@
 
 # This is a pull request, finish.
 if [ "_$TRAVIS_PULL_REQUEST" != "_false" ] ;then exit 0; fi
-# This is neither master nor tag, finish.
+# build doc if and only if master, develop, xxx-autodoc, and tag
 feature_branch=${TRAVIS_BRANCH%-autodoc}
-if [ "_$TRAVIS_BRANCH" != "_master" ] && [ ${feature_branch} == ${TRAVIS_BRANCH} ] && [ -z "$TRAVIS_TAG" ] ; then exit 0; fi
+if [ "_$TRAVIS_BRANCH" != "_master" ] && [ ${_$TRAVIS_BRANCH} == "_develop" ] && [ "_${feature_branch}" == "_${TRAVIS_BRANCH}" ] && [ -z "$TRAVIS_TAG" ] ; then exit 0; fi
 
 
 openssl aes-256-cbc -K $encrypted_0f0c7c69c924_key -iv $encrypted_0f0c7c69c924_iv -in ${ROOTDIR}/.travis_scripts/id_rsa.enc -out ~/.ssh/id_rsa -d
@@ -18,6 +18,9 @@ git checkout gh-pages
 if [ ${feature_branch} != ${TRAVIS_BRANCH} ]; then
   cp -r ${ROOTDIR}/dcore_doc $feature_branch
   git add $feature_branch
+elif [ "_${TRAVIS_BRANCH}" == "_develop" ]; then
+  cp -r ${ROOTDIR}/dcore_doc develop
+  git add develop
 elif [ -n ${TRAVIS_TAG}]; then
   cp -r ${ROOTDIR}/dcore_doc ${TRAVIS_TAG}
   git add ${TRAVIS_TAG}
