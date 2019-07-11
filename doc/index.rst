@@ -36,7 +36,7 @@ Authors & Quotation
 
 - ver. 2.0
 
-  H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, N. Takemori
+  H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, N. Takemori, Y. Motoyama
 
 - ver. 1.1 (released on 2019/1/25)
 
