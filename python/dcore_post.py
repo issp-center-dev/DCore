@@ -126,7 +126,7 @@ class DMFTPostSolver(DMFTCoreSolver):
 
 
 class DMFTCoreTools:
-    def __init__(self, seedname, params, n_k, xk, kvec_mesh, prefix):
+    def __init__(self, seedname, params, n_k, xk, nkdiv_mesh, kvec_mesh, prefix):
         """
         Class of posting tool for DCore.
 
@@ -140,8 +140,10 @@ class DMFTCoreTools:
             Number of k points
         :param xk:  integer array
             x-position for plotting band
+        :param nkdiv_mesh:  (int, int, int)
+            Number of k points along each axis for computing A(k, omega)
         :param kvec_mesh:  float array of dimension (*, 3)
-            k points in fractional coordinates for compute A(k, omega) on a mesh
+            k points in fractional coordinates for computing A(k, omega) on a mesh
         """
 
         self._params = copy.deepcopy(params)
@@ -156,11 +158,9 @@ class DMFTCoreTools:
         self._n_k = n_k
         self._xk = xk
         self._kvec_mesh = kvec_mesh
+        self._nkdiv_mesh = nkdiv_mesh
         self._prefix = prefix
 
-        self._nk_mesh = 0
-        if not self._kvec_mesh is None:
-            self._nk_mesh = self._kvec_mesh.shape[0]
 
         self._solver = DMFTPostSolver(seedname, self._params, output_file=seedname+'.out.h5')
         print("iteration :", self._solver.iteration_number)
@@ -266,15 +266,16 @@ class DMFTCoreTools:
         #
         # A(k, omega) on a mesh
         #
-        if self._nk_mesh > 0:
+        nk_mesh = numpy.prod(self._nkdiv_mesh)
+        if nk_mesh > 0:
             print("\n#############  Compute A(k, omega) on a mesh ################\n")
             akw = self._solver.calc_spaghettis(sigma_w_sh, mesh, self._broadening, 'mesh')
             mesh = [x.real for x in sigma_w_sh[0].mesh]
             filename = self._prefix + self._seedname + '_akw_mesh.dat'
             with open(filename, 'w') as f:
-                print(self._nk_mesh, file=f)
+                print('{} {} {}   {}'.format(self._nkdiv_mesh[0], self._nkdiv_mesh[1], self._nkdiv_mesh[2], self._Nomega), file=f)
                 for bname in self._solver.spin_block_names:
-                    for ik in range(self._nk_mesh):
+                    for ik in range(nk_mesh):
                         for iom in range(self._Nomega):
                             print("%s %f %f %f    %f %f" % (bname,
                                                             self._kvec_mesh[ik,0],
@@ -510,7 +511,7 @@ def dcore_post(filename, np=1, prefix="./"):
     #
     # Plot
     #
-    dct = DMFTCoreTools(seedname, p, n_k, xk, kvec_mesh, prefix)
+    dct = DMFTCoreTools(seedname, p, n_k, xk, [nk_mesh]*3, kvec_mesh, prefix)
     dct.post()
     if lattice_model.is_Hk_supported():
         dct.momentum_distribution()
