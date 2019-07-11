@@ -40,9 +40,7 @@ from lattice_models import create_lattice_model
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
 
-        assert params['control']['restart']
-
-        super(DMFTPostSolver, self).__init__(seedname, params, output_file, output_group, read_only=True)
+        super(DMFTPostSolver, self).__init__(seedname, params, output_file, output_group, read_only=True, restart=True)
 
 
     def calc_dos(self, Sigma_w_sh, mesh, broadening):
@@ -152,9 +150,7 @@ class DMFTCoreTools:
         self._xk = xk
         self._prefix = prefix
 
-        self._params['control']['restart'] = True
         self._solver = DMFTPostSolver(seedname, self._params, output_file=seedname+'.out.h5')
-        #self._skc = SumkDFTCompat(seedname+'.h5')
         print("iteration :", self._solver.iteration_number)
 
     def print_dos(self, dos, dosproj_orb, filename):
@@ -334,7 +330,7 @@ def dcore_post(filename, np=1, prefix="./"):
     #
     # Construct a parser with default values
     #
-    pars = create_parser()
+    pars = create_parser(['model', 'system', 'impurity_solver', 'tool', 'mpi'])
     #
     # Parse keywords and store
     #

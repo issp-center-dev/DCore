@@ -49,6 +49,12 @@ if (BUILD_DCORE)
     set(DCORE_SITE_PACKAGES "${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages")
     set(DCORE_DEP_PYTHONPATH "${DCORE_SITE_PACKAGES}:${TRIQS_SITE_PACKAGES}")
 
+    # BSE
+    if (BSE_PATH)
+        set(ENV{PYTHONPATH} ${BSE_PATH}/python:$ENV{PYTHONPATH})
+        set(DCORE_DEP_PYTHONPATH "${DCORE_DEP_PYTHONPATH}:${BSE_PATH}/python")
+    endif()
+
     add_subdirectory(python)
     add_subdirectory(shells)
     add_subdirectory(test)

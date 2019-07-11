@@ -33,7 +33,7 @@ def dcore(filename, np=1):
         Input-file name
     """
     # Set Default value
-    pars = create_parser()
+    pars = create_parser(['model', 'system', 'impurity_solver', 'control', 'mpi'])
     #
     # Parse keywords and store
     #
@@ -43,7 +43,7 @@ def dcore(filename, np=1):
 
     params["mpi"]["num_processes"] = np
 
-    solver = DMFTCoreSolver(params["model"]["seedname"], params)
+    solver = DMFTCoreSolver(params["model"]["seedname"], params, restart=params['control']['restart'])
 
     solver.do_steps(max_step=params["control"]["max_step"])
 
