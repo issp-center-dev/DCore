@@ -3,6 +3,10 @@ Tutorial: square-lattice Hubbard model
 
 ## Requirement
 
-- ``dcore``
+- Commands
 
-- [optional] $NUM_PROC
+    - ``dcore`` and others
+
+- Environment variables
+
+    - [optional] variable $NUM_PROC

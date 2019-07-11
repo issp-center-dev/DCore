@@ -7,6 +7,7 @@
 
 # check command
 check_command dcore
+check_command dcore_bse
 check_command BSE
 check_command pomerol2dcore
 

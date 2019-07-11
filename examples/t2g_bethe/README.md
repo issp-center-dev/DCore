@@ -3,10 +3,14 @@ Tutorial: t2g Hubbard model on Bethe lattice
 
 ## Requirement
 
-- ``dcore``
+- Commands
 
-- ``hybmat``
+    - ``dcore`` and others
 
-- $MPIRUN
+    - ``hybmat``
 
-- [optional] $NUM_PROC
+- Environment variables
+
+    - $MPIRUN
+
+    - [optional] variable $NUM_PROC

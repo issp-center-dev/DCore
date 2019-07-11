@@ -3,12 +3,18 @@ BSE in square-lattice Hubbard model
 
 ## Requirement
 
-- ``dcore``
+- Commands
 
-- ``BSE``
+    - ``dcore`` and others
 
-- ``pomerol2dcore``
+    - ``dcore_bse``
 
-- $BSE_DIR : path to BSE repository
+    - ``BSE``
 
-- [optional] $NUM_PROC
+    - ``pomerol2dcore``
+
+- Environment variables
+
+    - $BSE_DIR (path to BSE repository)
+
+    - [optional] $NUM_PROC
