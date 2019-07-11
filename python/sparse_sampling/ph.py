@@ -8,7 +8,7 @@ import argparse
 
 from irbasis_util.four_point_ph_view import FourPointPHView
 from irbasis_util.tensor_regression import predict
-from .tools import fit, construct_prj, predict_xloc
+from .tools import perform_fit, construct_prj, predict_xloc
 from ..tools import mpi_split, float_to_complex_array, complex_to_float_array
 
 
@@ -26,6 +26,8 @@ if __name__ == '__main__':
     parser.add_argument('--Lambda', default=0, type=float, help='Lambda')
     parser.add_argument('--svcutoff', default=0, type=float, help='svcutoff')
     parser.add_argument('--num_wf', action='store', type=int, help='num of fermionic frequnencies for interpolation')
+    parser.add_argument('--alpha', action='store', default=1e-5, type=float, help='alpha')
+    parser.add_argument('--seed', action='store', default=100, type=int, help='seed')
 
     from mpi4py import MPI
     import os
@@ -79,7 +81,7 @@ if __name__ == '__main__':
     prj = construct_prj(phb, freqs_f_local)
 
     # Fit
-    xs, mse = fit(prj, xloc_local, D, args.niter)
+    xs = perform_fit(prj, xloc_local, D, args.niter, args.seed, args.alpha)
 
     xloc_local_fit = predict_xloc(prj, xs)
     xloc_abs_max = comm.allreduce(numpy.amax(numpy.abs(xloc_local)), op=MPI.MAX)
@@ -98,7 +100,6 @@ if __name__ == '__main__':
 
         print('')
         print('Xloc abs max = ', xloc_abs_max)
-        print('Xloc mean squared error in fit = ', mse)
         print('Xloc max error in fit = ', xloc_abs_diff)
 
     # Interpolation in the 2D box of [-num_wf, num_wf-1]

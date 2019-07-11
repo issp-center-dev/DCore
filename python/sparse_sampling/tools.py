@@ -5,7 +5,7 @@ import copy
 
 from irbasis_util.four_point_ph_view import FourPointPHView
 from irbasis_util.four_point import FourPoint
-from irbasis_util.tensor_regression import enable_MPI, optimize_als, OvercompleteGFModel, predict
+from irbasis_util.tensor_regression import enable_MPI, fit, predict
 
 from mpi4py import MPI 
 
@@ -72,18 +72,25 @@ def construct_prj_three_freqs(basis, freqs_list):
         prj[i] = prj[i].reshape((-1, 16, basis.Nl))
     return prj
 
-def fit(projectors, xloc_local, D, niter):
+def perform_fit(projectors, xloc_local, D, niter, seed, alpha):
     num_o, num_freqs = xloc_local.shape
-    num_rep = 12
-    linear_dim = projectors[0].shape[-1] # dim of IR basis
+    #num_rep = projectors[0].shape[1] # Number of representations (maybe 12 or 16)
+    #linear_dim = projectors[0].shape[-1] # dim of IR basis
+
+    squared_norm_orb = comm.allreduce(numpy.sqrt(numpy.sum(numpy.abs(xloc_local)**2, axis=-1)).ravel())
+    orb_idx = squared_norm_orb / numpy.amax(squared_norm_orb) > 1e-8
+    if rank == 0:
+        print("Num of active orbital components = ", numpy.sum(orb_idx))
 
     # (orbital, freq) => (freq, orbital)
-    y = xloc_local.transpose((1,0))
-    alpha_init = 0
-    model = OvercompleteGFModel(num_freqs, num_rep, 2, num_o, linear_dim, projectors, y, alpha_init, D)
-    info = optimize_als(model, niter, rtol=1e-8, optimize_alpha=1e-5, verbose=1, print_interval=1)
+    y = xloc_local[orb_idx, :].transpose((1,0))
+    xs = fit(y, projectors, D, niter, rtol=1e-8, alpha=alpha, verbose=1, random_init=True, comm=comm, seed=seed)
 
-    return copy.deepcopy(model.x_tensors()), info['rmses'][-1]**2
+    x_orb_full = numpy.zeros((D, num_o), dtype=complex)
+    x_orb_full[:, orb_idx] = xs[-1]
+    xs[-1] = x_orb_full
+
+    return xs
 
 def predict_xloc(prj, x_tensors):
     return predict(prj, x_tensors).transpose()
