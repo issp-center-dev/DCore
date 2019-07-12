@@ -1,0 +1,35 @@
+&CONTROL
+ calculation = 'scf'
+      outdir = './'
+  pseudo_dir = './'
+      prefix = 'pb'
+/
+&SYSTEM
+       ibrav = 0
+         nat = 4
+        ntyp = 1
+     ecutwfc = 40.000000
+     ecutrho = 320.000000
+ occupations = 'smearing'
+    smearing = "m-p"
+     degauss = 0.05
+    noncolin = .true.
+    lspinorb = .true.
+/
+&ELECTRONS
+    mixing_beta = 0.1
+ diago_full_acc = .true.
+/
+CELL_PARAMETERS angstrom
+4.9402  0.0  0.0
+0.0  4.9402  0.0
+0.0  0.0  4.9402
+ATOMIC_SPECIES
+ Pb 207.200000 Pb.rel-pbe-dn-kjpaw_psl.0.2.2.UPF
+ATOMIC_POSITIONS crystal
+ Pb 0.000000 0.000000 0.000000
+ Pb 0.000000 0.500000 0.500000
+ Pb 0.500000 0.000000 0.500000
+ Pb 0.500000 0.500000 0.000000
+K_POINTS automatic
+ 6 6 6 0 0 0
