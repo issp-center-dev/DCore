@@ -72,7 +72,7 @@ def construct_prj_three_freqs(basis, freqs_list):
         prj[i] = prj[i].reshape((-1, 16, basis.Nl))
     return prj
 
-def perform_fit(projectors, xloc_local, D, niter, seed, alpha):
+def perform_fit(projectors, xloc_local, D, niter, seed, alpha, rtol):
     num_o, num_freqs = xloc_local.shape
     #num_rep = projectors[0].shape[1] # Number of representations (maybe 12 or 16)
     #linear_dim = projectors[0].shape[-1] # dim of IR basis
@@ -84,7 +84,7 @@ def perform_fit(projectors, xloc_local, D, niter, seed, alpha):
 
     # (orbital, freq) => (freq, orbital)
     y = xloc_local[orb_idx, :].transpose((1,0))
-    xs = fit(y, projectors, D, niter, rtol=1e-3, alpha=alpha, verbose=1, random_init=True, comm=comm, seed=seed)
+    xs = fit(y, projectors, D, niter, rtol, alpha=alpha, verbose=1, random_init=True, comm=comm, seed=seed, nesterov=True)
 
     x_orb_full = numpy.zeros((D, num_o), dtype=complex)
     x_orb_full[:, orb_idx] = xs[-1]

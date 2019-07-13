@@ -117,6 +117,7 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "sparse_sv_cutoff", float, 1e-5, "Singular-value cutoff to determine the max rank of IR basis.")
     parser.add_option("bse", "sparse_niter", int, 100, "Number of iterations for fit of Xloc.")
     parser.add_option("bse", "sparse_D", int, 50, "Control parameter for fit of Xloc")
+    parser.add_option("bse", "sparse_rtol", float, 1e-8, "rtol for fit of Xloc")
 
     return parser
 

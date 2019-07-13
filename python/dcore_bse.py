@@ -529,6 +529,7 @@ class DMFTBSESolver(DMFTCoreSolver):
                 commands.extend(['--niter', self._params['bse']['sparse_niter']])
                 commands.extend(['--bfreq', b])
                 commands.extend(['--num_wf', self._params['bse']['num_wf']])
+                commands.extend(['--rtol', self._params['bse']['sparse_rtol']])
                 commands.append(h5_path)
                 commands = map(str, commands)
                 launch_mpi_subprocesses(self._mpirun_command, commands, fout)
