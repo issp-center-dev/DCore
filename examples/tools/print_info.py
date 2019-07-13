@@ -27,7 +27,7 @@ def get_info(filename):
 
 
 def get_all_info():
-    _infos = {}
+    _infos = OrderedDict()
 
     for _dir in os.listdir('.'):
         file_path = os.path.join(_dir, info_file)
