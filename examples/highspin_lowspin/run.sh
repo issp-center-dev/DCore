@@ -71,14 +71,14 @@ echo "##################"
 echo ""
 
 # print latest commit of git repository
-$BSE_DIR/bin/misc/print_latest_commit.sh --no3dplot
+$BSE_DIR/bin/misc/print_latest_commit.sh
 
 # Generate q_path.dat
 python $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
 check_status
 
 # Plot input to BSE
-$BSE_DIR/python/plot/plot_bse_input.py
+$BSE_DIR/python/plot/plot_bse_input.py --no3dplot
 check_status
 
 # BSE
