@@ -16,58 +16,47 @@ def get_info(filename):
     cfg.read(filename)
 
     def get(key):
-        # val = cfg.get('info', key)
         try:
             val = cfg.get(info_section, key)
         except:
             val = ""
         return val
 
-    # info = OrderedDict()
-    # for key in keys:
-    #     info[key] = get(key)
-
-    info = OrderedDict({key: get(key) for key in keys})
-
-    return info
+    _info = OrderedDict({key: get(key) for key in keys})
+    return _info
 
 
 def get_all_info():
-    infos = {}
+    _infos = {}
 
-    for dir in os.listdir('.'):
-        file = os.path.join(dir, info_file)
-        # print(file)
-        if not os.path.exists(file):
+    for _dir in os.listdir('.'):
+        file_path = os.path.join(_dir, info_file)
+        if not os.path.exists(file_path):
             continue
 
-        # if not os.path.isdir(dir):
-        #     continue
-
-        # os.chdir(dir)
-        print(dir)
+        print(_dir)
 
         try:
-            info = get_info(file)
-            print(info)
-            infos[dir] = info
+            info = get_info(file_path)
+            # print(info)
+            _infos[_dir] = info
         except:
             continue
 
-    return infos
+    return _infos
 
 
 def gen_description(list_str):
-    desc = "|"
+    _desc = "|"
     for entry in list_str:
-        desc += " " + entry + " |"
-    return desc
+        _desc += " " + entry + " |"
+    return _desc
 
 
 if __name__ == '__main__':
 
     infos = get_all_info()
-    print(infos)
+    # print(infos)
 
     with open(file_desc, 'w') as f:
         desc = gen_description(['directory',] + keys)
@@ -75,6 +64,6 @@ if __name__ == '__main__':
         desc = gen_description(['-----',] * (len(keys)+1))
         print(desc, file=f)
 
-        for dir, info in infos.items():
-            desc = gen_description([dir,] + [info[key] for key in keys])
+        for direc, info in infos.items():
+            desc = gen_description([direc, ] + [info[key] for key in keys])
             print(desc, file=f)
