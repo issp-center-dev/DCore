@@ -1,3 +1,5 @@
-author: Junya Otsuki
-version: 2.0.0_b
-date: 2019/07/11/
+[info]
+author = Hiroshi Shinaoka
+version = 2.0.0_b
+date = 2019/07/11/
+description = [Tutorial] t2g Hubbard model on a Bethe lattice
