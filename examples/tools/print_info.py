@@ -5,7 +5,7 @@ import ConfigParser
 from collections import OrderedDict
 
 
-file_desc = 'examples_desc.txt'
+file_desc = 'examples_info.md'
 info_file = 'info'
 info_section = 'info'
 keys = ['author', 'date', 'version', 'description']
