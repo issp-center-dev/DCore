@@ -84,7 +84,7 @@ def perform_fit(projectors, xloc_local, D, niter, seed, alpha):
 
     # (orbital, freq) => (freq, orbital)
     y = xloc_local[orb_idx, :].transpose((1,0))
-    xs = fit(y, projectors, D, niter, rtol=1e-8, alpha=alpha, verbose=1, random_init=True, comm=comm, seed=seed)
+    xs = fit(y, projectors, D, niter, rtol=1e-3, alpha=alpha, verbose=1, random_init=True, comm=comm, seed=seed)
 
     x_orb_full = numpy.zeros((D, num_o), dtype=complex)
     x_orb_full[:, orb_idx] = xs[-1]
