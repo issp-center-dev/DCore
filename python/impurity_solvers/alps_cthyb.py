@@ -27,7 +27,7 @@ from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array, make_hermite_conjugate
 from .base import SolverBase
 
 
@@ -307,7 +307,8 @@ class ALPSCTHYBSolver(SolverBase):
                 self._Gimp_iw[name] << LegendreToMatsubara(G_l[name])
                 if triqs_major_version == 1:
                     self._Gimp_iw[name].tail.zero()
-                    self._Gimp_iw[name].tail[1] = numpy.identity(g.N1)
+                    self._Gimp_iw[name].tail[1] = numpy.identity(G_l[name].N1)
+            make_hermite_conjugate(self._Gimp_iw)
 
             # Two-particle GF
             if not freqs_ph is None:
