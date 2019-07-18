@@ -38,11 +38,11 @@ import impurity_solvers
 from . import sumkdft
 from lattice_models import create_lattice_model
 
+
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
 
         super(DMFTPostSolver, self).__init__(seedname, params, output_file, output_group, read_only=True, restart=True)
-
 
     def calc_dos(self, Sigma_w_sh, mesh, broadening):
         """
@@ -161,7 +161,6 @@ class DMFTCoreTools:
         self._nkdiv_mesh = nkdiv_mesh
         self._prefix = prefix
 
-
         self._solver = DMFTPostSolver(seedname, self._params, output_file=seedname+'.out.h5')
         print("iteration :", self._solver.iteration_number)
 
@@ -227,6 +226,7 @@ class DMFTCoreTools:
             # set BlockGf sigma_w
             Sigma_iw = Sigma_iw_sh[ish]
             block_names = self._solver.spin_block_names
+
             def glist():
                 return [GfReFreq(indices=sigma.indices, window=(self._omega_min, self._omega_max),
                                  n_points=self._Nomega, name="sig_pade") for block, sigma in Sigma_iw]
@@ -235,6 +235,39 @@ class DMFTCoreTools:
             for bname, sig in Sigma_iw:
                 sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
 
+        print("\n#############  Print Self energy in the Real Frequency  ################\n")
+        # added
+        spin_names = self._solver.spin_block_names
+        filename = self._prefix + self._seedname + '_sigmaw.dat'
+        print("\n Output Momentum distribution : ", filename)
+        n_sh = len(sigma_w_sh)
+        with open(filename, 'w') as sigmaw:
+            print("# Real frequency self energy at imaginary frequency", file=sigmaw)
+            #
+            # Column information
+            #
+            print("# [Column] Data", file=sigmaw)
+            print("# [1] Frequency", file=sigmaw)
+            icol = 1
+            for ish in range(n_sh):
+                for sp in spin_names:
+                    block_dim = sigma_w_sh[ish][sp].data.shape[1]
+                    for iorb in range(block_dim):
+                    # for iorb, jorb in product(range(block_dim), repeat=2):
+                        icol += 1
+                        print("# [%d] Re(Sigma_{shell=%d, spin=%s, %d, %d})" % (icol, ish, sp, iorb, iorb), file=sigmaw)
+                        icol += 1
+                        print("# [%d] Im(Sigma_{shell=%d, spin=%s, %d, %d})" % (icol, ish, sp, iorb, iorb), file=sigmaw)
+            omega = [x.real for x in sigma_w_sh[0].mesh]
+            for iom in range(self._Nomega):
+                print("%f " % omega[iom], end="", file=sigmaw)
+                for ish in range(n_sh):
+                    for sp in spin_names:
+                        block_dim = sigma_w_sh[ish][sp].data.shape[1]
+                        for iorb, jorb in product(range(block_dim), repeat=2):
+                            print("%f %f " % (sigma_w_sh[ish][sp].data[iom, iorb, iorb].real,
+                                              sigma_w_sh[ish][sp].data[iom, iorb, iorb].imag), end="", file=sigmaw)
+                print("", file=sigmaw)
         #
         #  (Partial) DOS
         #
@@ -345,7 +378,6 @@ def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
 
 
-
 def dcore_post(filename, np=1, prefix="./"):
     """
     Main routine for the post-processing tool
@@ -395,7 +427,7 @@ def dcore_post(filename, np=1, prefix="./"):
     # Reciprocal lattice vectors
     # bvec=[(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
     #
-    #bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
+    # bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
     bvec_list = ast.literal_eval(p["model"]["bvec"])
     if isinstance(bvec_list, list) and len(bvec_list) == 3:
         bvec = numpy.array(bvec_list, dtype=float)
