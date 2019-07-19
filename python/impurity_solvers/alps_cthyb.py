@@ -130,7 +130,7 @@ class ALPSCTHYBSolver(SolverBase):
     def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
         self._solve_impl(rot, mpirun_command, freqs_ph, params_kw)
 
-        return self._Xloc_ph_sparse
+        return self._Xloc_ph_sparse, None
 
     def _solve_impl(self, rot, mpirun_command, freqs_ph, params_kw):
         """

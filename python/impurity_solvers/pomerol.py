@@ -292,6 +292,9 @@ class PomerolSolver(SolverBase):
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(N)
 
+        chi_loc : dict (None if not computed)
+            key = (i1, i2, i3, i4)
+            val = numpy.ndarray(n_w2b)
         """
 
         # Save frequencies list
@@ -307,7 +310,8 @@ class PomerolSolver(SolverBase):
         self.solve(rot, mpirun_command, params_kw)
 
         x_loc = self._read_xloc(params_kw)
-        return x_loc
+        chi_loc = self._read_chiloc(params_kw)
+        return x_loc, chi_loc
 
     def name(self):
         return "pomerol"
