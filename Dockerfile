@@ -4,6 +4,8 @@ FROM shinaoka/triqs1.4_dmft_alps
 COPY ./ $HOME/src/DCore
 
 RUN pip install sphinx wild-sphinx-theme
+# Workaround for a bug in docutils 0.15
+RUN pip install -U docutils==0.14
 
 WORKDIR $HOME/src/DCore
 RUN mkdir $HOME/build/DCore
