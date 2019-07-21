@@ -19,6 +19,11 @@ if (TRIQS_VERSION STREQUAL "1.4")
     add_subdirectory(chain_hubbardI)
 endif()
 
+if (NOT MPIRUN_COMMAND)
+    set(MPIRUN_COMMAND "mpirun -np \#")
+endif()
+message(STATUS "Using ${MPIRUN_COMMAND} for running some tests")
+
 option(TEST_DEV "Activate developers' test" OFF)
 if(TEST_DEV)
     message(STATUS "Activated developers' test")

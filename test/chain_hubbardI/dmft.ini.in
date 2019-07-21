@@ -6,8 +6,10 @@ t = 1.0
 norb = 3
 interaction = kanamori
 kanamori = [(8.0, 5.3333333, 1.33333)]
-spin_orbit = True
 nk = 20
+
+[mpi]
+command = @MPIRUN_COMMAND@
 
 [system]
 beta = 5.0
