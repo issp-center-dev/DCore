@@ -1,7 +1,10 @@
 from __future__ import print_function
 
 import os
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 from collections import OrderedDict
 
 

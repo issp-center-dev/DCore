@@ -1,3 +1,5 @@
-author: Hiroshi Shinaoka
-version: 2.0.0_b
-date: 2019/07/12/
+[info]
+author = Hiroshi Shinaoka
+version = 2.0.0_b
+date = 2019/07/12/
+description = [Tutorial] chi(q) calculation for square-lattice Hubbard model with sparse sampling
