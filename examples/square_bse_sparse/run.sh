@@ -20,7 +20,8 @@ set_num_proc
 # ---------------------------------
 # create and move into a directory
 
-mkdir -p results
+rm -rf results
+mkdir results
 cd results
 
 # ---------------------------------
@@ -45,15 +46,19 @@ echo ""
 
 echo "running dcore_pre..."
 dcore_pre $ini
+check_status
 
 echo "running dcore..."
 dcore --np $NUM_PROC $ini
+check_status
 
 echo "running dcore_check..."
 dcore_check $ini
+check_status
 
 echo "running dcore_bse..."
 dcore_bse --np $NUM_PROC $ini
+check_status
 
 gnuplot ../plot_fit.plt
 
@@ -71,19 +76,24 @@ $BSE_DIR/bin/misc/print_latest_commit.sh
 
 # Generate q_path.dat
 python $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
+check_status
 
 # Plot input to BSE
 $BSE_DIR/python/plot/plot_bse_input.py
+check_status
 
 # BSE
 python $BSE_DIR/python/bse_tools/bse_tool.py -s BSE -i dmft_bse.h5 -q q_path.dat
+check_status
 python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chiq_eigen.dat
 python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi0q_eigen.dat --mode='chi0'
 
 # RPA
 python $BSE_DIR/python/bse_tools/bse_tool.py -s BSE -i dmft_bse.h5 -q q_path.dat -t 'rpa'
+check_status
 python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chiq_rpa_eigen.dat --mode='rpa'
 
 # RRPA
 python $BSE_DIR/python/bse_tools/bse_tool.py -s BSE -i dmft_bse.h5 -q q_path.dat -t 'rrpa'
+check_status
 python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chiq_rrpa_eigen.dat --mode='rrpa'
