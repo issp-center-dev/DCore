@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_wf', action='store', type=int, help='num of fermionic frequnencies for interpolation')
     parser.add_argument('--alpha', action='store', default=1e-5, type=float, help='alpha')
     parser.add_argument('--seed', action='store', default=100, type=int, help='seed')
+    parser.add_argument('--rtol', action='store', default=1e-3, type=float, help='rtol')
 
     from mpi4py import MPI
     import os
@@ -81,7 +82,7 @@ if __name__ == '__main__':
     prj = construct_prj(phb, freqs_f_local)
 
     # Fit
-    xs = perform_fit(prj, xloc_local, D, args.niter, args.seed, args.alpha)
+    xs = perform_fit(prj, xloc_local, D, args.niter, args.seed, args.alpha, args.rtol)
 
     xloc_local_fit = predict_xloc(prj, xs)
     xloc_abs_max = comm.allreduce(numpy.amax(numpy.abs(xloc_local)), op=MPI.MAX)

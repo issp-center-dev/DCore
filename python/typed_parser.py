@@ -126,6 +126,10 @@ class TypedParser(object):
         if self.__read:
             raise RuntimeError("Do not add option after an input file has been read!")
 
+        if section in self.__definitions and option in self.__definitions[section]:
+            raise RuntimeError("Redefinition of an option is not allowed!")
+
+
         if section not in self.__definitions:
             self.__definitions[section] = OrderedDict()
 
