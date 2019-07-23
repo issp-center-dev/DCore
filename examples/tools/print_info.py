@@ -1,12 +1,14 @@
 from __future__ import print_function
 
 import os
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 from collections import OrderedDict
 
+try:
+    # python 3
+    from configparser import ConfigParser
+except ImportError:
+    # pytnon 2
+    from ConfigParser import SafeConfigParser as ConfigParser
 
 file_desc = 'examples_info.md'
 info_file = 'info'
@@ -15,7 +17,7 @@ keys = ['author', 'date', 'version', 'description']
 
 
 def get_info(filename):
-    cfg = ConfigParser.SafeConfigParser()
+    cfg = ConfigParser()
     cfg.read(filename)
 
     def get(key):
@@ -32,7 +34,7 @@ def get_info(filename):
 def get_all_info():
     _infos = OrderedDict()
 
-    for _dir in os.listdir('.'):
+    for _dir in sorted(os.listdir('.')):
         file_path = os.path.join(_dir, info_file)
         if not os.path.exists(file_path):
             continue
