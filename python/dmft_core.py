@@ -171,7 +171,16 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     elif basis_rot == 'Hloc':
         rot = compute_diag_basis(G0_iw)
     else:
-        raise RuntimeError("Invalid basis_rot : {}".format(basis_rot))
+        if not os.path.exists(basis_rot):
+            raise RuntimeError("Invalid basis_rot : {}".format(basis_rot))
+        if sol.use_spin_orbit:
+            rot = numpy.zeros((1, sol.n_flavors, sol.n_flavors), dtype=complex)
+            read_potential(basis_rot, rot)
+            rot = {'ud' : rot[0,:,:]}
+        else:
+            rot = numpy.zeros((2, sol.n_orb, sol.n_orb), dtype=complex)
+            read_potential(basis_rot, rot)
+            rot = {'up' : rot[0,:,:], 'down': rot[1,:,:]}
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
