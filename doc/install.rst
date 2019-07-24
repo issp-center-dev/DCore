@@ -141,9 +141,9 @@ Installation steps
 
      $ make test
 
-   If your system MPI wrapper is not "mpirun", please provide the name of the correct one to DCore through cmake by using the flag "-DMPIRUN_COMMAND".
+   If your system MPI wrapper is not "mpirun", please provide the name of the correct one to DCore through cmake by using the flag "-DMPIEXEC".
    The default value is "mpirun -np #" (# is replaced by the number of processors).
-   For instance, if your wrapper is "mpijob" and you do not need to specify the number of processors explicitly, please use -DMPIRUN_COMMAND=mpijob.
+   For instance, if your wrapper is "mpijob" and you do not need to specify the number of processors explicitly, please use -DMPIEXEC=mpijob.
    Note that it is not allowed to run MPI programs interactively on some system.
    In this case, please run tests as a job.
 
