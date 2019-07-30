@@ -9,7 +9,7 @@ kanamori = [(8.0, 5.3333333, 1.33333)]
 nk = 20
 
 [mpi]
-command = @MPIRUN_COMMAND@
+command = @MPIEXEC@
 
 [system]
 beta = 5.0

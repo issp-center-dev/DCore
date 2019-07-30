@@ -75,7 +75,7 @@ def create_parser(target_sections=None):
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',
                       "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg, pomerol.")
-    parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify 'Hloc' or 'None'.")
+    parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify either 'Hloc', 'None', or the location of a file..")
     parser.allow_undefined_options("impurity_solver")
 
     # [control]
