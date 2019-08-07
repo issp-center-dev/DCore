@@ -149,10 +149,15 @@ If the cmake command succeeded, you will see the following message.</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first">We recommend that you run the tests to check if the compiling is properly finished. Type</p>
+<li><p class="first">We recommend to run the tests to check if DCore is built correctly. Type</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
 </pre></div>
 </div>
+<p>If your system MPI wrapper is not “mpirun”, please provide the name of the correct one to DCore through cmake by using the flag “-DMPIEXEC”.
+The default value is “mpirun -np #” (# is replaced by the number of processors).
+For instance, if your wrapper is “mpijob” and you do not need to specify the number of processors explicitly, please use -DMPIEXEC=mpijob.
+Note that it is not allowed to run MPI programs interactively on some system.
+In this case, please run tests as a job.</p>
 <p>The test results look like</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Running tests...
 /usr/local/Cellar/cmake/3.13.4/bin/ctest --force-new-ctest-process
