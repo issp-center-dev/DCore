@@ -1,0 +1,666 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>NiS &#8212; DCore 2.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="SrVO3" href="../srvo3_qe/srvo3.html" />
+    <link rel="prev" title="QuantumESPRESSO + Wannier90" href="../qe.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../srvo3_qe/srvo3.html" title="SrVO3"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../qe.html" title="QuantumESPRESSO + Wannier90"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" >Tutorial</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../qe.html" accesskey="U">QuantumESPRESSO + Wannier90</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="nis">
+<h1>NiS<a class="headerlink" href="#nis" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This document was written for ver.1.x, and might include descriptions incompatible with the latest version.
+If you encounter some problem, see the release note of ver.2.0 and check the differences between ver.1.x and ver.2.0.</p>
+</div>
+<p>Crystal structure of NiS (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
+<a class="reference internal image-reference" href="../../_images/struct_nis.png"><img alt="../../_images/struct_nis.png" class="align-center" src="../../_images/struct_nis.png" style="width: 200px;" /></a>
+<div class="section" id="scf-calculation-of-quantum-espresso">
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" download="" href="../../_downloads/7a56b4bc120267f3ab8c4899e1d26c88/scf_nis.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_nis.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span><span class="p">,</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span><span class="p">,</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;nis&#39;</span> <span class="p">,</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+   <span class="n">celldm</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mf">6.5158</span>
+   <span class="n">celldm</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.5542</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">45.0</span> <span class="p">,</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">360.0</span> <span class="p">,</span>
+<span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span><span class="p">,</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+<span class="o">/</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Ni</span>    <span class="mf">58.6934</span>   <span class="n">Ni</span><span class="o">.</span><span class="n">pbe</span><span class="o">-</span><span class="n">n</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.1</span><span class="o">.</span><span class="n">upf</span>
+  <span class="n">S</span>    <span class="mf">32.066</span>     <span class="n">S</span><span class="o">.</span><span class="n">pbe</span><span class="o">-</span><span class="n">n</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.1</span><span class="o">.</span><span class="n">upf</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Ni</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>
+ <span class="n">Ni</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>    <span class="mf">0.500000000</span>
+  <span class="n">S</span>    <span class="mf">0.333333333</span>    <span class="mf">0.666666667</span>    <span class="mf">0.250000000</span>
+  <span class="n">S</span>    <span class="mf">0.666666667</span>    <span class="mf">0.333333333</span>    <span class="mf">0.750000000</span>
+<span class="n">K_POINTS</span> <span class="n">automatic</span> 
+<span class="mi">8</span> <span class="mi">8</span> <span class="mi">6</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>The pseudopotentials are downloaded from
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/Ni.pbe-n-kjpaw_psl.0.1.upf">Ni.pbe-n-kjpaw_psl.0.1.upf</a> and
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/S.pbe-n-kjpaw_psl.0.1.upf">S.pbe-n-kjpaw_psl.0.1.upf</a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in scf_nis.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannierization">
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="generate-bloch-orbitals-for-the-wannier">
+<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this headline">¶</a></h3>
+<p>Perform non-scf calculation for generating Bloch orbitals that are used
+in the wannierization.</p>
+<p><a class="reference download internal" download="" href="../../_downloads/804cf1adb76b2f789ae6a150e858871e/nscf_nis.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_nis.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span><span class="p">,</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span><span class="p">,</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;nis&#39;</span> <span class="p">,</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+        <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">30</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+   <span class="n">celldm</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mf">6.5158</span>
+   <span class="n">celldm</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.5542</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">45.0</span> <span class="p">,</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">360.0</span> <span class="p">,</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span><span class="p">,</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+<span class="o">/</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Ni</span>    <span class="mf">58.6934</span>   <span class="n">Ni</span><span class="o">.</span><span class="n">pbe</span><span class="o">-</span><span class="n">n</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.1</span><span class="o">.</span><span class="n">upf</span>
+  <span class="n">S</span>    <span class="mf">32.066</span>     <span class="n">S</span><span class="o">.</span><span class="n">pbe</span><span class="o">-</span><span class="n">n</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.1</span><span class="o">.</span><span class="n">upf</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Ni</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>
+ <span class="n">Ni</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>    <span class="mf">0.500000000</span>
+  <span class="n">S</span>    <span class="mf">0.333333333</span>    <span class="mf">0.666666667</span>    <span class="mf">0.250000000</span>
+  <span class="n">S</span>    <span class="mf">0.666666667</span>    <span class="mf">0.333333333</span>    <span class="mf">0.750000000</span>
+<span class="n">K_POINTS</span> <span class="n">crystal</span>
+<span class="mi">64</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.00000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.25000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.50000000</span>  <span class="mf">1.562500e-02</span>
+  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">0.75000000</span>  <span class="mf">1.562500e-02</span>
+</pre></div>
+</div>
+<p>This <em>k</em>-grid is generated as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">kmesh.pl</span></code> is located in the <cite>utility/</cite> directory of Wannier90.</p>
+<p>Then, run <code class="docutils literal notranslate"><span class="pre">pw.x</span></code> as</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in nscf_nis.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="pre-process-for-wannier90">
+<h3>Pre-process for Wannier90<a class="headerlink" href="#pre-process-for-wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Pre-process with wannier90 program.
+It is always required before pw2wannier.x runs.</p>
+<p><a class="reference download internal" download="" href="../../_downloads/eac66550d458c64bc9d277a6958c00a5/nis.win"><code class="xref download docutils literal notranslate"><span class="pre">nis.win</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>num_bands         =   30
+num_wann          =   16
+
+dis_win_max =  13.0
+dis_win_min =  2.0
+!dis_froz_max = 13.0
+!dis_froz_min = 2.0
+
+begin projections
+Ni:d
+S:p
+end projections
+site_symmetry = .true.
+
+write_hr = .true.
+bands_plot = .true.
+wannier_plot = .true.
+
+wannier_plot_supercell = 1
+
+!exclude_bands=
+
+begin kpoint_path
+G  0.0000000000  0.0000000000  0.00  M  0.5000000000  0.0000000000  0.00
+M  0.5000000000  0.0000000000  0.00  K  0.3333333333  0.3333333333  0.00
+K  0.3333333333  0.3333333333  0.00  G  0.0000000000  0.0000000000  0.00
+G  0.0000000000  0.0000000000  0.00  A  0.0000000000  0.0000000000  0.50
+A  0.0000000000  0.0000000000  0.50  L  0.5000000000  0.0000000000  0.50
+L  0.5000000000  0.0000000000  0.50  H  0.3333333333  0.3333333333  0.50
+H  0.3333333333  0.3333333333  0.50  A  0.0000000000  0.0000000000  0.50
+end kpoint_path
+
+begin unit_cell_cart
+bohr
+ 6.515800000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+-3.257900000000000E+000  5.642848325979045E+000  0.000000000000000E+000
+ 0.000000000000000E+000  0.000000000000000E+000  1.012685636000000E+001
+end unit_cell_cart
+
+begin atoms_frac
+ Ni    0.000000000    0.000000000    0.000000000
+ Ni    0.000000000    0.000000000    0.500000000
+  S    0.333333333    0.666666667    0.250000000
+  S    0.666666667    0.333333333    0.750000000
+end atoms_frac
+
+mp_grid           = 4 4 4
+
+begin kpoints
+  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.25000000
+  0.00000000  0.00000000  0.50000000
+  0.00000000  0.00000000  0.75000000
+  0.00000000  0.25000000  0.00000000
+  0.00000000  0.25000000  0.25000000
+  0.00000000  0.25000000  0.50000000
+  0.00000000  0.25000000  0.75000000
+  0.00000000  0.50000000  0.00000000
+  0.00000000  0.50000000  0.25000000
+  0.00000000  0.50000000  0.50000000
+  0.00000000  0.50000000  0.75000000
+  0.00000000  0.75000000  0.00000000
+  0.00000000  0.75000000  0.25000000
+  0.00000000  0.75000000  0.50000000
+  0.00000000  0.75000000  0.75000000
+  0.25000000  0.00000000  0.00000000
+  0.25000000  0.00000000  0.25000000
+  0.25000000  0.00000000  0.50000000
+  0.25000000  0.00000000  0.75000000
+  0.25000000  0.25000000  0.00000000
+  0.25000000  0.25000000  0.25000000
+  0.25000000  0.25000000  0.50000000
+  0.25000000  0.25000000  0.75000000
+  0.25000000  0.50000000  0.00000000
+  0.25000000  0.50000000  0.25000000
+  0.25000000  0.50000000  0.50000000
+  0.25000000  0.50000000  0.75000000
+  0.25000000  0.75000000  0.00000000
+  0.25000000  0.75000000  0.25000000
+  0.25000000  0.75000000  0.50000000
+  0.25000000  0.75000000  0.75000000
+  0.50000000  0.00000000  0.00000000
+  0.50000000  0.00000000  0.25000000
+  0.50000000  0.00000000  0.50000000
+  0.50000000  0.00000000  0.75000000
+  0.50000000  0.25000000  0.00000000
+  0.50000000  0.25000000  0.25000000
+  0.50000000  0.25000000  0.50000000
+  0.50000000  0.25000000  0.75000000
+  0.50000000  0.50000000  0.00000000
+  0.50000000  0.50000000  0.25000000
+  0.50000000  0.50000000  0.50000000
+  0.50000000  0.50000000  0.75000000
+  0.50000000  0.75000000  0.00000000
+  0.50000000  0.75000000  0.25000000
+  0.50000000  0.75000000  0.50000000
+  0.50000000  0.75000000  0.75000000
+  0.75000000  0.00000000  0.00000000
+  0.75000000  0.00000000  0.25000000
+  0.75000000  0.00000000  0.50000000
+  0.75000000  0.00000000  0.75000000
+  0.75000000  0.25000000  0.00000000
+  0.75000000  0.25000000  0.25000000
+  0.75000000  0.25000000  0.50000000
+  0.75000000  0.25000000  0.75000000
+  0.75000000  0.50000000  0.00000000
+  0.75000000  0.50000000  0.25000000
+  0.75000000  0.50000000  0.50000000
+  0.75000000  0.50000000  0.75000000
+  0.75000000  0.75000000  0.00000000
+  0.75000000  0.75000000  0.25000000
+  0.75000000  0.75000000  0.50000000
+  0.75000000  0.75000000  0.75000000
+end kpoints
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The order of projection is important for the following DMFT calculation.
+If there are both correlated shells and non-correlated shell,
+the correlated shells must appear first, i.e.</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">begin</span> <span class="n">projections</span>
+<span class="n">Correlated_shell_1</span>
+<span class="n">Correlated_shell_2</span>
+<span class="p">:</span>
+<span class="n">Non</span><span class="o">-</span><span class="n">correlated_shell_1</span>
+<span class="n">Non</span><span class="o">-</span><span class="n">correlated_shell_2</span>
+<span class="p">:</span>
+<span class="n">end</span> <span class="n">projections</span>
+</pre></div>
+</div>
+</div>
+<p>This <em>k</em> grid is generated as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wannier90.x -pp nis
+</pre></div>
+</div>
+</div>
+<div class="section" id="qe-to-wannier90-interface">
+<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" download="" href="../../_downloads/55658a01499ecd97a2426352849326db/pw2wan_nis.in"><code class="xref download docutils literal notranslate"><span class="pre">pw2wan_nis.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">inputpp</span> 
+   <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+   <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;nis&#39;</span>
+   <span class="n">seedname</span> <span class="o">=</span> <span class="s1">&#39;nis&#39;</span>
+   <span class="n">spin_component</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+   <span class="n">write_mmn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+   <span class="n">write_amn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+   <span class="n">write_unk</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+   <span class="n">write_dmn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+   <span class="n">wan_mode</span> <span class="o">=</span> <span class="s1">&#39;standalone&#39;</span>
+<span class="o">/</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw2wan.x -in pw2wan_nis.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannier90">
+<h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Execute <code class="docutils literal notranslate"><span class="pre">wannier90.x</span></code> for the actual wannierization.
+The input file is the same as that for the pre-processing run.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wannier90.x nis
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-check-wannierization">
+<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
+<p>If you want to check the quality of the wannierization,
+you can plot the original and the wannier-interpolated band structure simultaneously.</p>
+<p>First, compute the band structure with the following input file:</p>
+<p><a class="reference download internal" download="" href="../../_downloads/534fb8370029335610b115355a2dd490/band_nis.in"><code class="xref download docutils literal notranslate"><span class="pre">band_nis.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span><span class="p">,</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span><span class="p">,</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;nis&#39;</span> <span class="p">,</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+        <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">30</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+   <span class="n">celldm</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mf">6.5158</span>
+   <span class="n">celldm</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.5542</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">45.0</span> <span class="p">,</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">360.0</span> <span class="p">,</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span><span class="p">,</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+<span class="o">/</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Ni</span>    <span class="mf">58.6934</span>   <span class="n">Ni</span><span class="o">.</span><span class="n">pbe</span><span class="o">-</span><span class="n">n</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.1</span><span class="o">.</span><span class="n">upf</span>
+  <span class="n">S</span>    <span class="mf">32.066</span>     <span class="n">S</span><span class="o">.</span><span class="n">pbe</span><span class="o">-</span><span class="n">n</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.1</span><span class="o">.</span><span class="n">upf</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Ni</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>
+ <span class="n">Ni</span>    <span class="mf">0.000000000</span>    <span class="mf">0.000000000</span>    <span class="mf">0.500000000</span>
+  <span class="n">S</span>    <span class="mf">0.333333333</span>    <span class="mf">0.666666667</span>    <span class="mf">0.250000000</span>
+  <span class="n">S</span>    <span class="mf">0.666666667</span>    <span class="mf">0.333333333</span>    <span class="mf">0.750000000</span>
+<span class="n">K_POINTS</span> <span class="n">crystal</span>
+          <span class="mi">98</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0312500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0625000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0937500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1250000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1562500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1875000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2187500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2500000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2812500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3125000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3437500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3750000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4062500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4375000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4687500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4814811111</span>    <span class="mf">0.0370366667</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4629622222</span>    <span class="mf">0.0740733333</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4444433333</span>    <span class="mf">0.1111100000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4259244444</span>    <span class="mf">0.1481466667</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4074055556</span>    <span class="mf">0.1851833333</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3888866667</span>    <span class="mf">0.2222200000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3703677778</span>    <span class="mf">0.2592566667</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3518488889</span>    <span class="mf">0.2962933333</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3333300000</span>    <span class="mf">0.3333300000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3157863158</span>    <span class="mf">0.3157863158</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2982426316</span>    <span class="mf">0.2982426316</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2806989474</span>    <span class="mf">0.2806989474</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2631552632</span>    <span class="mf">0.2631552632</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2456115789</span>    <span class="mf">0.2456115789</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2280678947</span>    <span class="mf">0.2280678947</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2105242105</span>    <span class="mf">0.2105242105</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1929805263</span>    <span class="mf">0.1929805263</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1754368421</span>    <span class="mf">0.1754368421</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1578931579</span>    <span class="mf">0.1578931579</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1403494737</span>    <span class="mf">0.1403494737</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1228057895</span>    <span class="mf">0.1228057895</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1052621053</span>    <span class="mf">0.1052621053</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0877184211</span>    <span class="mf">0.0877184211</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0701747368</span>    <span class="mf">0.0701747368</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0526310526</span>    <span class="mf">0.0526310526</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0350873684</span>    <span class="mf">0.0350873684</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0175436842</span>    <span class="mf">0.0175436842</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0555555556</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.1111111111</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.1666666667</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.2222222222</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.2777777778</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.3333333333</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.3888888889</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.4444444444</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0312500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0625000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0937500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1250000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1562500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1875000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2187500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2500000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2812500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3125000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3437500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3750000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4062500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4375000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4687500000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4814811111</span>    <span class="mf">0.0370366667</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4629622222</span>    <span class="mf">0.0740733333</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4444433333</span>    <span class="mf">0.1111100000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4259244444</span>    <span class="mf">0.1481466667</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4074055556</span>    <span class="mf">0.1851833333</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3888866667</span>    <span class="mf">0.2222200000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3703677778</span>    <span class="mf">0.2592566667</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3518488889</span>    <span class="mf">0.2962933333</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3333300000</span>    <span class="mf">0.3333300000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3157863158</span>    <span class="mf">0.3157863158</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2982426316</span>    <span class="mf">0.2982426316</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2806989474</span>    <span class="mf">0.2806989474</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2631552632</span>    <span class="mf">0.2631552632</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2456115789</span>    <span class="mf">0.2456115789</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2280678947</span>    <span class="mf">0.2280678947</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2105242105</span>    <span class="mf">0.2105242105</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1929805263</span>    <span class="mf">0.1929805263</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1754368421</span>    <span class="mf">0.1754368421</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1578931579</span>    <span class="mf">0.1578931579</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1403494737</span>    <span class="mf">0.1403494737</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1228057895</span>    <span class="mf">0.1228057895</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1052621053</span>    <span class="mf">0.1052621053</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0877184211</span>    <span class="mf">0.0877184211</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0701747368</span>    <span class="mf">0.0701747368</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0526310526</span>    <span class="mf">0.0526310526</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0350873684</span>    <span class="mf">0.0350873684</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0175436842</span>    <span class="mf">0.0175436842</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> pw.x -in band_nis.in
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../../_downloads/b5efbf9140a62d746c79382f33eeeeed/bands_nis.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_nis.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&amp;BANDS
+prefix = &quot;nis&quot;,
+outdir = &quot;./&quot;,
+!filband = &quot;band.dat&quot;
+!lsym = .true.
+/
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> bands.x -in bands_nis.in
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="n">plot</span> <span class="p">[][</span><span class="mi">3</span><span class="p">:</span><span class="mi">13</span><span class="p">]</span> <span class="ss">&quot;bands.out.gnu&quot;</span> <span class="n">u</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span> <span class="n">w</span> <span class="n">p</span> <span class="n">tit</span> <span class="ss">&quot;Orig&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">.</span><span class="mi">913</span> <span class="n">tit</span> <span class="ss">&quot;E_F&quot;</span><span class="p">,</span><span class="err">\</span>
+ <span class="ss">&quot;nis_band.dat&quot;</span> <span class="n">u</span> <span class="p">(</span><span class="err">$</span><span class="mi">1</span><span class="o">*</span><span class="mi">0</span><span class="p">.</span><span class="mi">549</span><span class="p">):</span><span class="mi">2</span> <span class="n">tit</span> <span class="ss">&quot;Wannier&quot;</span> <span class="n">w</span> <span class="n">l</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/band_nis.png"><img alt="../../_images/band_nis.png" class="align-center" src="../../_images/band_nis.png" style="width: 500px;" /></a>
+</div>
+</div>
+<div class="section" id="dmft-calculation">
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" download="" href="../../_downloads/1558704bd4370f3c45a0765acf74bd82/nis.ini"><code class="xref download docutils literal notranslate"><span class="pre">nis.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
+<span class="na">seedname</span> <span class="o">=</span> <span class="s">nis</span>
+<span class="na">nelec</span> <span class="o">=</span> <span class="s">28.0</span>
+<span class="na">ncor</span> <span class="o">=</span> <span class="s">2</span>
+<span class="na">norb</span> <span class="o">=</span> <span class="s">5, 5</span>
+<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(3.0, 1.5, 0.75), (3.0, 1.5, 0.75)]</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.822263, 1.052084, 0.0),(0.0, 2.104168, 0.0),(0.0, 0.0, 1.172476)]</span>
+
+<span class="k">[system]</span>
+<span class="na">nk0</span> <span class="o">=</span> <span class="s">4</span>
+<span class="na">nk1</span> <span class="o">=</span> <span class="s">4</span>
+<span class="na">nk2</span> <span class="o">=</span> <span class="s">4</span>
+<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
+<span class="na">mu</span> <span class="o">=</span> <span class="s">10.928</span>
+<span class="na">with_dc</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">n_iw</span> <span class="o">=</span> <span class="s">1000</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/hubbard-I</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span> <span class="o">=</span> <span class="s">15</span>
+<span class="na">restart</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[tool]</span>
+<span class="na">broadening</span> <span class="o">=</span> <span class="s">0.1</span>
+<span class="na">nk_line</span> <span class="o">=</span> <span class="s">50</span>
+<span class="na">nnode</span> <span class="o">=</span> <span class="s">8</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(M,0.5,0.0,0.0),(K,0.3333333333,0.3333333333,0.0),(G,0.0,0.0,0.0),(A,0.0,0.0,0.5),(L,0.5,0.0,0.5),(H,0.3333333333,0.3333333333,0.5),(A,0.0,0.0,0.5)]</span>
+<span class="na">omega_max</span> <span class="o">=</span><span class="s">3.0</span>
+<span class="na">omega_min</span> <span class="o">=</span><span class="s">-10.0</span>
+<span class="na">Nomega</span> <span class="o">=</span> <span class="s">500</span>
+</pre></div>
+</div>
+<div class="section" id="dmft-setup-dcore-pre">
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre nis.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-self-consistent-dmft-calculation-dcore">
+<h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore nis.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-processing-and-data-analysis-dcore-post">
+<h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post nis.ini
+$ gnuplot nis_akw.gp
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/akw_nis.png"><img alt="../../_images/akw_nis.png" class="align-center" src="../../_images/akw_nis.png" style="width: 500px;" /></a>
+<p>“+” indicates the original band structure.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../contents.html">
+              <img class="logo" src="../../_static/logo_dcore1.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../basicnotions/structure.html">Minimum introduction: Structure of DCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../square/square.html">The first example: 2D Hubbard model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bethe-t2g/bethe.html">Multiorbital model by a QMC solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../spin_orbit/spin_orbit.html">Spin-Orbit Coupling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../afm/afm.html">Antiferromagnetic state in 3D Hubbard model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../qe.html">QuantumESPRESSO + Wannier90</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../srvo3_openmx/openmx.html">OpenMX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pb/pb.html">Spin-orbit interaction: The case with Pb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pb4/pb4.html">Multi-atoms: Revisiting Pb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../srvo3_respack/respack.html">Downfolding with RESPACK (SrVO<sub>3</sub>)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../qe.html"
+                        title="previous chapter">QuantumESPRESSO + Wannier90</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../srvo3_qe/srvo3.html"
+                        title="next chapter">SrVO<sub>3</sub></a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../srvo3_qe/srvo3.html" title="SrVO3"
+             >next</a></li>
+        <li class="right" >
+          <a href="../qe.html" title="QuantumESPRESSO + Wannier90"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" >Tutorial</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../qe.html" >QuantumESPRESSO + Wannier90</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
