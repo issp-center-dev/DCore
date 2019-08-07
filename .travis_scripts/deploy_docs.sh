@@ -1,8 +1,23 @@
 # This is a pull request, finish.
-if [ "_$TRAVIS_PULL_REQUEST" != "_false" ] ;then exit 0; fi
+if [ "_$TRAVIS_PULL_REQUEST" != "_false" ] ;then
+  echo "This is a pull request, do nothing."
+  exit 0;
+fi
 # build doc if and only if master, develop, xxx-autodoc, and tag
 feature_branch=${TRAVIS_BRANCH%-autodoc}
-if [ "_$TRAVIS_BRANCH" != "_master" ] && [ "_$TRAVIS_BRANCH" != "_develop" ] && [ "_${feature_branch}" == "_${TRAVIS_BRANCH}" ] && [ -z "$TRAVIS_TAG" ] ; then exit 0; fi
+
+if [ "_$TRAVIS_BRANCH" == "_master" ]; then
+  echo "This is the master branch, deploy docs."
+elif [ "_$TRAVIS_BRANCH" == "_develop" ]; then
+  echo "This is the develop branch, deploy docs."
+elif [ "_${feature_branch}" != "_${TRAVIS_BRANCH}" ]; then
+  echo "This is an auto-documented branch, deploy docs."
+elif [ -n "$TRAVIS_TAG" ]; then
+  echo "This is a versioned tag, deploy docs."
+else;
+  echo "Do nothing."
+  exit 0
+fi
 
 
 openssl aes-256-cbc -K $encrypted_0f0c7c69c924_key -iv $encrypted_0f0c7c69c924_iv -in ${ROOTDIR}/.travis_scripts/id_rsa.enc -out ~/.ssh/id_rsa -d
