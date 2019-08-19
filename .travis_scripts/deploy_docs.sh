@@ -14,7 +14,7 @@ elif [ "_${feature_branch}" != "_${TRAVIS_BRANCH}" ]; then
   echo "This is an auto-documented branch, deploy docs."
 elif [ -n "$TRAVIS_TAG" ]; then
   echo "This is a versioned tag, deploy docs."
-else;
+else
   echo "Do nothing."
   exit 0
 fi
