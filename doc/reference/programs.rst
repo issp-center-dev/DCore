@@ -156,7 +156,7 @@ The computed spectral function can be drawn by
 Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
 *seedname*\_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.
 
-.. image:: ../tutorial/srvo3_qe/akw_srvo3.png
+.. image:: ../tutorial/srvo3/akw_srvo3.png
    :width: 500
    :align: center
 
