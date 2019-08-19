@@ -1,0 +1,454 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Multi-atoms: Revisiting Pb &#8212; DCore 2.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Downfolding with RESPACK (SrVO3)" href="../srvo3_respack/respack.html" />
+    <link rel="prev" title="Spin-orbit interaction: The case with Pb" href="../pb/pb.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../srvo3_respack/respack.html" title="Downfolding with RESPACK (SrVO3)"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../pb/pb.html" title="Spin-orbit interaction: The case with Pb"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" accesskey="U">Tutorial</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="multi-atoms-revisiting-pb">
+<h1>Multi-atoms: Revisiting Pb<a class="headerlink" href="#multi-atoms-revisiting-pb" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This document was written for ver.1.x, and might include descriptions incompatible with the latest version.
+If you encounter some problem, see the release note of ver.2.0 and check the differences between ver.1.x and ver.2.0.</p>
+</div>
+<p>In this tutorial, we perform the DMFT calculation of Pb with the spin-orbit interaction.
+We compute fcc-Pb, however, we treat it as a four-atom system in the simple cubic cell.
+This redundancy is just for demonstrating <strong>how we compute multi-shell system with SOI</strong>.
+In this tutorial, we use TRIQS/cthyb solver with SOI;
+this requires additional options of CMake for that solver.
+For more details, please see <a class="reference internal" href="../../install.html#installation"><span class="std std-ref">Installation</span></a>.</p>
+<a class="reference internal image-reference" href="../../_images/pb4_struct.png"><img alt="../../_images/pb4_struct.png" class="align-center" src="../../_images/pb4_struct.png" style="width: 200px;" /></a>
+<div class="section" id="scf-calculation-of-quantum-espresso">
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" download="" href="../../_downloads/3a167901035422b8f5267bd321c662a5/scf_pb4.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_pb4.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;pb&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">1</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">40.000000</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">320.000000</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;smearing&#39;</span>
+    <span class="n">smearing</span> <span class="o">=</span> <span class="s2">&quot;m-p&quot;</span>
+     <span class="n">degauss</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="n">noncolin</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+    <span class="n">lspinorb</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+    <span class="n">mixing_beta</span> <span class="o">=</span> <span class="mf">0.1</span>
+ <span class="n">diago_full_acc</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="o">/</span>
+<span class="n">CELL_PARAMETERS</span> <span class="n">angstrom</span>
+<span class="mf">4.9402</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>
+<span class="mf">0.0</span>  <span class="mf">4.9402</span>  <span class="mf">0.0</span>
+<span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">4.9402</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Pb</span> <span class="mf">207.200000</span> <span class="n">Pb</span><span class="o">.</span><span class="n">rel</span><span class="o">-</span><span class="n">pbe</span><span class="o">-</span><span class="n">dn</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="mf">2.</span><span class="n">UPF</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Pb</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="n">Pb</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">Pb</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span>
+ <span class="n">Pb</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="n">K_POINTS</span> <span class="n">automatic</span>
+ <span class="mi">6</span> <span class="mi">6</span> <span class="mi">6</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>The pseudopotential is included in
+<a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/rel-pbe.0.3.1.tgz">rel-pbe.0.3.1.tgz</a>
+of the <a class="reference external" href="http://theossrv1.epfl.ch/Main/Pseudopotentials">THEOS PSLibrary</a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in scf_pb4.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannierization">
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="generate-bloch-orbitals-for-the-wannier">
+<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this headline">¶</a></h3>
+<p>Perform non-scf calculation for generating Bloch orbitals that are used
+in the wannierization.</p>
+<p><a class="reference download internal" download="" href="../../_downloads/46e9f05f31b186276bec8bb47e5f1672/nscf_pb4.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_pb4.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;pb&#39;</span>
+  <span class="n">wf_collect</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+        <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">120</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">1</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">40.000000</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">320.000000</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span>
+    <span class="n">noncolin</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+    <span class="n">lspinorb</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+<span class="o">/</span>
+<span class="n">CELL_PARAMETERS</span> <span class="n">angstrom</span>
+<span class="mf">4.9402</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>
+<span class="mf">0.0</span>  <span class="mf">4.9402</span>  <span class="mf">0.0</span>
+<span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">4.9402</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Pb</span> <span class="mf">207.200000</span> <span class="n">Pb</span><span class="o">.</span><span class="n">rel</span><span class="o">-</span><span class="n">pbe</span><span class="o">-</span><span class="n">dn</span><span class="o">-</span><span class="n">kjpaw_psl</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="mf">2.</span><span class="n">UPF</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Pb</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="n">Pb</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">Pb</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span>
+ <span class="n">Pb</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="n">K_POINTS</span> <span class="n">crystal</span>
+<span class="mi">27</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">3.703704e-02</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">3.703704e-02</span> 
+</pre></div>
+</div>
+<p>This <em>k</em>-grid is generated as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kmesh.pl <span class="m">3</span> <span class="m">3</span> <span class="m">3</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">kmesh.pl</span></code> is located in the <cite>utility/</cite> directory of Wannier90.</p>
+<p>Then, run <code class="docutils literal notranslate"><span class="pre">pw.x</span></code> as</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in nscf_pb4.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="pre-process-for-wannier90">
+<h3>Pre-process for Wannier90<a class="headerlink" href="#pre-process-for-wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Pre-process with wannier90 program.
+It is always required before pw2wannier.x runs.
+We will wannierize Pb 6p orbitals.</p>
+<p><a class="reference download internal" download="" href="../../_downloads/7a4c73d94c5037b6d4d9695b64c546ac/pb4.win"><code class="xref download docutils literal notranslate"><span class="pre">pb4.win</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">num_bands</span>         <span class="o">=</span>  <span class="mi">120</span> 
+<span class="n">num_wann</span>          <span class="o">=</span>   <span class="mi">24</span>
+<span class="n">spinors</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+
+<span class="n">dis_win_max</span> <span class="o">=</span>  <span class="mf">25.0</span>
+<span class="n">dis_win_min</span> <span class="o">=</span>  <span class="mf">5.84</span>
+<span class="n">dis_froz_max</span> <span class="o">=</span> <span class="mf">15.23</span>
+<span class="n">dis_froz_min</span> <span class="o">=</span> <span class="mf">5.84</span>
+
+<span class="n">begin</span> <span class="n">projections</span>
+<span class="n">Pb1</span><span class="p">:</span><span class="n">p</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">Pb1</span><span class="p">:</span><span class="n">p</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">Pb2</span><span class="p">:</span><span class="n">p</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">Pb2</span><span class="p">:</span><span class="n">p</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">Pb3</span><span class="p">:</span><span class="n">p</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">Pb3</span><span class="p">:</span><span class="n">p</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">Pb4</span><span class="p">:</span><span class="n">p</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">Pb4</span><span class="p">:</span><span class="n">p</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">end</span> <span class="n">projections</span>
+
+<span class="n">write_hr</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="n">bands_plot</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+
+<span class="n">wannier_plot_supercell</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">begin</span> <span class="n">kpoint_path</span>
+<span class="n">G</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>     <span class="n">X</span>  <span class="mf">0.5</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>     
+<span class="n">X</span>  <span class="mf">0.5</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>     <span class="n">M</span>  <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">0.0</span>     
+<span class="n">M</span>  <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">0.0</span>     <span class="n">G</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>     
+<span class="n">G</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>     <span class="n">R</span>  <span class="mf">0.5</span>  <span class="mf">0.5</span>  <span class="mf">0.5</span>     
+<span class="n">end</span> <span class="n">kpoint_path</span>
+
+<span class="n">begin</span> <span class="n">unit_cell_cart</span>
+<span class="n">Ang</span>
+<span class="mf">4.9402</span>  <span class="mf">0.0</span>  <span class="mf">0.0</span>
+<span class="mf">0.0</span>  <span class="mf">4.9402</span>  <span class="mf">0.0</span>
+<span class="mf">0.0</span>  <span class="mf">0.0</span>  <span class="mf">4.9402</span>
+<span class="n">end</span> <span class="n">unit_cell_cart</span>
+
+<span class="n">begin</span> <span class="n">atoms_frac</span>
+ <span class="n">Pb1</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="n">Pb2</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">Pb3</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span>
+ <span class="n">Pb4</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="n">end</span> <span class="n">atoms_frac</span>
+
+<span class="n">mp_grid</span>           <span class="o">=</span> <span class="mi">3</span> <span class="mi">3</span> <span class="mi">3</span>
+
+<span class="n">begin</span> <span class="n">kpoints</span>
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span>  <span class="mf">0.66666667</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span>  <span class="mf">0.66666667</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">0.00000000</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">0.33333333</span> 
+  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span> 
+<span class="n">end</span> <span class="n">kpoints</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>For the following DMFT calculation,
+the projection of the Wannier function should be the correct order, namely,</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">begin</span> <span class="n">projections</span>
+<span class="n">First_shell</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">First_shell</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">Second_shell</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">Second_shell</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="p">:</span>
+<span class="n">end</span> <span class="n">projections</span>
+</pre></div>
+</div>
+</div>
+<p>The <em>k</em> grid is generated as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kmesh.pl <span class="m">3</span> <span class="m">3</span> <span class="m">3</span> wan
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wannier90.x -pp pb4
+</pre></div>
+</div>
+</div>
+<div class="section" id="qe-to-wannier90-interface">
+<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference download internal" download="" href="../../_downloads/ebb32bc07ab2c4634f02d550707ed548/pw2wan_pb4.in"><code class="xref download docutils literal notranslate"><span class="pre">pw2wan_pb4.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">inputpp</span> 
+   <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+   <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;pb&#39;</span>
+   <span class="n">seedname</span> <span class="o">=</span> <span class="s1">&#39;pb&#39;</span>
+   <span class="n">spin_component</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+   <span class="n">write_mmn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+   <span class="n">write_amn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+   <span class="n">wan_mode</span> <span class="o">=</span> <span class="s1">&#39;standalone&#39;</span>
+   <span class="n">write_spn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+<span class="o">/</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw2wan.x -in pw2wan_pb4.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannier90">
+<h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
+<p>Execute <code class="docutils literal notranslate"><span class="pre">wannier90.x</span></code> for the actual wannierization.
+The input file is the same as that for the pre-processing run.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wannier90 pb
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="dmft-calculation">
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" download="" href="../../_downloads/242b91cc7f29374e6ec2f9b1c968cde5/pb4.ini"><code class="xref download docutils literal notranslate"><span class="pre">pb4.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
+<span class="na">seedname</span> <span class="o">=</span> <span class="s">pb</span>
+<span class="na">nelec</span> <span class="o">=</span> <span class="s">8.0</span>
+<span class="na">ncor</span> <span class="o">=</span> <span class="s">4</span>
+<span class="na">norb</span> <span class="o">=</span> <span class="s">6, 6, 6, 6</span>
+<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(4.75, 3.965, 0.3632), (4.75, 3.965, 0.3632), (4.75, 3.965, 0.3632), (4.75, 3.965, 0.3632)]</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.271848,0.0,0.0),(0.0,1.271848,0.0),(0.0,0.0,1.271848)]</span>
+<span class="na">spin_orbit</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[system]</span>
+<span class="na">nk0</span> <span class="o">=</span> <span class="s">12</span>
+<span class="na">nk1</span> <span class="o">=</span> <span class="s">12</span>
+<span class="na">nk2</span> <span class="o">=</span> <span class="s">12</span>
+<span class="na">beta</span> <span class="o">=</span> <span class="s">10.0</span>
+<span class="na">with_dc</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">mu</span> <span class="o">=</span> <span class="s">11.279</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
+<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">100000</span>
+<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
+<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">500</span>
+<span class="na">move_double{bool}</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">verbosity{int}</span> <span class="o">=</span> <span class="s">10</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span> <span class="o">=</span> <span class="s">20</span>
+<span class="na">restart</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[tool]</span>
+<span class="na">broadening</span> <span class="o">=</span> <span class="s">0.1</span>
+<span class="na">nk_line</span> <span class="o">=</span> <span class="s">50</span>
+<span class="na">nnode</span> <span class="o">=</span> <span class="s">5</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0), (X,0.5,0.0,0.0), (M,0.5,0.5,0.0), (G,0.0,0.0,0.0), (R,0.5,0.5,0.5)]</span>
+<span class="na">omega_max</span> <span class="o">=</span><span class="s">10.0</span>
+<span class="na">omega_min</span> <span class="o">=</span><span class="s">-6.0</span>
+<span class="na">Nomega</span> <span class="o">=</span> <span class="s">500</span>
+<span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
+<span class="na">omega_pade</span> <span class="o">=</span> <span class="s">150.0</span>
+</pre></div>
+</div>
+<div class="section" id="dmft-setup-dcore-pre">
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre pb4.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-self-consistent-dft-dmft-dcore">
+<h3>Running self-consistent DFT+DMFT : dcore<a class="headerlink" href="#running-self-consistent-dft-dmft-dcore" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">432</span> dcore pb4.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-processing-and-data-analysis-dcore-post">
+<h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post pb4.ini
+$ gnuplot pb4_akw.gp
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/akw_pb4.png"><img alt="../../_images/akw_pb4.png" class="align-center" src="../../_images/akw_pb4.png" style="width: 500px;" /></a>
+<p>“+” indicates the original band structure.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../contents.html">
+              <img class="logo" src="../../_static/logo_dcore1.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../basicnotions/structure.html">Minimum introduction: Structure of DCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../square/square.html">The first example: 2D Hubbard model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bethe-t2g/bethe.html">Multiorbital model by a QMC solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../spin_orbit/spin_orbit.html">Spin-Orbit Coupling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../afm/afm.html">Antiferromagnetic state in 3D Hubbard model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../srvo3/srvo3.html">SrVO<sub>3</sub></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pb/pb.html">Spin-orbit interaction: The case with Pb</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Multi-atoms: Revisiting Pb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../srvo3_respack/respack.html">Downfolding with RESPACK (SrVO<sub>3</sub>)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../pb/pb.html"
+                        title="previous chapter">Spin-orbit interaction: The case with Pb</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../srvo3_respack/respack.html"
+                        title="next chapter">Downfolding with RESPACK (SrVO<sub>3</sub>)</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../srvo3_respack/respack.html" title="Downfolding with RESPACK (SrVO3)"
+             >next</a></li>
+        <li class="right" >
+          <a href="../pb/pb.html" title="Spin-orbit interaction: The case with Pb"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" >Tutorial</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
