@@ -22,9 +22,11 @@ import os
 import sys
 import copy
 import numpy
-from pytriqs.archive import HDFArchive
 import h5py
 import ast
+import time
+
+from pytriqs.archive import HDFArchive
 
 from .dmft_core import DMFTCoreSolver
 from .program_options import create_parser, parse_parameters
@@ -158,6 +160,10 @@ def gen_sparse_freqs_fix_boson(boson_freq, Lambda, sv_cutoff):
 
     """
     # import irbasis
+    from packaging.version import parse
+    import irbasis_util
+    if parse(irbasis_util.__version__) < parse('0.8'):
+        raise RuntimeError('Please update irbasis-utility library!')
     from irbasis_util.four_point_ph_view import FourPointPHView
 
     print("  sparse_freqs: boson_freq = %3d," % boson_freq, end="")
@@ -521,6 +527,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         os.chdir(work_dir)
 
         if not save_only:
+            t1 = time.time()
             for b in range(self._params['bse']['num_wb']):
                 print('  wb={}...'.format(b))
                 sys.stdout.flush()
@@ -538,6 +545,9 @@ class DMFTBSESolver(DMFTCoreSolver):
                     commands = map(str, commands)
                     launch_mpi_subprocesses(self._mpirun_command, commands, fout)
                 sys.stdout.flush()
+            t2 = time.time()
+            print('Fit ran for {} seconds'.format(t2-t1))
+            sys.stdout.flush()
     
         # save interpolated data for BSE
         print('\n saving Xloc for BSE...')
