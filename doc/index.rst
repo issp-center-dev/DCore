@@ -55,8 +55,8 @@ In addition to the above two libraries, you may use impurity solvers listed belo
 
 * `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/about.html>`_
 * `TRIQS/hubbardI <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/about.html>`_
-* `ALPSCore/CT-HYB <https://github.com/ALPSCore/CT-HYB/wiki/Citation>`_
-* `ALPSCore/CT-HYB-SEGMENT <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_
+* `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB/wiki/Citation>`_
+* `ALPS/CT-HYB-SEGMENT <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_
 
 For some of them, they provide a BibTeX entry for each paper in the above cites.
 
