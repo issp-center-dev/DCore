@@ -25,11 +25,4 @@ Tutorial
 
    tutorial/srvo3/srvo3.rst
 
-Tutorials for DCore 1.1
-
-.. toctree::
-   :maxdepth: 2
-
-   tutorial/pb/pb
-   tutorial/pb4/pb4
-   tutorial/srvo3_respack/respack
+More examples are found in the directory "examples".
