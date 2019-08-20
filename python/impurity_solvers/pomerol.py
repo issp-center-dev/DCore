@@ -279,12 +279,13 @@ class PomerolSolver(SolverBase):
 
         return x_loc, chi_loc
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         """
 
         Parameters
         ----------
         freqs_ph : numpy.ndarray[N, 3]  frequency points (in the order of boson, fermion, fermion)
+        num_wb : for chi_loc
 
         Returns
         -------
@@ -306,6 +307,7 @@ class PomerolSolver(SolverBase):
         params_kw['flag_vx'] = 1
         params_kw['file_freqs'] = file_freqs
         params_kw['flag_suscep'] = 1
+        params_kw['n_wb'] = num_wb
 
         self.solve(rot, mpirun_command, params_kw)
 

@@ -74,7 +74,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     if flag_box:
         xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
     else:
-        xloc, chiloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, s_params)
+        xloc, chiloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, num_wb, s_params)
 
     # Check results for x_loc
     print("\n checking x_loc...")

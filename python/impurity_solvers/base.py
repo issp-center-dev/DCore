@@ -147,14 +147,15 @@ class SolverBase(object):
 
     def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
-        Compute Xloc(n, n', m) in p-h channel
+        Compute Xloc(m, n, n') in p-h channel
+                and chi_loc(m) (optional)
 
 
         Parameters
         ----------
         num_wf:
             Number of non-negative fermionic frequencies
-        num_wb
+        num_wb:
             Number of non-negative bosonic frequencies
 
         The other parameters are the same as for solve().
@@ -162,15 +163,19 @@ class SolverBase(object):
         Returns
         -------
 
-        Xloc(n, n', m) : 3d ndarray of complex type
+        Xloc(m, n, n') : 3d ndarray of complex type
             Data for -num_wf <= n, n' < num_wf and m = 0, 1, ..., num_wb-1.
+
+        chi_loc(m) : 1d ndarray of complex type
+            return None if not computed
 
         """
         pass
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         """
-        Compute Xloc(n, n', m) in p-h channel only for specified frequency points
+        Compute Xloc(m, n, n') in p-h channel only for specified frequency points
+                and chi_loc(m) (optional)
 
         Parameters
         ----------
@@ -183,11 +188,16 @@ class SolverBase(object):
             in the particle-hole convention.
             These frequencies must be given in the order of (boson, fermion, fermion).
 
+        num_wb:
+            for chi_loc
+
         params_kw:
             The same as solve()
 
         Returns
         -------
+        Xloc
+        chi_loc
 
         """
         pass
