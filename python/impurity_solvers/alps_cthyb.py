@@ -127,10 +127,10 @@ class ALPSCTHYBSolver(SolverBase):
     def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         raise RuntimeError("calc_Xloc_ph is not implemented!")
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         self._solve_impl(rot, mpirun_command, freqs_ph, params_kw)
 
-        return self._Xloc_ph_sparse
+        return self._Xloc_ph_sparse, None
 
     def _solve_impl(self, rot, mpirun_command, freqs_ph, params_kw):
         """

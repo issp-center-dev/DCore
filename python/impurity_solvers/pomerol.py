@@ -29,7 +29,7 @@ from pytriqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
 
-VERSION_REQUIRED = 1.0
+VERSION_REQUIRED = 1.2
 
 
 def check_version(_exec):
@@ -127,9 +127,13 @@ class PomerolSolver(SolverBase):
 
         # for BSE
         flag_vx = params_kw.get('flag_vx', 0)
-        n_w2f = params_kw.get('num_wf', None)
-        n_w2b = params_kw.get('num_wb', None)
+        n_w2f = params_kw.get('n_w2f', None)
+        n_w2b = params_kw.get('n_w2b', None)
         file_freqs = params_kw.get('file_freqs', None)
+
+        # dynamical susceptibility
+        flag_suscep = params_kw.get('flag_suscep', 0)
+        n_wb = params_kw.get('n_wb', None)
 
         file_pomerol = "pomerol.in"
         file_h0 = "h0.in"
@@ -143,11 +147,13 @@ class PomerolSolver(SolverBase):
             'file_h0': file_h0,
             'file_umat': file_umat,
             'flag_gf': 1,
-            'n_w': self.n_iw,
+            'n_wf': self.n_iw,
             'flag_vx': flag_vx,
             'n_w2f': n_w2f,
             'n_w2b': n_w2b,
-            'file_freqs': file_freqs
+            'file_freqs': file_freqs,
+            'flag_suscep': flag_suscep,
+            'n_wb': n_wb,
         }
 
         with open(file_pomerol, "w") as f:
@@ -209,12 +215,10 @@ class PomerolSolver(SolverBase):
         g0_inv -= h0_block
         self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
 
-    def read_xloc(self, params_kw):
-        dir_g2 = params_kw.get('dir_g2', './two_particle')
-
+    def _read_common(self, dir_name, fac=1.0):
         x_loc = {}
         for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
-            filename = dir_g2 + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
+            filename = dir_name + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
             if not os.path.exists(filename):
                 continue
             print(" reading", filename)
@@ -222,9 +226,17 @@ class PomerolSolver(SolverBase):
             # load data as a complex type
             data = numpy.loadtxt(filename).view(complex).reshape(-1)
 
-            x_loc[(i1, i2, i3, i4)] = data / self.beta
+            x_loc[(i1, i2, i3, i4)] = data * fac
 
         return x_loc
+
+    def _read_xloc(self, params_kw):
+        dir_g2 = params_kw.get('dir_g2', './two_particle')
+        return self._read_common(dir_g2, 1./self.beta)
+
+    def _read_chiloc(self, params_kw):
+        dir_suscep = params_kw.get('dir_suscep', './susceptibility')
+        return self._read_common(dir_suscep)
 
     def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
@@ -245,26 +257,35 @@ class PomerolSolver(SolverBase):
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(n_w2b, 2*n_w2f, 2*n_w2f)
 
+        chi_loc : dict (None if not computed)
+            key = (i1, i2, i3, i4)
+            val = numpy.ndarray(n_w2b)
         """
 
         params_kw['flag_vx'] = 1
-        params_kw['num_wf'] = num_wf
-        params_kw['num_wb'] = num_wb
+        params_kw['n_w2f'] = num_wf
+        params_kw['n_w2b'] = num_wb
+        params_kw['flag_suscep'] = 1
+        params_kw['n_wb'] = num_wb
 
         self.solve(rot, mpirun_command, params_kw)
 
-        x_loc = self.read_xloc(params_kw)
+        x_loc = self._read_xloc(params_kw)
         # 1d array --> (wb, wf1, wf2)
         for key, data in x_loc.items():
             x_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
-        return x_loc
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
+        chi_loc = self._read_chiloc(params_kw)
+
+        return x_loc, chi_loc
+
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         """
 
         Parameters
         ----------
         freqs_ph : numpy.ndarray[N, 3]  frequency points (in the order of boson, fermion, fermion)
+        num_wb : for chi_loc
 
         Returns
         -------
@@ -272,6 +293,9 @@ class PomerolSolver(SolverBase):
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(N)
 
+        chi_loc : dict (None if not computed)
+            key = (i1, i2, i3, i4)
+            val = numpy.ndarray(n_w2b)
         """
 
         # Save frequencies list
@@ -282,11 +306,14 @@ class PomerolSolver(SolverBase):
 
         params_kw['flag_vx'] = 1
         params_kw['file_freqs'] = file_freqs
+        params_kw['flag_suscep'] = 1
+        params_kw['n_wb'] = num_wb
 
         self.solve(rot, mpirun_command, params_kw)
 
-        x_loc = self.read_xloc(params_kw)
-        return x_loc
+        x_loc = self._read_xloc(params_kw)
+        chi_loc = self._read_chiloc(params_kw)
+        return x_loc, chi_loc
 
     def name(self):
         return "pomerol"

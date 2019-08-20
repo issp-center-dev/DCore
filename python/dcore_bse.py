@@ -72,11 +72,11 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
 
     # Solve the model
     if flag_box:
-        xloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
+        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
     else:
-        xloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, s_params)
+        xloc, chiloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, num_wb, s_params)
 
-    # Check results
+    # Check results for x_loc
     print("\n checking x_loc...")
     assert isinstance(xloc, dict)
     for key, data in xloc.items():
@@ -87,9 +87,18 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
             assert data.shape == (freqs.shape[0],)
     print(" OK")
 
+    # Check results for chi_loc
+    if chiloc is not None:
+        print("\n checking chi_loc...")
+        assert isinstance(chiloc, dict)
+        for key, data in chiloc.items():
+            print("  ", key)
+            assert data.shape == (num_wb, )
+        print(" OK")
+
     os.chdir(work_dir_org)
 
-    return xloc, sol.get_Gimp_iw()
+    return xloc, chiloc, sol.get_Gimp_iw()
 
 
 def subtract_disconnected(xloc, gimp, spin_names, freqs=None):
@@ -268,7 +277,7 @@ class SaveBSE:
         else:
             raise ValueError("bse_info =", bse_info)
 
-    def save_xloc(self, xloc_ijkl, icrsh):
+    def _save_common(self, xloc_ijkl, icrsh, key_type):
 
         h5bse = h5BSE(self.h5_file, self.bse_grp)
 
@@ -306,10 +315,16 @@ class SaveBSE:
 
                 if (s12, s34) not in xloc_bse:
                     xloc_bse[(s12, s34)] = numpy.zeros((n_inner2, n_inner2) + data_wb.shape, dtype=complex)
-                xloc_bse[(s12, s34)][inner12, inner34, :, :] = data_wb[:, :]
+                xloc_bse[(s12, s34)][inner12, inner34] = data_wb  # copy
 
             # save
-            h5bse.save(key=('X_loc', wb), data=xloc_bse)
+            h5bse.save(key=(key_type, wb), data=xloc_bse)
+
+    def save_xloc(self, xloc_ijkl, icrsh):
+        self._save_common(xloc_ijkl, icrsh, 'X_loc')
+
+    def save_chiloc(self, chiloc_ijkl, icrsh):
+        self._save_common(chiloc_ijkl, icrsh, 'chi_loc')
 
     def save_gamma0(self, u_mat, icrsh):
 
@@ -478,22 +493,27 @@ class DMFTBSESolver(DMFTCoreSolver):
         for ish in range(self._n_inequiv_shells):
             print("\nSolving impurity model for inequivalent shell " + str(ish) + " ...")
             sys.stdout.flush()
-            x_loc, g_imp = calc_g2_in_impurity_model(solver_name, self._solver_params, self._mpirun_command,
-                                                     self._params["impurity_solver"]["basis_rotation"],
-                                                     self._Umat[ish], self._gf_struct[ish], self._beta, self._n_iw,
-                                                     self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
-                                                     self._params['bse']['num_wb'],
-                                                     self._params['bse']['num_wf'], ish, freqs=freqs)
+            x_loc, chi_loc, g_imp = calc_g2_in_impurity_model(solver_name, self._solver_params, self._mpirun_command,
+                                                              self._params["impurity_solver"]["basis_rotation"],
+                                                              self._Umat[ish], self._gf_struct[ish],
+                                                              self._beta, self._n_iw,
+                                                              self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
+                                                              self._params['bse']['num_wb'],
+                                                              self._params['bse']['num_wf'], ish, freqs=freqs)
 
             subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
 
-            # save X_loc
+            # save X_loc, chi_loc
             for icrsh in range(self._n_corr_shells):
                 if ish == self._sk.corr_to_inequiv[icrsh]:
+                    # X_loc
                     if flag_sparse:
                         bse.save_xloc_sparse(x_loc, icrsh=icrsh)
                     else:
                         bse.save_xloc(x_loc, icrsh=icrsh)
+                    # chi_loc
+                    if chi_loc is not None:
+                        bse.save_chiloc(chi_loc, icrsh=icrsh)
 
     def calc_bse(self):
         """
