@@ -519,9 +519,9 @@ class DMFTCoreSolver(object):
                                  self._beta, self._n_iw,
                                  self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, work_dir)
             if make_hermite_conjugate(Sigma_iw) > 1e-8:
-                raise RuntimeError("Sigma_iw is not hermite conjugate!")
+                print("Warning: Sigma_iw is not hermite conjugate!")
             if make_hermite_conjugate(Gimp_iw) > 1e-8:
-                raise RuntimeError("Gimp_iw is not hermite conjugate!")
+                print("Warning: Gimp_iw is not hermite conjugate!")
 
             Sigma_iw_sh.append(Sigma_iw)
             if not mesh is None:
@@ -650,6 +650,7 @@ class DMFTCoreSolver(object):
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
 
+            print("\nWall Time : %.1f sec" % (time.time() - t0))
             sys.stdout.flush()
             print("")
             print("#####################################################################")
@@ -669,9 +670,11 @@ class DMFTCoreSolver(object):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, float(Gloc_iw_sh[ish].total_density())))
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
-
             sys.stdout.flush()
+
             new_Sigma_iw, new_Gimp_iw = self.solve_impurity_models(Gloc_iw_sh, iteration_number)
+
+            print("\nWall Time : %.1f sec" % (time.time() - t0))
             sys.stdout.flush()
 
             # Solved. Now do post-processing:
