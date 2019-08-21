@@ -32,15 +32,19 @@ DMFT calculation
 .. literalinclude:: srvo3.ini
    :language: ini
 
-Please see :ref:`howtocthyb` for the details of the parameter setting.
+To use TRIQS/cthyb, please use 
 
-.. note::
+.. literalinclude:: srvo3_triqs_cthyb.ini
+   :language: ini
 
-   The parameter ``n_cycles{int}`` should be tuned in inverse proportion to the number of MPI processes.
-   The following result is obtained with 432 MPI processes at ``n_cycles{int} = 10000``
-   (70 seconds per DMFT cycle on ISSP system B).
-   If we want to compute by using 32 MPI processes at the same accuracy,
-   ``n_cycles{int}`` should be 10000\*432/32=135000.
+instead.
+Please see :ref:`howtocthyb` for the details of the parameter setting for TRIQS/cthyb. 
+
+To generate reference data, we used 48 MPI processes (ISSP system B).
+The total computational time for 12 iterations is around 30 mins.
+
+The accuracy of QMC results can be improved by setting a longer simulation time (ALPS/CT-HYB) or a larger n_cycles (TRIQS/cthyb).
+For ALPS/CT-HYB, the parameter time_limit is given in seconds.
 
 DMFT setup: dcore_pre
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -54,18 +58,19 @@ Running self-consistent DMFT calculation: dcore
 
 .. code-block :: bash
 
-   $ dcore srvo3.ini --np 32
+   $ dcore srvo3.ini --np 48
 
 Post-processing and data analysis: dcore_post
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
-   $ dcore_post srvo3.ini --np 32
-   $ gnuplot nis_akw.gp
+   $ dcore_post srvo3.ini --np 48
+   $ cd post
+   $ gnuplot srvo3_akw.gp
 
 .. image:: akw_srvo3.png
    :width: 500
    :align: center
 
-"+" indicates the original band structure.
+The left and right panels show results for up and down spins, respectively.
