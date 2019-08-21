@@ -66,28 +66,27 @@ The procedure of Wanniernization is detailed in <a class="reference internal" hr
 <span class="na">norb</span> <span class="o">=</span> <span class="s">3</span>
 <span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(3.419, 2.315, 0.530)]</span>
 <span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span>
+<span class="na">nk0</span> <span class="o">=</span> <span class="s">10</span>
+<span class="na">nk1</span> <span class="o">=</span> <span class="s">10</span>
+<span class="na">nk2</span> <span class="o">=</span> <span class="s">10</span>
+
+<span class="k">[mpi]</span>
+<span class="na">command</span> <span class="o">=</span> <span class="s">&#39;$MPIRUN -np #&#39;</span>
 
 <span class="k">[system]</span>
-<span class="na">nk0</span> <span class="o">=</span> <span class="s">16</span>
-<span class="na">nk1</span> <span class="o">=</span> <span class="s">16</span>
-<span class="na">nk2</span> <span class="o">=</span> <span class="s">16</span>
 <span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
 <span class="na">mu</span> <span class="o">=</span> <span class="s">12.290722</span>
 <span class="na">with_dc</span> <span class="o">=</span> <span class="s">True</span>
-<span class="na">perform_tail_fit</span> <span class="o">=</span> <span class="s">True</span>
-<span class="na">fit_max_moment</span> <span class="o">=</span> <span class="s">8</span>
-<span class="na">fit_min_w</span> <span class="o">=</span> <span class="s">5.0</span>
-<span class="na">fit_max_w</span> <span class="o">=</span> <span class="s">19.0</span>
 
 <span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
-<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
-<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
-<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">500</span>
-<span class="na">move_double{bool}</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">ALPS/cthyb</span>
+<span class="na">timelimit{int}</span> <span class="o">=</span> <span class="s">90</span>
+<span class="na">exec_path{str}</span> <span class="o">=</span> <span class="s">hybmat</span>
 
 <span class="k">[control]</span>
-<span class="na">max_step</span> <span class="o">=</span> <span class="s">8</span>
+<span class="na">max_step</span> <span class="o">=</span> <span class="s">12</span>
+<span class="na">time_reversal</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">sigma_mix</span> <span class="o">=</span> <span class="s">0.8</span>
 
 <span class="k">[tool]</span>
 <span class="na">broadening</span> <span class="o">=</span> <span class="s">0.1</span>
@@ -98,18 +97,60 @@ The procedure of Wanniernization is detailed in <a class="reference internal" hr
 <span class="na">omega_min</span> <span class="o">=</span><span class="s">-2.0</span>
 <span class="na">Nomega</span> <span class="o">=</span> <span class="s">400</span>
 <span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
-<span class="na">omega_pade</span> <span class="o">=</span> <span class="s">4.0</span>
+<span class="na">omega_pade</span> <span class="o">=</span> <span class="s">2.0</span>
 </pre></div>
 </div>
-<p>Please see <a class="reference internal" href="../../impuritysolvers/triqs_cthyb/cthyb.html#howtocthyb"><span class="std std-ref">CT-QMC: TRIQS/cthyb</span></a> for the details of the parameter setting.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The parameter <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be tuned in inverse proportion to the number of MPI processes.
-The following result is obtained with 432 MPI processes at <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">10000</span></code>
-(70 seconds per DMFT cycle on ISSP system B).
-If we want to compute by using 32 MPI processes at the same accuracy,
-<code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be 10000*432/32=135000.</p>
+<p>To use TRIQS/cthyb, please use</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
+<span class="na">seedname</span> <span class="o">=</span> <span class="s">srvo3</span>
+<span class="na">nelec</span> <span class="o">=</span> <span class="s">1.0</span>
+<span class="na">ncor</span> <span class="o">=</span> <span class="s">1</span>
+<span class="na">norb</span> <span class="o">=</span> <span class="s">3</span>
+<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(3.419, 2.315, 0.530)]</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span>
+<span class="na">nk0</span> <span class="o">=</span> <span class="s">10</span>
+<span class="na">nk1</span> <span class="o">=</span> <span class="s">10</span>
+<span class="na">nk2</span> <span class="o">=</span> <span class="s">10</span>
+
+<span class="k">[mpi]</span>
+<span class="na">command</span> <span class="o">=</span> <span class="s">&#39;$MPIRUN -np #&#39;</span>
+
+<span class="k">[system]</span>
+<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
+<span class="na">mu</span> <span class="o">=</span> <span class="s">12.290722</span>
+<span class="na">with_dc</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
+<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
+<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
+<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">400</span>
+<span class="na">move_double{bool}</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span> <span class="o">=</span> <span class="s">12</span>
+<span class="na">time_reversal</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">sigma_mix</span> <span class="o">=</span> <span class="s">0.8</span>
+
+<span class="k">[tool]</span>
+<span class="na">broadening</span> <span class="o">=</span> <span class="s">0.1</span>
+<span class="na">nk_line</span> <span class="o">=</span> <span class="s">50</span>
+<span class="na">nnode</span> <span class="o">=</span> <span class="s">5</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5)]</span>
+<span class="na">omega_max</span> <span class="o">=</span><span class="s">2.0</span>
+<span class="na">omega_min</span> <span class="o">=</span><span class="s">-2.0</span>
+<span class="na">Nomega</span> <span class="o">=</span> <span class="s">400</span>
+<span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
+<span class="na">omega_pade</span> <span class="o">=</span> <span class="s">2.0</span>
+</pre></div>
 </div>
+<p>instead.
+Please see <a class="reference internal" href="../../impuritysolvers/triqs_cthyb/cthyb.html#howtocthyb"><span class="std std-ref">CT-QMC: TRIQS/cthyb</span></a> for the details of the parameter setting for TRIQS/cthyb.</p>
+<p>To generate reference data, we used 48 MPI processes (ISSP system B).
+The total computational time for 12 iterations is around 30 mins.</p>
+<p>The accuracy of QMC results can be improved by setting a longer simulation time (ALPS/CT-HYB) or a larger n_cycles (TRIQS/cthyb).
+For ALPS/CT-HYB, the parameter time_limit is given in seconds.</p>
 <div class="section" id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3.ini
@@ -118,18 +159,19 @@ If we want to compute by using 32 MPI processes at the same accuracy,
 </div>
 <div class="section" id="running-self-consistent-dmft-calculation-dcore">
 <h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3.ini --np <span class="m">32</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3.ini --np <span class="m">48</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3.ini --np <span class="m">32</span>
-$ gnuplot nis_akw.gp
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3.ini --np <span class="m">48</span>
+$ <span class="nb">cd</span> post
+$ gnuplot srvo3_akw.gp
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/akw_srvo32.png"><img alt="../../_images/akw_srvo32.png" class="align-center" src="../../_images/akw_srvo32.png" style="width: 500px;" /></a>
-<p>“+” indicates the original band structure.</p>
+<p>The left and right panels show results for up and down spins, respectively.</p>
 </div>
 </div>
 </div>
