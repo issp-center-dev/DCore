@@ -415,29 +415,34 @@ The parameter <code class="docutils literal notranslate"><span class="pre">local
 <tr class="row-even"><td>beta</td>
 <td>Float</td>
 <td>1.0</td>
-<td>Inverse temperature.</td>
+<td>Inverse temperature. This parameter is overridden, if T is given.</td>
 </tr>
-<tr class="row-odd"><td>n_iw</td>
+<tr class="row-odd"><td>T</td>
+<td>Float</td>
+<td>-1.0</td>
+<td>Temperature. If this parameter is given, beta is overridden by 1/T.</td>
+</tr>
+<tr class="row-even"><td>n_iw</td>
 <td>Integer</td>
 <td>2048</td>
 <td>Number of Matsubara frequencies</td>
 </tr>
-<tr class="row-even"><td>fix_mu</td>
+<tr class="row-odd"><td>fix_mu</td>
 <td>Bool</td>
 <td>False</td>
 <td>Whether or not to fix chemical potential to a given value.</td>
 </tr>
-<tr class="row-odd"><td>mu</td>
+<tr class="row-even"><td>mu</td>
 <td>Float</td>
 <td>0.0</td>
 <td>Initial chemical potential.</td>
 </tr>
-<tr class="row-even"><td>prec_mu</td>
+<tr class="row-odd"><td>prec_mu</td>
 <td>Float</td>
 <td>0.0001</td>
 <td>Threshold for calculating chemical potential with the bisection method.</td>
 </tr>
-<tr class="row-odd"><td>with_dc</td>
+<tr class="row-even"><td>with_dc</td>
 <td>Bool</td>
 <td>False</td>
 <td>Whether or not use double counting correction (See below)</td>
