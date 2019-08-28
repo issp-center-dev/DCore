@@ -55,6 +55,7 @@ class DMFTCoreCheck(object):
         #
         pars.read(ini_file)
         self.p = pars.as_dict()
+        parse_parameters(self.p)
 
         # Just for convenience
         #output_file = p["model"]["seedname"]+'.out.h5'

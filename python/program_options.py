@@ -64,7 +64,8 @@ def create_parser(target_sections=None):
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
     # [system]
-    parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
+    parser.add_option("system", "beta", float, 1.0, "Inverse temperature. This parameter is overridden, if T is given.")
+    parser.add_option("system", "T", float, -1.0, "Temperature. If this parameter is given, beta is overridden by 1/T.")
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
     parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
@@ -143,6 +144,11 @@ def parse_parameters(params):
     :param params: dict (will be updated)
     :return:  None
     """
+
+    if 'system' in params:
+        if params['system']['T'] > 0:
+            params['system']['beta'] = 1.0 / params['system']['T']
+            params['system']['T'] = -1.0  # To make sure that only beta will be used in computations
 
     if 'control' in params:
         two_options_incompatible(params, ('control', 'restart'), ('control', 'initial_static_self_energy'))
