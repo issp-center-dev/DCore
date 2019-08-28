@@ -15,7 +15,6 @@ Tutorial
 
    tutorial/square/square
    tutorial/bethe-t2g/bethe
-   tutorial/spin_orbit/spin_orbit
    tutorial/afm/afm
 
 **Part-II: DFT+DMFT**
