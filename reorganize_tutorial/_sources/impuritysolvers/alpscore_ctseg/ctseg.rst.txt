@@ -44,3 +44,18 @@ Please also refer to `the wiki page <https://github.com/ALPSCore/CT-HYB-SEGMENT/
 The DCore interface generates input files for ALPS/CT-HYB-SEGMENT into a working directory at work/imp_shell<ish>_ite<ite> (ish is the index of the shell and ite is the iteration).
 Then, ALPS/CT-HYB-SEGMENT is executed in the working directory, and numerical results are stored there.
 For example, the occupation number and the double occupancy are saved in the file 'observables.dat'.
+
+Simple example: 2D Hubbard model
+---------------------------
+
+As an example, we consider the two-dimensional Hubbard model. The input file is given as below.
+:download:`dmft_square_ctseg.ini <dmft_square_ctseg.ini>`
+
+.. literalinclude:: dmft_square_ctseg.ini
+   :language: ini
+
+The momentum-resolved spectral functions obtained by executing the similar procedure given in the tutorial (See :doc:`here<../../../tutorial/square/square>`) are given as below.
+
+.. image:: akw_ctseg.png
+   :width: 700
+   :align: center
