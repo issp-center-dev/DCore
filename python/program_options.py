@@ -51,7 +51,7 @@ def create_parser(target_sections=None):
     parser.add_option("model", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
     parser.add_option("model", "nk1", int, 0, "Number of *k* along b_1 (for lattice = wannier90, external)")
     parser.add_option("model", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
-    parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case (See :ref:`pbtutorial`).")
+    parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case.")
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
