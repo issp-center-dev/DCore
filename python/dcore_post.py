@@ -268,6 +268,9 @@ class DMFTCoreTools:
         """
         Calculate Momentum distribution
         """
+        if self._xk is None:
+            return
+
         print("\n#############  Momentum Distribution  ################\n")
 
         den = self._solver.calc_momentum_distribution()
@@ -323,6 +326,61 @@ def __print_paramter(p, param_name):
         key for p
     """
     print(param_name + " = " + str(p[param_name]))
+
+
+def parse_knode(knode_string):
+    """
+    Nodes for k-point path
+
+    Parameters
+    ----------
+    knode_string
+        (label, k0, k1, k2) in the fractional coordinate
+
+    Returns
+    -------
+    knode numpy.ndarray
+    klabel list
+
+    """
+
+    knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', knode_string)
+    knode = []
+    klabel = []
+    try:
+        for _list in knode_list:
+            _knode = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
+            klabel.append(_knode[0])
+            knode.append(map(float, _knode[1:4]))
+    except RuntimeError:
+        raise RuntimeError("Error ! Format of knode is wrong.")
+    knode = numpy.array(knode)  # convert from list to numpy.ndarray
+    return knode, klabel
+
+
+def parse_bvec(bvec_string):
+    """
+    Reciprocal lattice vectors
+
+    Parameters
+    ----------
+    bvec_string
+        [(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
+
+    Returns
+    -------
+    bvec numpy.ndarray shape=(3,3)
+
+    """
+
+    #bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
+    bvec_list = ast.literal_eval(bvec_string)
+    if isinstance(bvec_list, list) and len(bvec_list) == 3:
+        bvec = numpy.array(bvec_list, dtype=float)
+        assert bvec.shape == (3,3)
+    else:
+        raise RuntimeError("Error ! Format of bvec is wrong.")
+    return bvec
 
 
 def gen_kpath(knode, nk_line, bvec):
@@ -382,7 +440,7 @@ def gen_kpath(knode, nk_line, bvec):
             ikk += 1
     xk_label[nnode - 1] = xk[n_k - 1]
 
-    return kvec, xk, xk_label
+    return xk, xk_label, kvec
 
 
 def gen_script_gnuplot(klabel, xk_label, seedname, prefix, spin_orbit):
@@ -453,32 +511,6 @@ def dcore_post(filename, np=1, prefix="./"):
         os.makedirs(dir)
 
     #
-    # Nodes for k-point path
-    # knode=(label, k0, k1, k2) in the fractional coordinate
-    #
-    knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["tool"]["knode"])
-    knode = []
-    klabel = []
-    try:
-        for _list in knode_list:
-            _knode = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
-            klabel.append(_knode[0])
-            knode.append(map(float, _knode[1:4]))
-    except RuntimeError:
-        raise RuntimeError("Error ! Format of knode is wrong.")
-    knode = numpy.array(knode)  # convert from list to numpy.ndarray
-    #
-    # Reciprocal lattice vectors
-    # bvec=[(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
-    #
-    #bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
-    bvec_list = ast.literal_eval(p["model"]["bvec"])
-    if isinstance(bvec_list, list) and len(bvec_list) == 3:
-        bvec = numpy.array(bvec_list, dtype=float)
-        assert bvec.shape == (3,3)
-    else:
-        raise RuntimeError("Error ! Format of bvec is wrong.")
-    #
     # Summary of input parameters
     #
     print("\n  @ Parameter summary")
@@ -496,26 +528,27 @@ def dcore_post(filename, np=1, prefix="./"):
 
     #
     # Construct parameters for the A(k,w)
+    #   xk, xk_label, klabel
     #
-    if not lattice_model.is_Hk_supported():
-        print('')
-        print('Skipping A(k,w)')
-        print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
-        xk = None
-    else:
+    if lattice_model.is_Hk_supported():
         print("\n################  Constructing k-path  ##################")
-        kvec, xk, xk_label = gen_kpath(knode, p["tool"]["nk_line"], bvec)
+        knode, klabel = parse_knode(p["tool"]["knode"])
+        bvec = parse_bvec(p["model"]["bvec"])
+        xk, xk_label, kvec = gen_kpath(knode, p["tool"]["nk_line"], bvec)
         #
         # Compute k-dependent Hamiltonian and save into seedname.h5
         #
         print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
         lattice_model.write_dft_band_input_data(p, kvec)
-
-        #
-        # Output gnuplot script
-        #
-        print("\n#############   Generate GnuPlot Script  ########################\n")
-        gen_script_gnuplot(klabel, xk_label, seedname, prefix, p["model"]["spin_orbit"])
+    else:
+        print("\n################  Importing k-path  ##################")
+        xk, xk_label, klabel = lattice_model.get_kpath()
+        if xk is not None:
+            print("klabel =", klabel)
+            print("n_k =", len(xk))
+        else:
+            print('\nSkipping A(k,w)')
+            print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
 
     #
     # Plot
@@ -523,9 +556,15 @@ def dcore_post(filename, np=1, prefix="./"):
     print("\n#############   Run DMFTCoreTools  ########################\n")
     dct = DMFTCoreTools(seedname, p, xk, prefix)
     dct.post()
-    if lattice_model.is_Hk_supported():
-        dct.momentum_distribution()
+    # if lattice_model.is_Hk_supported():
+    dct.momentum_distribution()
 
+    #
+    # Output gnuplot script
+    #
+    if xk_label is not None:
+        print("\n#############   Generate GnuPlot Script  ########################\n")
+        gen_script_gnuplot(klabel, xk_label, seedname, prefix, p["model"]["spin_orbit"])
     #
     # Finish
     #

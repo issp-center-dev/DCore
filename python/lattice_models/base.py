@@ -57,6 +57,17 @@ class LatticeModel(object):
     def write_dft_band_input_data(self, params, kvec):
         pass
 
+    def get_kpath(self):
+        """
+        Returns
+        -------
+        xk numpy.ndarray
+        xk_label numpy.ndarray
+        klabel list
+
+        """
+        return None, None, None
+
 
 def write_dft_bands_input_data(seedname, params, n_k, kvec, lattice_model):
     """
