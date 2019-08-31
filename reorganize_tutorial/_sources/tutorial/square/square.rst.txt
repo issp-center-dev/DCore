@@ -123,3 +123,18 @@ We can plot it using gnuplot as follows:
 .. image:: dos.png
    :width: 700
    :align: center
+
+Another impurity solver: CTHYB-SEG
+---------------------------
+
+The input file for ALPS/cthyb-seg is given as below.
+:download:`dmft_square_ctseg.ini <dmft_square_ctseg.ini>`
+
+.. literalinclude:: dmft_square_ctseg.ini
+   :language: ini
+
+The momentum-resolved spectral functions obtained by executing the similar procedure given in this tutorial are given as below.
+
+.. image:: akw_ctseg.png
+   :width: 700
+   :align: center
