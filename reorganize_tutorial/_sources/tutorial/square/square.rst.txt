@@ -128,6 +128,7 @@ Another impurity solver: CTHYB-SEG
 ---------------------------
 
 The input file for ALPS/cthyb-seg is given as below.
+
 :download:`dmft_square_ctseg.ini <dmft_square_ctseg.ini>`
 
 .. literalinclude:: dmft_square_ctseg.ini
