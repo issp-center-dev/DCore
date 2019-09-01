@@ -55,9 +55,6 @@ class LatticeModel(object):
     def generate_model_file(self):
         pass
 
-    def write_dft_band_input_data(self, params, kvec):
-        raise NotImplementedError
-
     def generate_kpath(self, params):
         """
         Generate k-path for band plot, and store H(k) data in seedname.h5
@@ -68,21 +65,28 @@ class LatticeModel(object):
 
         Returns
         -------
-        xk numpy.ndarray
-            Return None for skipping band plot
+        xk : numpy.ndarray
 
-        xnode list of XNode
-            Return None for skipping band plot
+        xnode : list of XNode
+
+        Return None, None
+        to skip band plot
 
         """
         xk, xnode, kvec = gen_kpath(params)
 
         try:
-            self.write_dft_band_input_data(params, kvec)
+            self._write_dft_band_input_data(params, kvec)
         except NotImplementedError:
             return None, None
 
         return xk, xnode
+
+    def _write_dft_band_input_data(self, params, kvec):
+        """
+        Compute H(k) and store it into seedname.h5
+        """
+        raise NotImplementedError
 
 
 def write_dft_bands_input_data(seedname, params, n_k, kvec, lattice_model):

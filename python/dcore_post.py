@@ -18,11 +18,9 @@
 #
 from __future__ import print_function
 import os
-import re
 import sys
 import numpy
 import copy
-import ast
 
 from pytriqs.archive import HDFArchive
 from .pytriqs_gf_compat import *
@@ -408,56 +406,27 @@ def dcore_post(filename, np=1, prefix="./"):
         print("      {0} = {1}".format(k, v))
 
     #
-    # Construct lattice model
+    # Generate k-path
     #
-    lattice_model = create_lattice_model(p)
-
-    #
-    # Generate k-path for A(k,w)
-    #   xk, xnode
-    #
-    # XNode = namedtuple('XNode', ('x', 'label'))
-    # if lattice_model.is_Hk_supported():
-    #     print("\n################  Constructing k-path  ##################")
-    #     #
-    #     # xk, xnode, kvec = gen_kpath(knode, p["tool"]["nk_line"], bvec)
-    #     xk, xnode, kvec = gen_kpath(p)
-    #     #
-    #     # Compute k-dependent Hamiltonian and save into seedname.h5
-    #     #
-    #     print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
-    #     lattice_model.write_dft_band_input_data(p, kvec)
-    #
-    #     # xk, xnode = lattice_mode.generate_kpath(p)
-    # else:
-    #     print("\n################  Importing k-path  ##################")
-    #     # xk, xnode = lattice_model.get_kpath()
-    #     xk, xnode = lattice_model.generate_kpath(p)
-    #     if xk is not None:
-    #         print("xnode =", xnode)
-    #         print("n_k =", len(xk))
-    #     else:
-    #         print('\nSkipping A(k,w)')
-    #         print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
-
     print("\n################  Generating k-path  ##################\n")
+
+    lattice_model = create_lattice_model(p)
     xk, xnode = lattice_model.generate_kpath(p)
 
-    if xk is not None:
+    if xk is None:
+        print('  A(k,w) calc will be skipped')
+    else:
         print("   Total number of k =", len(xk))
         print("    k-point  x")
         for node in xnode:
             print("     %6s  %f" %(node.label, node.x))
-    else:
-        print('  A(k,w) will be skipped')
 
     #
-    # Plot
+    # Coompute DOS and A(k,w)
     #
     print("\n#############   Run DMFTCoreTools  ########################\n")
     dct = DMFTCoreTools(seedname, p, xk, prefix)
     dct.post()
-    # if lattice_model.is_Hk_supported():
     dct.momentum_distribution()
 
     #
@@ -466,9 +435,7 @@ def dcore_post(filename, np=1, prefix="./"):
     if xnode is not None:
         print("\n#############   Generate GnuPlot Script  ########################\n")
         gen_script_gnuplot(xnode, seedname, prefix, p["model"]["spin_orbit"])
-    #
-    # Finish
-    #
+
     print("\n#################  Done  #####################\n")
 
 

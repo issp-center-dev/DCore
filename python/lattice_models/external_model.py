@@ -35,8 +35,6 @@ class ExternalModel(LatticeModel):
     def __init__(self, params):
         super(ExternalModel, self).__init__(params)
 
-        from pytriqs.archive import HDFArchive
-
         self._seedname = self._params["model"]["seedname"]
         h5_file = self._seedname+'.h5'
 
@@ -63,7 +61,7 @@ class ExternalModel(LatticeModel):
             try:
                 assert len(norb_inequiv_sh) == n_inequiv_shells
             except:
-                print("ExternalModel.__ini__: failed in setting 'norb_inequiv_sh'")
+                print("ExternalModel.__init__: failed in setting 'norb_inequiv_sh'")
                 print(" n_inequiv_shells =", n_inequiv_shells)
                 print(" inequiv_to_corr =", inequiv_to_corr)
                 print(" corr_shells =", corr_shells)
@@ -85,6 +83,10 @@ class ExternalModel(LatticeModel):
         return False
 
     def generate_kpath(self, params):
+        """
+        Override the original method. It is assumed that H(k) data are already stored in seedname.h5.
+        """
+
         # check h5 file
         with HDFArchive(self._seedname + '.h5', 'r') as f:
             if not 'dft_bands_input' in f:

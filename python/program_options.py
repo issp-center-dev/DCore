@@ -21,8 +21,8 @@ from typed_parser import *
 
 import numpy
 import re
-from collections import namedtuple
 import ast
+from collections import namedtuple
 
 
 def create_parser(target_sections=None):

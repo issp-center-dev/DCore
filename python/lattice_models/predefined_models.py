@@ -237,7 +237,7 @@ class NNNHoppingModel(LatticeModel):
             turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
 
 
-    def write_dft_band_input_data(self, params, kvec):
+    def _write_dft_band_input_data(self, params, kvec):
         """
 
         Returns

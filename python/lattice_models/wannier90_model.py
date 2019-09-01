@@ -125,7 +125,7 @@ class Wannier90Model(LatticeModel):
                 f['dft_input']['proj_mat'] = proj_mat
 
 
-    def write_dft_band_input_data(self, params, kvec):
+    def _write_dft_band_input_data(self, params, kvec):
         """
 
         Returns
