@@ -134,7 +134,7 @@ The input file for ALPS/cthyb-seg is given as below.
 .. literalinclude:: dmft_square_ctseg.ini
    :language: ini
 
-The momentum-resolved spectral functions obtained by executing the similar procedure given in this tutorial are given as below.
+The computed momentum-resolved spectral functions are shown below.
 
 .. image:: akw_ctseg.png
    :width: 700
