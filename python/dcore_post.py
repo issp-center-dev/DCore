@@ -406,12 +406,12 @@ def dcore_post(filename, np=1, prefix="./"):
         print("      {0} = {1}".format(k, v))
 
     #
-    # Generate k-path
+    # Generate k-path and compute H(k) on this path
     #
     print("\n################  Generating k-path  ##################\n")
 
     lattice_model = create_lattice_model(p)
-    xk, xnode = lattice_model.generate_kpath(p)
+    xk, xnode = lattice_model.generate_Hk_path(p)
 
     if xk is None:
         print('  A(k,w) calc will be skipped')

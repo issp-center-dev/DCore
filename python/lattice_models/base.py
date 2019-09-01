@@ -17,7 +17,7 @@
 #
 from __future__ import print_function
 
-from ..kpath import gen_kpath
+from .tools import gen_kpath
 from pytriqs.archive.hdf_archive import HDFArchive
 
 
@@ -55,7 +55,7 @@ class LatticeModel(object):
     def generate_model_file(self):
         pass
 
-    def generate_kpath(self, params):
+    def generate_Hk_path(self, params):
         """
         Generate k-path for band plot, and store H(k) data in seedname.h5
 

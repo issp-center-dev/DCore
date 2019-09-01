@@ -22,8 +22,7 @@ import numpy
 from warnings import warn
 
 from .base import LatticeModel
-from .tools import set_nk
-from ..kpath import XNode
+from .tools import set_nk, XNode
 from pytriqs.archive.hdf_archive import HDFArchive
 
 
@@ -82,7 +81,7 @@ class ExternalModel(LatticeModel):
     def is_Hk_supported(cls):
         return False
 
-    def generate_kpath(self, params):
+    def generate_Hk_path(self, params):
         """
         Override the original method. It is assumed that H(k) data are already stored in seedname.h5.
         """
