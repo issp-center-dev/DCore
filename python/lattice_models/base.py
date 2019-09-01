@@ -56,7 +56,7 @@ class LatticeModel(object):
         pass
 
     def write_dft_band_input_data(self, params, kvec):
-        pass
+        raise NotImplementedError
 
     def generate_kpath(self, params):
         """
@@ -69,11 +69,19 @@ class LatticeModel(object):
         Returns
         -------
         xk numpy.ndarray
+            Return None for skipping band plot
+
         xnode list of XNode
+            Return None for skipping band plot
 
         """
         xk, xnode, kvec = gen_kpath(params)
-        self.write_dft_band_input_data(params, kvec)
+
+        try:
+            self.write_dft_band_input_data(params, kvec)
+        except NotImplementedError:
+            return None, None
+
         return xk, xnode
 
 

@@ -200,4 +200,3 @@ class Wannier90Model(LatticeModel):
             f['dft_bands_input']['n_k'] = n_k
             f['dft_bands_input']['n_orbitals'] = numpy.full((n_k, nblock), nwan, dtype=int)
             f['dft_bands_input']['proj_mat'] = proj_mat
-        print('    Done')

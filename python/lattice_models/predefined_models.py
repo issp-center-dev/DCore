@@ -290,7 +290,6 @@ class NNNHoppingModel(LatticeModel):
             f['dft_bands_input']['n_k'] = n_k
             f['dft_bands_input']['n_orbitals'] = n_orbitals
             f['dft_bands_input']['proj_mat'] = proj_mat
-        print('    Done')
 
 
 class ChainModel(NNNHoppingModel):

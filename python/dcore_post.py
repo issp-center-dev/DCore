@@ -443,7 +443,13 @@ def dcore_post(filename, np=1, prefix="./"):
     print("\n################  Generating k-path  ##################\n")
     xk, xnode = lattice_model.generate_kpath(p)
 
-    print("   Total number of k =", len(xk))
+    if xk is not None:
+        print("   Total number of k =", len(xk))
+        print("    k-point  x")
+        for node in xnode:
+            print("     %6s  %f" %(node.label, node.x))
+    else:
+        print('  A(k,w) will be skipped')
 
     #
     # Plot

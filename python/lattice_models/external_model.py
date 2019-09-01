@@ -85,17 +85,22 @@ class ExternalModel(LatticeModel):
         return False
 
     def generate_kpath(self, params):
+        # check h5 file
         with HDFArchive(self._seedname + '.h5', 'r') as f:
-            if not ('dft_bands_input' in f):
-                warn("data for band plot should be prepared in advance in lattice='external'")
+            if not 'dft_bands_input' in f:
+                warn("  seedname.h5/dft_bands_input should be prepared in advance in lattice='external'")
                 return None, None
 
             n_k = f["dft_bands_input"]["n_k"]
-            print("n_k =", n_k)
 
+        # generate x values
         xk = []
         xnode = []
-        with open("kpath.in", "r") as f:
+        file_kpath = "kpath.in"
+        if not os.path.exists(file_kpath):
+            warn("  '%s' not found" %file_kpath)
+            return None, None
+        with open(file_kpath, "r") as f:
             # -40 -40 40 80 2.31040 Z
             for line in f:
                 array = line.split()
