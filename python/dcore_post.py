@@ -37,6 +37,7 @@ import impurity_solvers
 from . import sumkdft
 from lattice_models import create_lattice_model
 
+
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
 
@@ -328,122 +329,7 @@ def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
 
 
-def parse_knode(knode_string):
-    """
-    Nodes for k-point path
-
-    Parameters
-    ----------
-    knode_string
-        (label, k0, k1, k2) in the fractional coordinate
-
-    Returns
-    -------
-    knode numpy.ndarray
-    klabel list
-
-    """
-
-    knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', knode_string)
-    knode = []
-    klabel = []
-    try:
-        for _list in knode_list:
-            _knode = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
-            klabel.append(_knode[0])
-            knode.append(map(float, _knode[1:4]))
-    except RuntimeError:
-        raise RuntimeError("Error ! Format of knode is wrong.")
-    knode = numpy.array(knode)  # convert from list to numpy.ndarray
-    return knode, klabel
-
-
-def parse_bvec(bvec_string):
-    """
-    Reciprocal lattice vectors
-
-    Parameters
-    ----------
-    bvec_string
-        [(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
-
-    Returns
-    -------
-    bvec numpy.ndarray shape=(3,3)
-
-    """
-
-    #bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
-    bvec_list = ast.literal_eval(bvec_string)
-    if isinstance(bvec_list, list) and len(bvec_list) == 3:
-        bvec = numpy.array(bvec_list, dtype=float)
-        assert bvec.shape == (3,3)
-    else:
-        raise RuntimeError("Error ! Format of bvec is wrong.")
-    return bvec
-
-
-def gen_kpath(knode, nk_line, bvec):
-    """
-    Generate k-path
-
-    Parameters
-    ----------
-    knode
-    nk_line
-    bvec
-
-    Returns
-    -------
-    kvec : numpy.ndarray
-        k-vectors on the k-path
-
-    xk : numpy.ndarray
-        x-mesh for the band plot
-
-    xk_label : numpy.ndarray
-        x-positions of k-path nodes
-
-    """
-    #
-    # knode, nk_line --> kvec
-    #
-    nnode = len(knode)
-    n_k = (nnode - 1) * nk_line + 1
-    print("\n   Total number of k =", str(n_k))
-    kvec = numpy.zeros((n_k, 3), numpy.float_)
-    ikk = 0
-    for inode in range(nnode - 1):
-        for ik in range(nk_line + 1):
-            if inode != 0 and ik == 0:
-                continue
-            for i in range(3):
-                kvec[ikk, i] = float((nk_line - ik)) * knode[inode, i] + float(ik) * knode[inode + 1, i]
-                kvec[ikk, i] = 2.0 * numpy.pi * kvec[ikk, i] / float(nk_line)
-            ikk += 1
-    #
-    # kvec --> xk, xk_label
-    #
-    dk = numpy.zeros(3, numpy.float_)
-    dk_cart = numpy.zeros(3, numpy.float_)
-    xk = numpy.zeros(n_k, numpy.float_)
-    xk_label = numpy.zeros(nnode, numpy.float_)
-    xk[0] = 0.0
-    ikk = 0
-    for inode in range(nnode - 1):
-        dk[:] = knode[inode + 1, :] - knode[inode, :]
-        dk_cart[:] = numpy.dot(dk[:], bvec[:, :])
-        klength = numpy.sqrt(numpy.dot(dk_cart[:], dk_cart[:])) / nk_line
-        xk_label[inode] = xk[ikk]
-        for ik in range(nk_line):
-            xk[ikk + 1] = xk[ikk] + klength
-            ikk += 1
-    xk_label[nnode - 1] = xk[n_k - 1]
-
-    return xk, xk_label, kvec
-
-
-def gen_script_gnuplot(klabel, xk_label, seedname, prefix, spin_orbit):
+def gen_script_gnuplot(xnode, seedname, prefix, spin_orbit):
     file_akw_gp = prefix + seedname + '_akw.gp'
 
     def print_klabel(label, x, f, with_comma=True):
@@ -452,20 +338,20 @@ def gen_script_gnuplot(klabel, xk_label, seedname, prefix, spin_orbit):
             print(',', end="", file=f)
         print(' \\', file=f)
 
-    k_end = len(klabel) - 1
+    k_end = len(xnode) - 1
 
     with open(file_akw_gp, 'w') as f:
         print("set size 0.95, 1.0", file=f)
         print("set xtics (\\", file=f)
         if spin_orbit:
-            for i, (label, x) in enumerate(zip(klabel, xk_label)):
-                print_klabel(label, x, f, i != k_end)
+            for i, node in enumerate(xnode):
+                print_klabel(node.label, node.x, f, i != k_end)
         else:
-            for label, x in zip(klabel, xk_label):
-                print_klabel(label, x, f)
-            offset = xk_label[-1] * 1.1
-            for i, (label, x) in enumerate(zip(klabel, xk_label)):
-                print_klabel(label, x + offset, f, i != k_end)
+            for node in xnode:
+                print_klabel(node.label, node.x, f)
+            offset = xnode[-1].x * 1.1
+            for i, node in enumerate(xnode):
+                print_klabel(node.label, node.x + offset, f, i != k_end)
         print("  )", file=f)
         print("set pm3d map", file=f)
         print("#set pm3d interpolate 5, 5", file=f)
@@ -527,28 +413,37 @@ def dcore_post(filename, np=1, prefix="./"):
     lattice_model = create_lattice_model(p)
 
     #
-    # Construct parameters for the A(k,w)
-    #   xk, xk_label, klabel
+    # Generate k-path for A(k,w)
+    #   xk, xnode
     #
-    if lattice_model.is_Hk_supported():
-        print("\n################  Constructing k-path  ##################")
-        knode, klabel = parse_knode(p["tool"]["knode"])
-        bvec = parse_bvec(p["model"]["bvec"])
-        xk, xk_label, kvec = gen_kpath(knode, p["tool"]["nk_line"], bvec)
-        #
-        # Compute k-dependent Hamiltonian and save into seedname.h5
-        #
-        print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
-        lattice_model.write_dft_band_input_data(p, kvec)
-    else:
-        print("\n################  Importing k-path  ##################")
-        xk, xk_label, klabel = lattice_model.get_kpath()
-        if xk is not None:
-            print("klabel =", klabel)
-            print("n_k =", len(xk))
-        else:
-            print('\nSkipping A(k,w)')
-            print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
+    # XNode = namedtuple('XNode', ('x', 'label'))
+    # if lattice_model.is_Hk_supported():
+    #     print("\n################  Constructing k-path  ##################")
+    #     #
+    #     # xk, xnode, kvec = gen_kpath(knode, p["tool"]["nk_line"], bvec)
+    #     xk, xnode, kvec = gen_kpath(p)
+    #     #
+    #     # Compute k-dependent Hamiltonian and save into seedname.h5
+    #     #
+    #     print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
+    #     lattice_model.write_dft_band_input_data(p, kvec)
+    #
+    #     # xk, xnode = lattice_mode.generate_kpath(p)
+    # else:
+    #     print("\n################  Importing k-path  ##################")
+    #     # xk, xnode = lattice_model.get_kpath()
+    #     xk, xnode = lattice_model.generate_kpath(p)
+    #     if xk is not None:
+    #         print("xnode =", xnode)
+    #         print("n_k =", len(xk))
+    #     else:
+    #         print('\nSkipping A(k,w)')
+    #         print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
+
+    print("\n################  Generating k-path  ##################\n")
+    xk, xnode = lattice_model.generate_kpath(p)
+
+    print("   Total number of k =", len(xk))
 
     #
     # Plot
@@ -562,9 +457,9 @@ def dcore_post(filename, np=1, prefix="./"):
     #
     # Output gnuplot script
     #
-    if xk_label is not None:
+    if xnode is not None:
         print("\n#############   Generate GnuPlot Script  ########################\n")
-        gen_script_gnuplot(klabel, xk_label, seedname, prefix, p["model"]["spin_orbit"])
+        gen_script_gnuplot(xnode, seedname, prefix, p["model"]["spin_orbit"])
     #
     # Finish
     #

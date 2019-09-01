@@ -19,12 +19,12 @@ from __future__ import print_function
 
 import os
 import numpy
+from warnings import warn
 
 from .base import LatticeModel
 from .tools import set_nk
+from ..kpath import XNode
 from pytriqs.archive.hdf_archive import HDFArchive
-from warnings import warn
-
 
 
 class ExternalModel(LatticeModel):
@@ -84,18 +84,17 @@ class ExternalModel(LatticeModel):
     def is_Hk_supported(cls):
         return False
 
-    def get_kpath(self):
+    def generate_kpath(self, params):
         with HDFArchive(self._seedname + '.h5', 'r') as f:
             if not ('dft_bands_input' in f):
                 warn("data for band plot should be prepared in advance in lattice='external'")
-                return None, None, None
+                return None, None
 
             n_k = f["dft_bands_input"]["n_k"]
             print("n_k =", n_k)
 
         xk = []
-        xk_label = []
-        k_label = []
+        xnode = []
         with open("kpath.in", "r") as f:
             # -40 -40 40 80 2.31040 Z
             for line in f:
@@ -104,10 +103,7 @@ class ExternalModel(LatticeModel):
                 x = float(array[4])
                 xk.append(x)
                 if len(array) >= 6:
-                    k_label.append(array[5])
-                    xk_label.append(x)
+                    xnode.append(XNode(x = x, label = array[5]))
 
         assert len(xk) == n_k
-
-        # return None, None, None
-        return numpy.array(xk), numpy.array(xk_label), k_label
+        return numpy.array(xk), xnode
