@@ -22,6 +22,7 @@ import numpy
 from pytriqs.archive.hdf_archive import HDFArchive
 
 from .base import LatticeModel
+from .tools import set_nk
 from ..converters.wannier90_converter import Wannier90Converter
 
 def _generate_w90_converter_input(nkdiv, params, f):
@@ -71,23 +72,11 @@ def _generate_w90_converter_input(nkdiv, params, f):
         print("{0} {1} {2} {3} 0 0".format(i, corr_to_inequiv[i], 0, dim_Hk[i]), file=f)
 
 
-def _set_nk(nk, nk0, nk1, nk2):
-    if abs(nk0) + abs(nk1) + abs(nk2) == 0:
-        # If one of nk0, nk1 and nk2 are set, use nk.
-        nk0 = nk
-        nk1 = nk
-        nk2 = nk
-    elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
-        # if any of nk0, nk1 and nk2 are set, use them.
-        if nk0 * nk1 * nk2 == 0:
-            raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
-    return nk0, nk1, nk2
-
 class Wannier90Model(LatticeModel):
     def __init__(self, params):
         super(Wannier90Model, self).__init__(params)
 
-        self._nkdiv = _set_nk(params["model"]["nk"],
+        self._nkdiv = set_nk(params["model"]["nk"],
                              params["model"]["nk0"],
                              params["model"]["nk1"],
                              params["model"]["nk2"])

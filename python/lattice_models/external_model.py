@@ -20,6 +20,8 @@ from __future__ import print_function
 import os
 
 from .base import LatticeModel
+from .tools import set_nk
+from pytriqs.archive.hdf_archive import HDFArchive
 
 class ExternalModel(LatticeModel):
     """
@@ -43,10 +45,27 @@ class ExternalModel(LatticeModel):
             raise Exception("Prepare, in advance, '%s' file which stores DFT data in 'dft_input' subgroup" % h5_file)
 
         # set nkdiv
-        self._nkdiv = _set_nk(params["model"]["nk"],
+        self._nkdiv = set_nk(params["model"]["nk"],
                              params["model"]["nk0"],
                              params["model"]["nk1"],
                              params["model"]["nk2"])
+
+        # Set [model][norb_inequiv_sh], which is necessary for generate_umat
+        with HDFArchive(h5_file, 'r') as f:
+            n_inequiv_shells = f["dft_input"]["n_inequiv_shells"]
+            corr_shells = f["dft_input"]["corr_shells"]
+            inequiv_to_corr = f["dft_input"]["inequiv_to_corr"]
+            norb_inequiv_sh = [corr_shells[icsh]['dim'] for icsh in inequiv_to_corr]
+            try:
+                assert len(norb_inequiv_sh) == n_inequiv_shells
+            except:
+                print("ExternalModel.__ini__: failed in setting 'norb_inequiv_sh'")
+                print(" n_inequiv_shells =", n_inequiv_shells)
+                print(" inequiv_to_corr =", inequiv_to_corr)
+                print(" corr_shells =", corr_shells)
+                print(" norb_inequiv_sh =", norb_inequiv_sh)
+                exit(1)
+            params['model']['norb_inequiv_sh'] = norb_inequiv_sh
 
     @classmethod
     def name(self):

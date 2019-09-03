@@ -33,7 +33,7 @@ def dcore(filename, np=1):
         Input-file name
     """
     # Set Default value
-    pars = create_parser()
+    pars = create_parser(['model', 'system', 'impurity_solver', 'control', 'mpi'])
     #
     # Parse keywords and store
     #
@@ -43,7 +43,7 @@ def dcore(filename, np=1):
 
     params["mpi"]["num_processes"] = np
 
-    solver = DMFTCoreSolver(params["model"]["seedname"], params)
+    solver = DMFTCoreSolver(params["model"]["seedname"], params, restart=params['control']['restart'])
 
     solver.do_steps(max_step=params["control"]["max_step"])
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
-        print("Input file is not exist.")
+        print("Input file does not exist.")
         sys.exit(-1)
 
     dcore(args.path_input_file, int(args.np))

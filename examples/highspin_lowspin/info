@@ -1,0 +1,5 @@
+[info]
+author = Junya Otsuki
+version = 2.0.0_b
+date = 2019/07/12/
+description = chi(q) calculation in a two-orbital Hubbard model with level splitting

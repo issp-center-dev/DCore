@@ -11,7 +11,7 @@ Downfolding with RESPACK (SrVO\ :sub:`3`)
 
 Crystal structure of SrVO\ :sub:`3` (drawn by `VESTA <http://jp-minerals.org/vesta/en/>`_).
 
-.. image:: ../srvo3_qe/struct_srvo3.png
+.. image:: ../srvo3/struct_srvo3.png
    :width: 200
    :align: center
 
@@ -92,9 +92,9 @@ First, compute the band structure with the following input file:
 
    $ mpiexec -np 4 pw.x -in band_srvo3_r.in
 
-:download:`bands_srvo3.in <../srvo3_qe/bands_srvo3.in>`
+:download:`bands_srvo3.in <../srvo3/qe/bands_srvo3.in>`
 
-.. literalinclude:: ../srvo3_qe/bands_srvo3.in
+.. literalinclude:: ../srvo3/qe/bands_srvo3.in
 
 .. code-block:: bash
 
@@ -105,7 +105,7 @@ First, compute the band structure with the following input file:
 
    plot [][11:18] "bands.out.gnu" u 1:2 w p tit "Orig", 12.3116 tit "E_F", "dir-wan/dat.iband" u ($1*2.5731):2 tit "Wannier" w l
 
-.. image:: ../srvo3_qe/band_srvo3.png
+.. image:: ../srvo3/qe/band_srvo3.png
    :width: 500
    :align: center
 

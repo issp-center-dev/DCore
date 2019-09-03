@@ -1,0 +1,47 @@
+\documentclass[disablejfam,12pt]{article}
+\usepackage{graphicx}
+\usepackage{color}
+\pagestyle{empty}
+\setlength{\textheight}{240mm}
+\setlength{\textwidth}{160mm}
+\setlength{\columnsep}{5mm}
+\setlength{\topmargin}{-30mm}
+\setlength{\oddsidemargin}{0mm}
+\setlength{\evensidemargin}{0mm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{braket}
+
+\newcommand{\mathi}{\ensuremath{\mathrm{i}}}
+\newcommand{\mi}{\ensuremath{\mathrm{i}}}
+\newcommand{\barT}{\ensuremath{\bar{T}}}
+
+\author{Hiroshi SHINAOKA}
+
+\begin{document}
+\title{BSE}
+\maketitle
+\thispagestyle{empty}
+
+\section{Two-particle Green's function}
+
+\subsection{Otsuki's BSE}
+\begin{align}
+X^\mathrm{loc}_{pqrs}(\tau_1, \tau_2, \tau_3, \tau_4) &\equiv \langle T_\tau c^\dagger_p(\tau_1) c_q(\tau_2)  c^\dagger_s(\tau_4) c_r(\tau_3)\rangle\nonumber\\
+X^\mathrm{loc}_{pqrs}(i \omega_n, i \omega_{n^\prime}, i\nu_m) &= \frac{1}{\beta^2}\int_0^\beta  d\tau_1 d\tau_2 d\tau_3 d\tau_4 X^\mathrm{loc}_{pqrs}(\tau_1, \tau_3, \tau_3, \tau_4) e^{i\omega_n \tau_{21}} e^{i\omega_{n^\prime} \tau_{34}}e^{i \nu_m \tau_{24}}
+\end{align}
+
+\subsection{ALPS/CT-HYB}
+\begin{eqnarray}
+ G_{pqrs}(\tau_1, \tau_2, \tau_3, \tau_4) &\equiv& \braket{T_\tau c_p(\tau_1) c_q^\dagger(\tau_2) c_r(\tau_3) c_s^\dagger(\tau_4)}\\
+ G_{pqrs}(i \omega_n, i \omega_{n^\prime}, i\nu_m) &=& \int_0^\beta  d \tau_{12} d \tau_{34} d \tau_{14} G_{pqrs}(\tau_{12}, \tau_{34}, \tau_{14}, 0) e^{i\omega_n \tau_{12}} e^{i\omega_{n^\prime} \tau_{34}}e^{i \nu_m \tau_{14}}
+\end{eqnarray}
+
+Now, we relate the two notations.
+\begin{align}
+X^\mathrm{loc}_{pqrs}(\mi \omega, \mi \omega^\prime, \mi \nu) &= \beta^{-2} \int d\tau_1 d\tau_2 d\tau_3 d\tau_4 \braket{T_\tau c^\dagger_p(\tau_1) c_q(\tau_2) c^\dagger_s(\tau_4) c_r(\tau_3)} e^{\mathi \omega \tau_{21} + \mathi \omega^\prime \tau_{34} + \mathi \nu \tau_{24}}\nonumber\\
+&= \beta^{-1} \int d\tau_{21} d\tau_{34} d \tau_{24} G_{qprs}(\tau_2, \tau_1, \tau_3, \tau_4) e^{\mathi \omega \tau_{21} + \mathi \omega^\prime \tau_{34} + \mathi \nu \tau_{24}}\nonumber\\
+&= \beta^{-1} G_{qprs}(\mi\omega, \mi\omega^\prime, \mi\nu).
+\end{align}
+
+\end{document}

@@ -21,8 +21,6 @@ from __future__ import print_function
 import argparse
 import sys
 import os
-import shlex
-import subprocess
 import numpy
 
 from pytriqs.archive import HDFArchive
@@ -184,7 +182,7 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         if params['adjust_mu']:
             # find the chemical potential for given density
             sk.calc_mu(params['prec_mu'])
-            results['mu'] = sk.chemical_potential
+            results['mu'] = float(sk.chemical_potential)
 
         # Local Green's function and Density matrix
         results['Gloc_iw_sh'] = sk.extract_G_loc(with_dc=with_dc)

@@ -93,7 +93,7 @@ class TypedParser(object):
     """
     Parser of an init file. One is able to define options and sections (data types and default values).
     """
-    def __init__(self):
+    def __init__(self, sections_to_be_used=[]):
         """
         Initializer
         :rtype:
@@ -103,6 +103,7 @@ class TypedParser(object):
 
         self.__definitions = OrderedDict()
         self.__results = OrderedDict()
+        self.__section_to_be_used = sections_to_be_used
 
         self.__read = False
 
@@ -118,8 +119,16 @@ class TypedParser(object):
         :param string: short description
         :param status: VALID, DEPRECATED, or RETIRED
         """
+
+        if not section in self.__section_to_be_used:
+            return
+
         if self.__read:
             raise RuntimeError("Do not add option after an input file has been read!")
+
+        if section in self.__definitions and option in self.__definitions[section]:
+            raise RuntimeError("Redefinition of an option is not allowed!")
+
 
         if section not in self.__definitions:
             self.__definitions[section] = OrderedDict()
@@ -163,6 +172,9 @@ class TypedParser(object):
         self.__config_parser.read(in_file)
 
         for sect in self.__config_parser.sections():
+            if sect not in self.__section_to_be_used:
+                continue
+
             if sect not in self.__results:
                 self.__results[sect] = {}
 
@@ -240,6 +252,7 @@ class TypedParser(object):
                 return copy.deepcopy(obj)
 
         return convert_ordered_dict_to_dict(self.__results)
+
 
     def print_options(self):
         """
