@@ -1,0 +1,39 @@
+# sigma^0  tau^0 : charge
+0.5 0  0 0  0 0  0.5 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0.5 0  0 0  0 0  0.5 0
+#
+# sigma^z  tau^0 : spin^x
+0.5 0  0 0  0 0  0.5 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   -0.5 0  0 0  0 0  -0.5 0
+# sigma^+  tau^0 : spin^x
+0 0  0 0  0 0  0 0   0.707106781186 0  0 0  0 0  0.707106781186 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0
+# sigma^-  tau^0 : spin^x
+0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0.707106781186 0  0 0  0 0  0.707106781186 0   0 0  0 0  0 0  0 0
+#
+# sigma^0  tau^z : orbital (Eg in Oh)
+0.5 0  0 0  0 0  -0.5 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0.5 0  0 0  0 0  -0.5 0
+#
+# sigma^0  tau^x : orbital (Eg in Oh)
+0 0  0.5 0  0.5 0  0 0  0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0 0  0.5 0  0.5 0  0 0
+#
+# sigma^z  tau^y : orbital (T2g in Oh)
+0 0  0.5 0  -0.5 0  0 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0 0  -0.5 0  0.5 0  0 0
+# sigma^+  tau^y : orbital (T2g in Oh)
+0 0  0 0  0 0  0 0   0 0  0.707106781186 0  -0.707106781186 0  0 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0
+# sigma^-  tau^y : orbital (T2g in Oh)
+0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0 0  0.707106781186 0  -0.707106781186 0  0 0   0 0  0 0  0 0  0 0
+#
+# sigma^0  tau^y : magnetic high-rank multipole (A1u in Oh)
+0 0  0.5 0  -0.5 0  0 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0 0  0.5 0  -0.5 0  0 0
+#
+# sigma^z  tau^x : magnetic high-rank multipole (T1u in Oh)
+0 0  0.5 0  0.5 0  0 0  0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0 0  -0.5 0  -0.5 0  0 0
+# sigma^+  tau^x : magnetic high-rank multipole (T1u in Oh)
+0 0  0 0  0 0  0 0   0 0  0.707106781186 0  0.707106781186 0  0 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0
+# sigma^-  tau^x : magnetic high-rank multipole (T1u in Oh)
+0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0 0  0.707106781186 0  0.707106781186 0  0 0   0 0  0 0  0 0  0 0
+#
+# sigma^z  tau^z : magnetic high-rank multipole (T2u in Oh)
+0.5 0  0 0  0 0  -0.5 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   -0.5 0   0 0  0 0  0.5 0
+# sigma^+  tau^z : magnetic high-rank multipole (T2u in Oh)
+0 0  0 0  0 0  0 0   0.707106781186 0  0 0  0 0  -0.707106781186 0   0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0
+# sigma^-  tau^z : magnetic high-rank multipole (T2u in Oh)
+0 0  0 0  0 0  0 0   0 0  0 0  0 0  0 0   0.707106781186 0  0 0  0 0  -0.707106781186 0   0 0  0 0  0 0  0 0

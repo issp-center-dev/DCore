@@ -22,33 +22,36 @@ from typed_parser import *
 import numpy
 import re
 
-def create_parser():
+def create_parser(target_sections=None):
     """
     Create a parser for all program options of DCore
     """
-    parser = TypedParser()
+    if target_sections is None:
+        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'bse'])
+    else:
+        parser = TypedParser(target_sections)
 
     # [mpi]
     parser.add_option("mpi", "command", str, "mpirun -np #", "Command for executing a MPI job. # will be relaced by the number of processes.")
 
     # [model]
-    parser.add_option("model", "t", float, 1.0, "Transfer integral (Nearest neighbor)")
-    parser.add_option("model", "t'", float, 0.0, "Transfer integral (Second nearest)")
-    parser.add_option("model", "ncor", int, 1, "Number of correlated shells in a unit cell (Only wannier90).")
+    parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "lattice", str, "chain",
                       'Chosen from "chain", "square", "cubic", "bethe", "wannier90", and "external"')
+    parser.add_option("model", "t", float, 1.0, "Transfer integral (Nearest neighbor)")
+    parser.add_option("model", "t'", float, 0.0, "Transfer integral (Second nearest)")
     parser.add_option("model", "nelec", float, 1.0, "Number of electrons per unit cell.")
-    parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "norb", str, "1",
                       "Number of orbitals at each correlated shell (*ncor* integers separated by commas or spaces.)")
+    parser.add_option("model", "ncor", int, 1, "Number of correlated shells in a unit cell (for lattice = wannier90).")
     parser.add_option("model", "corr_to_inequiv", str, "None",
-                      "Mapping from correlated shells to equivalent shells")
+                      "Mapping from correlated shells to equivalent shells (for lattice = wannier90)")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
     parser.add_option("model", "nk", int, 8, "Number of *k* along each line")
     parser.add_option("model", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
     parser.add_option("model", "nk1", int, 0, "Number of *k* along b_1 (for lattice = wannier90, external)")
     parser.add_option("model", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
-    parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case (See :ref:`pbtutorial`).")
+    parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case.")
     parser.add_option("model", "interaction", str, "kanamori",
                       'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
     parser.add_option("model", "density_density", bool, False,
@@ -61,19 +64,19 @@ def create_parser():
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
     # [system]
-    parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
+    parser.add_option("system", "beta", float, 1.0, "Inverse temperature. This parameter is overridden, if T is given.")
+    parser.add_option("system", "T", float, -1.0, "Temperature. If this parameter is given, beta is overridden by 1/T.")
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
     parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
     parser.add_option("system", "prec_mu", float, 0.0001,
                       "Threshold for calculating chemical potential with the bisection method.")
-    parser.add_option("system", "beta", float, 1.0, "Inverse temperature.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction (See below)")
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',
                       "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg, pomerol.")
-    parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify 'Hloc' or 'None'.")
+    parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify either 'Hloc', 'None', or the location of a file..")
     parser.allow_undefined_options("impurity_solver")
 
     # [control]
@@ -84,6 +87,7 @@ def create_parser():
     parser.add_option("control", "initial_static_self_energy", str, "None", "dict of {ish: 'filename'} to specify initial value of the self-energy of ish-th shell. The file format is the same as local_potential_matrix.")
     parser.add_option("control", "initial_self_energy", str, "None", "Filename containing initial self-energy in the same format as sigma.dat generated by dcore_check.")
     parser.add_option("control", "time_reversal", bool, False, "If true, an average over spin components are taken.")
+    parser.add_option("control", "symmetry_generators", str, 'None', "Generators for symmetrization of self-energy.")
 
     # [tool]
     parser.add_option("tool", "nnode", int, 0, "[NOT USED] Number of node for the *k* path", OptionStatus.RETIRED)
@@ -95,7 +99,7 @@ def create_parser():
     parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
     parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
-    parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation")
+    parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.")
     parser.add_option("tool", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
 
     # [bse]
@@ -106,6 +110,16 @@ def create_parser():
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
+
+    parser.add_option("bse", "sparse_sampling", bool, False, "If true, X_loc is measured on sparse sampling points generated by IR basis.")
+    parser.add_option("bse", "sparse_mode", str, 'ph-2D', "Specify how sampling points are distributed (ph-2D or 3D). This is used both in generating sampling points and fitting.")
+    parser.add_option("bse", "sparse_Lambda", float, 1000.0, "A parameter for IR basis.")
+    parser.add_option("bse", "sparse_sv_cutoff", float, 1e-5, "Singular-value cutoff to determine the max rank of IR basis.")
+    parser.add_option("bse", "sparse_niter", int, 100, "Number of iterations for fit of Xloc.")
+    parser.add_option("bse", "sparse_D", int, 50, "Control parameter for fit of Xloc")
+    parser.add_option("bse", "sparse_rtol", float, 1e-8, "rtol for fit of Xloc")
+    parser.add_option("bse", "sparse_alpha", float, 1e-5, "A regularization parameter for fit of Xloc.")
+    parser.add_option("bse", "sparse_fit_mode", str, 'full', 'full, fit_and_save, save_only')
 
     return parser
 
@@ -122,6 +136,7 @@ def two_options_incompatible(params, option1, option2):
     if _cast_to_bool(params[option1[0]][option1[1]]) and _cast_to_bool(params[option2[0]][option2[1]]):
         raise RuntimeError("[{}][{}] and [{}][{}] cannot be True at the same time!".format(option1[0], option1[1], option2[0], option2[1]))
 
+
 def parse_parameters(params):
     """
     Parse some parameters in a parameter
@@ -130,34 +145,42 @@ def parse_parameters(params):
     :return:  None
     """
 
-    two_options_incompatible(params, ('control', 'restart'), ('control', 'initial_static_self_energy'))
-    two_options_incompatible(params, ('control', 'initial_self_energy'), ('control', 'initial_static_self_energy'))
+    if 'system' in params:
+        if params['system']['T'] > 0:
+            params['system']['beta'] = 1.0 / params['system']['T']
+            params['system']['T'] = -1.0  # To make sure that only beta will be used in computations
 
-    ncor = params['model']['ncor']
+    if 'control' in params:
+        two_options_incompatible(params, ('control', 'restart'), ('control', 'initial_static_self_energy'))
+        two_options_incompatible(params, ('control', 'initial_self_energy'), ('control', 'initial_static_self_energy'))
 
-    # Set [model][corr_to_inequiv] and [model][n_inequiv_shells]
-    if params['model']['corr_to_inequiv'] == 'None':
-        params['model']['corr_to_inequiv'] = numpy.arange(ncor)
-        params['model']['n_inequiv_shells'] = ncor
-    else:
-        equiv_str_list = re.findall(r'[^\s,]+', params['model']['corr_to_inequiv'])
-        corr_to_inequiv = numpy.array(list(map(int, equiv_str_list)))
-        if len(corr_to_inequiv) != ncor:
-            raise RuntimeError("Invalid number of elements in corr_to_inequiv!")
-        params['model']['corr_to_inequiv'] = corr_to_inequiv
-        params['model']['n_inequiv_shells'] = len(numpy.unique(corr_to_inequiv))
-        if numpy.amin(corr_to_inequiv) < 0 or numpy.amin(corr_to_inequiv) > params['model']['n_inequiv_shells']:
-            raise RuntimeError('Elements of corr_to_inequiv must be in the range of [0, n_inequiv_shells-1]!')
+    if 'model' in params:
+        ncor = params['model']['ncor']
 
-    # Set [model][norb_inequiv_sh]
-    nsh = params['model']['n_inequiv_shells']
-    params['model']['norb_inequiv_sh'] = numpy.array(map(int, re.findall(r'\d+', params['model']['norb'])))
-    if len(params['model']['norb_inequiv_sh']) != nsh:
-        raise RuntimeError("Wrong number of entries in norb!")
+        # Set [model][corr_to_inequiv] and [model][n_inequiv_shells]
+        if params['model']['corr_to_inequiv'] == 'None':
+            params['model']['corr_to_inequiv'] = numpy.arange(ncor)
+            params['model']['n_inequiv_shells'] = ncor
+        else:
+            equiv_str_list = re.findall(r'[^\s,]+', params['model']['corr_to_inequiv'])
+            corr_to_inequiv = numpy.array(list(map(int, equiv_str_list)))
+            if len(corr_to_inequiv) != ncor:
+                raise RuntimeError("Invalid number of elements in corr_to_inequiv!")
+            params['model']['corr_to_inequiv'] = corr_to_inequiv
+            params['model']['n_inequiv_shells'] = len(numpy.unique(corr_to_inequiv))
+            if numpy.amin(corr_to_inequiv) < 0 or numpy.amin(corr_to_inequiv) > params['model']['n_inequiv_shells']:
+                raise RuntimeError('Elements of corr_to_inequiv must be in the range of [0, n_inequiv_shells-1]!')
 
-    # Set [model][norb_corr_sh]
-    corr_to_inequiv = params['model']['corr_to_inequiv']
-    params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][corr_to_inequiv[icrsh]] for icrsh in range(ncor)])
+        # Set [model][norb_inequiv_sh]
+        nsh = params['model']['n_inequiv_shells']
+        params['model']['norb_inequiv_sh'] = numpy.array(map(int, re.findall(r'\d+', params['model']['norb'])))
+        if len(params['model']['norb_inequiv_sh']) != nsh:
+            raise RuntimeError("Wrong number of entries in norb!")
 
-    # Expand enviroment variables
-    params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])
+        # Set [model][norb_corr_sh]
+        corr_to_inequiv = params['model']['corr_to_inequiv']
+        params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][corr_to_inequiv[icrsh]] for icrsh in range(ncor)])
+
+    if 'mpi' in params:
+        # Expand enviroment variables
+        params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])

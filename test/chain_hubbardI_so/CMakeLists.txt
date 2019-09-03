@@ -1,6 +1,6 @@
 set(TEST_FILES dmft.ini)
 foreach(test_file ${TEST_FILES})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${test_file} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${test_file}.in ${CMAKE_CURRENT_BINARY_DIR}/${test_file})
 endforeach()
 
 # COPY REFERENCE DATA

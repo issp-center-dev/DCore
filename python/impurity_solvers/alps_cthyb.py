@@ -27,7 +27,7 @@ from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array, make_hermite_conjugate
 from .base import SolverBase
 
 
@@ -74,31 +74,32 @@ def to_numpy_array(g, block_names):
     return (data[:, :, index])[:, index, :]
 
 
-def assign_from_numpy_array(g, data, block_names):
+def assign_from_numpy_array_legendre(g, data, block_names):
     """
-    Does inversion of to_numpy_array
+    Set numpy data to BlockGf of legendre
     """
 
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks must be 1 or 2.")
 
-    n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
+    block_sizes = [get_block_size(g[name]) for name in block_names]
+    n_spin_orbital = numpy.sum(block_sizes)
 
-    assert data.shape[0] == g[block_names[0]].data.shape[0]
+    assert data.shape[-1] == g[block_names[0]].data.shape[0]
 
-    norb = int(n_spin_orbital/2)
+    norb = n_spin_orbital//2
     index = numpy.zeros((n_spin_orbital), dtype=int)
     index[:norb] = 2 * numpy.arange(norb)
     index[norb:] = 2 * numpy.arange(norb) + 1
-    data_rearranged = data[:, :, index][:, index, :]
+    # * Change the order of spins and orbitals
+    # * Move the last index for $l$ to the first index.
+    data_rearranged = (data[:, index, :][index, :, :]).transpose((2,0,1))
 
     offset = 0
     for name in block_names:
         block = g[name]
-        block_dim = len(block.indices)
+        block_dim = get_block_size(block)
         block.data[:,:,:] = data_rearranged[:, offset:offset + block_dim, offset:offset + block_dim]
-        for i in range(block.data.shape[0]):
-            block.data[i, :, :] = 0.5 * (block.data[i, :, :] + block.data[i, :, :].transpose().conj())
         offset += block_dim
 
 
@@ -111,16 +112,32 @@ class ALPSCTHYBSolver(SolverBase):
         """
 
         super(ALPSCTHYBSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
-        self.n_tau = max(10001, 5 * n_iw)
+        self.n_tau = max(10001, 10 * n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """
-
         In addition to the parameters described in the docstring of SolverBase,
         params_kw must may contain the following parameters.
           exec_path : str, path to an executable, mandatory
           dry_run   : bool, actual computation is not performed if dry_run is True, optional
+        """
 
+        self._solve_impl(rot, mpirun_command, None, params_kw)
+
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+        raise RuntimeError("calc_Xloc_ph is not implemented!")
+
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+        self._solve_impl(rot, mpirun_command, freqs_ph, params_kw)
+
+        return self._Xloc_ph_sparse, None
+
+    def _solve_impl(self, rot, mpirun_command, freqs_ph, params_kw):
+        """
+        In addition to the parameters described in the docstring of SolverBase,
+        params_kw must may contain the following parameters.
+          exec_path : str, path to an executable, mandatory
+          dry_run   : bool, actual computation is not performed if dry_run is True, optional
         """
 
         internal_params = {
@@ -206,6 +223,10 @@ class ALPSCTHYBSolver(SolverBase):
             'measurement.G1.n_matsubara'      : self.n_iw,
         }
 
+        if not freqs_ph is None:
+            p_run['measurement.G2.on'] = 1
+            p_run['measurement.G2.matsubara.frequencies_PH'] = 'freqs_PH.txt'
+
         if os.path.exists('./input.out.h5'):
             shutil.move('./input.out.h5', './input_prev.out.h5')
 
@@ -239,6 +260,12 @@ class ALPSCTHYBSolver(SolverBase):
             for f1, f2 in product(range(self.n_flavors), range(self.n_flavors)):
                 print('{} {} {:.15e} {:.15e}'.format(f1, f2, rot_mat_alps[f1, f2].real, rot_mat_alps[f1, f2].imag), file=f)
 
+        if not freqs_ph is None:
+            with open('./freqs_PH.txt', 'w') as f:
+                print(freqs_ph.shape[0], file=f)
+                for i in range(freqs_ph.shape[0]):
+                    print('{} {} {}'.format(*freqs_ph[i,:]), file=f)
+
         if _read('dry_run'):
             return
 
@@ -246,8 +273,9 @@ class ALPSCTHYBSolver(SolverBase):
         exec_path = os.path.expandvars(_read('exec_path'))
         if exec_path == '':
             raise RuntimeError("Please set exec_path!")
-        if not os.path.exists(exec_path):
-            raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
+        # TODO: Use shutil.which (from Python 3.3) to check the existence of the command.
+        #if not os.path.exists(exec_path):
+            #raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
 
         # Run a working horse
         with open('./output', 'w') as output_f:
@@ -260,7 +288,8 @@ class ALPSCTHYBSolver(SolverBase):
         # Read the computed Green's function in Legendre basis and compute G(iwn)
         if not os.path.exists('./input.out.h5'):
             raise RuntimeError("Output HDF5 file of ALPS/CT-HYB does not exist. Something went wrong!")
-        G_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
+
+        #G_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         with HDFArchive('input.out.h5', 'r') as f:
             # Sign
             sign = f['Sign']
@@ -268,14 +297,27 @@ class ALPSCTHYBSolver(SolverBase):
             if numpy.abs(sign) < 0.01:
                 print("Average sign may be too small!")
 
-            # G(tau) and G_iw with 1/iwn tail
-            gtau = f['gtau']['data']
-            assign_from_numpy_array(G_tau, gtau, self.block_names)
+            # G_l in Legendre basis
+            gl_data = float_to_complex_array(f['G1_LEGENDRE'])
+            Nl = gl_data.shape[2]
+            G_l = make_block_gf(GfLegendre, self.gf_struct, self.beta, n_points=Nl)
+            assign_from_numpy_array_legendre(G_l, gl_data, self.block_names)
+
+            # G_iw with 1/iwn tail
             for name in self.block_names:
-                g = G_tau[name]
-                g.tail.zero()
-                g.tail[1] = numpy.identity(g.N1)
-                self._Gimp_iw[name] << Fourier(g)
+                self._Gimp_iw[name] << LegendreToMatsubara(G_l[name])
+                if triqs_major_version == 1:
+                    self._Gimp_iw[name].tail.zero()
+                    self._Gimp_iw[name].tail[1] = numpy.identity(G_l[name].N1)
+            make_hermite_conjugate(self._Gimp_iw)
+
+            # Two-particle GF
+            if not freqs_ph is None:
+                data_G2 = float_to_complex_array(f['/G2/matsubara/data'][()])
+                data_G2 = data_G2.reshape((self.n_flavors, self.n_flavors, self.n_flavors, self.n_flavors, -1))
+                # from ALPS/CT-HYB to DCore notation
+                self._Xloc_ph_sparse = data_G2.transpose((1,0,2,3,4))/self.beta
+                del data_G2
 
         # Solve Dyson's eq to obtain Sigma_iw
         # Sigma_iw = G0_iw^{-1} - G_imp_iw^{-1}

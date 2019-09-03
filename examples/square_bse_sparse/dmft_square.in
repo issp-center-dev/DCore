@@ -1,0 +1,34 @@
+[model]
+seedname = square
+lattice = square
+norb = 1
+nelec = 1.0
+t = -1.0
+kanamori = [(8.0, 0.0, 0.0)]
+nk = 32
+
+#[mpi]
+#command = "mpirun -n #"
+
+[system]
+beta = 2.0
+n_iw = 1024
+mu = 4.0
+fix_mu = True
+
+[impurity_solver]
+name = pomerol
+exec_path{str}=pomerol2dcore
+
+[control]
+max_step = 1
+
+[bse]
+num_wb = 1
+num_wf = 20
+h5_output_file = dmft_bse.h5
+sparse_sampling = True
+sparse_Lambda = 100
+sparse_D = 20
+sparse_niter = 200
+#only_fit = True

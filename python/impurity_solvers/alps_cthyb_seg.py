@@ -23,7 +23,7 @@ from itertools import product
 from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size
 from .base import SolverBase
 
 
@@ -38,7 +38,7 @@ def to_numpy_array(g, names):
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
 
-    n_spin_orbital = numpy.sum([len(block.indices) for name, block in g])
+    n_spin_orbital = numpy.sum([get_block_size(block) for name, block in g])
 
     # FIXME: Bit ugly
     n_data = g[names[0]].data.shape[0]
@@ -47,7 +47,7 @@ def to_numpy_array(g, names):
     offset = 0
     for name in names:
         block = g[name]
-        block_dim = len(block.indices)
+        block_dim = get_block_size(block)
         data[:, offset:offset + block_dim, offset:offset + block_dim] = block.data
         offset += block_dim
 

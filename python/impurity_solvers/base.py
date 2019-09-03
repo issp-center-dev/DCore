@@ -145,6 +145,64 @@ class SolverBase(object):
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
 
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+        """
+        Compute Xloc(m, n, n') in p-h channel
+                and chi_loc(m) (optional)
+
+
+        Parameters
+        ----------
+        num_wf:
+            Number of non-negative fermionic frequencies
+        num_wb:
+            Number of non-negative bosonic frequencies
+
+        The other parameters are the same as for solve().
+
+        Returns
+        -------
+
+        Xloc(m, n, n') : 3d ndarray of complex type
+            Data for -num_wf <= n, n' < num_wf and m = 0, 1, ..., num_wb-1.
+
+        chi_loc(m) : 1d ndarray of complex type
+            return None if not computed
+
+        """
+        pass
+
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+        """
+        Compute Xloc(m, n, n') in p-h channel only for specified frequency points
+                and chi_loc(m) (optional)
+
+        Parameters
+        ----------
+        rot
+        mpirun_command:
+            The same as solve()
+
+        freqs_ph: 2d int ndarray of shape (n_freqs, 3)
+            The three integers at each row represent one bosonic frequency and two fermionic frequencies
+            in the particle-hole convention.
+            These frequencies must be given in the order of (boson, fermion, fermion).
+
+        num_wb:
+            for chi_loc
+
+        params_kw:
+            The same as solve()
+
+        Returns
+        -------
+        Xloc
+        chi_loc
+
+        """
+        pass
+
+
     @classmethod
     def is_gf_realomega_available(cls):
         return False

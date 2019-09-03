@@ -20,6 +20,7 @@ from __future__ import print_function
 import numpy
 from itertools import product
 import os
+import subprocess
 
 from ..pytriqs_gf_compat import *
 # from pytriqs.archive import HDFArchive
@@ -27,6 +28,22 @@ from pytriqs.operators import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase
+
+VERSION_REQUIRED = 1.2
+
+
+def check_version(_exec):
+    print(" Checking version...")
+    out = subprocess.check_output([_exec, "--version"])
+    # pomerol2dcore version 1.0
+    print(" |", out, end="")
+    print(" | version required", VERSION_REQUIRED)
+    version = float(out.split()[2])
+    if version >= VERSION_REQUIRED:
+        print(" OK")
+    else:
+        print(" ERROR: requirement not satisfied")
+        exit(1)
 
 
 def assign_from_numpy_array(g_block, data, block_names):
@@ -106,11 +123,17 @@ class PomerolSolver(SolverBase):
 
         # print("params_kw =", params_kw)
         exec_path = os.path.expandvars(params_kw['exec_path'])
+        check_version(exec_path)
 
         # for BSE
         flag_vx = params_kw.get('flag_vx', 0)
-        n_w2f = params_kw.get('num_wf', None)
-        n_w2b = params_kw.get('num_wb', None)
+        n_w2f = params_kw.get('n_w2f', None)
+        n_w2b = params_kw.get('n_w2b', None)
+        file_freqs = params_kw.get('file_freqs', None)
+
+        # dynamical susceptibility
+        flag_suscep = params_kw.get('flag_suscep', 0)
+        n_wb = params_kw.get('n_wb', None)
 
         file_pomerol = "pomerol.in"
         file_h0 = "h0.in"
@@ -124,15 +147,19 @@ class PomerolSolver(SolverBase):
             'file_h0': file_h0,
             'file_umat': file_umat,
             'flag_gf': 1,
-            'n_w': self.n_iw,
+            'n_wf': self.n_iw,
             'flag_vx': flag_vx,
             'n_w2f': n_w2f,
             'n_w2b': n_w2b,
+            'file_freqs': file_freqs,
+            'flag_suscep': flag_suscep,
+            'n_wb': n_wb,
         }
 
         with open(file_pomerol, "w") as f:
             for key, val in params_pomerol.items():
-                print(key, "=", val, file=f)
+                if val is not None:
+                    print(key, "=", val, file=f)
 
         # (1a) If H0 is necessary:
         # Non-interacting part of the local Hamiltonian including chemical potential
@@ -171,7 +198,8 @@ class PomerolSolver(SolverBase):
             gf = gf_1d.reshape((1, self.n_flavors, self.n_flavors, self.n_iw))
         assign_from_numpy_array(self._Gimp_iw, gf, self.block_names)
 
-        set_tail(self._Gimp_iw)
+        if triqs_major_version == 1:
+            set_tail(self._Gimp_iw)
 
         # Compute Sigma_iw
         # NOTE:
@@ -187,41 +215,105 @@ class PomerolSolver(SolverBase):
         g0_inv -= h0_block
         self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
 
-    def calc_g2(self, rot, mpirun_command, params_kw):
-        """
-        compute local G2 (X_loc) in p-h channel
-            X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
-
-        return:
-            x_loc : dict
-                key = (i1, i2, i3, i4)
-                val = numpy.ndarray(n_w2b, 2*n_w2f, 2*n_w2f)
-        """
-
-        params_kw['flag_vx'] = 1
-        assert 'num_wf' in params_kw
-        assert 'num_wb' in params_kw
-
-        self.solve(rot, mpirun_command, params_kw)
-
-        n_w2f = params_kw.get('num_wf')
-        n_w2b = params_kw.get('num_wb')
-        dir_g2 = params_kw.get('dir_g2', './two_particle')
-
+    def _read_common(self, dir_name, fac=1.0):
         x_loc = {}
         for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
-            filename = dir_g2 + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
+            filename = dir_name + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
             if not os.path.exists(filename):
                 continue
             print(" reading", filename)
 
             # load data as a complex type
-            # 1d array --> (wb, wf1, wf2)
             data = numpy.loadtxt(filename).view(complex).reshape(-1)
-            data = data.reshape((n_w2b, 2*n_w2f, 2*n_w2f))
 
-            x_loc[(i1, i2, i3, i4)] = data / self.beta
+            x_loc[(i1, i2, i3, i4)] = data * fac
+
         return x_loc
+
+    def _read_xloc(self, params_kw):
+        dir_g2 = params_kw.get('dir_g2', './two_particle')
+        return self._read_common(dir_g2, 1./self.beta)
+
+    def _read_chiloc(self, params_kw):
+        dir_suscep = params_kw.get('dir_suscep', './susceptibility')
+        return self._read_common(dir_suscep)
+
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+        """
+        compute local G2 (X_loc) in p-h channel
+            X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
+
+        Parameters
+        ----------
+        rot
+        mpirun_command
+        num_wf
+        num_wb
+        params_kw
+
+        Returns
+        -------
+        x_loc : dict
+            key = (i1, i2, i3, i4)
+            val = numpy.ndarray(n_w2b, 2*n_w2f, 2*n_w2f)
+
+        chi_loc : dict (None if not computed)
+            key = (i1, i2, i3, i4)
+            val = numpy.ndarray(n_w2b)
+        """
+
+        params_kw['flag_vx'] = 1
+        params_kw['n_w2f'] = num_wf
+        params_kw['n_w2b'] = num_wb
+        params_kw['flag_suscep'] = 1
+        params_kw['n_wb'] = num_wb
+
+        self.solve(rot, mpirun_command, params_kw)
+
+        x_loc = self._read_xloc(params_kw)
+        # 1d array --> (wb, wf1, wf2)
+        for key, data in x_loc.items():
+            x_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
+
+        chi_loc = self._read_chiloc(params_kw)
+
+        return x_loc, chi_loc
+
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+        """
+
+        Parameters
+        ----------
+        freqs_ph : numpy.ndarray[N, 3]  frequency points (in the order of boson, fermion, fermion)
+        num_wb : for chi_loc
+
+        Returns
+        -------
+        x_loc : dict
+            key = (i1, i2, i3, i4)
+            val = numpy.ndarray(N)
+
+        chi_loc : dict (None if not computed)
+            key = (i1, i2, i3, i4)
+            val = numpy.ndarray(n_w2b)
+        """
+
+        # Save frequencies list
+        file_freqs = "freqs.in"
+        with open(file_freqs, "w") as f:
+            for freq in freqs_ph:
+                print(freq[0], freq[1], freq[2], file=f)
+
+        params_kw['flag_vx'] = 1
+        params_kw['file_freqs'] = file_freqs
+        params_kw['flag_suscep'] = 1
+        params_kw['n_wb'] = num_wb
+
+        self.solve(rot, mpirun_command, params_kw)
+
+        x_loc = self._read_xloc(params_kw)
+        chi_loc = self._read_chiloc(params_kw)
+        return x_loc, chi_loc
 
     def name(self):
         return "pomerol"

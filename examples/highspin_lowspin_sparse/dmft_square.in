@@ -1,0 +1,33 @@
+[model]
+seedname = square
+lattice = square
+norb = 2
+nelec = 2.0
+t = -1.0
+nk = 32
+kanamori = [(12.0, 6.0, 3.0)]
+local_potential_matrix = {0: '../local_pot.in'}
+local_potential_factor = 8.8
+
+[system]
+beta = 2.0
+n_iw = 1000
+prec_mu = 0.001
+mu = 10.5
+fix_mu = True
+
+[impurity_solver]
+name = pomerol
+exec_path{str}=pomerol2dcore
+
+[control]
+max_step = 1
+
+[bse]
+num_wb = 1
+num_wf = 20
+
+sparse_sampling = True
+sparse_Lambda = 100
+sparse_D = 50
+sparse_niter = 100

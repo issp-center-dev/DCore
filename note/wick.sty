@@ -1,0 +1,233 @@
+%%%%%%%%%%% Macro \wick %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%        WICK.STY
+%                                         by T.Kugo (July 28, 1996)
+%                                           (extended Aug.26, 2001)
+%                                           (extended Sept.6, 2002)
+% USAGE: ------------------------------------------------------------
+%  |  \wick[u]{heights}{body}                                        |
+%  |    {heights}={h1 h2 ...} : heights of Wick-contraction symbols  |
+%  |    {body}={..... <*X .... >*Y .....}                  +----+    |
+%  |          : X and Y are contracted                     |    |    |
+%  |    o Contraction marker <*   >*                       X    Y    |
+%  |       The begin and end symbols are always < and >, resp'ly.    |
+%  |       but the label * associated with them                      |
+%  |         can be any symbols 1,2,+,-,=,a,x, ... ,  and            |
+%  |         should be common between contracted pair partners.      |
+%  |    o Put the optional argument [u] only if you want    X    Y   |
+%  |       Wick-contraction symbols below the text, like    |    |   |
+%  |                                                        +----+   |
+%  |    o Also defined are                                           |
+%  |       \overwick{heights}{body}  (=\wick{heights}{body})         |
+%  |       \underwick{heights}{body} (=\wick[u]{heights}{body})      |
+%  |                                                                 |
+%  |    o For writing both overwick and underwick simultaneously     |
+%  |       \Wwick{heightsO}{bodyO}{heightsU}{bodyU}                  |
+%  |       See below for usage                                       |
+%   -----------------------------------------------------------------
+% An example
+%    \wick{213}{A <1B CD <+E FG >1H IJ <xK LM >+O PQ >xR ST}
+%   
+% yields wickcontractions between pairs  [B H],   [E O],   [K R]
+%   which are specified by symbols      <1...>1, <+...>+, <x...>x
+% The heights of these wicksymbols are     2        1        3
+%   which are written in the first argument. [The unit used is \WKht.]
+% Any letters for * in <* .. >* can be used to specify the pair partner.
+% Any numbers of contractions can be written by this macro.
+%
+% A more complicated example:
+%   \wick{456}{ 
+%      <1  A B \Bigg( \int_{-\infty}^\infty dy\,
+%      <+  {\left({X\over Y}\right)}(y)\ 
+%      <2  g(w)\  
+%       >1 {\sqrt{\frac{E}{G}}} D 
+%       >+ E(z) \int_{x>0}\!\!\!\!\!dx\,
+%       >2 f(x)\Bigg)  } = A_N
+%
+%%%% `\Wwick' writing Overwick and Underwick SIMULTANEOUSLY: %%%%%%%
+% Usage of \Wwick#1#2#3#4 with FOUR arguments
+% Example:
+%  \Wwick{213}{A <1B <2CD <*E F>2G >1H IJ >*K}  % for overwick part
+%         {21}{A B C<1D E <2F G H >1I >2J K}    % for underwick part
+% The body parts in #2 and #4 should be the same. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% IMPORTANT REMARKS:
+% Some commands should be enclosed by curly bracket { }, like \sqrt,
+% \frac and {\left ... \right} in this example. This is the case also 
+% for \bar, \overline etc. In any case, try to enclose by { } whenever 
+% some commands does not work properly.  
+% Remark: \sqrt is often troublesome. 
+%         Use always {} for the argument: \sqrt{2} but not \sqrt2
+%         \left and \right commands should not cross any wick 
+%         contractions.
+% IN LaTeX2e, \rm or \cal or \bf inside \wick may cause a trouble.
+% Try to use `eqnarray' environment instead of `equation' environment.  
+%
+% You can change some parameters by putting commands like
+%   \def\WKht{.85}    : unit height of wicksymbol in unit [ex] 
+%   \def\WKsep{.4}    : separation between wicksymbol and letter in [ex]
+%   \def\WKrule{.03}  : thickness of the rule of wicksymbol in unit [em]
+% These are actually default values for them.
+%
+% A DIRTY TRICK 
+%  for drawing two wicksymbols that begins from a single place:
+%  Try, for instance, 
+%     \wick{213}{A <1B <2{\hbox to-1.2ex{\vbox to.7em{}}}{\kern1.2ex} 
+%                CD <*E F>2G >1H IJ >*K }
+%  which gives two wicksymbols labeled by 1 and 2 beginning from `B'.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\@bgnmark{<}
+\def\@endmark{>}
+\def\WKht{.85}
+\def\WKsep{.4}
+\def\WKrule{.03}
+\newcount\@bgncnt
+\newcount\@endcnt
+\newcount\@h@ight
+\newcount\TempCount
+\newif\if@Exist
+\newif\if@under
+\newdimen\@tempdimc
+\newdimen\@tempdimd
+\newdimen\fixh@ight
+\newdimen\h@ight % unit height of wicksymbol in unit of ex 
+\newdimen\w@dth  % thickness of the rule of wicksymbol
+
+%% Some functions to cut a part of strings out of 
+%% a string = MAE {< or >} MARK FRONT USIRO 
+\def\SEPbgn#1<#2#3#4\@@{\xdef\@MAE{#1}\xdef\@MARK{#2}
+\xdef\@FRONT{#3}\xdef\@USIRO{#4}}
+\def\SEPend#1>#2#3#4\@@{\xdef\@MAE{#1}\xdef\@MARK{#2}
+\xdef\@FRONT{#3}\xdef\@USIRO{#4}}
+\def\c@lc{% \@tempdima: position, 
+%         % \@tempdimb: letter-height (underwick), letter-depth (overwick)
+ \setbox0=\hbox{$\displaystyle \@FRONT$}
+ \@tempdima\wd0 \if@under\@tempdimb\dp0\else\@tempdimb\ht0\fi
+ \settowidth{\@tempdimc}{$\displaystyle \@MAE$}
+ \settowidth{\@tempdimd}{$\displaystyle \@list$}
+ \divide\@tempdima by2 \advance\@tempdima by \@tempdimc
+ \advance\@tempdima by \@tempdimd}
+
+%%%%%%%%%% A useful macro \@dblfor for general use %%%%%%%%%%%%%%%%
+%% USAGE:
+%%    \@dblfor#1;#2:=#3\do#4
+%%
+%% For the `pair-ed' data of the form #3:(A1,B1, ...,An,Bn, ..., AN,BN,)
+%%                     Note that a comma exists at the end of list ---^
+%% You can refer to An by name #1, to Bn by name #2
+%% and do the routine #4 for n=1,2,3,...,N successively.
+%%------- Essentially a variation of the LaTeX macro \@tfor -------
+\def\@dblfornoop#1\@@#2#3#4{}
+\def\@dblfor#1;#2:=#3\do#4{\xdef\@fortmp{#3}\ifx\@fortmp\@empty \else%
+ \expandafter\@dblforloop#3\@nil,\@nil,\@nil\@@#1#2{#4}\fi}
+\def\@dblforloop#1,#2,#3\@@#4#5#6{\def#4{#1} \def#5{#2}%
+ \ifx #4\@nnil \let\@nextwhile=\@dblfornoop \else% 
+ #6\relax \let\@nextwhile=\@dblforloop\fi\@nextwhile#3\@@#4#5{#6}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%% next uses this macro \@dblfor %%%%%%%%%%%
+\def\fin@endpt#1#2{% find the endpoint with label #1 from the list #2
+%                  % #2=(label1,endpoint1,label2,endpoint2, ..... ,)
+\@dblfor\MemBer;\NextmemBer:=#2\do{\def\@bject{#1}%
+ \if \MemBer\@bject \xdef\@endpt{\NextmemBer} \@Existtrue\fi}}%
+%%%%%%%% next uses the standard LaTeX macro \@tfor %%%%%%%%%%%
+\def\fin@h@ight#1#2{% find the #1-th height h#1 from the list #2
+%                   % #2=(h1 h2 ...) with no commas between hn's.
+ \@tempcnta\z@%
+ \@tfor\MEmber:=#2\do{\advance\@tempcnta\@ne%
+ \ifnum \@tempcnta=#1 \@h@ight=\MEmber\fi}}
+
+%%%%% definition of wicksymbol %%%%%%%%%%%%%%%%%%%%
+\def\wicksymbol#1#2#3#4#5{% #1(pos),#2(ht or dp):bgnpnt  
+%                         % #3(pos),#4(ht or dp):endpnt  #5:height
+ \@tempdima=#3 \advance\@tempdima-#1%
+ \@tempdimc=#5\h@ight \@tempdimb=\@tempdimc\advance\@tempdimb-\w@dth%
+ \@tempdimd=#2 \advance\@tempdimd-\fixh@ight
+ \hskip#1%
+ \if@under\def\tpdp{height}\def\tpht{depth}
+ \else\def\tpdp{depth}\def\tpht{height}\fi
+ \vrule \tpht\@tempdimc width\w@dth \tpdp-\@tempdimd \kern-\w@dth%
+ \vrule \tpht\@tempdimc width\@tempdima \tpdp-\@tempdimb\kern-\w@dth%
+ \@tempdimd=#4 \advance\@tempdimd-\fixh@ight
+ \vrule \tpht \@tempdimc width\w@dth \tpdp-\@tempdimd}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\first#1{\expandafter\@mae#1\@nil}
+\def\secnd#1{\expandafter\@ato#1\@nil}
+\def\@mae#1;#2\@nil{#1}
+\def\@ato#1;#2\@nil{#2}
+
+%%%%% Definition of \wick and \Wwick %%%%%%%%%%%%%
+\def\overwick{\wick[o]}
+\def\underwick{\wick[u]}
+\def\wick{\@ifnextchar[{\@wick}{\@wick[o]}}
+\def\@wick[#1]#2#3{\def\b@dy{\displaystyle\@list}%
+\@@wick{#1}{#2}{#3}}%
+\def\Wwick#1#2#3#4{\def\b@dy{\wick[u]{#3}{#4}}%
+\@@wick{o}{#1}{#2}}%
+%
+\def\@@wick#1#2#3{%
+\if #1o\@underfalse\fixh@ight1.587ex\else\@undertrue\fixh@ight\z@\fi%
+ \h@ight=\WKht ex \w@dth=\WKrule em%
+ \@bgncnt\z@ \@endcnt\z@% 
+ \def\@list{} \def\bgnp@sition{} \def\endp@sition{}%
+ \@ifundefined{DeclareOldFontCommand}{}{%  If LaTeX2e
+ \def\rm{\mathrm} \def\bf{\mathbf} \def\cal{\mathcal}}
+ \def\sqrt{\radical"270370}%
+% Make three lists of \bgnp@sition, \endp@sition and \@list
+ \xdef\str@ng{#3}
+ \@tfor\m@mber:=#3\do{%
+ \ifx\m@mber\@bgnmark \advance\@bgncnt\@ne
+  \expandafter\SEPbgn\str@ng\empty\@@ \c@lc
+  \xdef\bgnp@sition{\bgnp@sition\@MARK,\the\@tempdima;\the\@tempdimb,}
+  \xdef\@list{\@list{\@MAE}{\@FRONT}}
+  \xdef\str@ng{\@USIRO}\fi
+ \ifx \m@mber\@endmark \advance\@endcnt\@ne
+  \expandafter\SEPend\str@ng\empty\@@ \c@lc
+  \xdef\endp@sition{\endp@sition\@MARK,\the\@tempdima;\the\@tempdimb,}
+  \xdef\@list{\@list{\@MAE}{\@FRONT}}
+  \xdef\str@ng{\@USIRO}\fi}
+  \xdef\@list{\@list\@USIRO}
+%% Warning an error
+ \ifnum\@bgncnt=\@endcnt \else% 
+ \@latexerr{The numbers of `<' and `>' do not match}%
+ {You have written different numbers of < and >}\fi%
+%% Count the number of height-numbers
+ \TempCount\z@ \@tfor\mmbr:=#2\do{\advance\TempCount\@ne}%
+ \ifnum\@bgncnt=\TempCount \else%
+ \@latexerr{The number of numbers in the first argument is different
+ with that of contractions <...>}%
+ {Give the same numbers of heights as the contractions <...>}\fi%%
+%% finally write wick-symbols
+ \mathop{\if@under\vtop\else\vbox\fi%
+{\m@th\ialign{##\crcr%
+\if@under
+ \setbox0=\hbox{$\displaystyle\@list$}\dp0=\z@%
+ \box0\crcr\noalign{\kern\WKsep ex\nointerlineskip}%
+\else
+ \noalign{\kern\WKsep ex}%
+\fi
+ $\m@th \TempCount\z@%
+ \@dblfor\member;\nextmember:=\bgnp@sition\do{%draw WickSymbols according 
+ \advance\TempCount\@ne \xdef\@bgnpt{\nextmember}%to the list \bgnp@sition
+ \@Existfalse%
+ \fin@endpt{\member}{\endp@sition}%
+ \if@Exist \else \@latexerr{The begin-mark `<\member' has no
+corresponding end-mark `>\member'}{You should write coinciding label 
+like <\member .. >\member}\fi%
+ \fin@h@ight{\TempCount}{#2}%
+ \setbox0=\hbox{%
+ $\wicksymbol{\first\@bgnpt}{\secnd\@bgnpt}{\first\@endpt}%
+ {\secnd\@endpt}{\@h@ight}$\hss}%
+ \if@under\ht0\else\dp0\fi\z@\wd0\z@ \box0}$\crcr
+\if@under
+ \noalign{\kern\WKsep ex}%
+\else
+ \noalign{\kern\WKsep ex\nointerlineskip}%
+ \setbox0=\hbox{$\b@dy$}\ht0=\fixh@ight%
+ \box0\crcr
+\fi
+ }}}\limits}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

@@ -9,6 +9,9 @@ kanamori = [(8.0, 5.3333333, 1.33333)]
 spin_orbit = True
 nk = 20
 
+[mpi]
+command = @MPIEXEC@
+
 [system]
 beta = 5.0
 with_dc = True
