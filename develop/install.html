@@ -64,54 +64,13 @@ Note that develop branches may not be well tested and contains some bugs.</p>
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p class="first">You first need to install <a class="reference external" href="https://triqs.github.io/triqs/">TRIQS</a> library prior to installing all other programs,
-since <code class="docutils literal notranslate"><span class="pre">DCore</span></code> is implemented using <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code>.</p>
-<p>In the following, we suppose that <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> is installed in directory <em>path_to_triqs</em>.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> supports <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> version <strong>1.4.2</strong> (the current version 2.0 is not supported).
-Since the installation manual in the TRIQS official website is not compatible with <strong>1.4.2</strong>, we briefly describe below how to install it.</p>
-<ol class="last arabic">
-<li><p class="first">You can download the zip file or tar file from <a class="reference external" href="https://github.com/TRIQS/triqs/releases/tag/1.4.2">https://github.com/TRIQS/triqs/releases/tag/1.4.2</a>.
-The version <strong>1.4.2</strong> is not compatible with the latest version of h5py (&gt;=2.8.0).
-If you encounter any problem, you can clone the repository and checkout <strong>1.4.x</strong> branch, which contains bug fixes.
-We suppose that source files are located in <em>path_to_triqs_src</em> directory.</p>
-</li>
-<li><p class="first">In an empty directory, type the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DCMAKE_INSTALL_PREFIX<span class="o">=</span>path_to_triqs path_to_triqs_src
-$ make
-$ make <span class="nb">test</span>
-$ make install
-</pre></div>
-</div>
-</li>
-</ol>
-</div>
-</li>
-<li><p class="first">You also need <a class="reference external" href="https://triqs.github.io/dft_tools">DFTTools</a>, which runs on the <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> library.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>The current version in the GitHub repository is not compatible with <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> version 1.4.2.
-You need to get old code that is compatible with 1.4.2.</p>
-<ol class="last arabic">
-<li><p class="first">Clone the repository, and checkout commit <strong>d005756</strong>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone git@github.com:TRIQS/dft_tools.git
-$ <span class="nb">cd</span> dft_tools
-$ git checkout d005756
-</pre></div>
-</div>
-</li>
-<li><p class="first">To build the source files, make an empty directory, move into it, and then type the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DCMAKE_INSTALL_PREFIX<span class="o">=</span>path_to_triqs<span class="se">\</span>
-  -DTRIQS_PATH<span class="o">=</span>path_to_triqs path_to_dft_tools
-$ make
-$ make <span class="nb">test</span>
-$ make install
-</pre></div>
-</div>
-</li>
-</ol>
-</div>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="https://triqs.github.io/triqs/">TRIQS</a> and <a class="reference external" href="https://triqs.github.io/dft_tools/">DFTTools/TRIQS</a>.</dt>
+<dd><p class="first">They must be installed prior to installing all other programs.
+If not, please install them following our instruction for <span class="xref std std-doc">TRIQS 1.4.x</span> or <span class="xref std std-doc">TRIQS 2.1.x</span>.</p>
+<p class="last">In the following, we suppose that <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> is installed in directory <em>path_to_triqs</em>.</p>
+</dd>
+</dl>
 </li>
 <li><p class="first">You will also need at least one impurity solver.</p>
 <p>For example, the following programs are supported at present:</p>
@@ -119,7 +78,7 @@ $ make install
 <li><a class="reference internal" href="impuritysolvers/alpscore_cthyb/cthyb.html"><span class="doc">ALPS/CT-HYB</span></a></li>
 <li><a class="reference internal" href="impuritysolvers/alpscore_ctseg/ctseg.html"><span class="doc">ALPS/CT-HYB-SEGMENT</span></a></li>
 <li><a class="reference internal" href="impuritysolvers/triqs_cthyb/cthyb.html"><span class="doc">TRIQS/cthyb</span></a></li>
-<li><a class="reference internal" href="impuritysolvers/triqs_hubbard_one/hubbard_one.html"><span class="doc">Hubbard-I solver</span></a></li>
+<li><a class="reference internal" href="impuritysolvers/triqs_hubbard_one/hubbard_one.html"><span class="doc">Hubbard-I solver</span></a> (not available for TRIQS 2.1.x)</li>
 </ul>
 <p>See <a class="reference internal" href="impuritysolvers.html"><span class="doc">Impurity solvers</span></a> for a complete list of supported impurity solvers and their user manuals.</p>
 </li>

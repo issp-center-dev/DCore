@@ -44,3 +44,4 @@ Please also refer to `the wiki page <https://github.com/ALPSCore/CT-HYB-SEGMENT/
 The DCore interface generates input files for ALPS/CT-HYB-SEGMENT into a working directory at work/imp_shell<ish>_ite<ite> (ish is the index of the shell and ite is the iteration).
 Then, ALPS/CT-HYB-SEGMENT is executed in the working directory, and numerical results are stored there.
 For example, the occupation number and the double occupancy are saved in the file 'observables.dat'.
+
