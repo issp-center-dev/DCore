@@ -22,8 +22,8 @@ The DCore package is published under the
 
 The following files are from the TRIQS (Toolbox for Research on Interacting Quantum Systems).
 
-- https://github.com/issp-center-dev/DCore/blob/develop_v2/python/impurity_solvers/triqs_hubbard_I_impl.py
-- https://github.com/issp-center-dev/DCore/tree/develop_v2/python/converters
+- https://github.com/issp-center-dev/DCore/blob/develop/python/impurity_solvers/triqs_hubbard_I_impl.py
+- https://github.com/issp-center-dev/DCore/tree/develop/python/converters
 
 We would like to express our sincere gratitude to TRIQS's developers.
 
@@ -48,13 +48,13 @@ Authors & Quotation
 This package depends on TRIQS libraries and applications.
 Please cite relevant papers for these original libraries.
 
-* `TRIQS libraries <https://triqs.ipht.cnrs.fr/1.x/about.html>`_
-* `TRIQS/DFTTools <https://triqs.ipht.cnrs.fr/1.4/applications/dft_tools/about.html>`_
+* `TRIQS libraries <https://triqs.github.io/triqs/2.1.x/about.html>`_
+* `TRIQS/DFTTools <https://triqs.github.io/dft_tools/2.1.x/about.html>`_
 
 In addition to the above two libraries, you may use impurity solvers listed below.
 
-* `TRIQS/cthyb <https://triqs.ipht.cnrs.fr/applications/cthyb/about.html>`_
-* `TRIQS/hubbardI <https://triqs.ipht.cnrs.fr/1.x/applications/hubbardI/about.html>`_
+* `TRIQS/cthyb <https://triqs.github.io/cthyb/2.1.x/about.html>`_
+* `TRIQS/hubbardI <https://triqs.github.io/triqs/1.4/applications/hubbardI/about.html>`_
 * `ALPS/CT-HYB <https://github.com/ALPSCore/CT-HYB/wiki/Citation>`_
 * `ALPS/CT-HYB-SEGMENT <https://github.com/ALPSCore/CT-HYB-SEGMENT>`_
 
