@@ -147,7 +147,7 @@ The reference data extracted from PRL 101, 166405 (2008) are available
 :download:`here <sigma-PRL101-166405.txt>`.
 The plot should look like the following.
 
-.. image:: sigma.svg
+.. image:: sigma.png
    :width: 600
    :align: center
 

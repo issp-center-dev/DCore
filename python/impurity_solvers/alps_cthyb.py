@@ -273,8 +273,9 @@ class ALPSCTHYBSolver(SolverBase):
         exec_path = os.path.expandvars(_read('exec_path'))
         if exec_path == '':
             raise RuntimeError("Please set exec_path!")
-        if not os.path.exists(exec_path):
-            raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
+        # TODO: Use shutil.which (from Python 3.3) to check the existence of the command.
+        #if not os.path.exists(exec_path):
+            #raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
 
         # Run a working horse
         with open('./output', 'w') as output_f:

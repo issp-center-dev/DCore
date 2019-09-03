@@ -30,5 +30,5 @@ h5_output_file = dmft_bse.h5
 sparse_sampling = True
 sparse_Lambda = 100
 sparse_D = 20
-sparse_niter = 1000
+sparse_niter = 200
 #only_fit = True

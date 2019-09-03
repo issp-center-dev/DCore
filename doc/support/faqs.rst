@@ -16,7 +16,7 @@ Can **DCore** compute the double occupancy?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It depends on impurity solvers.
-For example, ALPSCore/CT-HYB-SEGMENT supports it, but other CT-QMC codes do not at present.
+For example, ALPS/CT-HYB-SEGMENT supports it, but other CT-QMC codes do not at present.
 
 In general, capability of computing **local** physical quantities totally depends on impurity solvers.
 See the documentation of each solver for which local quantities can be computed.
@@ -122,13 +122,13 @@ The argument of ``--ext`` can be png, pdf, eps, jpg, ... (the ones supported by 
 Impurity solvers
 ----------------
 
-What is the difference between ALPSCore/CT-HYB and TRIQS/cthyb?
+What is the difference between ALPS/CT-HYB and TRIQS/cthyb?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``ALPS/CT-HYB`` is developed by one of the main developers of DCore, H. Shinaoka.
 Both of ``ALPS/CT-HYB`` and ``TRIQS/cthyb`` implement the hybridization-expansion continuous-time quantum Monte Carlo method.
 The main difference is the reliability of measurement of the single-particle Green's function.
-ALPSCore/CT-HYB uses a more elaborate algorithm (worm sampling).
+ALPS/CT-HYB uses a more elaborate algorithm (worm sampling).
 The non-worm conventional sampling, which is implemented in ``TRIQS/cthyb``,
 may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).
 

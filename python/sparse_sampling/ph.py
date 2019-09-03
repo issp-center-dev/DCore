@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     if os.path.isfile(args.data_file) is False:
-        print("data file is not exist.")
+        print("data file does not exist.")
         sys.exit(-1)
     boson_freq = int(args.bfreq)
     D = args.D

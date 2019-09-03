@@ -515,6 +515,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
-        print("Input file is not exist.")
+        print("Input file does not exist.")
         sys.exit(-1)
     dcore_post(args.path_input_file, int(args.np), args.prefix)
