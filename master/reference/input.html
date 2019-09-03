@@ -186,7 +186,7 @@
 <tr class="row-odd"><td>spin_orbit</td>
 <td>Bool</td>
 <td>False</td>
-<td>Whether the spin-orbit case (See <a class="reference internal" href="../tutorial/pb/pb.html#pbtutorial"><span class="std std-ref">Spin-orbit interaction: The case with Pb</span></a>).</td>
+<td>Whether the spin-orbit case.</td>
 </tr>
 <tr class="row-even"><td>interaction</td>
 <td>String</td>
@@ -415,29 +415,34 @@ The parameter <code class="docutils literal notranslate"><span class="pre">local
 <tr class="row-even"><td>beta</td>
 <td>Float</td>
 <td>1.0</td>
-<td>Inverse temperature.</td>
+<td>Inverse temperature. This parameter is overridden, if T is given.</td>
 </tr>
-<tr class="row-odd"><td>n_iw</td>
+<tr class="row-odd"><td>T</td>
+<td>Float</td>
+<td>-1.0</td>
+<td>Temperature. If this parameter is given, beta is overridden by 1/T.</td>
+</tr>
+<tr class="row-even"><td>n_iw</td>
 <td>Integer</td>
 <td>2048</td>
 <td>Number of Matsubara frequencies</td>
 </tr>
-<tr class="row-even"><td>fix_mu</td>
+<tr class="row-odd"><td>fix_mu</td>
 <td>Bool</td>
 <td>False</td>
 <td>Whether or not to fix chemical potential to a given value.</td>
 </tr>
-<tr class="row-odd"><td>mu</td>
+<tr class="row-even"><td>mu</td>
 <td>Float</td>
 <td>0.0</td>
 <td>Initial chemical potential.</td>
 </tr>
-<tr class="row-even"><td>prec_mu</td>
+<tr class="row-odd"><td>prec_mu</td>
 <td>Float</td>
 <td>0.0001</td>
 <td>Threshold for calculating chemical potential with the bisection method.</td>
 </tr>
-<tr class="row-odd"><td>with_dc</td>
+<tr class="row-even"><td>with_dc</td>
 <td>Bool</td>
 <td>False</td>
 <td>Whether or not use double counting correction (See below)</td>
@@ -483,7 +488,7 @@ U_{\alpha \gamma \delta \beta}
 <tr class="row-odd"><td>basis_rotation</td>
 <td>String</td>
 <td>None</td>
-<td>You can specify ‘Hloc’ or ‘None’.</td>
+<td>You can specify either ‘Hloc’, ‘None’, or the location of a file..</td>
 </tr>
 </tbody>
 </table>
@@ -537,6 +542,11 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 <td>Bool</td>
 <td>False</td>
 <td>If true, an average over spin components are taken.</td>
+</tr>
+<tr class="row-even"><td>symmetry_generators</td>
+<td>String</td>
+<td>None</td>
+<td>Generators for symmetrization of self-energy.</td>
 </tr>
 </tbody>
 </table>
@@ -602,7 +612,7 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 <tr class="row-even"><td>omega_pade</td>
 <td>Float</td>
 <td>5.0</td>
-<td>Cutoff frequencies for the Pade approximation</td>
+<td>Cutoff frequencies for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.</td>
 </tr>
 <tr class="row-odd"><td>omega_check</td>
 <td>Float</td>
