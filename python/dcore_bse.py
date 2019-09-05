@@ -342,29 +342,35 @@ class SaveBSE:
         u_mat_ph1 = u_mat.transpose(0, 2, 3, 1)
         u_mat_ph2 = u_mat.transpose(0, 3, 2, 1)
 
-        if not self.use_spin_orbit:
+        if self.use_spin_orbit:
+            gamma0_inner = - u_mat_ph1 + u_mat_ph2
+            gamma0_inner = gamma0_inner.reshape((len(self.inner2.namelist), )*2)
+            block_index = self.block2.get_index(icrsh, self.spin_names[0], icrsh, self.spin_names[0])
+            h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
+        else:
             u_mat_ph1 = u_mat_ph1.reshape((2, self.n_orb)*4)
             u_mat_ph2 = u_mat_ph2.reshape((2, self.n_orb)*4)
 
             gamma0 = {}
+            flag_data_exists = False
             for s1, s2, s3, s4 in product(range(2), repeat=4):
                 gamma0_orb = - u_mat_ph1[s1, :, s2, :, s3, :, s4, :] + u_mat_ph2[s1, :, s2, :, s3, :, s4, :]
 
                 # skip if zero
                 if numpy.linalg.norm(gamma0_orb) == 0:
                     continue
+                flag_data_exists = True
 
                 s12 = self.block2.get_index(icrsh, self.spin_names[s1], icrsh, self.spin_names[s2])
                 s34 = self.block2.get_index(icrsh, self.spin_names[s3], icrsh, self.spin_names[s4])
 
                 gamma0[(s12, s34)] = gamma0_orb.reshape((self.n_orb**2, )*2)
 
+            # if gamma0 has no data, set a zero matrix to avoid empty data in HDF5
+            if not flag_data_exists:
+                gamma0[(0, 0)] = numpy.zeros((self.n_orb**2, )*2)
+
             h5bse.save(key=('gamma0', ), data=gamma0)
-        else:
-            gamma0_inner = - u_mat_ph1 + u_mat_ph2
-            gamma0_inner = gamma0_inner.reshape((len(self.inner2.namelist), )*2)
-            block_index = self.block2.get_index(icrsh, self.spin_names[0], icrsh, self.spin_names[0])
-            h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
 
     def save_sparse_info(self, freqs):
         grp = self.args['sparse_grp']
