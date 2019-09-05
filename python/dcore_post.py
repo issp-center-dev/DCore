@@ -18,7 +18,6 @@
 #
 from __future__ import print_function
 import os
-import re
 import sys
 import numpy
 import copy
@@ -35,6 +34,7 @@ from .tools import launch_mpi_subprocesses
 import impurity_solvers
 from . import sumkdft
 from lattice_models import create_lattice_model
+
 
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
@@ -120,7 +120,7 @@ class DMFTPostSolver(DMFTCoreSolver):
 
 
 class DMFTCoreTools:
-    def __init__(self, seedname, params, n_k, xk, prefix):
+    def __init__(self, seedname, params, xk, prefix):
         """
         Class of posting tool for DCore.
 
@@ -130,8 +130,6 @@ class DMFTCoreTools:
             name for hdf5 file
         :param params:  dictionary
             Input parameters
-        :param n_k: integer
-            Number of k points
         :param xk:  integer array
             x-position for plotting band
         """
@@ -145,7 +143,6 @@ class DMFTCoreTools:
         self._broadening = float(params['tool']['broadening'])
         self._eta = float(params['tool']['eta'])
         self._seedname = seedname
-        self._n_k = n_k
         self._xk = xk
         self._prefix = prefix
 
@@ -189,6 +186,30 @@ class DMFTCoreTools:
                     for isp in spin_block_names:
                         for iorb in range(block_dim):
                             print(" %f" % dosproj_orb[ish][isp][iom, iorb, iorb].real, end="", file=f)
+                print("", file=f)
+        print("\n    Output {0}".format(filename))
+
+    def print_band(self, akw, filename):
+        """
+        Print A(k,w) into a file
+
+        Parameters
+        ----------
+        akw
+        filename
+
+        """
+
+        om_mesh = numpy.linspace(self._omega_min, self._omega_max, self._Nomega)
+        with open(filename, 'w') as f:
+            offset = 0.0
+            for isp in self._solver.spin_block_names:
+                # for ik in range(self._n_k):
+                for ik, xk in enumerate(self._xk):
+                    for iom, om in enumerate(om_mesh):
+                        print("%f %f %f" % (xk+offset, om, akw[isp][ik, iom]), file=f)
+                    print("", file=f)
+                offset = self._xk[-1] * 1.1
                 print("", file=f)
         print("\n    Output {0}".format(filename))
 
@@ -240,23 +261,15 @@ class DMFTCoreTools:
         #
         # Print band-structure into file
         #
-        mesh = [x.real for x in sigma_w_sh[0].mesh]
-        filename = self._prefix + self._seedname + '_akw.dat'
-        with open(filename, 'w') as f:
-            offset = 0.0
-            for isp in self._solver.spin_block_names:
-                for ik in range(self._n_k):
-                    for iom in range(self._Nomega):
-                        print("%f %f %f" % (self._xk[ik]+offset, mesh[iom], akw[isp][ik, iom]), file=f)
-                    print("", file=f)
-                offset = self._xk[self._n_k-1] * 1.1
-                print("", file=f)
-        print("\n    Output {0}".format(filename))
+        self.print_band(akw, self._prefix + self._seedname + '_akw.dat')
 
     def momentum_distribution(self):
         """
         Calculate Momentum distribution
         """
+        if self._xk is None:
+            return
+
         print("\n#############  Momentum Distribution  ################\n")
 
         den = self._solver.calc_momentum_distribution()
@@ -314,6 +327,41 @@ def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
 
 
+def gen_script_gnuplot(xnode, seedname, prefix, spin_orbit):
+    file_akw_gp = prefix + seedname + '_akw.gp'
+
+    def print_klabel(label, x, f, with_comma=True):
+        print('  "{}"  {}'.format(label, x), end="", file=f)
+        if with_comma:
+            print(',', end="", file=f)
+        print(' \\', file=f)
+
+    k_end = len(xnode) - 1
+
+    with open(file_akw_gp, 'w') as f:
+        print("set size 0.95, 1.0", file=f)
+        print("set xtics (\\", file=f)
+        if spin_orbit:
+            for i, node in enumerate(xnode):
+                print_klabel(node.label, node.x, f, i != k_end)
+        else:
+            for node in xnode:
+                print_klabel(node.label, node.x, f)
+            offset = xnode[-1].x * 1.1
+            for i, node in enumerate(xnode):
+                print_klabel(node.label, node.x + offset, f, i != k_end)
+        print("  )", file=f)
+        print("set pm3d map", file=f)
+        print("#set pm3d interpolate 5, 5", file=f)
+        print("unset key", file=f)
+        print("set ylabel \"Energy\"", file=f)
+        print("set cblabel \"A(k,w)\"", file=f)
+        print("splot \"{0}_akw.dat\"".format(seedname), file=f)
+        print("pause -1", file=f)
+
+        print("    Usage:")
+        print("\n      $ gnuplot {0}".format(os.path.basename(file_akw_gp)))
+
 
 def dcore_post(filename, np=1, prefix="./"):
     """
@@ -347,35 +395,6 @@ def dcore_post(filename, np=1, prefix="./"):
         os.makedirs(dir)
 
     #
-    # Nodes for k-point path
-    # knode=(label, k0, k1, k2) in the fractional coordinate
-    #
-    knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["tool"]["knode"])
-    knode = []
-    klabel = []
-    try:
-        for _list in knode_list:
-            _knode = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
-            klabel.append(_knode[0])
-            knode.append(map(float, _knode[1:4]))
-    except RuntimeError:
-        raise RuntimeError("Error ! Format of knode is wrong.")
-    knode = numpy.array(knode)  # convert from list to numpy.ndarray
-    nnode = len(klabel)
-    #
-    # Reciprocal lattice vectors
-    # bvec=[(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
-    #
-    bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
-    bvec = numpy.zeros((3, 3), numpy.float_)
-    try:
-        for i, _list in enumerate(bvec_list):
-            _bvec = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
-            for j in range(3):
-                bvec[i, j] = float(_bvec[j])
-    except RuntimeError:
-        raise RuntimeError("Error ! Format of bvec is wrong.")
-    #
     # Summary of input parameters
     #
     print("\n  @ Parameter summary")
@@ -387,104 +406,36 @@ def dcore_post(filename, np=1, prefix="./"):
         print("      {0} = {1}".format(k, v))
 
     #
-    # Construct lattice model
+    # Generate k-path and compute H(k) on this path
     #
+    print("\n################  Generating k-path  ##################\n")
+
     lattice_model = create_lattice_model(p)
+    xk, xnode = lattice_model.generate_Hk_path(p)
 
-    #
-    # Construct parameters for the A(k,w)
-    #
-    if not lattice_model.is_Hk_supported():
-        print('')
-        print('Skipping A(k,w)')
-        print('    A(k,w) is not supported by the model "{}".'.format(lattice_model.name()))
-        n_k = 0
-        xk = None
+    if xk is None:
+        print('  A(k,w) calc will be skipped')
     else:
-        print("\n################  Constructing k-path  ##################")
-        nk_line = p["tool"]["nk_line"]
-        n_k = (nnode - 1)*nk_line + 1
-        print("\n   Total number of k =", str(n_k))
-        kvec = numpy.zeros((n_k, 3), numpy.float_)
-        ikk = 0
-        for inode in range(nnode - 1):
-            for ik in range(nk_line + 1):
-                if inode != 0 and ik == 0:
-                    continue
-                for i in range(3):
-                    kvec[ikk, i] = float((nk_line - ik)) * knode[inode, i] + float(ik) * knode[inode + 1, i]
-                    kvec[ikk, i] = 2.0 * numpy.pi * kvec[ikk, i] / float(nk_line)
-                ikk += 1
-        #
-        # Compute x-position for plotting band
-        #
-        dk = numpy.zeros(3, numpy.float_)
-        dk_cart = numpy.zeros(3, numpy.float_)
-        xk = numpy.zeros(n_k, numpy.float_)
-        xk_label = numpy.zeros(nnode, numpy.float_)
-        xk[0] = 0.0
-        ikk = 0
-        for inode in range(nnode - 1):
-            dk[:] = knode[inode+1, :] - knode[inode, :]
-            dk_cart[:] = numpy.dot(dk[:], bvec[:, :])
-            klength = numpy.sqrt(numpy.dot(dk_cart[:], dk_cart[:])) / nk_line
-            xk_label[inode] = xk[ikk]
-            for ik in range(nk_line):
-                xk[ikk+1] = xk[ikk] + klength
-                ikk += 1
-        xk_label[nnode-1] = xk[n_k-1]
-
-        #
-        # HDF5 file for band
-        #
-        #
-        # Compute k-dependent Hamiltonian and save into seedname.h5
-        #
-        print("\n#############  Compute k-dependent Hamiltonian  ########################\n")
-        lattice_model.write_dft_band_input_data(p, kvec)
-
-        #
-        # Output gnuplot script
-        #
-        print("\n#############   Generate GnuPlot Script  ########################\n")
-        file_akw_gp = prefix + seedname + '_akw.gp'
-        with open(file_akw_gp, 'w') as f:
-            print("set size 0.95, 1.0", file=f)
-            print("set xtics (\\", file=f)
-            if p["model"]["spin_orbit"]:
-                for inode in range(nnode-1):
-                    print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
-                print("  \"{0}\"  {1} \\".format(klabel[nnode-1], xk_label[nnode-1]), file=f)
-            else:
-                for inode in range(nnode):
-                    print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]), file=f)
-                offset = xk_label[nnode-1]*1.1
-                for inode in range(nnode-1):
-                    print("  \"{0}\"  {1}, \\".format(klabel[inode], xk_label[inode]+offset), file=f)
-                print("  \"{0}\"  {1} \\".format(klabel[nnode-1], xk_label[nnode-1]+offset), file=f)
-            print("  )", file=f)
-            print("set pm3d map", file=f)
-            print("#set pm3d interpolate 5, 5", file=f)
-            print("unset key", file=f)
-            print("set ylabel \"Energy\"", file=f)
-            print("set cblabel \"A(k,w)\"", file=f)
-            print("splot \"{0}_akw.dat\"".format(seedname), file=f)
-            print("pause -1", file=f)
-            print("    Usage:")
-            print("\n      $ gnuplot {0}".format(file_akw_gp))
-
+        print("   Total number of k =", len(xk))
+        print("    k-point  x")
+        for node in xnode:
+            print("     %6s  %f" %(node.label, node.x))
 
     #
-    # Plot
+    # Coompute DOS and A(k,w)
     #
-    dct = DMFTCoreTools(seedname, p, n_k, xk, prefix)
+    print("\n#############   Run DMFTCoreTools  ########################\n")
+    dct = DMFTCoreTools(seedname, p, xk, prefix)
     dct.post()
-    if lattice_model.is_Hk_supported():
-        dct.momentum_distribution()
+    dct.momentum_distribution()
 
     #
-    # Finish
+    # Output gnuplot script
     #
+    if xnode is not None:
+        print("\n#############   Generate GnuPlot Script  ########################\n")
+        gen_script_gnuplot(xnode, seedname, prefix, p["model"]["spin_orbit"])
+
     print("\n#################  Done  #####################\n")
 
 
