@@ -139,7 +139,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
         """
 
         super(ALPSCTHYBSEGSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
-        self.n_tau = n_iw * 2 + 1  # +1 for tau = beta
+
+        self.n_tau = max(10001, 5 * n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """

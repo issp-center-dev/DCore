@@ -140,8 +140,22 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
 
     import pytriqs.utility.mpi as mpi
 
-    with HDFArchive(input_file, 'r') as h:
-        params = h['params']
+    # read HDF5 file on the master node
+    if mpi.is_master_node():
+        with HDFArchive(input_file, 'r') as h:
+            params = h['params']
+            keys = list(params.keys())
+    else:
+        params = {}
+        keys = []
+    assert isinstance(params, dict)
+
+    # broadcast parameters
+    keys = mpi.bcast(keys)
+    for key in keys:
+        if not mpi.is_master_node():
+            params[key] = None
+        params[key] = mpi.bcast(params[key])
 
     beta = params['beta']
     with_dc = params['with_dc']

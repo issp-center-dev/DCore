@@ -21,6 +21,9 @@ from typed_parser import *
 
 import numpy
 import re
+import ast
+from collections import namedtuple
+
 
 def create_parser(target_sections=None):
     """
@@ -184,3 +187,56 @@ def parse_parameters(params):
     if 'mpi' in params:
         # Expand enviroment variables
         params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])
+
+
+def parse_knode(knode_string):
+    """
+    Parse knode
+
+    Parameters
+    ----------
+    knode_string
+        (label, k0, k1, k2) in the fractional coordinate
+
+    Returns
+    -------
+    knode list of KNode
+
+    """
+
+    KNode = namedtuple('KNode', ('kvec', 'label'))
+
+    knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', knode_string)
+    knode = []
+    try:
+        for _list in knode_list:
+            _knode = filter(lambda w: len(w) > 0, re.split(r'[)(,]', _list))
+            knode.append(KNode(label = _knode[0], kvec = numpy.array(map(float, _knode[1:4]))))
+    except RuntimeError:
+        raise RuntimeError("Error ! Format of knode is wrong.")
+    return knode
+
+
+def parse_bvec(bvec_string):
+    """
+    Parse bvec
+
+    Parameters
+    ----------
+    bvec_string
+        [(b0x, b0y, k0z),(b1x, b1y, k1z),(b2x, b2y, k2z)]
+
+    Returns
+    -------
+    bvec numpy.ndarray shape=(3,3)
+
+    """
+
+    #bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
+    bvec_list = ast.literal_eval(bvec_string)
+    if isinstance(bvec_list, list) and len(bvec_list) == 3:
+        bvec = numpy.array(bvec_list, dtype=float)
+        assert bvec.shape == (3,3)
+    else:
+        raise RuntimeError("Error ! Format of bvec is wrong.")
+    return bvec

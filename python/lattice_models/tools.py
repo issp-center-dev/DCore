@@ -19,15 +19,19 @@ from __future__ import print_function
 
 import numpy
 import sys
+from collections import namedtuple
 
 from pytriqs.archive.hdf_archive import HDFArchive
 
 from ..tools import pauli_matrix
+from ..program_options import parse_knode, parse_bvec
+
 
 def _drop_small_vals(z, eps=1e-10):
     z_real = z.real if numpy.abs(z.real) > eps else 0.0
     z_imag = z.imag if numpy.abs(z.imag) > eps else 0.0
     return complex(z_real, z_imag)
+
 
 def print_spin_orbital_matrix(mat, file, print_offset=0):
     norb = mat.shape[1]
@@ -43,6 +47,7 @@ def print_spin_orbital_matrix(mat, file, print_offset=0):
                     print('  ', file=file, end='')
             print('', file=file)
         print('', file=file) 
+
 
 def print_local_fields(h5_file, corr_shell_dims=None, subgrp='dft_input'):
     """
@@ -121,3 +126,69 @@ def set_nk(nk, nk0, nk1, nk2):
         if nk0 * nk1 * nk2 == 0:
             raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
     return nk0, nk1, nk2
+
+
+# k-node information for plot
+#    x : float
+#    label : string
+XNode = namedtuple('XNode', ('x', 'label'))
+
+
+def gen_kpath(params):
+    """
+    Generate k-path
+
+    Parameters
+    ----------
+    params : dict
+
+    Returns
+    -------
+    xk : numpy.ndarray
+        x-mesh for the band plot
+
+    xnode : list of XNode
+
+    kvec : numpy.ndarray
+        k-vectors on the k-path
+
+    """
+
+    knode = parse_knode(params["tool"]["knode"])
+    bvec = parse_bvec(params["model"]["bvec"])
+    nk_line = params["tool"]["nk_line"]
+    #
+    # Generate k-vectors on the k-path
+    #   knode --> kvec
+    #
+    nnode = len(knode)
+    n_k = (nnode - 1) * nk_line + 1
+    # print("\n   Total number of k =", str(n_k))
+    kvec = numpy.zeros((n_k, 3), numpy.float_)
+    ikk = 0
+    for inode in range(nnode - 1):
+        for ik in range(nk_line + 1):
+            if inode != 0 and ik == 0:
+                continue
+            kvec[ikk] = float((nk_line - ik)) * knode[inode].kvec + float(ik) * knode[inode + 1].kvec
+            kvec[ikk] *= 2.0 * numpy.pi / float(nk_line)
+            ikk += 1
+    #
+    # Generate x values on the k-path (horizontal axis in a band plot)
+    #   knode --> xk, xnode
+    #
+    xk = numpy.zeros(n_k, numpy.float_)
+    xnode = []
+    xk[0] = 0.0
+    ikk = 0
+    for inode in range(nnode - 1):
+        dk = knode[inode + 1].kvec - knode[inode].kvec
+        dk_cart = numpy.dot(dk, bvec)
+        klength = numpy.sqrt(numpy.dot(dk_cart, dk_cart)) / nk_line
+        xnode.append(XNode(x = xk[ikk], label = knode[inode].label))
+        for ik in range(nk_line):
+            xk[ikk + 1] = xk[ikk] + klength
+            ikk += 1
+    xnode.append(XNode(x = xk[-1], label = knode[-1].label))
+
+    return xk, xnode, kvec

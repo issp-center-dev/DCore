@@ -17,6 +17,7 @@
 #
 from __future__ import print_function
 
+from .tools import gen_kpath
 from pytriqs.archive.hdf_archive import HDFArchive
 
 
@@ -54,8 +55,38 @@ class LatticeModel(object):
     def generate_model_file(self):
         pass
 
-    def write_dft_band_input_data(self, params, kvec):
-        pass
+    def generate_Hk_path(self, params):
+        """
+        Generate k-path for band plot, and store H(k) data in seedname.h5
+
+        Parameters
+        ----------
+        params
+
+        Returns
+        -------
+        xk : numpy.ndarray
+
+        xnode : list of XNode
+
+        Return None, None
+        to skip band plot
+
+        """
+        xk, xnode, kvec = gen_kpath(params)
+
+        try:
+            self._write_dft_band_input_data(params, kvec)
+        except NotImplementedError:
+            return None, None
+
+        return xk, xnode
+
+    def _write_dft_band_input_data(self, params, kvec):
+        """
+        Compute H(k) and store it into seedname.h5
+        """
+        raise NotImplementedError
 
 
 def write_dft_bands_input_data(seedname, params, n_k, kvec, lattice_model):
