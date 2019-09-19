@@ -13,6 +13,7 @@ Installation
 
      ``DCore`` supports ``TRIQS`` version **1.4.2** (the support for the current version 2.1.x is still experimental).
      Since the installation manual in the TRIQS official website is not compatible with **1.4.2**, we briefly describe below how to install it.
+     Please study `the official document for TRIQS 1.4.x <https://triqs.github.io/triqs/1.4.x/>`_.
 
      #. You can download the zip file or tar file from https://github.com/TRIQS/triqs/releases/tag/1.4.2.
         The version **1.4.2** is not compatible with the latest version of h5py (>=2.8.0).
