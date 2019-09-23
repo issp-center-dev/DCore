@@ -48,8 +48,7 @@ Installation
 
         .. code-block:: bash
 
-          $ cmake -DCMAKE_INSTALL_PREFIX=path_to_triqs\
-            -DTRIQS_PATH=path_to_triqs path_to_dft_tools
+          $ cmake -DTRIQS_PATH=path_to_triqs path_to_dft_tools
           $ make
           $ make test
           $ make install
