@@ -57,7 +57,7 @@ class Wannier90( object ):
             self.HamR_full = numpy.zeros((self.nrpts, 2, self.norb, 2, self.norb), dtype=complex)
             for isp in range(2):
                 self.HamR_full[:, isp, :, isp, :] = self.HamR
-            self.HamR_full = self.HamR.reshape((self.nrpts, 2 * self.norb, 2 * self.norb))
+            self.HamR_full = self.HamR_full.reshape((self.nrpts, 2 * self.norb, 2 * self.norb))
         else:
             raise RuntimeError("Invalid spin_orbital_order: {}".format(spin_orbital_order))
 

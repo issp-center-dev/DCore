@@ -206,7 +206,7 @@ def parse_knode(knode_string):
 
     KNode = namedtuple('KNode', ('kvec', 'label'))
 
-    knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', knode_string)
+    knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', knode_string.replace(" ", ""))
     knode = []
     try:
         for _list in knode_list:
