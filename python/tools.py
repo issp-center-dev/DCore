@@ -533,7 +533,7 @@ def load_giw(h5file, path, g):
     assert h5file[path + '/__version'][()] == 'DCore_GfImFreq_v1'
 
     g.data[...] = float_to_complex_array(h5file[path + '/data'][()])
-    if triqs_major_version == 1:
+    if triqs_major_version == 1 and path + '/tail' in h5file:
         g.tail.data[...] = float_to_complex_array(h5file[path + '/tail'][()])
 
     omega_imag = numpy.array([complex(x) for x in g.mesh]).imag
