@@ -1,0 +1,447 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Downfolding with RESPACK (SrVO3) &#8212; DCore  documentation</title>
+    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="downfolding-with-respack-srvo3">
+<span id="respacksrvo3"></span><h1>Downfolding with RESPACK (SrVO<sub>3</sub>)<a class="headerlink" href="#downfolding-with-respack-srvo3" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This document was written for ver.1.x, and might include descriptions incompatible with the latest version.
+If you encounter some problem, see the release note of ver.2.0 and check the differences between ver.1.x and ver.2.0.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This tutorial requires large computational resources or the long simulation time.</p>
+</div>
+<p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
+<a class="reference internal image-reference" href="../../_images/struct_srvo31.png"><img alt="../../_images/struct_srvo31.png" class="align-center" src="../../_images/struct_srvo31.png" style="width: 200px;" /></a>
+<div class="section" id="scf-calculation-of-quantum-espresso">
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" download="" href="../../_downloads/db170e8a4a8aea98431a41a43d190555/scf_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3_r.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">3</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">120.000000</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">480.000000</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+ <span class="n">mixing_beta</span> <span class="o">=</span> <span class="mf">0.3</span>
+<span class="o">/</span>
+<span class="n">CELL_PARAMETERS</span> <span class="n">angstrom</span>
+ <span class="mf">3.842500</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="mf">0.000000</span> <span class="mf">3.842500</span> <span class="mf">0.000000</span>
+ <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">3.842500</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Sr</span> <span class="mf">87.620000</span> <span class="n">Sr_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+ <span class="n">V</span> <span class="mf">50.941500</span> <span class="n">V_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+ <span class="n">O</span> <span class="mf">15.999400</span> <span class="n">O_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Sr</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="n">V</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="n">K_POINTS</span> <span class="n">automatic</span>
+ <span class="mi">8</span> <span class="mi">8</span> <span class="mi">8</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>The pseudopotentials are downloaded from</p>
+<p><a class="reference external" href="http://www.quantum-simulation.org/potentials/sg15_oncv/upf/O_ONCV_PBE-1.0.upf">http://www.quantum-simulation.org/potentials/sg15_oncv/upf/O_ONCV_PBE-1.0.upf</a></p>
+<p><a class="reference external" href="http://www.quantum-simulation.org/potentials/sg15_oncv/upf/Sr_ONCV_PBE-1.0.upf">http://www.quantum-simulation.org/potentials/sg15_oncv/upf/Sr_ONCV_PBE-1.0.upf</a></p>
+<p><a class="reference external" href="http://www.quantum-simulation.org/potentials/sg15_oncv/upf/V_ONCV_PBE-1.0.upf">http://www.quantum-simulation.org/potentials/sg15_oncv/upf/V_ONCV_PBE-1.0.upf</a></p>
+<p>They are part of
+<a class="reference external" href="http://www.quantum-simulation.org/potentials/sg15_oncv/">The SG15 Optimized Norm-Conserving Vanderbilt (ONCV) pseudopotentials</a>.
+For the downfolding with RESPACK, we should use the norm-conserving pseudopotentials rather than
+the ultrasoft pseudopotentials or PAW.</p>
+<p>The SCF calculation of the electronic charge is performed as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in scf_srvo3.in
+</pre></div>
+</div>
+</div>
+<div class="section" id="wannierization">
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
+<p>Next, we perform non-scf calculation for generating Bloch orbitals that are used
+in the wannierization.</p>
+<p><a class="reference download internal" download="" href="../../_downloads/898bdf3554e9e5f2c345681256c1a65c/nscf_respack.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_respack.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;nscf&#39;</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+  <span class="n">wf_collect</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">3</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">120.000000</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">480.000000</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span>
+        <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+<span class="o">/</span>
+<span class="n">CELL_PARAMETERS</span> <span class="n">angstrom</span>
+ <span class="mf">3.842500</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="mf">0.000000</span> <span class="mf">3.842500</span> <span class="mf">0.000000</span>
+ <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">3.842500</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Sr</span> <span class="mf">87.620000</span> <span class="n">Sr_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+ <span class="n">V</span> <span class="mf">50.941500</span> <span class="n">V_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+ <span class="n">O</span> <span class="mf">15.999400</span> <span class="n">O_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Sr</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="n">V</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="n">K_POINTS</span> <span class="n">automatic</span>
+ <span class="mi">6</span> <span class="mi">6</span> <span class="mi">6</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Then, run <code class="docutils literal notranslate"><span class="pre">pw.x</span></code> as</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in nscf_respack.in
+</pre></div>
+</div>
+<p>and convert outputs so that RESPACK can read them.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ qe2respack.sh srvo3.save/
+</pre></div>
+</div>
+<p>This program locates in the <code class="docutils literal notranslate"><span class="pre">util/qe2respack/</span></code> directory of RESPACK.</p>
+<p>Execute <code class="docutils literal notranslate"><span class="pre">calc_wannier</span></code> (in <code class="docutils literal notranslate"><span class="pre">src/wannier/</span></code> of RESPACK) for the actual wannierization.
+with the following input file:</p>
+<p><a class="reference download internal" download="" href="../../_downloads/fcf7c41eb8c15f209b663ebb2199cebb/respack.in"><code class="xref download docutils literal notranslate"><span class="pre">respack.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">PARAM_CHIQW</span>
+<span class="n">Num_freq_grid</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">flg_cRPA</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">PARAM_WANNIER</span>
+<span class="n">N_wannier</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">Lower_energy_window</span> <span class="o">=</span> <span class="mf">11.0785</span>
+<span class="n">Upper_energy_window</span> <span class="o">=</span> <span class="mf">14.5440</span>
+<span class="n">N_initial_guess</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="o">/</span>
+<span class="n">dxy</span> <span class="mf">0.2</span> <span class="mf">0.5</span> <span class="mf">0.5</span> <span class="mf">0.5</span>
+<span class="n">dyz</span> <span class="mf">0.2</span> <span class="mf">0.5</span> <span class="mf">0.5</span> <span class="mf">0.5</span>
+<span class="n">dzx</span> <span class="mf">0.2</span> <span class="mf">0.5</span> <span class="mf">0.5</span> <span class="mf">0.5</span>
+<span class="o">&amp;</span><span class="n">PARAM_INTERPOLATION</span>
+<span class="n">N_sym_points</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="o">/</span>
+<span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+<span class="mf">0.500000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+<span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+<span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+<span class="mf">0.500000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+<span class="o">&amp;</span><span class="n">PARAM_VISUALIZATION</span>
+<span class="n">flg_vis_wannier</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">ix_vis_min</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">ix_vis_max</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">iy_vis_min</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">iy_vis_max</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">iz_vis_min</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">iz_vis_max</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">PARAM_CALC_INT</span>
+<span class="n">calc_ifreq</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">ix_intJ_min</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">ix_intJ_max</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">iy_intJ_min</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">iy_intJ_max</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">iz_intJ_min</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">iz_intJ_max</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="o">/</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ calc_wannier &lt; respack.in
+</pre></div>
+</div>
+<div class="section" id="optional-check-wannierization">
+<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
+<p>If you want to check the quality of the wannierization,
+you can plot the original and the wannier-interpolated band structure simultaneously.</p>
+<p>First, compute the band structure with the following input file:</p>
+<p><a class="reference download internal" download="" href="../../_downloads/2d22d9fca258b770614ac60d8fa267bc/band_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">band_srvo3_r.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">SYSTEM</span>
+       <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
+         <span class="n">nat</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">3</span>
+     <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">120.000000</span>
+     <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">480.000000</span>
+     <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ELECTRONS</span>
+<span class="o">/</span>
+<span class="n">CELL_PARAMETERS</span> <span class="n">angstrom</span>
+ <span class="mf">3.842500</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="mf">0.000000</span> <span class="mf">3.842500</span> <span class="mf">0.000000</span>
+ <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">3.842500</span>
+<span class="n">ATOMIC_SPECIES</span>
+ <span class="n">Sr</span> <span class="mf">87.620000</span> <span class="n">Sr_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+ <span class="n">V</span> <span class="mf">50.941500</span> <span class="n">V_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+ <span class="n">O</span> <span class="mf">15.999400</span> <span class="n">O_ONCV_PBE</span><span class="o">-</span><span class="mf">1.0</span><span class="o">.</span><span class="n">upf</span>
+<span class="n">ATOMIC_POSITIONS</span> <span class="n">crystal</span>
+ <span class="n">Sr</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+ <span class="n">V</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.000000</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span>
+ <span class="n">O</span> <span class="mf">0.500000</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+ <span class="n">K_POINTS</span> <span class="n">crystal</span>
+          <span class="mi">50</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0714285714</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1428571429</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2142857143</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2857142857</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3571428571</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4285714286</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.0714285714</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.1428571429</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.2142857143</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.2857142857</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.3571428571</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.4285714286</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4545454545</span>    <span class="mf">0.4545454545</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4090909091</span>    <span class="mf">0.4090909091</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3636363636</span>    <span class="mf">0.3636363636</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3181818182</span>    <span class="mf">0.3181818182</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2727272727</span>    <span class="mf">0.2727272727</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2272727273</span>    <span class="mf">0.2272727273</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1818181818</span>    <span class="mf">0.1818181818</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1363636364</span>    <span class="mf">0.1363636364</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0909090909</span>    <span class="mf">0.0909090909</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0454545455</span>    <span class="mf">0.0454545455</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0384615385</span>    <span class="mf">0.0384615385</span>    <span class="mf">0.0384615385</span>    <span class="mf">1.0</span>
+        <span class="mf">0.0769230769</span>    <span class="mf">0.0769230769</span>    <span class="mf">0.0769230769</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1153846154</span>    <span class="mf">0.1153846154</span>    <span class="mf">0.1153846154</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1538461538</span>    <span class="mf">0.1538461538</span>    <span class="mf">0.1538461538</span>    <span class="mf">1.0</span>
+        <span class="mf">0.1923076923</span>    <span class="mf">0.1923076923</span>    <span class="mf">0.1923076923</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2307692308</span>    <span class="mf">0.2307692308</span>    <span class="mf">0.2307692308</span>    <span class="mf">1.0</span>
+        <span class="mf">0.2692307692</span>    <span class="mf">0.2692307692</span>    <span class="mf">0.2692307692</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3076923077</span>    <span class="mf">0.3076923077</span>    <span class="mf">0.3076923077</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3461538462</span>    <span class="mf">0.3461538462</span>    <span class="mf">0.3461538462</span>    <span class="mf">1.0</span>
+        <span class="mf">0.3846153846</span>    <span class="mf">0.3846153846</span>    <span class="mf">0.3846153846</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4230769231</span>    <span class="mf">0.4230769231</span>    <span class="mf">0.4230769231</span>    <span class="mf">1.0</span>
+        <span class="mf">0.4615384615</span>    <span class="mf">0.4615384615</span>    <span class="mf">0.4615384615</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.4545454545</span>    <span class="mf">0.4545454545</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.4090909091</span>    <span class="mf">0.4090909091</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.3636363636</span>    <span class="mf">0.3636363636</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.3181818182</span>    <span class="mf">0.3181818182</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.2727272727</span>    <span class="mf">0.2727272727</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.2272727273</span>    <span class="mf">0.2272727273</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.1818181818</span>    <span class="mf">0.1818181818</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.1363636364</span>    <span class="mf">0.1363636364</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.0909090909</span>    <span class="mf">0.0909090909</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.0454545455</span>    <span class="mf">0.0454545455</span>    <span class="mf">1.0</span>
+        <span class="mf">0.5000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> pw.x -in band_srvo3_r.in
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../../_downloads/b28566da906e210b3cdf4deb9ab0b5da/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&amp;BANDS
+prefix = &quot;srvo3&quot;,
+outdir = &quot;./&quot;,
+!filband = &quot;band.dat&quot;
+!lsym = .true.
+/
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> bands.x -in bands_srvo3.in
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="n">plot</span> <span class="p">[][</span><span class="mi">11</span><span class="p">:</span><span class="mi">18</span><span class="p">]</span> <span class="ss">&quot;bands.out.gnu&quot;</span> <span class="n">u</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span> <span class="n">w</span> <span class="n">p</span> <span class="n">tit</span> <span class="ss">&quot;Orig&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">.</span><span class="mi">3116</span> <span class="n">tit</span> <span class="ss">&quot;E_F&quot;</span><span class="p">,</span> <span class="ss">&quot;dir-wan/dat.iband&quot;</span> <span class="n">u</span> <span class="p">(</span><span class="err">$</span><span class="mi">1</span><span class="o">*</span><span class="mi">2</span><span class="p">.</span><span class="mi">5731</span><span class="p">):</span><span class="mi">2</span> <span class="n">tit</span> <span class="ss">&quot;Wannier&quot;</span> <span class="n">w</span> <span class="n">l</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/band_srvo31.png"><img alt="../../_images/band_srvo31.png" class="align-center" src="../../_images/band_srvo31.png" style="width: 500px;" /></a>
+</div>
+</div>
+<div class="section" id="dielectric-matrix-and-effective-interaction">
+<h2>Dielectric matrix and Effective interaction<a class="headerlink" href="#dielectric-matrix-and-effective-interaction" title="Permalink to this headline">¶</a></h2>
+<p>Next, we move on the calculation of the dielectric matrix with cRPA.
+We use the program <code class="docutils literal notranslate"><span class="pre">calc_chiqw</span></code> (in <code class="docutils literal notranslate"><span class="pre">src/calc_chiqw</span></code> in RESPACK) as</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec calc_chiqw &lt; respack.in
+</pre></div>
+</div>
+<p>where the input file is the same as above.</p>
+<p>After we compute the dielectric matrix, we calculate the effective interaction <span class="math notranslate nohighlight">\(U\)</span> and <span class="math notranslate nohighlight">\(J\)</span> as</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ calc_w3d &lt; respack.in
+$ calc_j3d &lt; respack.in
+</pre></div>
+</div>
+<p>The output of these program should be transformed into the wannier90 format by using the utility program
+<code class="docutils literal notranslate"><span class="pre">respack2wan90.py</span></code> in <code class="docutils literal notranslate"><span class="pre">bin/</span></code> directory of triqs.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ respack2wan90.py srvo3
+</pre></div>
+</div>
+<p>The command-line argument (<code class="docutils literal notranslate"><span class="pre">&quot;srvo3&quot;</span></code> in this case) must be the same as <code class="docutils literal notranslate"><span class="pre">seedname</span></code> in the DCore input.</p>
+</div>
+<div class="section" id="dmft-calculation">
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference download internal" download="" href="../../_downloads/8227fdfda7e38f7f5d1905ac89e0205a/srvo3_respack.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
+<span class="na">seedname</span> <span class="o">=</span> <span class="s">srvo3</span>
+<span class="na">nelec</span> <span class="o">=</span> <span class="s">1.0</span>
+<span class="na">ncor</span> <span class="o">=</span> <span class="s">1</span>
+<span class="na">norb</span> <span class="o">=</span> <span class="s">3</span>
+<span class="na">interaction</span> <span class="o">=</span> <span class="s">respack</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span>
+
+<span class="k">[system]</span>
+<span class="na">nk0</span> <span class="o">=</span> <span class="s">16</span>
+<span class="na">nk1</span> <span class="o">=</span> <span class="s">16</span>
+<span class="na">nk2</span> <span class="o">=</span> <span class="s">16</span>
+<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
+<span class="na">mu</span> <span class="o">=</span> <span class="s">12.572260</span>
+<span class="na">with_dc</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">perform_tail_fit</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">fit_max_moment</span> <span class="o">=</span> <span class="s">8</span>
+<span class="na">fit_min_w</span> <span class="o">=</span> <span class="s">7.0</span>
+<span class="na">fit_max_w</span> <span class="o">=</span> <span class="s">18.0</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
+<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
+<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
+<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">500</span>
+<span class="na">move_double{bool}</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span> <span class="o">=</span> <span class="s">8</span>
+
+<span class="k">[tool]</span>
+<span class="na">broadening</span> <span class="o">=</span> <span class="s">0.1</span>
+<span class="na">nk_line</span> <span class="o">=</span> <span class="s">50</span>
+<span class="na">nnode</span> <span class="o">=</span> <span class="s">6</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5),(X,0.5,0.0,0.0),]</span>
+<span class="na">omega_max</span> <span class="o">=</span><span class="s">2.0</span>
+<span class="na">omega_min</span> <span class="o">=</span><span class="s">-2.0</span>
+<span class="na">Nomega</span> <span class="o">=</span> <span class="s">400</span>
+<span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
+<span class="na">omega_pade</span> <span class="o">=</span> <span class="s">6.0</span>
+</pre></div>
+</div>
+<p>Please see <a class="reference internal" href="../../impuritysolvers/triqs_cthyb/cthyb.html#howtocthyb"><span class="std std-ref">CT-QMC: TRIQS/cthyb</span></a> for the details of the parameter setting.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The parameter <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be tuned in inverse proportion to the number of MPI processes.
+The following result is obtained with 432 MPI processes at <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">10000</span></code>
+(70 seconds per DMFT cycle on ISSP system B).
+If we want to compute by using 32 MPI processes at the same accuracy,
+<code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be 10000*432/32=135000.</p>
+</div>
+<div class="section" id="dmft-setup-dcore-pre">
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3_respack.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-the-dmft-calculation-dcore">
+<h3>Running the DMFT calculation: dcore<a class="headerlink" href="#running-the-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3_respack.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-processing-and-data-analysis-dcore-post">
+<h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3_respack.ini
+$ sed -e <span class="s2">&quot;s/every 10/every 3/g&quot;</span> srvo3_akw.gp
+$ gnuplot nis_akw.gp
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/akw_srvo34.png"><img alt="../../_images/akw_srvo34.png" class="align-center" src="../../_images/akw_srvo34.png" style="width: 500px;" /></a>
+<p>“x” indicates the original band structure.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../contents.html">
+              <img class="logo" src="../../_static/logo_dcore1.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
