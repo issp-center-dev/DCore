@@ -1,6 +1,5 @@
 # Version number of the application
-set (DCORE_VERSION "2.0")
-set (DCORE_RELEASE "2.0.0")
+set (DCORE_VERSION "2.0.2")
 
 # Append triqs installed files to the cmake load path
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
