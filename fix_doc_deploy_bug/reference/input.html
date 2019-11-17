@@ -1,0 +1,716 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Input-file format &#8212; DCore 2.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Output-file format" href="output.html" />
+    <link rel="prev" title="Programs" href="programs.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="output.html" title="Output-file format"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="programs.html" title="Programs"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../contents.html">DCore 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" accesskey="U">Reference Manual</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="input-file-format">
+<h1>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h1>
+<p>The input file consists of five parameter blocks named <code class="docutils literal notranslate"><span class="pre">[model]</span></code>, <code class="docutils literal notranslate"><span class="pre">[system]</span></code>, <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span></code>, <code class="docutils literal notranslate"><span class="pre">[control]</span></code>, and <code class="docutils literal notranslate"><span class="pre">[tool]</span></code>.</p>
+<p>The following table shows which blocks are used by each program.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head"><code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code></th>
+<th class="head"><code class="docutils literal notranslate"><span class="pre">dcore</span></code></th>
+<th class="head"><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code></th>
+<th class="head"><code class="docutils literal notranslate"><span class="pre">dcore_post</span></code></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>[model]</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>[system]</td>
+<td>&#160;</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>[impurity_solver]</td>
+<td>&#160;</td>
+<td>Yes</td>
+<td>&#160;</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>[control]</td>
+<td>&#160;</td>
+<td>Yes</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>[tool]</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>[mpi]</td>
+<td>&#160;</td>
+<td>Yes</td>
+<td>&#160;</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p>For example, we can see that <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> needs to be re-executed only when [model] block is changed.</p>
+<p>The parameters included in each block are explained below.</p>
+<div class="section" id="model-block">
+<h2>[model] block<a class="headerlink" href="#model-block" title="Permalink to this headline">¶</a></h2>
+<p>This block includes parameters for defining a model to be solved.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="6%" />
+<col width="26%" />
+<col width="53%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>seedname</td>
+<td>String</td>
+<td>dcore</td>
+<td>Name of the system. The model HDF5 file will be seedname.h5.</td>
+</tr>
+<tr class="row-odd"><td>lattice</td>
+<td>String</td>
+<td>chain</td>
+<td>Chosen from “chain”, “square”, “cubic”, “bethe”, “wannier90”, and “external”</td>
+</tr>
+<tr class="row-even"><td>t</td>
+<td>Float</td>
+<td>1.0</td>
+<td>Transfer integral (Nearest neighbor)</td>
+</tr>
+<tr class="row-odd"><td>t’</td>
+<td>Float</td>
+<td>0.0</td>
+<td>Transfer integral (Second nearest)</td>
+</tr>
+<tr class="row-even"><td>nelec</td>
+<td>Float</td>
+<td>1.0</td>
+<td>Number of electrons per unit cell.</td>
+</tr>
+<tr class="row-odd"><td>norb</td>
+<td>String</td>
+<td>1</td>
+<td>Number of orbitals at each correlated shell (<em>ncor</em> integers separated by commas or spaces.)</td>
+</tr>
+<tr class="row-even"><td>ncor</td>
+<td>Integer</td>
+<td>1</td>
+<td>Number of correlated shells in a unit cell (for lattice = wannier90).</td>
+</tr>
+<tr class="row-odd"><td>corr_to_inequiv</td>
+<td>String</td>
+<td>None</td>
+<td>Mapping from correlated shells to equivalent shells (for lattice = wannier90)</td>
+</tr>
+<tr class="row-even"><td>bvec</td>
+<td>String</td>
+<td>[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]</td>
+<td>Reciprocal lattice vectors in arbitrary unit.</td>
+</tr>
+<tr class="row-odd"><td>nk</td>
+<td>Integer</td>
+<td>8</td>
+<td>Number of <em>k</em> along each line</td>
+</tr>
+<tr class="row-even"><td>nk0</td>
+<td>Integer</td>
+<td>0</td>
+<td>Number of <em>k</em> along b_0 (for lattice = wannier90, external)</td>
+</tr>
+<tr class="row-odd"><td>nk1</td>
+<td>Integer</td>
+<td>0</td>
+<td>Number of <em>k</em> along b_1 (for lattice = wannier90, external)</td>
+</tr>
+<tr class="row-even"><td>nk2</td>
+<td>Integer</td>
+<td>0</td>
+<td>Number of <em>k</em> along b_2 (for lattice = wannier90, external)</td>
+</tr>
+<tr class="row-odd"><td>spin_orbit</td>
+<td>Bool</td>
+<td>False</td>
+<td>Whether the spin-orbit case.</td>
+</tr>
+<tr class="row-even"><td>interaction</td>
+<td>String</td>
+<td>kanamori</td>
+<td>Chosen from “slater_uj”, “slater_f”, “kanamori”, “respack” (See below)</td>
+</tr>
+<tr class="row-odd"><td>density_density</td>
+<td>Bool</td>
+<td>False</td>
+<td>If true, only the density-density part of the interaction is used (See below).</td>
+</tr>
+<tr class="row-even"><td>kanamori</td>
+<td>String</td>
+<td>None</td>
+<td>U (Diagonal Coulomb pot.), U’ (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).</td>
+</tr>
+<tr class="row-odd"><td>slater_f</td>
+<td>String</td>
+<td>None</td>
+<td>Angular momentum, Slater integrals F (See below).</td>
+</tr>
+<tr class="row-even"><td>slater_uj</td>
+<td>String</td>
+<td>None</td>
+<td>Angular momentum, Slater integrals in U and J (See below).</td>
+</tr>
+<tr class="row-odd"><td>local_potential_matrix</td>
+<td>String</td>
+<td>None</td>
+<td>dict of {ish: ‘filename’} to specify local potential matrix of ish-th shell</td>
+</tr>
+<tr class="row-even"><td>local_potential_factor</td>
+<td>String</td>
+<td>1.0</td>
+<td>Prefactors to the local potential matrix (float or list with len=ncor)</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="lattice">
+<h3>lattice<a class="headerlink" href="#lattice" title="Permalink to this headline">¶</a></h3>
+<p>For model calculations, the following preset models are defined:</p>
+<ul class="simple">
+<li><strong>chain</strong></li>
+<li><strong>square</strong></li>
+<li><strong>cubic</strong></li>
+<li><strong>bethe</strong> (semicircular DOS with energy ranges [-2t:2t])</li>
+</ul>
+<a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
+<p>For DFT+DMFT calculations, hopping parameters in the Wannier90 format can be imported by</p>
+<ul>
+<li><p class="first"><strong>wannier90</strong></p>
+<p>Place the Wannier90 file in the current directory with the name <em>seedname</em>_hr.dat.</p>
+</li>
+</ul>
+<p>For experts, the lattice data may be prepared by your own. In this case, use</p>
+<ul>
+<li><p class="first"><strong>external</strong></p>
+<p>In this mode, you should make all necessary data in <code class="docutils literal notranslate"><span class="pre">dft_input</span></code> group of <em>seedname</em>.h5.
+The data structure follows <strong>DFTTools</strong>. For details, see
+<a class="reference external" href="https://triqs.github.io/dft_tools/1.4/reference/h5structure.html">the reference manual of DFTTools</a>.</p>
+<p>The pre-process <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> does not touch the data in <code class="docutils literal notranslate"><span class="pre">dft_input</span></code> group, and write only additional data such as interactions into <code class="docutils literal notranslate"><span class="pre">DCore</span></code> group.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="interaction">
+<h3>interaction<a class="headerlink" href="#interaction" title="Permalink to this headline">¶</a></h3>
+<p>Model Hamiltonian is defined as</p>
+<div class="math notranslate nohighlight">
+\[{\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
+t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
++h.c. + {\hat H}_{\rm int},\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[{\hat H}_{\rm int} = \frac{1}{2}
+\sum_{i, \alpha \beta \gamma \delta,\sigma \sigma'}
+U^{i}_{\alpha \beta \gamma \delta}
+c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \delta \sigma'} c_{i \gamma \sigma}.\]</div>
+<p>The interaction matrix <span class="math notranslate nohighlight">\(U^{i}_{\alpha \beta \gamma \delta}\)</span>
+is specified by the parameter <code class="docutils literal notranslate"><span class="pre">interaction</span></code>.</p>
+<ul>
+<li><p class="first">If <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">kanamori</span></code></p>
+<p>In this case, the Kanamori-type interaction is used, i.e.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+U_{\alpha \alpha \alpha \alpha} &amp;= U,
+\\
+U_{\alpha \beta \alpha \beta} &amp;= U' \qquad (\alpha \neq \beta),
+\\
+U_{\alpha \beta \beta \alpha} &amp;= J \qquad (\alpha \neq \beta),
+\\
+U_{\alpha \alpha \beta \beta} &amp;= J \qquad (\alpha \neq \beta),
+\end{align}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(U, U', J\)</span> at each correlated shell are specified by the parameter <code class="docutils literal notranslate"><span class="pre">kanamori</span></code> as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">kanamori</span>
+<span class="n">kanamori</span> <span class="o">=</span> <span class="p">[(</span><span class="n">U_1</span><span class="p">,</span> <span class="sa">U</span><span class="s1">&#39;_1, J_1), (U_2, U&#39;</span><span class="n">_2</span><span class="p">,</span> <span class="n">J_2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>For example, if there are two correlated shells that have
+<span class="math notranslate nohighlight">\((U, U', J) = (4, 2, 1)\)</span> and <span class="math notranslate nohighlight">\((U, U', J) = (6, 3, 1.5)\)</span>, respectively,
+you need to set the input parameters as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">kanamori</span>
+<span class="n">kanamori</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">6.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)]</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">If <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code></p>
+<p>In this case, the interaction matrix is constructed by the effective Slater integrals
+<span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span>.
+These Slater integrals and the angular momentum at each correlated shell
+are specified by the parameter <code class="docutils literal notranslate"><span class="pre">slater_f</span></code> as follows</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_f</span>
+<span class="n">slater_f</span> <span class="o">=</span> <span class="p">[(</span><span class="n">angular_momentum</span><span class="p">,</span> <span class="n">F_0</span><span class="p">,</span> <span class="n">F_2</span><span class="p">,</span> <span class="n">F_4</span><span class="p">,</span> <span class="n">F_6</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>For example, if there are two correlated shells,
+one has d-orbital with <span class="math notranslate nohighlight">\((F_0, F_2, F_4) = (2, 1, 0.5)\)</span> and
+the other has p-orbital with <span class="math notranslate nohighlight">\((F_0, F_2) = (3, 1.5)\)</span>,
+you need to set the input parameter as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_f</span>
+<span class="n">slater_f</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.5</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You must specify all of <span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span>.</p>
+</div>
+</li>
+<li><p class="first">If <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_uj</span></code></p>
+<p>In this case, the Slater-type interaction is used.
+The effective Slater integrals are computed with the following formulae:</p>
+<ul>
+<li><p class="first"><span class="math notranslate nohighlight">\(l = 1\)</span></p>
+<div class="math notranslate nohighlight">
+\[F_0 = U, \quad
+F_2 = 5 J\]</div>
+</li>
+<li><p class="first"><span class="math notranslate nohighlight">\(l=2\)</span></p>
+<div class="math notranslate nohighlight">
+\[F_0 = U, \quad
+F_2 = \frac{14 J}{1.0 + 0.63},\quad
+F_4 = 0.63 F_2\]</div>
+</li>
+<li><p class="first"><span class="math notranslate nohighlight">\(l=3\)</span></p>
+<div class="math notranslate nohighlight">
+\[F_0 = U, \quad
+F_2 = \frac{6435 J}{286 + 195 \times 451 / 675 + 250 \times 1001 / 2025},\quad
+F_4 = \frac{451 F_2}{675},\quad
+F_6 = \frac{1001 F_2}{2025}\]</div>
+</li>
+</ul>
+<p>The <span class="math notranslate nohighlight">\(U\)</span>, <span class="math notranslate nohighlight">\(J\)</span> and the angular momentum at each correlated shell
+are specified by the parameter <code class="docutils literal notranslate"><span class="pre">slater_uj</span></code> as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_uj</span>
+<span class="n">slater_uj</span> <span class="o">=</span> <span class="p">[(</span><span class="n">angular_momentum1</span><span class="p">,</span> <span class="n">U1</span><span class="p">,</span> <span class="n">J1</span><span class="p">),</span> <span class="p">(</span><span class="n">angular_momentum2</span><span class="p">,</span> <span class="n">U2</span><span class="p">,</span> <span class="n">J2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">If <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">respack</span></code></p>
+<p>Use the output by <a class="reference external" href="https://sites.google.com/view/kazuma7k6r">RESPACK</a>.
+<strong>Under construction.</strong></p>
+</li>
+</ul>
+<p>If you want to treat only the density-density part</p>
+<div class="math notranslate nohighlight">
+\[{\hat H}_{\rm int} = \frac{1}{2}
+\sum_{i, \alpha, \sigma \sigma'}
+U^{i}_{\alpha \alpha \alpha \alpha}
+c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \beta \sigma'} c_{i \alpha \sigma}
++ \frac{1}{2}
+\sum_{i, \alpha \neq \beta, \sigma \sigma'}
+U^{i}_{\alpha \beta \alpha \beta}
+c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \beta \sigma'} c_{i \alpha \sigma}
++ \frac{1}{2}
+\sum_{i, \alpha \neq \beta, \sigma}
+U^{i}_{\alpha \beta \beta \alpha}
+c_{i \alpha \sigma}^\dagger c_{i \beta \sigma}^\dagger c_{i \alpha \sigma} c_{i \beta \sigma},\]</div>
+<p>you specify the parameter <code class="docutils literal notranslate"><span class="pre">density_density</span></code> as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">density_density</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It can not be used in conjunction to the Hubbard-I solver or
+the double-counting correction.</p>
+</div>
+</div>
+<div class="section" id="local-potential">
+<h3>local potential<a class="headerlink" href="#local-potential" title="Permalink to this headline">¶</a></h3>
+<p>An arbitrary local potential can be implemented using parameters <code class="docutils literal notranslate"><span class="pre">local_potential_*</span></code>.
+The format looks like</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+<span class="n">local_potential_matrix</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;pot0.txt&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;pot1.txt&#39;</span><span class="p">}</span>
+<span class="n">local_potential_factor</span> <span class="o">=</span> <span class="mf">0.01</span>
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">local_potential_matrix</span></code> describes, in the python dictionary format, a set of the inequivalent shell index <em>ish</em> and the filename which defines the local potential matrix.
+The parameter <code class="docutils literal notranslate"><span class="pre">local_potential_factor</span></code> defines a prefactor to the potential matrix.</p>
+<p>For example, the Zeeman term along z-axis for S=1/2 is represented by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat pot0.txt
+# spin orb1 orb2  Re Im
+0 0 0   0.5 0.
+1 0 0  -0.5 0.
+</pre></div>
+</div>
+<p>and the magnetic field is specified by <code class="docutils literal notranslate"><span class="pre">local_potential_factor</span></code>.</p>
+</div>
+</div>
+<div class="section" id="system-block">
+<h2>[system] block<a class="headerlink" href="#system-block" title="Permalink to this headline">¶</a></h2>
+<p>This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="10%" />
+<col width="9%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>beta</td>
+<td>Float</td>
+<td>1.0</td>
+<td>Inverse temperature. This parameter is overridden, if T is given.</td>
+</tr>
+<tr class="row-odd"><td>T</td>
+<td>Float</td>
+<td>-1.0</td>
+<td>Temperature. If this parameter is given, beta is overridden by 1/T.</td>
+</tr>
+<tr class="row-even"><td>n_iw</td>
+<td>Integer</td>
+<td>2048</td>
+<td>Number of Matsubara frequencies</td>
+</tr>
+<tr class="row-odd"><td>fix_mu</td>
+<td>Bool</td>
+<td>False</td>
+<td>Whether or not to fix chemical potential to a given value.</td>
+</tr>
+<tr class="row-even"><td>mu</td>
+<td>Float</td>
+<td>0.0</td>
+<td>Initial chemical potential.</td>
+</tr>
+<tr class="row-odd"><td>prec_mu</td>
+<td>Float</td>
+<td>0.0001</td>
+<td>Threshold for calculating chemical potential with the bisection method.</td>
+</tr>
+<tr class="row-even"><td>with_dc</td>
+<td>Bool</td>
+<td>False</td>
+<td>Whether or not use double counting correction (See below)</td>
+</tr>
+</tbody>
+</table>
+<p>If the parameter <code class="docutils literal notranslate"><span class="pre">with_dc</span></code> is specified to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+the following part of the self-energy is subtracted to avoid the double-counting error of
+the self-energy.</p>
+<div class="math notranslate nohighlight">
+\[\Sigma_{i, \alpha \sigma \beta \sigma'}^{\rm dc-imp}
+= \delta_{\sigma \sigma'} \sum_{\gamma \delta \sigma_1}
+U_{\alpha \gamma \beta \delta}
+\langle c_{\gamma \sigma_1}^\dagger c_{\delta \sigma_1}\rangle_0
+- \sum_{\gamma \delta}
+U_{\alpha \gamma \delta \beta}
+\langle c_{\gamma \sigma'}^\dagger c_{\delta \sigma}\rangle_0,\]</div>
+<p>where <span class="math notranslate nohighlight">\(\langle \cdots \rangle_0\)</span> indicates the expectation value at the initial (Kohn-Sham) state.</p>
+</div>
+<div class="section" id="impurity-solver-block">
+<h2>[impurity_solver] block<a class="headerlink" href="#impurity-solver-block" title="Permalink to this headline">¶</a></h2>
+<p>This block specifies an impurity solver to be used and necessary parameters for running the solver program.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="6%" />
+<col width="5%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>name</td>
+<td>String</td>
+<td>null</td>
+<td>Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg, pomerol.</td>
+</tr>
+<tr class="row-odd"><td>basis_rotation</td>
+<td>String</td>
+<td>None</td>
+<td>You can specify either ‘Hloc’, ‘None’, or the location of a file..</td>
+</tr>
+</tbody>
+</table>
+<p>Additionally, we have to specify solver-dependent parameters in the way like <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">500000</span></code>.
+For details, see <a class="reference internal" href="../impuritysolvers.html"><span class="doc">the reference manual for each solver</span></a>.</p>
+</div>
+<div class="section" id="control-block">
+<h2>[control] block<a class="headerlink" href="#control-block" title="Permalink to this headline">¶</a></h2>
+<p>This block includes parameters that control the self-consistency loop of DMFT.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="6%" />
+<col width="5%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>max_step</td>
+<td>Integer</td>
+<td>100</td>
+<td>Maximum steps of DMFT loops</td>
+</tr>
+<tr class="row-odd"><td>sigma_mix</td>
+<td>Float</td>
+<td>0.5</td>
+<td>Mixing parameter for self-energy</td>
+</tr>
+<tr class="row-even"><td>restart</td>
+<td>Bool</td>
+<td>False</td>
+<td>Whether or not restart from a previous calculation stored in a HDF file.</td>
+</tr>
+<tr class="row-odd"><td>initial_static_self_energy</td>
+<td>String</td>
+<td>None</td>
+<td>dict of {ish: ‘filename’} to specify initial value of the self-energy of ish-th shell. The file format is the same as local_potential_matrix.</td>
+</tr>
+<tr class="row-even"><td>initial_self_energy</td>
+<td>String</td>
+<td>None</td>
+<td>Filename containing initial self-energy in the same format as sigma.dat generated by dcore_check.</td>
+</tr>
+<tr class="row-odd"><td>time_reversal</td>
+<td>Bool</td>
+<td>False</td>
+<td>If true, an average over spin components are taken.</td>
+</tr>
+<tr class="row-even"><td>symmetry_generators</td>
+<td>String</td>
+<td>None</td>
+<td>Generators for symmetrization of self-energy.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="tool-block">
+<h2>[tool] block<a class="headerlink" href="#tool-block" title="Permalink to this headline">¶</a></h2>
+<p>This block includes parameters that are solely used by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="7%" />
+<col width="22%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>nnode</td>
+<td>Integer</td>
+<td>0</td>
+<td>[NOT USED] Number of node for the <em>k</em> path</td>
+</tr>
+<tr class="row-odd"><td>nk_line</td>
+<td>Integer</td>
+<td>8</td>
+<td>Number of <em>k</em> along each line</td>
+</tr>
+<tr class="row-even"><td>knode</td>
+<td>String</td>
+<td>[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]</td>
+<td>The name and the fractional coordinate of each k-node.</td>
+</tr>
+<tr class="row-odd"><td>omega_min</td>
+<td>Float</td>
+<td>-1.0</td>
+<td>Minimum value of real frequency</td>
+</tr>
+<tr class="row-even"><td>omega_max</td>
+<td>Float</td>
+<td>1.0</td>
+<td>Max value of real frequency</td>
+</tr>
+<tr class="row-odd"><td>Nomega</td>
+<td>Integer</td>
+<td>100</td>
+<td>Number of real frequencies</td>
+</tr>
+<tr class="row-even"><td>broadening</td>
+<td>Float</td>
+<td>0.1</td>
+<td>An additional Lorentzian broadening</td>
+</tr>
+<tr class="row-odd"><td>eta</td>
+<td>Float</td>
+<td>0.0</td>
+<td>Imaginary frequency shift for the Pade approximation</td>
+</tr>
+<tr class="row-even"><td>omega_pade</td>
+<td>Float</td>
+<td>5.0</td>
+<td>Cutoff frequencies for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.</td>
+</tr>
+<tr class="row-odd"><td>omega_check</td>
+<td>Float</td>
+<td>0.0</td>
+<td>Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="mpi-block">
+<h2>[mpi] block<a class="headerlink" href="#mpi-block" title="Permalink to this headline">¶</a></h2>
+<p>This block includes parameters which are read by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="8%" />
+<col width="13%" />
+<col width="69%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>command</td>
+<td>String</td>
+<td>mpirun -np #</td>
+<td>Command for executing a MPI job. # will be relaced by the number of processes.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo_dcore1.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="programs.html">Programs</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html">Output-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="programs.html"
+                        title="previous chapter">Programs</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="output.html"
+                        title="next chapter">Output-file format</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="output.html" title="Output-file format"
+             >next</a></li>
+        <li class="right" >
+          <a href="programs.html" title="Programs"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../contents.html">DCore 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
