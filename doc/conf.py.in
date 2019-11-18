@@ -25,7 +25,6 @@ todo_include_todos = True
 project = u'DCore'
 copyright = u'2017, The University of Tokyo'
 version = '@DCORE_VERSION@'
-release = '@DCORE_RELEASE@'
 
 #mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
 templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']

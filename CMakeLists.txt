@@ -1,6 +1,5 @@
 # Version number of the application
-set (DCORE_VERSION "2.0")
-set (DCORE_RELEASE "2.0.0")
+set (DCORE_VERSION "2.0.2")
 
 # Append triqs installed files to the cmake load path
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -44,6 +43,15 @@ if (BUILD_DCORE)
         message(STATUS "Found TRIQS Version ${TRIQS_VERSION}")
     else()
         message(WARNING "TRIQS Version ${TRIQS_VERSION} may be imcompatible with DCore.")
+    endif()
+
+    # Check if DFTools is installed.
+    get_filename_component(DFTToolsPath1 "${TRIQS_SITE_PACKAGES}/triqs_dft_tools" REALPATH "${CMAKE_BINARY_DIR}")
+    get_filename_component(DFTToolsPath2 "${TRIQS_SITE_PACKAGES}/pytriqs/applications/dft" REALPATH "${CMAKE_BINARY_DIR}")
+    if ( (NOT IS_DIRECTORY ${DFTToolsPath1}) AND (NOT IS_DIRECTORY ${DFTToolsPath2}))
+        message(FATAL_ERROR "TRIQS/DFTTools not found! Please install TRIQS/DFTTools first.")
+    else()
+        message(STATUS "Found TRIQS/DFTTools")
     endif()
 
     set(DCORE_SITE_PACKAGES "${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages")
