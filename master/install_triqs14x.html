@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>TODO list &#8212; DCore  documentation</title>
+    <title>Installation &#8212; DCore  documentation</title>
     <link rel="stylesheet" href="_static/wild.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/dcore.css" />
@@ -30,13 +30,58 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="todo-list">
-<h1>TODO list<a class="headerlink" href="#todo-list" title="Permalink to this headline">¶</a></h1>
-<div class="admonition-todo admonition">
-<p class="first admonition-title">Todo</p>
-<p class="last">tutorial for spin-orbit coupling</p>
+  <div class="section" id="installation">
+<span id="installation-triqs14x"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<ol class="arabic">
+<li><p class="first">You first need to install <a class="reference external" href="https://triqs.github.io/triqs/">TRIQS</a> library.
+<code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> will be installed in directory <em>path_to_triqs</em>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> supports <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> version <strong>1.4.2</strong> (the support for the current version 2.1.x is still experimental).
+Since the installation manual in the TRIQS official website is not compatible with <strong>1.4.2</strong>, we briefly describe below how to install it.
+Please study <a class="reference external" href="https://triqs.github.io/triqs/1.4.x/">the official document for TRIQS 1.4.x</a>.</p>
+<ol class="last arabic">
+<li><p class="first">You can download the zip file or tar file from <a class="reference external" href="https://github.com/TRIQS/triqs/releases/tag/1.4.2">https://github.com/TRIQS/triqs/releases/tag/1.4.2</a>.
+The version <strong>1.4.2</strong> is not compatible with the latest version of h5py (&gt;=2.8.0).
+If you encounter any problem, you can clone the repository and checkout <strong>1.4.x</strong> branch, which contains bug fixes.
+We suppose that source files are located in <em>path_to_triqs_src</em> directory.</p>
+</li>
+<li><p class="first">In an empty directory, type the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DCMAKE_INSTALL_PREFIX<span class="o">=</span>path_to_triqs path_to_triqs_src
+$ make
+$ make <span class="nb">test</span>
+$ make install
+</pre></div>
 </div>
-<p class="todo-source">(The <a class="reference internal" href="tutorial/spin_orbit/spin_orbit.html#index-0"><em>original entry</em></a> is located in /home/testuser/build/DCore/doc_source/tutorial/spin_orbit/spin_orbit.rst, line 4.)</p>
+</li>
+</ol>
+</div>
+</li>
+<li><p class="first">You also need <a class="reference external" href="https://triqs.github.io/dft_tools">DFTTools</a>, which runs on the <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> library.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The current version in the GitHub repository is not compatible with <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> version 1.4.2.
+You need to get old code that is compatible with 1.4.2.</p>
+<ol class="last arabic">
+<li><p class="first">Clone the repository, and checkout commit <strong>d005756</strong>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone git@github.com:TRIQS/dft_tools.git
+$ <span class="nb">cd</span> dft_tools
+$ git checkout d005756
+</pre></div>
+</div>
+</li>
+<li><p class="first">To build the source files, make an empty directory, move into it, and then type the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DTRIQS_PATH<span class="o">=</span>path_to_triqs path_to_dft_tools
+$ make
+$ make <span class="nb">test</span>
+$ make install
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
 </div>
 
 
