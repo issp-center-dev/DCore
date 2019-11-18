@@ -62,4 +62,5 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DEST
  PATTERN "*.ini"
  PATTERN "*.in"
  PATTERN "*.win"
+ PATTERN "*.dat"
  )
