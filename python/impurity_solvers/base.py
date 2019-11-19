@@ -145,7 +145,7 @@ class SolverBase(object):
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_G2loc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute Xloc(m, n, n') in p-h channel
                 and chi_loc(m) (optional)
@@ -172,7 +172,7 @@ class SolverBase(object):
         """
         pass
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         """
         Compute Xloc(m, n, n') in p-h channel only for specified frequency points
                 and chi_loc(m) (optional)

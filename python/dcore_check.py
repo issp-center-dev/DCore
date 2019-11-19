@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # DCore -- Integrated DMFT software for correlated electrons
 # Copyright (C) 2017 The University of Tokyo
@@ -18,7 +17,7 @@
 #
 from __future__ import print_function
 
-from itertools import *
+from itertools import zip
 
 from .pytriqs_gf_compat import *
 

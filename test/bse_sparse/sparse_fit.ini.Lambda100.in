@@ -34,4 +34,3 @@ sparse_Lambda = 100
 # sparse_sv_cutoff = 1e-4
 sparse_D = 10
 sparse_niter = 10
-only_fit = False

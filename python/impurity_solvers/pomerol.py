@@ -216,7 +216,7 @@ class PomerolSolver(SolverBase):
         self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
 
     def _read_common(self, dir_name, fac=1.0):
-        x_loc = {}
+        g2_loc = {}
         for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
             filename = dir_name + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
             if not os.path.exists(filename):
@@ -226,11 +226,11 @@ class PomerolSolver(SolverBase):
             # load data as a complex type
             data = numpy.loadtxt(filename).view(complex).reshape(-1)
 
-            x_loc[(i1, i2, i3, i4)] = data * fac
+            g2_loc[(i1, i2, i3, i4)] = data * fac
 
-        return x_loc
+        return g2_loc
 
-    def _read_xloc(self, params_kw):
+    def _read_g2loc(self, params_kw):
         dir_g2 = params_kw.get('dir_g2', './two_particle')
         return self._read_common(dir_g2, 1./self.beta)
 
@@ -238,9 +238,9 @@ class PomerolSolver(SolverBase):
         dir_suscep = params_kw.get('dir_suscep', './susceptibility')
         return self._read_common(dir_suscep)
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_G2loc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
-        compute local G2 (X_loc) in p-h channel
+        compute local G2 in p-h channel
             X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
 
         Parameters
@@ -253,7 +253,7 @@ class PomerolSolver(SolverBase):
 
         Returns
         -------
-        x_loc : dict
+        G2_loc : dict
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(n_w2b, 2*n_w2f, 2*n_w2f)
 
@@ -270,16 +270,16 @@ class PomerolSolver(SolverBase):
 
         self.solve(rot, mpirun_command, params_kw)
 
-        x_loc = self._read_xloc(params_kw)
+        g2_loc = self._read_g2loc(params_kw)
         # 1d array --> (wb, wf1, wf2)
-        for key, data in x_loc.items():
-            x_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
+        for key, data in g2_loc.items():
+            g2_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
 
         chi_loc = self._read_chiloc(params_kw)
 
-        return x_loc, chi_loc
+        return g2_loc, chi_loc
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         """
 
         Parameters
@@ -289,7 +289,7 @@ class PomerolSolver(SolverBase):
 
         Returns
         -------
-        x_loc : dict
+        g2_loc : dict
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(N)
 
@@ -311,9 +311,9 @@ class PomerolSolver(SolverBase):
 
         self.solve(rot, mpirun_command, params_kw)
 
-        x_loc = self._read_xloc(params_kw)
+        g2_loc = self._read_g2loc(params_kw)
         chi_loc = self._read_chiloc(params_kw)
-        return x_loc, chi_loc
+        return g2_loc, chi_loc
 
     def name(self):
         return "pomerol"
