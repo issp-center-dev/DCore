@@ -6,6 +6,10 @@
 Installation
 ============
 
+Install script
+--------
+You may use `MateriAppsInstaller <https://github.com/wistaria/MateriAppsInstaller>`_, a collection of install scripts, to install prerequisites (TRIQS 1.4.x) and DCore.
+
 Download
 --------
 
@@ -34,7 +38,7 @@ You can download the source files in two ways.
 Prerequisites
 -------------
 
-#. `TRIQS <https://triqs.github.io/triqs/>`_ and `DFTTools/TRIQS <https://triqs.github.io/dft_tools/>`_.
+#. `TRIQS <https://triqs.github.io/triqs/>`_ and `TRIQS/DFTTools <https://triqs.github.io/dft_tools/>`_.
     They must be installed prior to installing all other programs.
     If not, please install them following our instruction for :doc:`TRIQS 1.4.x <install_triqs14x>` or :doc:`TRIQS 2.1.x <install_triqs21x>`.
 
