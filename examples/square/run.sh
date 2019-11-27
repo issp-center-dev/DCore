@@ -41,3 +41,7 @@ check_status
 echo "running dcore_post..."
 dcore_post --np $NUM_PROC $ini
 check_status
+
+echo "generating *.grd files..."
+python ../../../tools/gen_akw_grd.py post/square_akw_mesh_up.dat post/square_akw_mesh_up.grd --omega=2.0
+python ../../../tools/gen_akw_grd.py post/square_akw_mesh_down.dat post/square_akw_mesh_down.grd --omega=2.0

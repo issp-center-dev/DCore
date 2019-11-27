@@ -218,7 +218,8 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
     elif params['calc_mode'] == 'spaghettis':
         # A(k, omega)
         from .sumkdft_post import SumkDFTDCorePost
-        sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
+        sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0,
+                              bands_data=params['bands_data'])
         setup_sk(sk, 'w')
         results['akw'] = sk.spaghettis(broadening=params['broadening'], plot_range=None, ishell=None, save_to_file=None)
 

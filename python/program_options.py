@@ -110,6 +110,7 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "n_pade_max", int, -1, "Maximum number of Matsubara frequencies used for Pade approximation. If negative, this will be replaced with n_iw in [system] block.")
 
     parser.add_option("tool", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
+    parser.add_option("tool", "nk_mesh", int, 0, "Number of k points along each axis of a mesh for compute A(k,omega)")
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")
@@ -239,6 +240,7 @@ def parse_bvec(bvec_string):
     Returns
     -------
     bvec numpy.ndarray shape=(3,3)
+    Each "row" vector corresponds to a reciprocal vector.
 
     """
 

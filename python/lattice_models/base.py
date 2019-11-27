@@ -89,7 +89,7 @@ class LatticeModel(object):
         raise NotImplementedError
 
 
-def write_dft_bands_input_data(seedname, params, n_k, kvec, lattice_model):
+def write_dft_bands_input_data(seedname, params, n_k, kvec, lattice_model, bands_data='dft_bands_input'):
     """
     Write DFT band input data into a HDF5 file
     :param seedname:
@@ -107,11 +107,11 @@ def write_dft_bands_input_data(seedname, params, n_k, kvec, lattice_model):
     # Output them into seedname.h5
     #
     with HDFArchive(seedname+'.h5', 'a') as f:
-        if not ('dft_bands_input' in f):
-            f.create_group('dft_bands_input')
-        f['dft_bands_input']['hopping'] = hopping
-        f['dft_bands_input']['n_k'] = n_k
-        f['dft_bands_input']['n_orbitals'] = n_orbitals
-        f['dft_bands_input']['proj_mat'] = proj_mat
+        if not (bands_data in f):
+            f.create_group(bands_data)
+        f[bands_data]['hopping'] = hopping
+        f[bands_data]['n_k'] = n_k
+        f[bands_data]['n_orbitals'] = n_orbitals
+        f[bands_data]['proj_mat'] = proj_mat
     print('    Done')
 
