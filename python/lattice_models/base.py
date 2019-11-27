@@ -76,13 +76,13 @@ class LatticeModel(object):
         xk, xnode, kvec = gen_kpath(params)
 
         try:
-            self._write_dft_band_input_data(params, kvec)
+            self.write_dft_band_input_data(params, kvec)
         except NotImplementedError:
             return None, None
 
         return xk, xnode
 
-    def _write_dft_band_input_data(self, params, kvec):
+    def write_dft_band_input_data(self, params, kvec):
         """
         Compute H(k) and store it into seedname.h5
         """
