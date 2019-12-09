@@ -241,6 +241,46 @@ def extract_H0(G0_iw, block_names, hermitianize=True):
     return data
 
 
+def extract_bath_params(delta_iw, block_names, n_bath):
+    """
+    Determine bath parameters to fit Delta(iw)
+
+    """
+
+    n_orb = 1
+
+    # bath parameters for each block
+    eps = []
+    hyb = []
+    for b in block_names:
+        print(b)
+        print(delta_iw[b].data.shape)
+
+        # fit Delta(iw)
+        eps.append(numpy.zeros((n_bath,), dtype=float))
+        hyb.append(numpy.zeros((n_orb, n_bath), dtype=float))
+
+    # combine spin blocks
+    n_blocks = len(block_names)
+    eps_full = numpy.zeros((n_bath * n_blocks,), dtype=float)
+    hyb_full = numpy.zeros((n_orb * n_blocks, n_bath * n_blocks), dtype=float)
+
+    for i, block in enumerate(eps):
+        n = block.shape[0]
+        print(n)
+        eps_full[n*i:n*(i+1)] = block
+
+    for i, block in enumerate(hyb):
+        m, n = block.shape
+        print(m, n)
+        hyb_full[m*i:m*(i+1), n*i:n*(i+1)] = block
+
+    print(eps_full.shape)
+    print(hyb_full.shape)
+
+    return eps_full, hyb_full
+
+
 def umat2dd(dcore_U):
 
     n_orb = dcore_U.shape[0]/2  # spin-1/2

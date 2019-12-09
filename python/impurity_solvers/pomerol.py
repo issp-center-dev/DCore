@@ -26,7 +26,7 @@ from ..pytriqs_gf_compat import *
 # from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
 from .base import SolverBase
 
 VERSION_REQUIRED = 1.2
@@ -125,6 +125,9 @@ class PomerolSolver(SolverBase):
         exec_path = os.path.expandvars(params_kw['exec_path'])
         check_version(exec_path)
 
+        # bath fitting
+        n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
+
         # for BSE
         flag_vx = params_kw.get('flag_vx', 0)
         n_w2f = params_kw.get('n_w2f', None)
@@ -154,6 +157,7 @@ class PomerolSolver(SolverBase):
             'file_freqs': file_freqs,
             'flag_suscep': flag_suscep,
             'n_wb': n_wb,
+            'n_bath': n_bath,
         }
 
         with open(file_pomerol, "w") as f:
@@ -166,13 +170,34 @@ class PomerolSolver(SolverBase):
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
         h0_mat = extract_H0(self._G0_iw, self.block_names)
+        assert h0_mat.shape == (self.n_flavors, self.n_flavors)
 
+        # (1b) If Delta(iw) and/or Delta(tau) are necessary:
+        # Compute the hybridization function from G0:
+        #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
+        # H0 is extracted from the tail of the Green's function.
+        self._Delta_iw = delta(self._G0_iw)
+
+        bath_levels, bath_hyb = extract_bath_params(self._Delta_iw, self.block_names, n_bath)
+        assert bath_levels.shape == (2*n_bath,)
+        assert bath_hyb.shape == (self.n_flavors, 2*n_bath)
+
+        # Construct (impurity + bath) Hamiltonian matrix of size (L1+L2) times (L1+L2)
+        L1 = self.n_flavors
+        L2 = 2*n_bath
+        h0_full = numpy.zeros((L1 + L2, L1 + L2), dtype=complex)
+        h0_full[0:L1, 0:L1] = h0_mat
+        h0_full[0:L1, L1:L1+L2] = bath_hyb
+        h0_full[L1:L1+L2, 0:L1] = bath_hyb.conj().T
+        h0_full[L1:L1+L2,L1:L1+L2] = numpy.diag(bath_levels)
+
+        # save H0 into a file
         with open(file_h0, "w") as f:
-            for i, j in product(range(h0_mat.shape[0]), range(h0_mat.shape[1])):
+            for i, j in product(range(h0_full.shape[0]), range(h0_full.shape[1])):
                 # TODO: real or complex
-                if abs(h0_mat[i, j]) != 0:
-                    # print(i, j, H0[i,j].real, H0[i,j].imag, file=f)
-                    print(i, j, h0_mat[i, j].real, file=f)
+                if abs(h0_full[i, j]) != 0:
+                    # print(i, j, h0_full[i,j].real, h0_full[i,j].imag, file=f)
+                    print(i, j, h0_full[i, j].real, file=f)
 
         # (1c) Set U_{ijkl} for the solver
         with open(file_umat, "w") as f:
