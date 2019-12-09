@@ -330,6 +330,14 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath):
     """
 
     n_orb = delta_iw[block_names[0]].data.shape[1]
+    n_blocks = len(block_names)
+
+    # These arrays will be returned
+    eps_full = numpy.zeros((n_bath * n_blocks,), dtype=float)
+    hyb_full = numpy.zeros((n_orb * n_blocks, n_bath * n_blocks), dtype=float)
+
+    if n_bath == 0:
+        return eps_full, hyb_full
 
     # bath parameters for each block
     eps_list = []
@@ -350,15 +358,11 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath):
 
     # Combine spin blocks
     # eps_full = {eps[up], eps[dn]}
-    # hyb_full = {{hyb[up], 0}, {0, hyb[dn]}}
-    n_blocks = len(block_names)
-    eps_full = numpy.zeros((n_bath * n_blocks,), dtype=float)
-    hyb_full = numpy.zeros((n_orb * n_blocks, n_bath * n_blocks), dtype=float)
-
     for i, block in enumerate(eps_list):
         n = block.shape[0]
         eps_full[n*i:n*(i+1)] = block
 
+    # hyb_full = {{hyb[up], 0}, {0, hyb[dn]}}
     for i, block in enumerate(hyb_list):
         m, n = block.shape
         hyb_full[m*i:m*(i+1), n*i:n*(i+1)] = block
