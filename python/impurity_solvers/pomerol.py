@@ -178,7 +178,7 @@ class PomerolSolver(SolverBase):
         # H0 is extracted from the tail of the Green's function.
         self._Delta_iw = delta(self._G0_iw)
 
-        bath_levels, bath_hyb = extract_bath_params(self._Delta_iw, self.block_names, n_bath)
+        bath_levels, bath_hyb = extract_bath_params(self._Delta_iw, self.beta, self.block_names, n_bath)
         assert bath_levels.shape == (2*n_bath,)
         assert bath_hyb.shape == (self.n_flavors, 2*n_bath)
 
