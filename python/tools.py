@@ -241,38 +241,77 @@ def extract_H0(G0_iw, block_names, hermitianize=True):
     return data
 
 
+def fit_delta_iw(delta_iw, n_bath):
+    """
+
+    Parameters
+    ----------
+    delta_iw: [numpy.ndarray] (n_w, n_orb, n_orb)
+    n_bath: [int] number of bath
+
+    Returns
+    -------
+    eps: [numpy.ndarray] (n_bath,) bath levels
+    hyb: [numpy.ndarray] (n_orb, n_bath) hybridization parameters
+
+    """
+    n_w = delta_iw.shape[0]
+    n_orb = delta_iw.shape[1]
+    assert delta_iw.shape[2] == n_orb
+
+    eps = numpy.zeros((n_bath,), dtype=float)
+    hyb = numpy.zeros((n_orb, n_bath), dtype=float)
+    return eps, hyb
+
 def extract_bath_params(delta_iw, block_names, n_bath):
     """
-    Determine bath parameters to fit Delta(iw)
+    Determine bath parameters by fitting Delta(iw)
+
+    Parameters
+    ----------
+    delta_iw: [block Gf] Delta(iw)
+    block_names: [list] block names
+    n_bath: [int] number of bath
+
+    Returns
+    -------
+    eps: [numpy.ndarray] (2*n_bath,) bath levels
+    hyb: [numpy.ndarray] (2*n_orb, 2*n_bath) hybridization parameters
 
     """
 
-    n_orb = 1
+    n_orb = delta_iw[block_names[0]].data.shape[1]
 
     # bath parameters for each block
-    eps = []
-    hyb = []
+    eps_list = []
+    hyb_list = []
     for b in block_names:
-        print(b)
-        print(delta_iw[b].data.shape)
-
         # fit Delta(iw)
-        eps.append(numpy.zeros((n_bath,), dtype=float))
-        hyb.append(numpy.zeros((n_orb, n_bath), dtype=float))
+        print(b)
+        # data.shape == (n_w, n_orb, n_orb)
+        n_w = delta_iw[b].data.shape[0]
+        assert delta_iw[b].data.shape[1] == delta_iw[b].data.shape[2] == n_orb
 
-    # combine spin blocks
+        # use only positive Matsubara freq
+        eps, hyb = fit_delta_iw(delta_iw[b].data[n_w:2*n_w, :, :], n_bath)
+        assert eps.shape == (n_bath,)
+        assert hyb.shape == (n_orb, n_bath)
+        eps_list.append(eps)
+        hyb_list.append(hyb)
+
+    # Combine spin blocks
+    # eps_full = {eps[up], eps[dn]}
+    # hyb_full = {{hyb[up], 0}, {0, hyb[dn]}}
     n_blocks = len(block_names)
     eps_full = numpy.zeros((n_bath * n_blocks,), dtype=float)
     hyb_full = numpy.zeros((n_orb * n_blocks, n_bath * n_blocks), dtype=float)
 
-    for i, block in enumerate(eps):
+    for i, block in enumerate(eps_list):
         n = block.shape[0]
-        print(n)
         eps_full[n*i:n*(i+1)] = block
 
-    for i, block in enumerate(hyb):
+    for i, block in enumerate(hyb_list):
         m, n = block.shape
-        print(m, n)
         hyb_full[m*i:m*(i+1), n*i:n*(i+1)] = block
 
     print(eps_full.shape)
