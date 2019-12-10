@@ -265,15 +265,9 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, **fit_params):
     """
     from scipy import optimize
 
-    print("\nfit_delta_iw")
-    print(delta_iw.shape)
-
     n_w = delta_iw.shape[0]
     n_orb = delta_iw.shape[1]
     assert delta_iw.shape[2] == n_orb
-
-    # eps = numpy.zeros((n_bath,), dtype=float)
-    # hyb = numpy.zeros((n_orb, n_bath), dtype=float)
 
     # fermionic Matsubara freqs
     freqs = numpy.array([1j * (2*i+1) * math.pi / beta for i in range(n_w)])
@@ -305,7 +299,7 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, **fit_params):
 
         # fitting
         result = optimize.fmin_bfgs(distance, x0, **fit_params)
-        print(result)
+        print(" ", result)
         dis = distance(result)
 
         # compare dis_mini and dis
@@ -328,6 +322,8 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
     beta: [float] 1/T
     block_names: [list] block names
     n_bath: [int] number of bath
+    n_fit: [int] number of repetition of fitting. The best fit result will be taken.
+    fit_gtol: [float] A fitting parameter: Gradient norm must be less than gtol before successful termination.
 
     Returns
     -------
@@ -351,12 +347,16 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
         "gtol": fit_gtol,
     }
 
+    print("\nDetermine bath parameters by fitting Delta(iw)")
+    for key, val in fit_params.items():
+        print("  {} : {}".format(key, val))
+
     # bath parameters for each block
     eps_list = []
     hyb_list = []
     for b in block_names:
         # fit Delta(iw)
-        print(b)
+        print("\nblock =", b)
         # data.shape == (n_w, n_orb, n_orb)
         n_w = delta_iw[b].data.shape[0]
         assert delta_iw[b].data.shape[1] == delta_iw[b].data.shape[2] == n_orb
@@ -379,8 +379,13 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
         m, n = block.shape
         hyb_full[m*i:m*(i+1), n*i:n*(i+1)] = block
 
-    print(eps_full.shape)
-    print(hyb_full.shape)
+    print("\nfitting results")
+    print("  eps[l]    hyb[0,l]  hyb[1,l]  ...")
+    for l in range(eps_full.size):
+        print(" %9.5f" %eps_full[l], end="")
+        for orb in range(hyb_full.shape[0]):
+            print(" %9.5f" %hyb_full[orb, l], end="")
+        print("")
 
     return eps_full, hyb_full
 
