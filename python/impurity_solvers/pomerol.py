@@ -29,7 +29,7 @@ from pytriqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
 from .base import SolverBase
 
-VERSION_REQUIRED = 1.2
+VERSION_REQUIRED = 1.3
 
 
 def check_version(_exec):
