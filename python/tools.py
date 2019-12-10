@@ -273,19 +273,20 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, **fit_params):
     freqs = numpy.array([1j * (2*i+1) * math.pi / beta for i in range(n_w)])
 
     # Define distance between delta_iw and delta_fit
+    # delta_fit = sum_{l=1}^{n_bath} V_{o1, l} * V_{l, o2} / (iw - eps_{l})
     def distance(x):
         _eps = x[0:n_bath]
         _hyb = x[n_bath:].reshape(n_orb, n_bath)
 
-        # delta_fit = sum_{l=1}^{n_bath} V_{o1, l} * V_{l, o2} / (iw - eps_{l})
-        delta_fit_temp = numpy.empty((n_w, n_orb, n_orb, n_bath), dtype=complex)
-        for (i, iw), o1, o2, l in product(enumerate(freqs), range(n_orb), range(n_orb), range(n_bath)):
-            delta_fit_temp[i, o1, o2, l] = _hyb[o1, l] * _hyb[o2, l].conj() / (iw - _eps[l])
+        # denom[i,j] = (freqs[i] - eps[j])
+        denom = numpy.empty([freqs.size, n_bath], dtype=complex)
+        for (i, iw), (j, ep) in product(enumerate(freqs), enumerate(_eps)):
+            denom[i, j] = iw - ep
+        # denom = numpy.array([[iw - ep for ep in _eps] for iw in freqs], dtype=complex)
 
-        # sum over bath sites
-        delta_fit = numpy.sum(delta_fit_temp, axis=3)
+        # sum over bath index l
+        delta_fit = numpy.einsum('al, bl, wl->wab', _hyb, _hyb.conj(), numpy.reciprocal(denom))
 
-        # return numpy.square(numpy.linalg.norm(delta_iw - delta_fit)) / (n_w + 1)
         return numpy.square(numpy.linalg.norm(delta_iw - delta_fit))
 
     # Determine eps and V_sqr which minimize the distance between delta_iw and delta_fit
