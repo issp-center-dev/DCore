@@ -235,14 +235,50 @@ class PomerolSolver(SolverBase):
         #   compute G0(iw) from h0_mat instead of using self._G0_iw, since
         #   self._G0_iw includes more information than that passed to the
         #   solver (see extract_H0 for details).
+
+        # n_block = len(self.gf_struct)
+        # n_inner = h0_mat.shape[0] / n_block
+        # # cut H0 into block structure
+        # h0_block = [h0_mat[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
+        # g0_inv = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
+        # g0_inv << iOmega_n
+        # g0_inv -= h0_block
+        # self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
+
+        # Rearrange indices (imp_up, imp_dn, bath_up, bath_dn) --> (imp_up, bath_up, imp_dn bath_dn)
+        index_order =  range(self.n_orb)                                      # imp_up
+        index_order += range(2*self.n_orb, 2*self.n_orb + n_bath)             # bath_up
+        index_order += range(self.n_orb, 2*self.n_orb)                        # imp_dn
+        index_order += range(2*self.n_orb + n_bath, 2*self.n_orb + 2*n_bath)  # bath_dn
+        index_order = numpy.array(index_order)
+        # print(index_order)
+        # print(h0_full.shape)
+        h0_updn = h0_full[index_order, :][:, index_order]
+        # print(h0_updn.shape)
+
+        # Cut H0 into block structure
         n_block = len(self.gf_struct)
-        n_inner = h0_mat.shape[0] / n_block
-        # cut H0 into block structure
-        h0_block = [h0_mat[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
-        g0_inv = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
-        g0_inv << iOmega_n
-        g0_inv -= h0_block
-        self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
+        n_inner = h0_full.shape[0] / n_block
+        h0_block = [h0_updn[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
+
+        # G0 including bath sites
+        bath_names = [ "bath" + str(i_bath) for i_bath in range(n_bath)]
+        # print(bath_names)
+        gf_struct_full = { block: list(inner_names) + bath_names for block, inner_names in self.gf_struct.items()}
+        # print(gf_struct_full)
+        g0_full = make_block_gf(GfImFreq, gf_struct_full, self.beta, self.n_iw)
+        g0_full << iOmega_n
+        g0_full -= h0_block
+        g0_full.invert()
+
+        # Project G0 onto impurity site
+        g0_imp = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
+        for block, g in g0_imp:
+            for o1, o2 in product(self.gf_struct[block], repeat=2):
+                print(o1, o2)
+                g[o1, o2] << g0_full[block][o1, o2]
+
+        self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)
 
     def _read_common(self, dir_name, fac=1.0):
         g2_loc = {}
