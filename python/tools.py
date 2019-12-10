@@ -279,10 +279,11 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, **fit_params):
         _hyb = x[n_bath:].reshape(n_orb, n_bath)
 
         # denom[i,j] = (freqs[i] - eps[j])
-        denom = numpy.empty([freqs.size, n_bath], dtype=complex)
-        for (i, iw), (j, ep) in product(enumerate(freqs), enumerate(_eps)):
-            denom[i, j] = iw - ep
+        # denom = numpy.empty([freqs.size, n_bath], dtype=complex)
+        # for (i, iw), (j, ep) in product(enumerate(freqs), enumerate(_eps)):
+        #     denom[i, j] = iw - ep
         # denom = numpy.array([[iw - ep for ep in _eps] for iw in freqs], dtype=complex)
+        denom = freqs[:, None] - _eps[None, :]
 
         # sum over bath index l
         delta_fit = numpy.einsum('al, bl, wl->wab', _hyb, _hyb.conj(), numpy.reciprocal(denom))
