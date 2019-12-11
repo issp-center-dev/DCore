@@ -24,13 +24,14 @@ import shlex
 import subprocess
 from itertools import *
 import ast
+import math
+import scipy
 
 from pytriqs.utility.h5diff import compare, failures
 from pytriqs.utility.h5diff import h5diff as h5diff_org
 from pytriqs.archive.hdf_archive import HDFArchive
 from .pytriqs_gf_compat import *
 from pytriqs.operators import *
-import scipy
 
 from pytriqs import version
 
@@ -239,6 +240,155 @@ def extract_H0(G0_iw, block_names, hermitianize=True):
         data = 0.5 * (data.transpose().conj() + data)
 
     return data
+
+
+def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
+    """
+    Fit Delta(iw) using scipy
+
+    scipy.optimize.fmin_bfgs
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fmin_bfgs.html
+
+    Parameters
+    ----------
+    delta_iw: [numpy.ndarray] (n_w, n_orb, n_orb)
+    beta: [float] 1/T
+    n_bath: [int] number of bath
+    n_fit: [int] number of repetition of fitting
+    **fit_params: [dict] optional parameters to the fitting function
+
+    Returns
+    -------
+    eps: [numpy.ndarray] (n_bath,) bath levels
+    hyb: [numpy.ndarray] (n_orb, n_bath) hybridization parameters
+
+    """
+    from scipy import optimize
+
+    n_w = delta_iw.shape[0]
+    n_orb = delta_iw.shape[1]
+    assert delta_iw.shape[2] == n_orb
+
+    # fermionic Matsubara freqs
+    freqs = numpy.array([1j * (2*i+1) * math.pi / beta for i in range(n_w)])
+
+    # Define distance between delta_iw and delta_fit
+    # delta_fit = sum_{l=1}^{n_bath} V_{o1, l} * V_{l, o2} / (iw - eps_{l})
+    def distance(x):
+        _eps = x[0:n_bath]
+        _hyb = x[n_bath:].reshape(n_orb, n_bath)
+
+        # denom[i,j] = (freqs[i] - eps[j])
+        denom = freqs[:, None] - _eps[None, :]
+
+        # sum over bath index l
+        delta_fit = numpy.einsum('al, bl, wl->wab', _hyb, _hyb.conj(), numpy.reciprocal(denom))
+
+        # squared error
+        return numpy.square(numpy.linalg.norm(delta_iw - delta_fit))
+
+    # Determine eps and V which minimize the distance between delta_iw and delta_fit
+    dis_min = 1.0e+10
+    # [0:n_bath] -> eps_{l},  [n_bath:n_orb*n_bath] -> V_{o,l}
+    result_best = numpy.zeros(n_bath + n_orb * n_bath, dtype=float)
+    for l in range(n_fit):
+        # initial guess, random values in the range [-1:1]
+        x0 = 2 * numpy.random.rand(result_best.size) - 1
+
+        # fitting
+        result = optimize.fmin_bfgs(distance, x0, **fit_params)
+        if(verbose):
+            print(" ", result)
+        dis = distance(result)
+
+        # update result_best
+        if dis < dis_min:
+            dis_min = dis
+            result_best = result.copy()
+
+    eps = result_best[0:n_bath]
+    hyb = result_best[n_bath:].reshape(n_orb, n_bath)
+    return eps, hyb
+
+
+def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1e-5, verbose=False):
+    """
+    Determine bath parameters by fitting Delta(iw)
+
+    Parameters
+    ----------
+    delta_iw: [block Gf] Delta(iw)
+    beta: [float] 1/T
+    block_names: [list] block names
+    n_bath: [int] number of bath
+    n_fit: [int] number of repetition of fitting. The best fit result will be taken.
+    fit_gtol: [float] A fitting parameter: Gradient norm must be less than gtol before successful termination.
+
+    Returns
+    -------
+    eps: [numpy.ndarray] (2*n_bath,) bath levels
+    hyb: [numpy.ndarray] (2*n_orb, 2*n_bath) hybridization parameters
+
+    """
+
+    n_orb = delta_iw[block_names[0]].data.shape[1]
+    n_blocks = len(block_names)
+
+    # These arrays will be returned
+    eps_full = numpy.zeros((n_bath * n_blocks,), dtype=float)
+    hyb_full = numpy.zeros((n_orb * n_blocks, n_bath * n_blocks), dtype=float)
+
+    if n_bath == 0:
+        return eps_full, hyb_full
+
+    # fitting parameters
+    fit_params = {
+        "gtol": fit_gtol,
+        "disp": verbose,
+    }
+
+    print("\nDetermine bath parameters by fitting Delta(iw)")
+    for key, val in fit_params.items():
+        print("  {} : {}".format(key, val))
+
+    # bath parameters for each block
+    eps_list = []
+    hyb_list = []
+    for b in block_names:
+        # fit Delta(iw)
+        if(verbose):
+            print("\nblock =", b)
+        # data.shape == (n_w, n_orb, n_orb)
+        n_w = delta_iw[b].data.shape[0]
+        assert delta_iw[b].data.shape[1] == delta_iw[b].data.shape[2] == n_orb
+
+        # use only positive Matsubara freq
+        eps, hyb = fit_delta_iw(delta_iw[b].data[n_w/2:n_w, :, :], beta, n_bath, n_fit, verbose, **fit_params)
+        assert eps.shape == (n_bath,)
+        assert hyb.shape == (n_orb, n_bath)
+        eps_list.append(eps)
+        hyb_list.append(hyb)
+
+    # Combine spin blocks
+    # eps_full = {eps[up], eps[dn]}
+    for i, block in enumerate(eps_list):
+        n = block.shape[0]
+        eps_full[n*i:n*(i+1)] = block
+
+    # hyb_full = {{hyb[up], 0}, {0, hyb[dn]}}
+    for i, block in enumerate(hyb_list):
+        m, n = block.shape
+        hyb_full[m*i:m*(i+1), n*i:n*(i+1)] = block
+
+    print("\nfitting results")
+    print("  eps[l]    hyb[0,l]  hyb[1,l]  ...")
+    for l in range(eps_full.size):
+        print(" %9.5f" %eps_full[l], end="")
+        for orb in range(hyb_full.shape[0]):
+            print(" %9.5f" %hyb_full[orb, l], end="")
+        print("")
+
+    return eps_full, hyb_full
 
 
 def umat2dd(dcore_U):
