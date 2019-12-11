@@ -242,7 +242,7 @@ def extract_H0(G0_iw, block_names, hermitianize=True):
     return data
 
 
-def fit_delta_iw(delta_iw, beta, n_bath, n_fit, **fit_params):
+def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
     """
     Fit Delta(iw) using scipy
 
@@ -279,32 +279,29 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, **fit_params):
         _hyb = x[n_bath:].reshape(n_orb, n_bath)
 
         # denom[i,j] = (freqs[i] - eps[j])
-        # denom = numpy.empty([freqs.size, n_bath], dtype=complex)
-        # for (i, iw), (j, ep) in product(enumerate(freqs), enumerate(_eps)):
-        #     denom[i, j] = iw - ep
-        # denom = numpy.array([[iw - ep for ep in _eps] for iw in freqs], dtype=complex)
         denom = freqs[:, None] - _eps[None, :]
 
         # sum over bath index l
         delta_fit = numpy.einsum('al, bl, wl->wab', _hyb, _hyb.conj(), numpy.reciprocal(denom))
 
+        # squared error
         return numpy.square(numpy.linalg.norm(delta_iw - delta_fit))
 
-    # Determine eps and V_sqr which minimize the distance between delta_iw and delta_fit
+    # Determine eps and V which minimize the distance between delta_iw and delta_fit
     dis_min = 1.0e+10
-    # eps = x0[0:Nb], hyb = x0[Nb:n_orb*Nb]
+    # [0:n_bath] -> eps_{l},  [n_bath:n_orb*n_bath] -> V_{o,l}
     result_best = numpy.zeros(n_bath + n_orb * n_bath, dtype=float)
     for l in range(n_fit):
-        # initial guess
-        # x0 = 2 * numpy.random.rand(2 * Nb) - 1
+        # initial guess, random values in the range [-1:1]
         x0 = 2 * numpy.random.rand(result_best.size) - 1
 
         # fitting
         result = optimize.fmin_bfgs(distance, x0, **fit_params)
-        print(" ", result)
+        if(verbose):
+            print(" ", result)
         dis = distance(result)
 
-        # compare dis_mini and dis
+        # update result_best
         if dis < dis_min:
             dis_min = dis
             result_best = result.copy()
@@ -314,7 +311,7 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, **fit_params):
     return eps, hyb
 
 
-def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1e-5):
+def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1e-5, verbose=False):
     """
     Determine bath parameters by fitting Delta(iw)
 
@@ -347,6 +344,7 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
     # fitting parameters
     fit_params = {
         "gtol": fit_gtol,
+        "disp": verbose,
     }
 
     print("\nDetermine bath parameters by fitting Delta(iw)")
@@ -358,13 +356,14 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
     hyb_list = []
     for b in block_names:
         # fit Delta(iw)
-        print("\nblock =", b)
+        if(verbose):
+            print("\nblock =", b)
         # data.shape == (n_w, n_orb, n_orb)
         n_w = delta_iw[b].data.shape[0]
         assert delta_iw[b].data.shape[1] == delta_iw[b].data.shape[2] == n_orb
 
         # use only positive Matsubara freq
-        eps, hyb = fit_delta_iw(delta_iw[b].data[n_w/2:n_w, :, :], beta, n_bath, n_fit, **fit_params)
+        eps, hyb = fit_delta_iw(delta_iw[b].data[n_w/2:n_w, :, :], beta, n_bath, n_fit, verbose, **fit_params)
         assert eps.shape == (n_bath,)
         assert hyb.shape == (n_orb, n_bath)
         eps_list.append(eps)
