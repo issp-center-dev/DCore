@@ -72,6 +72,7 @@ def create_parser(target_sections=None):
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
     parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
+    parser.add_option("system", "average_mu", bool, False, "Average chemical potential for target density +/- prec_mu.")
     parser.add_option("system", "prec_mu", float, 0.0001,
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double counting correction (See below)")

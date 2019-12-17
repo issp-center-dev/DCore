@@ -433,6 +433,7 @@ class DMFTCoreSolver(object):
         return {
             'beta'          : self._params['system']['beta'],
             'prec_mu'       : self._params['system']['prec_mu'],
+            'average_mu'    : self._params['system']['average_mu'],
             'with_dc'       : self._params['system']['with_dc'],
             'Sigma_iw_sh'   : [s.Sigma_iw for s in self._sh_quant],
             'potential'     : self._local_potential,

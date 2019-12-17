@@ -19,8 +19,80 @@ from __future__ import print_function
 
 import numpy
 
-from .dft_tools_compat import SumkDFTTools
+from .dft_tools_compat import SumkDFT, SumkDFTTools
 import pytriqs.utility.mpi as mpi
+import pytriqs.utility.dichotomy as dichotomy
+
+class SumkDFTSCF(SumkDFT):
+    """
+
+    Change the behavior of calc_mu in SumkDFT
+
+    """
+
+    def __init__(self, hdf_file, h_field=0.0, use_dft_blocks=False, dft_data='dft_input', symmcorr_data='dft_symmcorr_input',
+                 parproj_data='dft_parproj_input', symmpar_data='dft_symmpar_input', bands_data='dft_bands_input',
+                 transp_data='dft_transp_input', misc_data='dft_misc_input'):
+
+        """
+        Initialisation of the class. Parameters are exactly as for SumKDFT.
+        """
+
+        SumkDFT.__init__(self, hdf_file=hdf_file, h_field=h_field, use_dft_blocks=use_dft_blocks,
+                         dft_data=dft_data, symmcorr_data=symmcorr_data, parproj_data=parproj_data,
+                         symmpar_data=symmpar_data, bands_data=bands_data, transp_data=transp_data,
+                         misc_data=misc_data)
+
+
+    def calc_mu(self, precision=0.01, iw_or_w='iw', broadening=None, delta=0.5, average=False):
+        r"""
+        Searches for the chemical potential that gives the DFT total charge.
+        A simple bisection method is used.
+        Parameters
+        ----------
+        precision : float, optional
+                    A desired precision of the resulting total charge.
+        iw_or_w : string, optional
+                  - `iw_or_w` = 'iw' for a imaginary-frequency self-energy
+                  - `iw_or_w` = 'w' for a real-frequency self-energy
+        broadening : float, optional
+                     Imaginary shift for the axis along which the real-axis GF is calculated.
+                     If not provided, broadening will be set to double of the distance between mesh points in 'mesh'.
+                     Only relevant for real-frequency GF.
+
+        average : bool, optional
+                     If True, compute chemical potential for target density +/- precision and average them.
+
+        Returns
+        -------
+        mu : float
+             Value of the chemical potential giving the DFT total charge
+             within specified precision.
+        """
+        F = lambda mu: self.total_density(
+            mu=mu, iw_or_w=iw_or_w, broadening=broadening).real
+        density = self.density_required - self.charge_below
+
+        if average:
+            chem1 = dichotomy.dichotomy(function=F, x_init=self.chemical_potential, y_value=density-precision,
+                                                          precision_on_y=precision, delta_x=delta, max_loops=100,
+                                                          x_name="Chemical Potential", y_name="Total Density",
+                                                          verbosity=3)[0]
+            chem2 = dichotomy.dichotomy(function=F, x_init=chem1, y_value=density+precision,
+                                        precision_on_y=precision, delta_x=delta, max_loops=100,
+                                        x_name="Chemical Potential", y_name="Total Density",
+                                        verbosity=3)[0]
+            self.chemical_potential = 0.5*(chem1 + chem2)
+        else:
+            self.chemical_potential = dichotomy.dichotomy(function=F,
+                                                      x_init=self.chemical_potential, y_value=density,
+                                                      precision_on_y=precision, delta_x=delta, max_loops=100,
+                                                      x_name="Chemical Potential", y_name="Total Density",
+                                                      verbosity=3)[0]
+
+        return self.chemical_potential
+
+
 
 class SumkDFTDCorePost(SumkDFTTools):
     """

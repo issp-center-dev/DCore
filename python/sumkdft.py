@@ -189,12 +189,12 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         sk.set_mu(params['mu'])
 
     if params['calc_mode'] == 'Gloc':
-        from .dft_tools_compat import SumkDFT
-        sk = SumkDFT(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
+        from .sumkdft_post import SumkDFTSCF
+        sk = SumkDFTSCF(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
         setup_sk(sk, 'iwn')
         if params['adjust_mu']:
             # find the chemical potential for given density
-            sk.calc_mu(params['prec_mu'])
+            sk.calc_mu(params['prec_mu'], average=params["average_mu"])
             results['mu'] = float(sk.chemical_potential)
 
         # Local Green's function and Density matrix
