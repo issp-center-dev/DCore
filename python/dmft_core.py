@@ -647,6 +647,25 @@ class DMFTCoreSolver(object):
             self._params['control']['symmetry_generators'],
             self._use_spin_orbit, self._dim_sh)
 
+        def quantities_to_check():
+            x = []
+            # chemical potential
+            x.append(self._chemical_potential)
+
+            # renormalization factor
+            w0 = self._n_iw  # number of positive Matsubara freqs = position of zeroth Matsubara freq
+            # print(w0)
+            for ish in range(self._n_inequiv_shells):
+                for spn in self.spin_block_names:
+                    for iorb in range(self._dim_sh[ish]):
+                        # print(self._sh_quant[ish].Sigma_iw[spn].data.shape)
+                        sigma0 = self._sh_quant[ish].Sigma_iw[spn].data[w0, iorb, iorb].imag
+                        z = 1. / (1 - sigma0 / numpy.pi * self._beta)
+                        x.append(z)
+            return numpy.array(x, dtype=complex)
+
+        x0 = quantities_to_check()
+
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
@@ -723,6 +742,19 @@ class DMFTCoreSolver(object):
                     for bname, g in self._sh_quant[ish].Sigma_iw:
                         path = output_group + '/Sigma_iw/ite{}/sh{}/{}'.format(iteration_number, ish, bname)
                         save_giw(ar, path, g)
+
+            # convergence check
+            tol = self._params["control"]["converge_tol"]
+            if tol > 0:
+                print("\nConvergence check")
+                x1 = quantities_to_check()
+                max_error = numpy.max(numpy.abs(x1 - x0))
+                print(" | converge_tol = %.1e" %tol)
+                print(" | max_error    = %.1e" %max_error)
+                if max_error < tol:
+                    print(" | converged --- iteration = %d" %iteration_number)
+                    break
+                x0 = x1
 
             sys.stdout.flush()
 
