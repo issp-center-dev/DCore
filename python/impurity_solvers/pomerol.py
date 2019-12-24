@@ -29,12 +29,15 @@ from pytriqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
 from .base import SolverBase
 
-VERSION_REQUIRED = 1.3
+VERSION_REQUIRED = 1.4
 
 
-def check_version(_exec):
+def check_version(_mpirun_command, _exec_path):
     print(" Checking version...")
-    out = subprocess.check_output([_exec, "--version"])
+    with open('./version', 'w') as output_f:
+        launch_mpi_subprocesses(_mpirun_command, [_exec_path, "--version"], output_f)
+    with open('./version', 'r') as output_f:
+        out = output_f.read()
     # pomerol2dcore version 1.0
     print(" |", out, end="")
     print(" | version required", VERSION_REQUIRED)
@@ -123,7 +126,7 @@ class PomerolSolver(SolverBase):
 
         # print("params_kw =", params_kw)
         exec_path = os.path.expandvars(params_kw['exec_path'])
-        check_version(exec_path)
+        check_version(mpirun_command, exec_path)
 
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
