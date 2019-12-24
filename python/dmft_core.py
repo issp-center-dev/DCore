@@ -382,8 +382,8 @@ class DMFTCoreSolver(object):
         #     First, compute G_loc without self-energy
         if self._params['system']['with_dc']:
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
-            Gloc_iw_sh, dm_sh = self.calc_Gloc()
-            self.set_dc_imp(dm_sh)
+            _, dm0_sh = self.calc_G0loc()
+            self.set_dc_imp(dm0_sh)
 
         # Set initial value to self-energy
         if self._params["control"]["initial_static_self_energy"] != "None":
@@ -441,6 +441,31 @@ class DMFTCoreSolver(object):
             'mu'            : self._chemical_potential,
             'adjust_mu'     : False,
         }
+
+    def calc_G0loc(self):
+        """
+        Compute the non-interacting lattice/local Green's function using SumkDFT.
+
+        Although the chemical potential is adjusted on the fly so that the system has the correct number of electrons,
+        self._chemical_potential is not updated.
+
+        Return a list of Gloc_iw and density matrices for inequivalent shells
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'Gloc'
+        params['adjust_mu'] = True
+        params['with_dc'] = False
+
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_G0loc', self._mpirun_command, params)
+
+        # Make sure Gloc_iw is hermite conjugate (for triqs 2.x)
+        for ish, g in enumerate(r['Gloc_iw_sh']):
+            diff = make_hermite_conjugate(g)
+            if diff > 1e-8:
+                print('Warning Gloc_iw at ish {} is not hermite conjugate: {}'.format(ish, diff))
+        return r['Gloc_iw_sh'], r['dm_sh']
+
 
     def calc_Gloc(self):
         """
