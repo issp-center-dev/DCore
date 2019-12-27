@@ -86,6 +86,11 @@ Installation steps
    Please set CMAKE_INSTALL_PREFIX to the directory where DCore will be installed.
    If the cmake command succeeded, you will see the following message.
 
+   DCore invokes some MPI parallelized impurity solver in a DMFT loop.
+   If your system MPI command is not "mpirun", please provide the name of the correct one to DCore through cmake by using the flag "-DMPIEXEC".
+   The default value is "mpirun -np #" (# is replaced by the number of processors).
+   For instance, if your wrapper is "mpijob" and you do not need to specify the number of processors explicitly, please use ``-DMPIEXEC="mpijob"``.
+
    ::
 
      -- Build files have been written to: /.../dcore.build
@@ -102,9 +107,7 @@ Installation steps
 
      $ make test
 
-   If your system MPI wrapper is not "mpirun", please provide the name of the correct one to DCore through cmake by using the flag "-DMPIEXEC".
-   The default value is "mpirun -np #" (# is replaced by the number of processors).
-   For instance, if your wrapper is "mpijob" and you do not need to specify the number of processors explicitly, please use -DMPIEXEC=mpijob.
+   Some of tests invoke an MPI parallelized impourity solver.
    Note that it is not allowed to run MPI programs interactively on some system.
    In this case, please run tests as a job.
 

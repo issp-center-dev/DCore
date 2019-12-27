@@ -24,6 +24,8 @@ import re
 import ast
 from collections import namedtuple
 
+from mpi_command import default_mpi_command
+
 
 def create_parser(target_sections=None):
     """
@@ -35,7 +37,7 @@ def create_parser(target_sections=None):
         parser = TypedParser(target_sections)
 
     # [mpi]
-    parser.add_option("mpi", "command", str, "mpirun -np #", "Command for executing a MPI job. # will be relaced by the number of processes.")
+    parser.add_option("mpi", "command", str, default_mpi_command, "Command for executing a MPI job. # will be relaced by the number of processes.")
 
     # [model]
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
