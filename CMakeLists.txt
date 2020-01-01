@@ -6,7 +6,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 option(BUILD_DCORE "Build DCore" ON)
 
-option(MPIEXEC "default of mpi.command" OFF)
+option(MPIEXEC "Default value of mpi.command" OFF)
 if(NOT MPIEXEC)
   set(MPIEXEC "mpirun -np \#")
 endif()
