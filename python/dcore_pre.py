@@ -261,8 +261,8 @@ def __generate_local_potential(p):
     # set factor
     try:
         fac = ast.literal_eval(local_potential_factor)
-        if isinstance(fac, float):
-            fac = [fac] * n_inequiv_shells
+        if isinstance(fac, float) or isinstance(fac, int):
+            fac = [float(fac)] * n_inequiv_shells
         elif isinstance(fac, list) or isinstance(fac, tuple):
             assert len(fac) == n_inequiv_shells
         else:
