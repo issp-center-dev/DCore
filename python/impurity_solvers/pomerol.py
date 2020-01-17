@@ -257,14 +257,15 @@ class PomerolSolver(SolverBase):
         gf_struct_full = { block: list(inner_names) + bath_names for block, inner_names in self.gf_struct.items()}
         g0_full = make_block_gf(GfImFreq, gf_struct_full, self.beta, self.n_iw)
         g0_full << iOmega_n
-        g0_full -= h0_block
+        for i, block in enumerate(self.block_names):
+            g0_full[block] -= h0_block[i]
         g0_full.invert()
 
         # Project G0 onto impurity site
         g0_imp = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
-        for block, g in g0_imp:
+        for block in self.block_names:
             for o1, o2 in product(self.gf_struct[block], repeat=2):
-                g[o1, o2] << g0_full[block][o1, o2]
+                g0_imp[block][o1, o2] << g0_full[block][o1, o2]
 
         self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)
 
