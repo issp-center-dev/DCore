@@ -7,9 +7,6 @@ t = -1.0
 kanamori = [(8.0, 0.0, 0.0)]
 nk = 1
 
-[mpi]
-command = @MPIEXEC@
-
 [system]
 beta = 10.0
 n_iw = 1024

@@ -7,7 +7,7 @@ configure_file(${CMAKE_SOURCE_DIR}/cmake/sitecustomize.py ${CMAKE_CURRENT_BINARY
 
 # Install path
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/ DESTINATION
-${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages/dcore FILES_MATCHING PATTERN *.py)
+    ${DCORE_SITE_PACKAGES}/dcore FILES_MATCHING PATTERN *.py)
 
 # Copy all Python files for ctest into a build directory
 file(GLOB_RECURSE all_py_files RELATIVE ${CMAKE_SOURCE_DIR}/python *.py)
@@ -20,6 +20,9 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/py_source.tar
 )
 
 add_custom_target(copy_tar_py ALL DEPENDS ${CMAKE_BINARY_DIR}/py_source.tar)
+
+configure_file(mpi_command.py.in ${CMAKE_CURRENT_BINARY_DIR}/dcore/mpi_command.py @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dcore/mpi_command.py DESTINATION ${DCORE_SITE_PACKAGES}/dcore)
 
 # add version file
 configure_file(version.py.in version.py)

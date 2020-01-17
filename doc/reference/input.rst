@@ -312,3 +312,6 @@ This block includes parameters that are solely used by ``dcore_post``.
 This block includes parameters which are read by ``dcore`` and ``dcore_post``.
 
 .. include:: mpi_desc.txt
+
+When an option ``-DMPIEXEC=<MPIRUN>`` is passed to the ``cmake`` command,
+The default value of ``command`` will be replaced with ``<MPIRUN>``.
