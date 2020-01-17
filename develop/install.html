@@ -103,6 +103,10 @@ If not, please install them following our instruction for <a class="reference in
 <p>Here, <em>path_to_triqs</em> refers to your <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> install directory, and <em>path_to_dcore_src</em> refers to the <code class="docutils literal notranslate"><span class="pre">DCore</span></code> source directory.
 Please set CMAKE_INSTALL_PREFIX to the directory where DCore will be installed.
 If the cmake command succeeded, you will see the following message.</p>
+<p>DCore invokes some MPI parallelized impurity solver in a DMFT loop.
+If your system MPI command is not “mpirun”, please provide the name of the correct one to DCore through cmake by using the flag “-DMPIEXEC”.
+The default value is “mpirun -np #” (# is replaced by the number of processors).
+For instance, if your wrapper is “mpijob” and you do not need to specify the number of processors explicitly, please use <code class="docutils literal notranslate"><span class="pre">-DMPIEXEC=&quot;mpijob&quot;</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>-- Build files have been written to: /.../dcore.build
 </pre></div>
 </div>
@@ -116,9 +120,7 @@ If the cmake command succeeded, you will see the following message.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
 </pre></div>
 </div>
-<p>If your system MPI wrapper is not “mpirun”, please provide the name of the correct one to DCore through cmake by using the flag “-DMPIEXEC”.
-The default value is “mpirun -np #” (# is replaced by the number of processors).
-For instance, if your wrapper is “mpijob” and you do not need to specify the number of processors explicitly, please use -DMPIEXEC=mpijob.
+<p>Some of tests invoke an MPI parallelized impourity solver.
 Note that it is not allowed to run MPI programs interactively on some system.
 In this case, please run tests as a job.</p>
 <p>The test results look like</p>
