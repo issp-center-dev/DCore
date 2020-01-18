@@ -7,7 +7,7 @@ Installation
 ============
 
 Install script
---------
+--------------
 You may use `MateriAppsInstaller <https://github.com/wistaria/MateriAppsInstaller>`_, a collection of install scripts, to install prerequisites (TRIQS 1.4.x) and DCore.
 
 Download
