@@ -441,6 +441,7 @@ def dcore_post(filename, np=1, prefix="./"):
 if __name__ == '__main__':
     from .option_tables import generate_all_description
     import argparse
+    from .version import version
 
     parser = argparse.ArgumentParser(
         prog='dcore_post.py',
@@ -457,6 +458,7 @@ if __name__ == '__main__':
                         help="input file name."
                         )
     parser.add_argument('--np', help='Number of MPI processes', required=True)
+    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
     parser.add_argument('--prefix',
                         action='store',
                         default='post/',

@@ -297,6 +297,7 @@ def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
 if __name__ == '__main__':
     from .option_tables import generate_all_description
     import argparse
+    from .version import version
 
     parser = argparse.ArgumentParser(
         prog='dcore_check.py',
@@ -328,6 +329,7 @@ if __name__ == '__main__':
                         type=int,
                         help='Max number of iterations to be processed'
                         )
+    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
     # for backward compatibility
     # parser.add_argument('--output',
     #                     action='store',
