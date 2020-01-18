@@ -125,7 +125,7 @@ We can plot it using gnuplot as follows:
    :align: center
 
 Another impurity solver: CTHYB-SEG
----------------------------
+----------------------------------
 
 The input file for ALPS/cthyb-seg is given as below.
 
