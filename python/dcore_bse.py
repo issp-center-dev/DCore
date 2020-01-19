@@ -662,6 +662,7 @@ def dcore_bse(filename, np=1):
 if __name__ == '__main__':
     import argparse
     from .option_tables import generate_all_description
+    from .version import version
 
     parser = argparse.ArgumentParser(
         prog='dcore_bse.py',
@@ -677,6 +678,7 @@ if __name__ == '__main__':
                         help="input file name."
                         )
     parser.add_argument('--np', help='Number of MPI processes', required=True)
+    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:

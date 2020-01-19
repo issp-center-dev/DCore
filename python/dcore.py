@@ -52,6 +52,7 @@ def dcore(filename, np=1):
 if __name__ == '__main__':
     from .option_tables import generate_all_description
     import argparse
+    from .version import version
 
     parser = argparse.ArgumentParser(
         prog='dcore.py',
@@ -68,6 +69,7 @@ if __name__ == '__main__':
                         type=str,
                         help="input file name.")
     parser.add_argument('--np', default=1, help='Number of MPI processes', required=True)
+    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:

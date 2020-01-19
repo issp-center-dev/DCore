@@ -389,6 +389,7 @@ def dcore_pre(filename):
 if __name__ == '__main__':
     from .option_tables import generate_all_description
     import argparse
+    from .version import version
 
     parser = argparse.ArgumentParser(
         prog='dcore_pre.py',
@@ -404,6 +405,7 @@ if __name__ == '__main__':
                         type=str,
                         help="input file name."
                         )
+    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
