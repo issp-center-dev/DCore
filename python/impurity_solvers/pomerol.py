@@ -26,15 +26,18 @@ from ..pytriqs_gf_compat import *
 # from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
 from .base import SolverBase
 
-VERSION_REQUIRED = 1.2
+VERSION_REQUIRED = 1.4
 
 
-def check_version(_exec):
+def check_version(_mpirun_command, _exec_path):
     print(" Checking version...")
-    out = subprocess.check_output([_exec, "--version"])
+    with open('./version', 'w') as output_f:
+        launch_mpi_subprocesses(_mpirun_command, [_exec_path, "--version"], output_f)
+    with open('./version', 'r') as output_f:
+        out = output_f.read()
     # pomerol2dcore version 1.0
     print(" |", out, end="")
     print(" | version required", VERSION_REQUIRED)
@@ -123,7 +126,14 @@ class PomerolSolver(SolverBase):
 
         # print("params_kw =", params_kw)
         exec_path = os.path.expandvars(params_kw['exec_path'])
-        check_version(exec_path)
+        check_version(mpirun_command, exec_path)
+
+        # bath fitting
+        n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
+        fit_params = {}
+        for key in ['fit_gtol',]:
+            if key in params_kw:
+                fit_params[key] = params_kw[key]
 
         # for BSE
         flag_vx = params_kw.get('flag_vx', 0)
@@ -154,6 +164,7 @@ class PomerolSolver(SolverBase):
             'file_freqs': file_freqs,
             'flag_suscep': flag_suscep,
             'n_wb': n_wb,
+            'n_bath': n_bath,
         }
 
         with open(file_pomerol, "w") as f:
@@ -166,13 +177,34 @@ class PomerolSolver(SolverBase):
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
         h0_mat = extract_H0(self._G0_iw, self.block_names)
+        assert h0_mat.shape == (self.n_flavors, self.n_flavors)
 
+        # (1b) If Delta(iw) and/or Delta(tau) are necessary:
+        # Compute the hybridization function from G0:
+        #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
+        # H0 is extracted from the tail of the Green's function.
+        self._Delta_iw = delta(self._G0_iw)
+
+        bath_levels, bath_hyb = extract_bath_params(self._Delta_iw, self.beta, self.block_names, n_bath, **fit_params)
+        assert bath_levels.shape == (2*n_bath,)
+        assert bath_hyb.shape == (self.n_flavors, 2*n_bath)
+
+        # Construct (impurity + bath) Hamiltonian matrix of size (L1+L2) times (L1+L2)
+        L1 = self.n_flavors
+        L2 = 2*n_bath
+        h0_full = numpy.zeros((L1 + L2, L1 + L2), dtype=complex)
+        h0_full[0:L1, 0:L1] = h0_mat
+        h0_full[0:L1, L1:L1+L2] = bath_hyb
+        h0_full[L1:L1+L2, 0:L1] = bath_hyb.conj().T
+        h0_full[L1:L1+L2,L1:L1+L2] = numpy.diag(bath_levels)
+
+        # save H0 into a file
         with open(file_h0, "w") as f:
-            for i, j in product(range(h0_mat.shape[0]), range(h0_mat.shape[1])):
+            for i, j in product(range(h0_full.shape[0]), range(h0_full.shape[1])):
                 # TODO: real or complex
-                if abs(h0_mat[i, j]) != 0:
-                    # print(i, j, H0[i,j].real, H0[i,j].imag, file=f)
-                    print(i, j, h0_mat[i, j].real, file=f)
+                if abs(h0_full[i, j]) != 0:
+                    # print(i, j, h0_full[i,j].real, h0_full[i,j].imag, file=f)
+                    print(i, j, h0_full[i, j].real, file=f)
 
         # (1c) Set U_{ijkl} for the solver
         with open(file_umat, "w") as f:
@@ -203,20 +235,42 @@ class PomerolSolver(SolverBase):
 
         # Compute Sigma_iw
         # NOTE:
-        #   compute G0(iw) from h0_mat instead of using self._G0_iw, since
+        #   compute G0(iw) from h0_mat instead of using self._G0_iw, because
         #   self._G0_iw includes more information than that passed to the
         #   solver (see extract_H0 for details).
+
+        # Rearrange indices (imp_up, imp_dn, bath_up, bath_dn) --> (imp_up, bath_up, imp_dn bath_dn)
+        index_order =  range(self.n_orb)                                      # imp_up
+        index_order += range(2*self.n_orb, 2*self.n_orb + n_bath)             # bath_up
+        index_order += range(self.n_orb, 2*self.n_orb)                        # imp_dn
+        index_order += range(2*self.n_orb + n_bath, 2*self.n_orb + 2*n_bath)  # bath_dn
+        index_order = numpy.array(index_order)
+        h0_updn = h0_full[index_order, :][:, index_order]
+
+        # Cut H0 into block structure
         n_block = len(self.gf_struct)
-        n_inner = h0_mat.shape[0] / n_block
-        # cut H0 into block structure
-        h0_block = [h0_mat[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
-        g0_inv = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
-        g0_inv << iOmega_n
-        g0_inv -= h0_block
-        self._Sigma_iw << g0_inv - inverse(self._Gimp_iw)
+        n_inner = h0_full.shape[0] / n_block
+        h0_block = [h0_updn[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
+
+        # Construct G0 including bath sites
+        bath_names = [ "bath" + str(i_bath) for i_bath in range(n_bath)]
+        gf_struct_full = { block: list(inner_names) + bath_names for block, inner_names in self.gf_struct.items()}
+        g0_full = make_block_gf(GfImFreq, gf_struct_full, self.beta, self.n_iw)
+        g0_full << iOmega_n
+        for i, block in enumerate(self.block_names):
+            g0_full[block] -= h0_block[i]
+        g0_full.invert()
+
+        # Project G0 onto impurity site
+        g0_imp = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
+        for block in self.block_names:
+            for o1, o2 in product(self.gf_struct[block], repeat=2):
+                g0_imp[block][o1, o2] << g0_full[block][o1, o2]
+
+        self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)
 
     def _read_common(self, dir_name, fac=1.0):
-        x_loc = {}
+        g2_loc = {}
         for i1, i2, i3, i4 in product(range(self.n_flavors), repeat=4):
             filename = dir_name + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
             if not os.path.exists(filename):
@@ -226,11 +280,11 @@ class PomerolSolver(SolverBase):
             # load data as a complex type
             data = numpy.loadtxt(filename).view(complex).reshape(-1)
 
-            x_loc[(i1, i2, i3, i4)] = data * fac
+            g2_loc[(i1, i2, i3, i4)] = data * fac
 
-        return x_loc
+        return g2_loc
 
-    def _read_xloc(self, params_kw):
+    def _read_g2loc(self, params_kw):
         dir_g2 = params_kw.get('dir_g2', './two_particle')
         return self._read_common(dir_g2, 1./self.beta)
 
@@ -238,9 +292,9 @@ class PomerolSolver(SolverBase):
         dir_suscep = params_kw.get('dir_suscep', './susceptibility')
         return self._read_common(dir_suscep)
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_G2loc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
-        compute local G2 (X_loc) in p-h channel
+        compute local G2 in p-h channel
             X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
 
         Parameters
@@ -253,7 +307,7 @@ class PomerolSolver(SolverBase):
 
         Returns
         -------
-        x_loc : dict
+        G2_loc : dict
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(n_w2b, 2*n_w2f, 2*n_w2f)
 
@@ -270,16 +324,16 @@ class PomerolSolver(SolverBase):
 
         self.solve(rot, mpirun_command, params_kw)
 
-        x_loc = self._read_xloc(params_kw)
+        g2_loc = self._read_g2loc(params_kw)
         # 1d array --> (wb, wf1, wf2)
-        for key, data in x_loc.items():
-            x_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
+        for key, data in g2_loc.items():
+            g2_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
 
         chi_loc = self._read_chiloc(params_kw)
 
-        return x_loc, chi_loc
+        return g2_loc, chi_loc
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         """
 
         Parameters
@@ -289,7 +343,7 @@ class PomerolSolver(SolverBase):
 
         Returns
         -------
-        x_loc : dict
+        g2_loc : dict
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(N)
 
@@ -311,9 +365,9 @@ class PomerolSolver(SolverBase):
 
         self.solve(rot, mpirun_command, params_kw)
 
-        x_loc = self._read_xloc(params_kw)
+        g2_loc = self._read_g2loc(params_kw)
         chi_loc = self._read_chiloc(params_kw)
-        return x_loc, chi_loc
+        return g2_loc, chi_loc
 
     def name(self):
         return "pomerol"

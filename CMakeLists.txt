@@ -1,10 +1,15 @@
 # Version number of the application
-set (DCORE_VERSION "2.0.2")
+set (DCORE_VERSION "2.1.0")
 
 # Append triqs installed files to the cmake load path
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 option(BUILD_DCORE "Build DCore" ON)
+
+option(MPIEXEC "Default value of mpi.command" OFF)
+if(NOT MPIEXEC)
+  set(MPIEXEC "mpirun -np \#")
+endif()
 
 # start configuration 
 cmake_minimum_required(VERSION 2.8)

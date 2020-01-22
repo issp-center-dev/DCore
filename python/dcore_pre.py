@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # DCore -- Integrated DMFT software for correlated electrons
 # Copyright (C) 2017 The University of Tokyo
@@ -262,8 +261,8 @@ def __generate_local_potential(p):
     # set factor
     try:
         fac = ast.literal_eval(local_potential_factor)
-        if isinstance(fac, float):
-            fac = [fac] * n_inequiv_shells
+        if isinstance(fac, float) or isinstance(fac, int):
+            fac = [float(fac)] * n_inequiv_shells
         elif isinstance(fac, list) or isinstance(fac, tuple):
             assert len(fac) == n_inequiv_shells
         else:
@@ -390,6 +389,7 @@ def dcore_pre(filename):
 if __name__ == '__main__':
     from .option_tables import generate_all_description
     import argparse
+    from .version import version
 
     parser = argparse.ArgumentParser(
         prog='dcore_pre.py',
@@ -405,6 +405,7 @@ if __name__ == '__main__':
                         type=str,
                         help="input file name."
                         )
+    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:

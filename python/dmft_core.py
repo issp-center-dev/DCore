@@ -382,8 +382,8 @@ class DMFTCoreSolver(object):
         #     First, compute G_loc without self-energy
         if self._params['system']['with_dc']:
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
-            Gloc_iw_sh, dm_sh = self.calc_Gloc()
-            self.set_dc_imp(dm_sh)
+            _, dm0_sh = self.calc_G0loc()
+            self.set_dc_imp(dm0_sh)
 
         # Set initial value to self-energy
         if self._params["control"]["initial_static_self_energy"] != "None":
@@ -441,6 +441,31 @@ class DMFTCoreSolver(object):
             'mu'            : self._chemical_potential,
             'adjust_mu'     : False,
         }
+
+    def calc_G0loc(self):
+        """
+        Compute the non-interacting lattice/local Green's function using SumkDFT.
+
+        Although the chemical potential is adjusted on the fly so that the system has the correct number of electrons,
+        self._chemical_potential is not updated.
+
+        Return a list of Gloc_iw and density matrices for inequivalent shells
+        """
+
+        params = self._make_sumkdft_params()
+        params['calc_mode'] = 'Gloc'
+        params['adjust_mu'] = True
+        params['with_dc'] = False
+
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_G0loc', self._mpirun_command, params)
+
+        # Make sure Gloc_iw is hermite conjugate (for triqs 2.x)
+        for ish, g in enumerate(r['Gloc_iw_sh']):
+            diff = make_hermite_conjugate(g)
+            if diff > 1e-8:
+                print('Warning Gloc_iw at ish {} is not hermite conjugate: {}'.format(ish, diff))
+        return r['Gloc_iw_sh'], r['dm_sh']
+
 
     def calc_Gloc(self):
         """
@@ -646,6 +671,25 @@ class DMFTCoreSolver(object):
             self._params['control']['symmetry_generators'],
             self._use_spin_orbit, self._dim_sh)
 
+        def quantities_to_check():
+            x = []
+            # chemical potential
+            x.append(self._chemical_potential)
+
+            # renormalization factor
+            w0 = self._n_iw  # number of positive Matsubara freqs = position of zeroth Matsubara freq
+            # print(w0)
+            for ish in range(self._n_inequiv_shells):
+                for spn in self.spin_block_names:
+                    for iorb in range(self._dim_sh[ish]):
+                        # print(self._sh_quant[ish].Sigma_iw[spn].data.shape)
+                        sigma0 = self._sh_quant[ish].Sigma_iw[spn].data[w0, iorb, iorb].imag
+                        z = 1. / (1 - sigma0 / numpy.pi * self._beta)
+                        x.append(z)
+            return numpy.array(x, dtype=complex)
+
+        x0 = quantities_to_check()
+
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
@@ -722,6 +766,19 @@ class DMFTCoreSolver(object):
                     for bname, g in self._sh_quant[ish].Sigma_iw:
                         path = output_group + '/Sigma_iw/ite{}/sh{}/{}'.format(iteration_number, ish, bname)
                         save_giw(ar, path, g)
+
+            # convergence check
+            tol = self._params["control"]["converge_tol"]
+            if tol > 0:
+                print("\nConvergence check")
+                x1 = quantities_to_check()
+                max_error = numpy.max(numpy.abs(x1 - x0))
+                print(" | converge_tol = %.1e" %tol)
+                print(" | max_error    = %.1e" %max_error)
+                if max_error < tol:
+                    print(" | converged --- iteration = %d" %iteration_number)
+                    break
+                x0 = x1
 
             sys.stdout.flush()
 

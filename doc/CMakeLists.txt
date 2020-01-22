@@ -26,7 +26,7 @@ file(GLOB_RECURSE all_doc_files RELATIVE ${CMAKE_SOURCE_DIR}/doc * EXCLUDE *.swp
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc_source.tar DEPENDS ${all_doc_files} COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/doc_source.tar ${all_doc_files} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/doc)
 add_custom_target(make_doc_local_copy_dir ALL COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/doc_source)
 add_custom_target(copy_tar_doc ALL DEPENDS ${CMAKE_BINARY_DIR}/doc_source.tar make_doc_local_copy_dir COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/doc_source.tar WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/doc_source)
-add_custom_target(make_option_tables ALL DEPENDS copy_tar_doc COMMAND ${PYTHON_INTERPRETER} ${CMAKE_SOURCE_DIR}/python/option_tables.py ${CMAKE_BINARY_DIR}/doc_source/reference)
+add_custom_target(make_option_tables ALL DEPENDS copy_tar_doc COMMAND ${PYTHON_INTERPRETER} ${CMAKE_BINARY_DIR}/python/dcore/option_tables.py ${CMAKE_BINARY_DIR}/doc_source/reference)
 add_custom_target(make_doc_local_copy ALL DEPENDS make_option_tables)
 
 # create documentation target

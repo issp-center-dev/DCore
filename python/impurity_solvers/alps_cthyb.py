@@ -124,13 +124,13 @@ class ALPSCTHYBSolver(SolverBase):
 
         self._solve_impl(rot, mpirun_command, None, params_kw)
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
-        raise RuntimeError("calc_Xloc_ph is not implemented!")
+    def calc_G2loc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+        raise RuntimeError("calc_G2loc_ph is not implemented!")
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         self._solve_impl(rot, mpirun_command, freqs_ph, params_kw)
 
-        return self._Xloc_ph_sparse, None
+        return self._G2loc_ph_sparse, None
 
     def _solve_impl(self, rot, mpirun_command, freqs_ph, params_kw):
         """
@@ -316,7 +316,7 @@ class ALPSCTHYBSolver(SolverBase):
                 data_G2 = float_to_complex_array(f['/G2/matsubara/data'][()])
                 data_G2 = data_G2.reshape((self.n_flavors, self.n_flavors, self.n_flavors, self.n_flavors, -1))
                 # from ALPS/CT-HYB to DCore notation
-                self._Xloc_ph_sparse = data_G2.transpose((1,0,2,3,4))/self.beta
+                self._G2loc_ph_sparse = data_G2.transpose((1,0,2,3,4))/self.beta
                 del data_G2
 
         # Solve Dyson's eq to obtain Sigma_iw
