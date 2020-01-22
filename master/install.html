@@ -40,6 +40,10 @@
             
   <div class="section" id="installation">
 <span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="install-script">
+<h2>Install script<a class="headerlink" href="#install-script" title="Permalink to this headline">¶</a></h2>
+<p>You may use <a class="reference external" href="https://github.com/wistaria/MateriAppsInstaller">MateriAppsInstaller</a>, a collection of install scripts, to install prerequisites (TRIQS 1.4.x) and DCore.</p>
+</div>
 <div class="section" id="download">
 <h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
 <p>You can download the source files in two ways.</p>
@@ -65,7 +69,7 @@ Note that develop branches may not be well tested and contains some bugs.</p>
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
 <li><dl class="first docutils">
-<dt><a class="reference external" href="https://triqs.github.io/triqs/">TRIQS</a> and <a class="reference external" href="https://triqs.github.io/dft_tools/">DFTTools/TRIQS</a>.</dt>
+<dt><a class="reference external" href="https://triqs.github.io/triqs/">TRIQS</a> and <a class="reference external" href="https://triqs.github.io/dft_tools/">TRIQS/DFTTools</a>.</dt>
 <dd><p class="first">They must be installed prior to installing all other programs.
 If not, please install them following our instruction for <a class="reference internal" href="install_triqs14x.html"><span class="doc">TRIQS 1.4.x</span></a> or <a class="reference internal" href="install_triqs21x.html"><span class="doc">TRIQS 2.1.x</span></a>.</p>
 <p class="last">In the following, we suppose that <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> is installed in directory <em>path_to_triqs</em>.</p>
@@ -99,6 +103,10 @@ If not, please install them following our instruction for <a class="reference in
 <p>Here, <em>path_to_triqs</em> refers to your <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> install directory, and <em>path_to_dcore_src</em> refers to the <code class="docutils literal notranslate"><span class="pre">DCore</span></code> source directory.
 Please set CMAKE_INSTALL_PREFIX to the directory where DCore will be installed.
 If the cmake command succeeded, you will see the following message.</p>
+<p>DCore invokes some MPI parallelized impurity solver in a DMFT loop.
+If your system MPI command is not “mpirun”, please provide the name of the correct one to DCore through cmake by using the flag “-DMPIEXEC”.
+The default value is “mpirun -np #” (# is replaced by the number of processors).
+For instance, if your wrapper is “mpijob” and you do not need to specify the number of processors explicitly, please use <code class="docutils literal notranslate"><span class="pre">-DMPIEXEC=&quot;mpijob&quot;</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>-- Build files have been written to: /.../dcore.build
 </pre></div>
 </div>
@@ -112,9 +120,7 @@ If the cmake command succeeded, you will see the following message.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
 </pre></div>
 </div>
-<p>If your system MPI wrapper is not “mpirun”, please provide the name of the correct one to DCore through cmake by using the flag “-DMPIEXEC”.
-The default value is “mpirun -np #” (# is replaced by the number of processors).
-For instance, if your wrapper is “mpijob” and you do not need to specify the number of processors explicitly, please use -DMPIEXEC=mpijob.
+<p>Some of tests invoke an MPI parallelized impourity solver.
 Note that it is not allowed to run MPI programs interactively on some system.
 In this case, please run tests as a job.</p>
 <p>The test results look like</p>
@@ -176,6 +182,7 @@ Total Test <span class="nb">time</span> <span class="o">(</span>real<span class=
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">DCore</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install-script">Install script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#download">Download</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation-steps">Installation steps</a></li>

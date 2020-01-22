@@ -310,16 +310,16 @@ n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span
 </pre></div>
 </div>
 <p>Then, we use GnuPlot as</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="k">set</span> <span class="n">xlabel</span> <span class="ss">&quot;Order of polynomial&quot;</span>
-<span class="k">set</span> <span class="n">ylabel</span> <span class="ss">&quot;Coefficient&quot;</span>
-<span class="k">set</span> <span class="n">logscale</span> <span class="n">y</span>
-<span class="n">plot</span> <span class="err">\</span>
-<span class="ss">&quot;l_cyc3000_warm5000_len50.dat&quot;</span> <span class="n">u</span> <span class="mi">1</span><span class="p">:(</span><span class="k">abs</span><span class="p">(</span><span class="err">$</span><span class="mi">2</span><span class="p">))</span> <span class="n">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="p">,</span> <span class="err">\</span>
-<span class="ss">&quot;l_cyc10000_warm5000_len50.dat&quot;</span> <span class="n">u</span> <span class="mi">1</span><span class="p">:(</span><span class="k">abs</span><span class="p">(</span><span class="err">$</span><span class="mi">2</span><span class="p">))</span> <span class="n">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="p">,</span> <span class="err">\</span>
-<span class="ss">&quot;l_cyc30000_warm5000_len50.dat&quot;</span> <span class="n">u</span> <span class="mi">1</span><span class="p">:(</span><span class="k">abs</span><span class="p">(</span><span class="err">$</span><span class="mi">2</span><span class="p">))</span> <span class="n">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="p">,</span> <span class="err">\</span>
-<span class="ss">&quot;l_cyc100000_warm5000_len50.dat&quot;</span> <span class="n">u</span> <span class="mi">1</span><span class="p">:(</span><span class="k">abs</span><span class="p">(</span><span class="err">$</span><span class="mi">2</span><span class="p">))</span> <span class="n">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="p">,</span> <span class="err">\</span>
-<span class="ss">&quot;l_cyc300000_warm5000_len50.dat&quot;</span> <span class="n">u</span> <span class="mi">1</span><span class="p">:(</span><span class="k">abs</span><span class="p">(</span><span class="err">$</span><span class="mi">2</span><span class="p">))</span> <span class="n">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="p">,</span> <span class="err">\</span>
-<span class="ss">&quot;l_cyc300000_warm5000_len100.dat&quot;</span> <span class="n">u</span> <span class="mi">1</span><span class="p">:(</span><span class="k">abs</span><span class="p">(</span><span class="err">$</span><span class="mi">2</span><span class="p">))</span> <span class="n">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="err">set xlabel &quot;Order of polynomial&quot;</span>
+<span class="err">set ylabel &quot;Coefficient&quot;</span>
+<span class="err">set logscale y</span>
+<span class="err">plot \</span>
+<span class="err">&quot;l_cyc3000_warm5000_len50.dat&quot; u 1:(abs($2)) w l lw 3, \</span>
+<span class="err">&quot;l_cyc10000_warm5000_len50.dat&quot; u 1:(abs($2)) w l lw 3, \</span>
+<span class="err">&quot;l_cyc30000_warm5000_len50.dat&quot; u 1:(abs($2)) w l lw 3, \</span>
+<span class="err">&quot;l_cyc100000_warm5000_len50.dat&quot; u 1:(abs($2)) w l lw 3, \</span>
+<span class="err">&quot;l_cyc300000_warm5000_len50.dat&quot; u 1:(abs($2)) w l lw 3, \</span>
+<span class="err">&quot;l_cyc300000_warm5000_len100.dat&quot; u 1:(abs($2)) w l lw 3</span>
 </pre></div>
 </div>
 <p>and obtain</p>

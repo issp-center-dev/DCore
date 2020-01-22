@@ -548,6 +548,11 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 <td>None</td>
 <td>Generators for symmetrization of self-energy.</td>
 </tr>
+<tr class="row-odd"><td>converge_tol</td>
+<td>Float</td>
+<td>0.0</td>
+<td>The DMFT loop is terminated if some relevant quantities are converged within this tolerance.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -647,6 +652,8 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </tr>
 </tbody>
 </table>
+<p>When an option <code class="docutils literal notranslate"><span class="pre">-DMPIEXEC=&lt;MPIRUN&gt;</span></code> is passed to the <code class="docutils literal notranslate"><span class="pre">cmake</span></code> command,
+The default value of <code class="docutils literal notranslate"><span class="pre">command</span></code> will be replaced with <code class="docutils literal notranslate"><span class="pre">&lt;MPIRUN&gt;</span></code>.</p>
 </div>
 </div>
 
