@@ -421,11 +421,12 @@ class DMFTCoreSolver(object):
 
         raise_if_mpi_imported()
 
-        for ish in range(self._n_inequiv_shells):
+        for icrsh in range(self._n_corr_shells):
             for sp1 in self._spin_block_names:
-                if not numpy.allclose(self._dc_imp[ish][sp1], self._dc_imp[ish][sp1].conjugate().transpose()):
+                if not numpy.allclose(self._dc_imp[icrsh][sp1], self._dc_imp[icrsh][sp1].conjugate().transpose()):
                     raise RuntimeError("dc_imp is not hermite!")
 
+        for ish in range(self._n_inequiv_shells):
             if make_hermite_conjugate(self._sh_quant[ish].Sigma_iw, check_only=True) > 1e-8:
                 raise RuntimeError("Sigma_iw is not hermite conjugate!")
 
@@ -568,7 +569,7 @@ class DMFTCoreSolver(object):
         """
 
         # Loop over inequivalent shells
-        self._dc_imp = []
+        _dc_imp = []
         for ish in range(self._n_inequiv_shells):
             u_mat = self._Umat[self._sk.inequiv_to_corr[ish]]
 
@@ -620,7 +621,7 @@ class DMFTCoreSolver(object):
                         u_mat[i1, 0:num_orb, 0:num_orb, i2]
                         * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
                     )
-                self._dc_imp.append(dc_imp_sh)
+                _dc_imp.append(dc_imp_sh)
             else:
                 dc_imp_sh = {}
                 for sp1 in self._spin_block_names:
@@ -637,7 +638,7 @@ class DMFTCoreSolver(object):
                         #
                         dc_imp_sh[sp1][i1, i2] += \
                             - numpy.sum(u_mat[i1, 0:num_orb, 0:num_orb, i2] * dens_mat[sp1][:, :])
-                self._dc_imp.append(dc_imp_sh)
+                _dc_imp.append(dc_imp_sh)
 
             print("\n      DC Self Energy:")
             for sp1 in self._spin_block_names:
@@ -645,9 +646,13 @@ class DMFTCoreSolver(object):
                 for i1 in range(dim_tot):
                     print("          ", end="")
                     for i2 in range(dim_tot):
-                        print("{0:.3f} ".format(self._dc_imp[ish][sp1][i1, i2]), end="")
+                        print("{0:.3f} ".format(_dc_imp[ish][sp1][i1, i2]), end="")
                     print("")
             print("")
+
+            # Now copy dc_imp to all correlated shells
+            self._dc_imp = [_dc_imp[self._sk.corr_to_inequiv[icrsh]] for icrsh in range(self._n_corr_shells)]
+
 
 
     def do_steps(self, max_step):
