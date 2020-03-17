@@ -561,10 +561,10 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 <p>This block includes parameters that are solely used by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="9%" />
-<col width="7%" />
-<col width="22%" />
-<col width="62%" />
+<col width="8%" />
+<col width="6%" />
+<col width="19%" />
+<col width="68%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -617,7 +617,17 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 <tr class="row-even"><td>omega_pade</td>
 <td>Float</td>
 <td>5.0</td>
-<td>Cutoff frequencies for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.</td>
+<td>Cutoff frequency for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.</td>
+</tr>
+<tr class="row-odd"><td>n_pade_min</td>
+<td>Integer</td>
+<td>20</td>
+<td>Minimum number of Matsubara frequencies used for Pade approximation.</td>
+</tr>
+<tr class="row-even"><td>n_pade_max</td>
+<td>Integer</td>
+<td>-1</td>
+<td>Maximum number of Matsubara frequencies used for Pade approximation. If negative, this will be replaced with n_iw in [system] block.</td>
 </tr>
 <tr class="row-odd"><td>omega_check</td>
 <td>Float</td>
