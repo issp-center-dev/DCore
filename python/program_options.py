@@ -105,7 +105,10 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
     parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
-    parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequencies for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.")
+    parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequency for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.")
+    parser.add_option("tool", "n_pade_min", int, 20, "Minimum number of Matsubara frequencies used for Pade approximation.")
+    parser.add_option("tool", "n_pade_max", int, -1, "Maximum number of Matsubara frequencies used for Pade approximation. If negative, this will be replaced with n_iw in [system] block.")
+
     parser.add_option("tool", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
 
     # [bse]
@@ -190,6 +193,10 @@ def parse_parameters(params):
     if 'mpi' in params:
         # Expand enviroment variables
         params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])
+
+    if 'tool' in params:
+        if params['tool']['n_pade_max'] < 0:
+            params['tool']['n_pade_max'] = params['system']['n_iw']
 
 
 def parse_knode(knode_string):

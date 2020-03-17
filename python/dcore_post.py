@@ -118,6 +118,19 @@ class DMFTPostSolver(DMFTCoreSolver):
             return [None] * self.n_inequiv_shells
 
 
+def _set_n_pade(omega_cutoff, beta, n_min, n_max):
+    """
+    Return (int)n_pade: the number of Matsubara frequencies below the cutoff frequency.
+    n_pade is bounded between n_min and n_max
+    """
+    n_pade = int((beta * omega_cutoff + numpy.pi) / (2.0 * numpy.pi))
+    print("n_pade = {} (evaluated from omega_pade)".format(n_pade))
+    n_pade = max(n_pade, n_min)
+    n_pade = min(n_pade, n_max)
+    print("n_pade = {}".format(n_pade))
+    return n_pade
+
+
 class DMFTCoreTools:
     def __init__(self, seedname, params, xk, prefix):
         """
@@ -135,7 +148,10 @@ class DMFTCoreTools:
 
         self._params = copy.deepcopy(params)
         # Construct a SumKDFT object
-        self._n_pade = int((params['system']['beta']*params['tool']['omega_pade']+numpy.pi) / (2*numpy.pi))
+        self._n_pade = _set_n_pade(omega_cutoff=params['tool']['omega_pade'],
+                                   beta=params['system']['beta'],
+                                   n_min=params['tool']['n_pade_min'],
+                                   n_max=params['tool']['n_pade_max'])
         self._omega_min = float(params['tool']['omega_min'])
         self._omega_max = float(params['tool']['omega_max'])
         self._Nomega = int(params['tool']['Nomega'])
