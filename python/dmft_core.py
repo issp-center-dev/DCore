@@ -311,6 +311,9 @@ class DMFTCoreSolver(object):
         if 'impurity_solver' in self._params:
             self._solver_params = create_solver_params(self._params['impurity_solver'])
 
+        # physical quantities to save
+        self._quant_to_save = {}
+
         self._sanity_check()
 
     def _read_output_file__restart(self):
@@ -714,9 +717,15 @@ class DMFTCoreSolver(object):
             # Compute Gloc_iw where the chemical potential is adjusted if needed
             Gloc_iw_sh, dm_sh = self.calc_Gloc()
             self.print_density_matrix(dm_sh)
+            self._quant_to_save['density_matrix'] = dm_sh
 
-            for ish in range(self._n_inequiv_shells):
-                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, float(Gloc_iw_sh[ish].total_density())))
+            # Compute Total charge from G_loc
+            # for ish in range(self._n_inequiv_shells):
+            #     print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, float(Gloc_iw_sh[ish].total_density())))
+            charge_loc = [float(Gloc_iw_sh[ish].total_density()) for ish in range(self._n_inequiv_shells)]
+            for ish, charge in enumerate(charge_loc):
+                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
+            self._quant_to_save['total_charge_loc'] = charge_loc
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
             sys.stdout.flush()
@@ -726,9 +735,17 @@ class DMFTCoreSolver(object):
             print("\nWall Time : %.1f sec" % (time.time() - t0))
             sys.stdout.flush()
 
+            #
             # Solved. Now do post-processing:
-            for ish in range(self._n_inequiv_shells):
-                print("\nTotal charge of impurity problem : %.6f" % new_Gimp_iw[ish].total_density())
+            #
+
+            # Compute Total charge from G_imp
+            # for ish in range(self._n_inequiv_shells):
+            #     print("\nTotal charge of impurity problem : %.6f" % new_Gimp_iw[ish].total_density())
+            charge_imp = [new_Gimp_iw[ish].total_density() for ish in range(self._n_inequiv_shells)]
+            for ish, charge in enumerate(charge_imp):
+                print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
+            self._quant_to_save['total_charge_imp'] = charge_imp
 
             # Symmetrize over spin components
             if self._params["control"]["time_reversal"]:
@@ -758,12 +775,19 @@ class DMFTCoreSolver(object):
                 if len(symm_generators[ish]) > 0:
                     self._sh_quant[ish].Sigma_iw << symmetrize(self._sh_quant[ish].Sigma_iw, symm_generators[ish])
 
-            # Write data to the hdf5 archive:
+            # Save data to the hdf5 archive:
             with HDFArchive(self._output_file, 'a') as ar:
                 ar[output_group]['iterations'] = iteration_number
                 ar[output_group]['chemical_potential'][str(iteration_number)] = self._chemical_potential
                 ar[output_group]['dc_imp'][str(iteration_number)] = self._dc_imp
                 ar[output_group]['dc_energ'][str(iteration_number)] = self._dc_energ
+
+            # **************************************************
+            # Save
+            with HDFArchive(self._output_file, 'a') as ar:
+                subgroup = 'physical_quantities'
+                ar[output_group][subgroup] = self._quant_to_save
+            exit()
 
             # Save the history of Sigma in DCore format
             with h5py.File(self._output_file, 'a') as ar:
