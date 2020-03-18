@@ -202,8 +202,15 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     #      Local impurity Green's function is saved as "Gimp_iw" in DCore v2.
     #      This is intended to distinguish the local impurity Green's function from the one computed by SumkDFT.
 
-    return sol.get_Sigma_iw(), sol.get_Gimp_iw(), sol.get_Sigma_w()
+    # return sol.get_Sigma_iw(), sol.get_Gimp_iw(), sol.get_Sigma_w()
 
+    r = {
+        'Sigma_iw': sol.get_Sigma_iw(),
+        'Gimp_iw': sol.get_Gimp_iw(),
+        'Sigma_w': sol.get_Sigma_w(),
+        'quant_to_save': sol.quant_to_save,
+    }
+    return r
 
 
 class DMFTCoreSolver(object):
@@ -537,16 +544,20 @@ class DMFTCoreSolver(object):
         Sigma_iw_sh = []
         Gimp_iw_sh = []
         Sigma_w_sh = []
+        quant_to_save_sh = []
         for ish in range(self._n_inequiv_shells):
             print('')
             work_dir = 'work/imp_shell'+str(ish)+'_ite'+str(iteration_number)
             print('Solving impurity model for inequivalent shell {} in {}...'.format(ish, work_dir))
             print('')
             sys.stdout.flush()
-            Sigma_iw, Gimp_iw, Sigma_w = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
-                             self._params["impurity_solver"]["basis_rotation"], self._Umat[ish], self._gf_struct[ish],
-                                 self._beta, self._n_iw,
-                                 self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, work_dir)
+            r = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
+                                     self._params["impurity_solver"]["basis_rotation"],
+                                     self._Umat[ish], self._gf_struct[ish], self._beta, self._n_iw,
+                                     self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, work_dir)
+            Sigma_iw = r['Sigma_iw']
+            Gimp_iw = r['Gimp_iw']
+            Sigma_w = r['Sigma_w']
             if make_hermite_conjugate(Sigma_iw) > 1e-8:
                 print("Warning: Sigma_iw is not hermite conjugate!")
             if make_hermite_conjugate(Gimp_iw) > 1e-8:
@@ -556,6 +567,17 @@ class DMFTCoreSolver(object):
             if not mesh is None:
                 Sigma_w_sh.append(Sigma_w)
             Gimp_iw_sh.append(Gimp_iw)
+
+            quant_to_save_sh.append(r['quant_to_save'])
+
+        # convert data structure of quant_to_save_sh from [sh][key] to [key][sh]
+        # and add it to self._quant_to_save
+        # TODO: maybe, for better visibility, return quant_to_save_sh and do the process below in do_steps()
+        quant_to_save_dict = {key: [] for key in quant_to_save_sh[0].keys()}
+        for quant_dict in quant_to_save_sh:
+            for key, quant in quant_dict.items():
+                quant_to_save_dict[key].append(quant)
+        self._quant_to_save.update(quant_to_save_dict)
 
         # FIXME: DON'T CHANGE THE NUMBER OF RETURNED VALUES. USE DICT INSTEAD.
         if mesh is None:
