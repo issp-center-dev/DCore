@@ -277,5 +277,20 @@ class ALPSCTHYBSEGSolver(SolverBase):
                     swdata[spin, orb, :] = swdata_array
         assign_from_numpy_array(self._Sigma_iw, swdata, self.block_names)
 
+        #   self.quant_to_save['nn_equal_time']
+        nn_equal_time = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=float)
+        with HDFArchive('sim.h5', 'r') as f:
+            results = f["simulation"]["results"]
+            for i1, i2 in product(range(2*self.n_orb), repeat=2):
+                name = "nn_%d_%d" % (i1, i2)
+                if name in results:
+                    # Only i1>i2 is computed in CTQMC.
+                    nn_equal_time[i1, i2] = nn_equal_time[i2, i1] = results[name]["mean"]["value"]
+        # [(o1,s1), (o2,s2)] -> [o1, s1, o2, s2] -> [s1, o1, s2, o2] -> [(s1,o1), (s2,o2)]
+        nn_equal_time = nn_equal_time.reshape((self.n_orb, 2, self.n_orb, 2))\
+                                     .transpose((1, 0, 3, 2))\
+                                     .reshape((2*self.n_orb, 2*self.n_orb))
+        self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :]  # copy
+
     def name(self):
         return "ALPS/cthyb-seg"

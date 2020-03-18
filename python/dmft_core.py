@@ -804,12 +804,10 @@ class DMFTCoreSolver(object):
                 ar[output_group]['dc_imp'][str(iteration_number)] = self._dc_imp
                 ar[output_group]['dc_energ'][str(iteration_number)] = self._dc_energ
 
-            # **************************************************
-            # Save
+            # Save physical quantities
             with HDFArchive(self._output_file, 'a') as ar:
                 subgroup = 'physical_quantities'
                 ar[output_group][subgroup] = self._quant_to_save
-            exit()
 
             # Save the history of Sigma in DCore format
             with h5py.File(self._output_file, 'a') as ar:
