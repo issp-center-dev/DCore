@@ -202,8 +202,6 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     #      Local impurity Green's function is saved as "Gimp_iw" in DCore v2.
     #      This is intended to distinguish the local impurity Green's function from the one computed by SumkDFT.
 
-    # return sol.get_Sigma_iw(), sol.get_Gimp_iw(), sol.get_Sigma_w()
-
     r = {
         'Sigma_iw': sol.get_Sigma_iw(),
         'Gimp_iw': sol.get_Gimp_iw(),
@@ -508,8 +506,7 @@ class DMFTCoreSolver(object):
         return r['Gloc_iw_sh'], r['dm_sh']
 
 
-    def print_density_matrix(self, dm_sh):
-        smoments = spin_moments_sh(dm_sh)
+    def print_density_matrix(self, dm_sh, smoment_sh):
         print("\nDensity Matrix")
         for ish in range(self._n_inequiv_shells):
             print("\n  Inequivalent Shell ", ish)
@@ -524,7 +521,7 @@ class DMFTCoreSolver(object):
                 print('    Eigenvalues: ', evals)
             print('')
             print('    Magnetic moment (only spin contribution, S=1/2 gives 0.5)')
-            print('      mx,my,mz= {} {} {}'.format(smoments[ish][0], smoments[ish][1], smoments[ish][2]))
+            print('      mx,my,mz= {} {} {}'.format(smoment_sh[ish][0], smoment_sh[ish][1], smoment_sh[ish][2]))
 
 
     def solve_impurity_models(self, Gloc_iw_sh, iteration_number, mesh=None):
@@ -738,12 +735,12 @@ class DMFTCoreSolver(object):
 
             # Compute Gloc_iw where the chemical potential is adjusted if needed
             Gloc_iw_sh, dm_sh = self.calc_Gloc()
-            self.print_density_matrix(dm_sh)
+            smoment_sh = spin_moments_sh(dm_sh)
+            self.print_density_matrix(dm_sh, smoment_sh)
             self._quant_to_save['density_matrix'] = dm_sh
+            self._quant_to_save['spin_moment'] = smoment_sh
 
             # Compute Total charge from G_loc
-            # for ish in range(self._n_inequiv_shells):
-            #     print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, float(Gloc_iw_sh[ish].total_density())))
             charge_loc = [float(Gloc_iw_sh[ish].total_density()) for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_loc):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
@@ -762,8 +759,6 @@ class DMFTCoreSolver(object):
             #
 
             # Compute Total charge from G_imp
-            # for ish in range(self._n_inequiv_shells):
-            #     print("\nTotal charge of impurity problem : %.6f" % new_Gimp_iw[ish].total_density())
             charge_imp = [new_Gimp_iw[ish].total_density() for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_imp):
                 print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
