@@ -737,7 +737,7 @@ class DMFTCoreSolver(object):
             Gloc_iw_sh, dm_sh = self.calc_Gloc()
             smoment_sh = spin_moments_sh(dm_sh)
             self.print_density_matrix(dm_sh, smoment_sh)
-            self._quant_to_save['density_matrix'] = dm_sh
+            # self._quant_to_save['density_matrix'] = dm_sh
             self._quant_to_save['spin_moment'] = smoment_sh
 
             # Compute Total charge from G_loc
@@ -802,8 +802,10 @@ class DMFTCoreSolver(object):
 
             # Save physical quantities
             with HDFArchive(self._output_file, 'a') as ar:
-                subgroup = 'physical_quantities'
-                ar[output_group][subgroup] = self._quant_to_save
+                # subgroup = 'physical_quantities'
+                # ar[output_group][subgroup] = self._quant_to_save
+                for key, val in self._quant_to_save.items():
+                    ar[output_group][key] = val
 
             # Save the history of Sigma in DCore format
             with h5py.File(self._output_file, 'a') as ar:
