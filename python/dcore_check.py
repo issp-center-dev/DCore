@@ -225,14 +225,16 @@ class DMFTCoreCheck(object):
         filename = basename + fig_ext
         ax1.set_xlabel("iterations")
         ax1.set_ylabel(ylabel)
+        ax1.set_xlim(left=iter[0])
         ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
 
         ax2.set_xlabel("iterations")
         ax2.set_ylabel("diff")
         ax2.set_yscale("log")
+        ax2.set_xlim(left=iter[0])
         ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
 
-        self.plt.xlim(left=iter[0])
+        # self.plt.xlim(left=iter[0])
         self.plt.tight_layout()
         self.plt.savefig(filename)
         print(" Output " + filename)
