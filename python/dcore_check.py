@@ -256,6 +256,30 @@ class DMFTCoreCheck(object):
         data = {'y': mu}
         self._plot_iter(basename, fig_ext, [data, ], "$\mu$")
 
+    def plot_iter_occupation(self, basename, fig_ext):
+        """
+        plot Occupation number as a function of iteration number
+        """
+
+        for ish in range(self.n_sh):
+            # Make a graph for each shell
+            data_list = []
+            norb = self.shell_info[ish]['block_dim']
+            for isp, spn in enumerate(self.spin_names):
+                for iorb in range(norb):
+                    occup = numpy.array([self.solver.density_matrix(itr)[ish][spn][iorb, iorb].real
+                                         for itr in range(1, self.n_iter + 1)])
+
+                    data = {
+                        'y': occup,
+                        'label': "shell=%d, spin=%s, %d" % (ish, spn, iorb),
+                        'iorb': iorb,
+                        'isp': isp,
+                    }
+                    data_list.append(data)
+
+            self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Occupation number")
+
     def plot_iter_sigma(self, basename, fig_ext):
         """
         plot renormalization factor as a function of iteration number
@@ -299,6 +323,7 @@ def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
     check.plot_sigma_ave(basename=prefix+"sigma_ave", fig_ext=ext)
     check.plot_iter_mu(basename=prefix+"iter_mu", fig_ext=ext)
     check.plot_iter_sigma(basename=prefix+"iter_sigma", fig_ext=ext)
+    check.plot_iter_occupation(basename=prefix+"iter_occup", fig_ext=ext)
 
 
 if __name__ == '__main__':

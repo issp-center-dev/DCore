@@ -380,7 +380,7 @@ class DMFTCoreSolver(object):
             #
             # Sub group for something
             #
-            for gname in ['Sigma_iw', 'chemical_potential', 'dc_imp', 'dc_energ']:
+            for gname in ['Sigma_iw', 'chemical_potential', 'dc_imp', 'dc_energ', 'density_matrix']:
                 if not (gname in f[output_group]):
                     f[output_group].create_group(gname)
 
@@ -798,6 +798,7 @@ class DMFTCoreSolver(object):
                 ar[output_group]['chemical_potential'][str(iteration_number)] = self._chemical_potential
                 ar[output_group]['dc_imp'][str(iteration_number)] = self._dc_imp
                 ar[output_group]['dc_energ'][str(iteration_number)] = self._dc_energ
+                ar[output_group]['density_matrix'][str(iteration_number)] = dm_sh
 
             # Save physical quantities
             with HDFArchive(self._output_file, 'a') as ar:
@@ -831,6 +832,10 @@ class DMFTCoreSolver(object):
     def chemical_potential(self, iteration_number):
         with HDFArchive(self._output_file, 'r') as ar:
             return ar[self._output_group]['chemical_potential'][str(iteration_number)]
+
+    def density_matrix(self, iteration_number):
+        with HDFArchive(self._output_file, 'r') as ar:
+            return ar[self._output_group]['density_matrix'][str(iteration_number)]
 
     @property
     def n_inequiv_shells(self):
