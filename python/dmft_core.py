@@ -317,7 +317,8 @@ class DMFTCoreSolver(object):
             self._solver_params = create_solver_params(self._params['impurity_solver'])
 
         # physical quantities to save
-        self._quant_to_save = {}
+        self._quant_to_save_latest = {}  # only the latest results are saved (overwritten)
+        self._quant_to_save_history = {}  # histories are retained
 
         self._sanity_check()
 
@@ -380,7 +381,7 @@ class DMFTCoreSolver(object):
             #
             # Sub group for something
             #
-            for gname in ['Sigma_iw', 'chemical_potential', 'dc_imp', 'dc_energ', 'density_matrix']:
+            for gname in ['Sigma_iw', 'chemical_potential', 'dc_imp', 'dc_energ']:
                 if not (gname in f[output_group]):
                     f[output_group].create_group(gname)
 
@@ -574,7 +575,7 @@ class DMFTCoreSolver(object):
         for quant_dict in quant_to_save_sh:
             for key, quant in quant_dict.items():
                 quant_to_save_dict[key].append(quant)
-        self._quant_to_save.update(quant_to_save_dict)
+        self._quant_to_save_latest.update(quant_to_save_dict)
 
         # FIXME: DON'T CHANGE THE NUMBER OF RETURNED VALUES. USE DICT INSTEAD.
         if mesh is None:
@@ -737,14 +738,14 @@ class DMFTCoreSolver(object):
             Gloc_iw_sh, dm_sh = self.calc_Gloc()
             smoment_sh = spin_moments_sh(dm_sh)
             self.print_density_matrix(dm_sh, smoment_sh)
-            # self._quant_to_save['density_matrix'] = dm_sh
-            self._quant_to_save['spin_moment'] = smoment_sh
+            self._quant_to_save_history['density_matrix'] = dm_sh
+            self._quant_to_save_history['spin_moment'] = smoment_sh
 
             # Compute Total charge from G_loc
             charge_loc = [float(Gloc_iw_sh[ish].total_density()) for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_loc):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
-            self._quant_to_save['total_charge_loc'] = charge_loc
+            self._quant_to_save_history['total_charge_loc'] = charge_loc
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
             sys.stdout.flush()
@@ -762,7 +763,7 @@ class DMFTCoreSolver(object):
             charge_imp = [new_Gimp_iw[ish].total_density() for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_imp):
                 print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
-            self._quant_to_save['total_charge_imp'] = charge_imp
+            self._quant_to_save_history['total_charge_imp'] = charge_imp
 
             # Symmetrize over spin components
             if self._params["control"]["time_reversal"]:
@@ -792,19 +793,22 @@ class DMFTCoreSolver(object):
                 if len(symm_generators[ish]) > 0:
                     self._sh_quant[ish].Sigma_iw << symmetrize(self._sh_quant[ish].Sigma_iw, symm_generators[ish])
 
-            # Save data to the hdf5 archive:
+            self._quant_to_save_history.update(chemical_potential=self._chemical_potential,
+                                               dc_imp=self._dc_imp,
+                                               dc_energ=self._dc_energ)
+
+            # Save data to the hdf5 archive
             with HDFArchive(self._output_file, 'a') as ar:
                 ar[output_group]['iterations'] = iteration_number
-                ar[output_group]['chemical_potential'][str(iteration_number)] = self._chemical_potential
-                ar[output_group]['dc_imp'][str(iteration_number)] = self._dc_imp
-                ar[output_group]['dc_energ'][str(iteration_number)] = self._dc_energ
-                ar[output_group]['density_matrix'][str(iteration_number)] = dm_sh
 
-            # Save physical quantities
-            with HDFArchive(self._output_file, 'a') as ar:
-                # subgroup = 'physical_quantities'
-                # ar[output_group][subgroup] = self._quant_to_save
-                for key, val in self._quant_to_save.items():
+                # save histories
+                for key, val in self._quant_to_save_history.items():
+                    if not key in ar[output_group]:
+                        ar[output_group].create_group(key)
+                    ar[output_group][key][str(iteration_number)] = val
+
+                # save the latest results
+                for key, val in self._quant_to_save_latest.items():
                     ar[output_group][key] = val
 
             # Save the history of Sigma in DCore format
@@ -838,6 +842,10 @@ class DMFTCoreSolver(object):
     def density_matrix(self, iteration_number):
         with HDFArchive(self._output_file, 'r') as ar:
             return ar[self._output_group]['density_matrix'][str(iteration_number)]
+
+    def spin_moment(self, iteration_number):
+        with HDFArchive(self._output_file, 'r') as ar:
+            return ar[self._output_group]['spin_moment'][str(iteration_number)]
 
     @property
     def n_inequiv_shells(self):

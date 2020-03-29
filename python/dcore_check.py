@@ -282,6 +282,28 @@ class DMFTCoreCheck(object):
 
             self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Occupation number")
 
+    def plot_iter_spin_moment(self, basename, fig_ext):
+        """
+        plot spin moment as a function of iteration number
+        """
+
+        labels = ["$S_x$", "$S_y$", "$S_z$"]
+        for ish in range(self.n_sh):
+            # Make a graph for each shell
+            data_list = []
+            for j in range(3):
+                smoment = numpy.array([self.solver.spin_moment(itr)[ish][j]
+                                       for itr in range(1, self.n_iter + 1)])
+
+                data = {
+                    'y': smoment,
+                    'label': "shell=%d, %s" % (ish, labels[j]),
+                    'iorb': j,  # change the color depending on the spin direction
+                }
+                data_list.append(data)
+
+            self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Spin moment")
+
     def plot_iter_sigma(self, basename, fig_ext):
         """
         plot renormalization factor as a function of iteration number
@@ -326,6 +348,7 @@ def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
     check.plot_iter_mu(basename=prefix+"iter_mu", fig_ext=ext)
     check.plot_iter_sigma(basename=prefix+"iter_sigma", fig_ext=ext)
     check.plot_iter_occupation(basename=prefix+"iter_occup", fig_ext=ext)
+    check.plot_iter_spin_moment(basename=prefix+"iter_spin", fig_ext=ext)
 
 
 if __name__ == '__main__':
