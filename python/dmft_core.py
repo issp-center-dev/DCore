@@ -591,6 +591,14 @@ class DMFTCoreSolver(object):
 
         """
 
+        def print_matrix(mat):
+            dim = mat.shape[0]
+            for i1 in range(dim):
+                print("          ", end="")
+                for i2 in range(dim):
+                    print("{0:.3f} ".format(mat[i1, i2]), end="")
+                print("")
+
         # Loop over inequivalent shells
         _dc_imp = []
         for ish in range(self._n_inequiv_shells):
@@ -602,29 +610,16 @@ class DMFTCoreSolver(object):
 
             dens_mat = dm_sh[self._sk.inequiv_to_corr[ish]]
 
-            print("")
-            print("    DC for inequivalent shell {0}".format(ish))
+            # print U matrix, J matrix, density matrix
+            print("\n    DC for inequivalent shell {0}".format(ish))
             print("\n      2-index U:".format(ish))
-            for i1 in range(num_orb):
-                print("          ", end="")
-                for i2 in range(num_orb):
-                    print("{0:.3f} ".format(u_mat[i1, i2, i1, i2]), end="")
-                print("")
+            print_matrix(numpy.einsum("ijij->ij", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]))
             print("\n      2-index J:".format(ish))
-            for i1 in range(num_orb):
-                print("          ", end="")
-                for i2 in range(num_orb):
-                    print("{0:.3f} ".format(u_mat[i1, i2, i2, i1]), end="")
-                print("")
-
+            print_matrix(numpy.einsum("ijji->ij", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]))
             print("\n      Local Density Matrix:".format(ish))
             for sp1 in self._spin_block_names:
                 print("        Spin {0}".format(sp1))
-                for i1 in range(num_orb):
-                    print("          ", end="")
-                    for i2 in range(num_orb):
-                        print("{0:.3f} ".format(dens_mat[sp1][i1, i2]), end="")
-                    print("")
+                print_matrix(dens_mat[sp1][0:num_orb, 0:num_orb])
 
             if self._use_spin_orbit:
                 dc_imp_sh = {}
@@ -663,20 +658,15 @@ class DMFTCoreSolver(object):
                             - numpy.sum(u_mat[i1, 0:num_orb, 0:num_orb, i2] * dens_mat[sp1][:, :])
                 _dc_imp.append(dc_imp_sh)
 
+            # print DC self energy
             print("\n      DC Self Energy:")
             for sp1 in self._spin_block_names:
                 print("        Spin {0}".format(sp1))
-                for i1 in range(dim_tot):
-                    print("          ", end="")
-                    for i2 in range(dim_tot):
-                        print("{0:.3f} ".format(_dc_imp[ish][sp1][i1, i2]), end="")
-                    print("")
+                print_matrix(_dc_imp[ish][sp1])
             print("")
 
-            # Now copy dc_imp to all correlated shells
-            self._dc_imp = [_dc_imp[self._sk.corr_to_inequiv[icrsh]] for icrsh in range(self._n_corr_shells)]
-
-
+        # Now copy dc_imp to all correlated shells
+        self._dc_imp = [_dc_imp[self._sk.corr_to_inequiv[icrsh]] for icrsh in range(self._n_corr_shells)]
 
     def do_steps(self, max_step):
         """
