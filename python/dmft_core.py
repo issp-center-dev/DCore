@@ -219,6 +219,9 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
     num_orb = int(u_mat.shape[0] / 2)
 
     dc_imp_sh = {}  # This will be returned
+    #
+    # Hartree-Fock contribution
+    #
     if dc_type == "HF_DFT" or dc_type == "HF_imp":
         if use_spin_orbit:
             dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
@@ -254,8 +257,33 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
                 dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot)
                 # Fock
                 dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1])
+    #
+    # Fully-Localized Limit (FFL)
+    #
     elif dc_type == "FLL":
-        pass
+        if use_spin_orbit:
+            raise NotImplementedError
+        else:
+            u_sum = numpy.einsum("ijij", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb])
+            j_sum = numpy.einsum("ijji", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb])
+
+            u_ave = u_sum / num_orb**2  # U
+            u_j_ave = (u_sum - j_sum) / (num_orb*(num_orb-1))  # U-J
+            j_ave = u_ave - u_j_ave  # J
+
+            n_sp = {sp: numpy.sum(numpy.diag(dens_mat[sp])).real for sp in spin_block_names}
+            n_tot = sum(n_sp.values())
+
+            print("\n      FLL formula")
+            print("        U_ave = {0:.3f}".format(u_ave))
+            print("        J_ave = {0:.3f}".format(j_ave))
+            print("        n_sp  = {}".format(n_sp))
+            print("        n_tot = {}".format(n_tot))
+
+            dc_imp_sh = {}
+            for sp in spin_block_names:
+                dc = u_ave * (n_tot - 0.5) - j_ave * (n_sp[sp] - 0.5)
+                dc_imp_sh[sp] = numpy.identity(num_orb) * dc
     else:
         raise ValueError("Here should not be reached")
 
@@ -686,7 +714,6 @@ class DMFTCoreSolver(object):
         # Now copy dc_imp to all correlated shells
         self._dc_imp = [_dc_imp[self._sk.corr_to_inequiv[icrsh]] for icrsh in range(self._n_corr_shells)]
         # exit(0)
-
 
     def do_steps(self, max_step):
         """

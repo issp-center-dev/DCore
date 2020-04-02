@@ -77,7 +77,7 @@ def create_parser(target_sections=None):
     parser.add_option("system", "prec_mu", float, 0.0001,
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double-counting correction (See below)")
-    parser.add_option("system", "dc_type", str, 'HF_DFT', "Chosen from 'HF_DFT', 'HF_imp'")
+    parser.add_option("system", "dc_type", str, 'HF_DFT', "Chosen from 'HF_DFT' (default), 'HF_imp', 'FLL'")
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',
