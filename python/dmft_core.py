@@ -211,6 +211,57 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     return r
 
 
+def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
+
+    # dim_tot is the dimension of spin x orbit for SO = 1 or that of orbital for SO=0
+    # dim_tot = self._dim_sh[ish]
+    # TODO: num_orb can be deleted, if inverse transformation of .tools.to_spin_full_U_matrix is implemented}
+    num_orb = int(u_mat.shape[0] / 2)
+
+    dc_imp_sh = {}  # This will be returned
+    if dc_type == "HF_DFT" or dc_type == "HF_imp":
+        if use_spin_orbit:
+            dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
+            dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+            for s1, i1, s2, i2 in product(range(2), range(num_orb), range(2), range(num_orb)):
+                #
+                # Hartree
+                #
+                dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s1 * num_orb] += numpy.sum(
+                    u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb,
+                                                          s2 * num_orb:s2 * num_orb + num_orb]
+                )
+                #
+                # Exchange
+                #
+                dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] += numpy.sum(
+                    u_mat[i1, 0:num_orb, 0:num_orb, i2]
+                    * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
+                )
+            # TODO: Check if the following code is equivalent to the above, and then update.
+            # dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+            # # Hartree
+            # dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"])
+            # # Fock
+            # dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"])
+        else:
+            for sp1 in spin_block_names:
+                u_mat_reduce = u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]  # TODO: make a function
+                dens_mat_tot = sum(dens_mat.values())  # spin-sum of density matrix
+
+                dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
+                # Hartree
+                dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot)
+                # Fock
+                dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1])
+    elif dc_type == "FLL":
+        pass
+    else:
+        raise ValueError("Here should not be reached")
+
+    return dc_imp_sh
+
+
 class DMFTCoreSolver(object):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out', read_only=False, restart=False):
         """
@@ -591,6 +642,9 @@ class DMFTCoreSolver(object):
 
         """
 
+        dc_type = self._params['system']['dc_type']
+        print("\n  set DC (dc_type = {})".format(dc_type))
+
         def print_matrix(mat):
             dim = mat.shape[0]
             for i1 in range(dim):
@@ -603,12 +657,10 @@ class DMFTCoreSolver(object):
         _dc_imp = []
         for ish in range(self._n_inequiv_shells):
             u_mat = self._Umat[self._sk.inequiv_to_corr[ish]]
-
-            # dim_tot is the dimension of spin x orbit for SO = 1 or that of orbital for SO=0
-            dim_tot = self._dim_sh[ish]
-            num_orb = int(u_mat.shape[0] / 2)
-
             dens_mat = dm_sh[self._sk.inequiv_to_corr[ish]]
+
+            num_orb = int(u_mat.shape[0] / 2)
+            # TODO: num_orb can be deleted, if inverse transformation of .tools.to_spin_full_U_matrix is implemented}
 
             # print U matrix, J matrix, density matrix
             print("\n    DC for inequivalent shell {0}".format(ish))
@@ -621,43 +673,8 @@ class DMFTCoreSolver(object):
                 print("        Spin {0}".format(sp1))
                 print_matrix(dens_mat[sp1][0:num_orb, 0:num_orb])
 
-            if self._use_spin_orbit:
-                dc_imp_sh = {}
-                dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-                for s1, i1, s2, i2 in product(range(2), range(num_orb), range(2), range(num_orb)):
-                    #
-                    # Hartree
-                    #
-                    dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s1 * num_orb] += numpy.sum(
-                        u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb,
-                                                              s2 * num_orb:s2 * num_orb + num_orb]
-                    )
-                    #
-                    # Exchange
-                    #
-                    dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] += numpy.sum(
-                        u_mat[i1, 0:num_orb, 0:num_orb, i2]
-                        * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
-                    )
-                # TODO: Check if the following code is equivalent to the above, and then update.
-                # dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-                # # Hartree
-                # dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"])
-                # # Fock
-                # dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"])
-                _dc_imp.append(dc_imp_sh)
-            else:
-                dc_imp_sh = {}
-                for sp1 in self._spin_block_names:
-                    u_mat_reduce = u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]
-                    dens_mat_tot = sum(dens_mat.values())  # spin-sum of density matrix
-
-                    dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
-                    # Hartree
-                    dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot)
-                    # Fock
-                    dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1])
-                _dc_imp.append(dc_imp_sh)
+            # calculated DC
+            _dc_imp.append(calc_dc(dc_type, u_mat, dens_mat, self.spin_block_names, self._use_spin_orbit))
 
             # print DC self energy
             print("\n      DC Self Energy:")
@@ -668,6 +685,8 @@ class DMFTCoreSolver(object):
 
         # Now copy dc_imp to all correlated shells
         self._dc_imp = [_dc_imp[self._sk.corr_to_inequiv[icrsh]] for icrsh in range(self._n_corr_shells)]
+        # exit(0)
+
 
     def do_steps(self, max_step):
         """
