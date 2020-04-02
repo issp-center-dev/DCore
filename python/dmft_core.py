@@ -468,7 +468,7 @@ class DMFTCoreSolver(object):
 
         # Set double-counting correction
         #     First, compute G_loc without self-energy
-        if self._params['system']['with_dc']:
+        if self._params['system']['with_dc'] and self._params['system']['dc_type'] != 'HF_imp':
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
             _, dm0_sh = self.calc_G0loc()
             self.set_dc_imp(dm0_sh)
@@ -713,7 +713,6 @@ class DMFTCoreSolver(object):
 
         # Now copy dc_imp to all correlated shells
         self._dc_imp = [_dc_imp[self._sk.corr_to_inequiv[icrsh]] for icrsh in range(self._n_corr_shells)]
-        # exit(0)
 
     def do_steps(self, max_step):
         """
@@ -729,6 +728,7 @@ class DMFTCoreSolver(object):
 
         previous_present = self._previous_runs > 0
         with_dc = self._params['system']['with_dc']
+        dc_type = self._params['system']['dc_type']
         sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
         output_group = self._output_group
 
@@ -801,6 +801,11 @@ class DMFTCoreSolver(object):
             for ish, charge in enumerate(charge_imp):
                 print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_imp'] = charge_imp
+
+            # update DC correction
+            if with_dc and dc_type == "HF_imp":
+                dm_imp = [new_Gimp_iw[ish].density() for ish in range(self._n_inequiv_shells)]
+                self.set_dc_imp(dm_imp)
 
             # Symmetrize over spin components
             if self._params["control"]["time_reversal"]:
