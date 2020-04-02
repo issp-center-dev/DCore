@@ -639,23 +639,24 @@ class DMFTCoreSolver(object):
                         u_mat[i1, 0:num_orb, 0:num_orb, i2]
                         * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
                     )
+                # TODO: Check if the following code is equivalent to the above, and then update.
+                # dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+                # # Hartree
+                # dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"])
+                # # Fock
+                # dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"])
                 _dc_imp.append(dc_imp_sh)
             else:
                 dc_imp_sh = {}
                 for sp1 in self._spin_block_names:
+                    u_mat_reduce = u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]
+                    dens_mat_tot = sum(dens_mat.values())  # spin-sum of density matrix
+
                     dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
-                    for i1, i2 in product(range(num_orb), repeat=2):
-                        #
-                        # Hartree
-                        #
-                        for sp2 in self._spin_block_names:
-                            dc_imp_sh[sp1][i1, i2] += \
-                                numpy.sum(u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat[sp2][:, :])
-                        #
-                        # Exchange
-                        #
-                        dc_imp_sh[sp1][i1, i2] += \
-                            - numpy.sum(u_mat[i1, 0:num_orb, 0:num_orb, i2] * dens_mat[sp1][:, :])
+                    # Hartree
+                    dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot)
+                    # Fock
+                    dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1])
                 _dc_imp.append(dc_imp_sh)
 
             # print DC self energy
