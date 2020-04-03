@@ -468,7 +468,7 @@ class DMFTCoreSolver(object):
 
         # Set double-counting correction
         #     First, compute G_loc without self-energy
-        if self._params['system']['with_dc'] and self._params['system']['dc_type'] != 'HF_imp':
+        if self._params['system']['with_dc']:
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Double-Counting Correction  @@@@@@@@@@@@@@@@@@@@@@@@")
             _, dm0_sh = self.calc_G0loc()
             self.set_dc_imp(dm0_sh)
@@ -802,11 +802,6 @@ class DMFTCoreSolver(object):
                 print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_imp'] = charge_imp
 
-            # update DC correction
-            if with_dc and dc_type == "HF_imp":
-                dm_imp = [new_Gimp_iw[ish].density() for ish in range(self._n_inequiv_shells)]
-                self.set_dc_imp(dm_imp)
-
             # Symmetrize over spin components
             if self._params["control"]["time_reversal"]:
                 print("Averaging self-energy and impurity Green's function over spin components...")
@@ -818,7 +813,6 @@ class DMFTCoreSolver(object):
                 for ish in range(self._n_inequiv_shells):
                     symmetrize_spin(new_Gimp_iw[ish])
                     symmetrize_spin(new_Sigma_iw[ish])
-
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.
@@ -834,6 +828,11 @@ class DMFTCoreSolver(object):
             for isn in range(self._n_inequiv_shells):
                 if len(symm_generators[ish]) > 0:
                     self._sh_quant[ish].Sigma_iw << symmetrize(self._sh_quant[ish].Sigma_iw, symm_generators[ish])
+
+            # update DC correction
+            if with_dc and dc_type == "HF_imp":
+                dm_imp = [new_Gimp_iw[ish].density() for ish in range(self._n_inequiv_shells)]
+                self.set_dc_imp(dm_imp)
 
             self._quant_to_save_history.update(chemical_potential=self._chemical_potential,
                                                dc_imp=self._dc_imp,
