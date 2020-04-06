@@ -243,16 +243,16 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
             #     )
             # TODO: Check if the following code is equivalent to the above.
             dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-            dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"])  # Hartree
-            dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"])  # Fock
+            dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"], optimize=True)  # Hartree
+            dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"], optimize=True)  # Fock
         else:
             for sp1 in spin_block_names:
                 u_mat_reduce = u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]  # TODO: make a function
                 dens_mat_tot = sum(dens_mat.values())  # spin-sum of density matrix
 
                 dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
-                dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot)  # Hartree
-                dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1])  # Fock
+                dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot, optimize=True)  # Hartree
+                dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1], optimize=True)  # Fock
     #
     # Fully-Localized Limit (FLL)
     #
@@ -260,8 +260,8 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
         if use_spin_orbit:
             raise NotImplementedError
         else:
-            u_sum = numpy.einsum("ijij", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb])
-            j_sum = numpy.einsum("ijji", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb])
+            u_sum = numpy.einsum("ijij", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb], optimize=True)
+            j_sum = numpy.einsum("ijji", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb], optimize=True)
 
             u_ave = u_sum / num_orb**2  # U
             u_j_ave = (u_sum - j_sum) / (num_orb*(num_orb-1))  # U-J
