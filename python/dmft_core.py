@@ -224,41 +224,37 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
     #
     if dc_type == "HF_DFT" or dc_type == "HF_imp":
         if use_spin_orbit:
-            dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
-            dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-            for s1, i1, s2, i2 in product(range(2), range(num_orb), range(2), range(num_orb)):
-                #
-                # Hartree
-                #
-                dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s1 * num_orb] += numpy.sum(
-                    u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb,
-                                                          s2 * num_orb:s2 * num_orb + num_orb]
-                )
-                #
-                # Exchange
-                #
-                dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] += numpy.sum(
-                    u_mat[i1, 0:num_orb, 0:num_orb, i2]
-                    * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
-                )
-            # TODO: Check if the following code is equivalent to the above, and then update.
+            # dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
             # dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-            # # Hartree
-            # dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"])
-            # # Fock
-            # dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"])
+            # for s1, i1, s2, i2 in product(range(2), range(num_orb), range(2), range(num_orb)):
+            #     #
+            #     # Hartree
+            #     #
+            #     dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s1 * num_orb] += numpy.sum(
+            #         u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb,
+            #                                               s2 * num_orb:s2 * num_orb + num_orb]
+            #     )
+            #     #
+            #     # Exchange
+            #     #
+            #     dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] += numpy.sum(
+            #         u_mat[i1, 0:num_orb, 0:num_orb, i2]
+            #         * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
+            #     )
+            # TODO: Check if the following code is equivalent to the above.
+            dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+            dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"])  # Hartree
+            dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"])  # Fock
         else:
             for sp1 in spin_block_names:
                 u_mat_reduce = u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]  # TODO: make a function
                 dens_mat_tot = sum(dens_mat.values())  # spin-sum of density matrix
 
                 dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
-                # Hartree
-                dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot)
-                # Fock
-                dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1])
+                dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot)  # Hartree
+                dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1])  # Fock
     #
-    # Fully-Localized Limit (FFL)
+    # Fully-Localized Limit (FLL)
     #
     elif dc_type == "FLL":
         if use_spin_orbit:
