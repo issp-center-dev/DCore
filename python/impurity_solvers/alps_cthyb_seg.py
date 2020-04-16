@@ -395,6 +395,26 @@ class ALPSCTHYBSEGSolver(SolverBase):
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
             g2_dict[(i1, i1, i2, i2)] = g2_loc[i1, i2]
 
+        # Convert G2_iijj -> G2_ijij
+        # G2_iijj(wb, wf, wf') = -G2_ijij(wf'+wb, wf', wf-wf')^*
+        g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=complex)
+        for i1, i2 in product(range(2*self.n_orb), repeat=2):
+            for wb in range(num_wb):
+                for wf1, wf2 in product(range(2 * num_wf), repeat=2):
+                    try:
+                        if wf1-wf2>=0:
+                            g2_loc_tr[i1, i2, wf1-wf2, wf2+wb, wf2] = -g2_loc[i1, i2, wb, wf1, wf2]
+                        else:
+                            # G2(-wb, wf, wf') = G(wb, -wf, -wf')^*
+                            g2_loc_tr[i1, i2, -(wf1-wf2), -(wf2+wb), -wf2] = -numpy.conj(g2_loc[i1, i2, wb, wf1, wf2])
+                    except IndexError:
+                        pass
+        # assign to dict
+        for i1, i2 in product(range(2*self.n_orb), repeat=2):
+            # exclude i1=i2, which was already assigned by g2_loc
+            if i1 != i2:
+                g2_dict[(i1, i2, i1, i2)] = g2_loc_tr[i1, i2]
+
         # Occupation number
         # [(s1,o1)]
         occup = self._get_occupation()
