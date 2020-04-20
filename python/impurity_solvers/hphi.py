@@ -20,6 +20,7 @@ from __future__ import print_function
 import numpy
 from itertools import product
 import os
+from collections import namedtuple
 
 from ..pytriqs_gf_compat import *
 # from pytriqs.archive import HDFArchive
@@ -63,6 +64,8 @@ class HPhiSolver(SolverBase):
 
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
+        exct = params_kw.get('exct', 1)  # number of states to be computed
+
         fit_params = {}
         for key in ['fit_gtol',]:
             if key in params_kw:
@@ -70,8 +73,7 @@ class HPhiSolver(SolverBase):
 
         n_site = self.n_orb + n_bath
 
-# -------------------------------------------------------------------------
-
+        # Output namelist.def
         with open('./namelist.def', 'w') as f:
             print("""\
 ModPara  modpara.def
@@ -79,10 +81,9 @@ CalcMod  calcmod.def
 LocSpin  locspn.def
 Trans  trans.def
 InterAll  interall.def
-            """, file=f)
+""", end="", file=f)
 
-# -------------------------------------------------------------------------
-
+        # Output modpara.def
         with open('./modpara.def', 'w') as f:
             print("""\
 --------------------
@@ -96,7 +97,7 @@ CParaFileHead  zqp
 Nsite          {0}
 Lanczos_max    2000
 initial_iv     -1
-exct           1
+exct           {1}
 LanczosEps     14
 LanczosTarget  2
 LargeValue     4.000000000000000e+00
@@ -105,11 +106,10 @@ ExpecInterval  20
 NOmega         200
 OmegaMax       1.200000000000000e+01     4.000000000000000e-02
 OmegaMin       -1.200000000000000e+01    4.000000000000000e-02
-OmegaOrg       0.000000000000000e+00     0.000000000000000e+00\
-""".format(n_site), file=f)
+OmegaOrg       0.000000000000000e+00     0.000000000000000e+00
+""".format(n_site, exct), end="", file=f)
 
-# -------------------------------------------------------------------------
-
+        # Output calcmod.def
         with open('./calcmod.def', 'w') as f:
             print("""\
 #CalcType = 0:Lanczos, 1:TPQCalc, 2:FullDiag, 3:CG, 4:Time-evolution
@@ -123,26 +123,26 @@ CalcSpec   0
 CalcEigenVec   0
 InitialVecType   0
 InputEigenVec   0
-OutputEigenVec   0
+OutputEigenVec   1
 InputHam   0
 OutputHam   0
-OutputExVec   0\
-""", file=f)
+OutputExVec   0
+""", end="", file=f)
 
-# -------------------------------------------------------------------------
-
+        # Output locspn.def
         with open('./locspn.def', 'w') as f:
             print("""\
 ================================
 NlocalSpin     0
 ================================
 ========i_0LocSpn_1IteElc ======
-================================\
-""", file=f)
+================================
+""", end="", file=f)
+
             for i in range(n_site):
                 print("{0} 0".format(i), file=f)
 
-# -------------------------------------------------------------------------
+        # -------------------------------------------------------------------------
 
         # (1a) If H0 is necessary:
         # Non-interacting part of the local Hamiltonian including chemical potential
@@ -161,11 +161,45 @@ NlocalSpin     0
         assert bath_levels.shape == (2*n_bath,)
         assert bath_hyb.shape == (self.n_flavors, 2*n_bath)
 
-        # number of hopping terms
-        n_trans  = (2*self.n_orb)**2  # correlated sites
-        n_trans += (2*n_bath)  # bath levels
-        n_trans += 2*(2*self.n_orb)*(2*n_bath)  # hopping between correlated sites and bath sites
+        # make hopping matrix
+        Transfer = namedtuple('Transfer', ('i1', 's1', 'i2', 's2', 't'))
+        transfer = []
 
+        # A. correlated sites
+        h0_isjs = h0_mat.reshape((2, self.n_orb, 2, self.n_orb))
+        for s1, s2 in product(range(2), repeat=2):
+            for i1, i2 in product(range(self.n_orb), repeat=2):
+                t = -h0_isjs[s1, i1, s2, i2]
+                # print(i1, s1, i2, s2, t.real, t.imag, file=f)
+                if t != 0:
+                    transfer.append(Transfer(i1, s1, i2, s2, t))
+
+        # B. bath levels
+        bath_levels_is = bath_levels.reshape((2, n_bath))
+        for s1 in range(2):
+            for i1 in range(n_bath):
+                j1 = self.n_orb + i1
+                eps = -bath_levels_is[s1, i1]
+                # print(j1, s1, j1, s1, eps.real, eps.imag, file=f)
+                if eps != 0:
+                    transfer.append(Transfer(j1, s1, j1, s1, eps))
+
+        # C. hopping between correlated sites and bath sites
+        bath_hyb_is = bath_hyb.reshape((2, self.n_orb, 2, n_bath))
+        for s1 in range(2):
+            for i1 in range(self.n_orb):
+                for s2 in range(2):
+                    for i2 in range(n_bath):
+                        j1 = i1
+                        j2 = self.n_orb + i2
+                        v = -bath_hyb_is[s1, i1, s2, i2]
+                        # print(j1, s1, j2, s2, v.real, v.imag, file=f)
+                        # print(j2, s2, j1, s1, v.real, -v.imag, file=f)
+                        if v != 0:
+                            transfer.append(Transfer(j1, s1, j2, s2, v))
+                            transfer.append(Transfer(j2, s2, j1, s1, numpy.conj(v)))
+
+        # Output trans.def
         with open('./trans.def', 'w') as f:
             print("""\
 ========================
@@ -173,34 +207,10 @@ NTransfer      {0}
 ========================
 ========i_j_s_tijs======
 ========================
-""".format(n_trans), file=f)
+""".format(len(transfer)), end="", file=f)
 
-            # correlated sites
-            h0_isjs = h0_mat.reshape((2, self.n_orb, 2, self.n_orb))
-            for s1, s2 in product(range(2), repeat=2):
-                for i1, i2 in product(range(self.n_orb), repeat=2):
-                    t = -h0_isjs[s1, i1, s2, i2]
-                    print(i1, s1, i2, s2, t.real, t.imag, file=f)
-
-            # bath levels
-            bath_levels_is = bath_levels.reshape((2, n_bath))
-            for s1 in range(2):
-                for i1 in range(n_bath):
-                    j1 = self.n_orb + i1
-                    eps = -bath_levels_is[s1, i1]
-                    print(j1, s1, j1, s1, eps.real, eps.imag, file=f)
-
-            # hopping between correlated sites and bath sites
-            bath_hyb_is = bath_hyb.reshape((2, self.n_orb, 2, n_bath))
-            for s1 in range(2):
-                for i1 in range(self.n_orb):
-                    for s2 in range(2):
-                        for i2 in range(n_bath):
-                            j1 = i1
-                            j2 = self.n_orb + i2
-                            v = -bath_hyb_is[s1, i1, s2, i2]
-                            print(j1, s1, j2, s2, v.real, v.imag, file=f)
-                            print(j2, s2, j1, s1, v.real, -v.imag, file=f)
+            for t in transfer:
+                print(t.i1, t.s1, t.i2, t.s2, t.t.real, t.t.imag, file=f)
 
         # -------------------------------------------------------------------------
 
@@ -208,8 +218,24 @@ NTransfer      {0}
         # for i, j, k, l in product(range(self.n_flavors), repeat=4):
         #     self.u_mat[i, j, k, l]
 
-        n_inter = (2*self.n_orb)**4
+        # make U matrix
+        InterAll = namedtuple('InterAll', ('i1', 's1', 'i2', 's2', 'i3', 's3', 'i4', 's4', 'U'))
+        interall = []
 
+        # (1/2) U_{1234} c_1^+ c_2^+ c_4 c_3  # Dcore
+        # = I_{1324} c_1^+ c_3 c_2^+ c_4      # Hphi
+        u_1234 = self.u_mat.reshape((2, self.n_orb, 2, self.n_orb, 2, self.n_orb, 2, self.n_orb))
+        for s1, s2, s3, s4 in product(range(2), repeat=4):
+            for o1, o2, o3, o4 in product(range(self.n_orb), repeat=4):
+                u = u_1234[s1, o1, s2, o2, s3, o3, s4, o4] / 2.
+                if s1==s2==s3==s4 and o1==o2==o3==o4:
+                    continue
+                    # u = 0.0
+                # print(o1, s1, o3, s3, o2, s2, o4, s4, u.real, u.imag, file=f)
+                if u != 0:
+                    interall.append(InterAll(o1, s1, o3, s3, o2, s2, o4, s4, u))
+
+        # Output interall.def
         with open('./interall.def', 'w') as f:
             print("""\
 ======================
@@ -217,18 +243,10 @@ NInterAll      {0}
 ======================
 ========zInterAll=====
 ======================
-""".format(n_inter), file=f)
+""".format(len(interall)), end="", file=f)
 
-        # (1/2) U_{1234} c_1^+ c_2^+ c_4 c_3
-        # = I_{1324} c_1^+ c_3 c_2^+ c_4
-
-            u_1234 = self.u_mat.reshape((2, self.n_orb, 2, self.n_orb, 2, self.n_orb, 2, self.n_orb))
-            for s1, s2, s3, s4 in product(range(2), repeat=4):
-                for o1, o2, o3, o4 in product(range(self.n_orb), repeat=4):
-                    u = u_1234[s1, o1, s2, o2, s3, o3, s4, o4] / 2.
-                    if s1==s2==s3==s4 and o1==o2==o3==o4:
-                        u = 0.0
-                    print(o1, s1, o3, s3, o2, s2, o4, s4, u.real, u.imag, file=f)
+            for u in interall:
+                print(u.i1, u.s1, u.i2, u.s2, u.i3, u.s3, u.i4, u.s4, u.U.real, u.U.imag, file=f)
 
         # (2) Run a working horse
         with open('./stdout.log', 'w') as output_f:
