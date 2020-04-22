@@ -1,1 +1,0 @@
-cmake3 -DTRIQS_PATH=/opt/TRIQS-1.4.x /home/takemori/src/dcore.src -DCMAKE_INSTALL_PREFIX=/home/takemori/local/dcore
