@@ -145,9 +145,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-python/dcore_akw.py
-python/dcore_post_or.py
-cmake_com
-
 # End of https://www.gitignore.io/api/linux,macos,python
-cmake_com
