@@ -9,6 +9,7 @@ class CalcSpectrum:
         self.filename = filename
         self.T_list = T_list
         self.exct = exct
+        self.eta = eta
         self.header = header
         self.output_dir = output_dir
         self.nomega = 0
@@ -61,7 +62,7 @@ class CalcSpectrum:
         spectrum_dict={}
         frequencies =[]
         for idx in range(self.exct):
-            path_to_DG = os.path.join(self.output_dir, "{}_DynamicalGreen_{}.dat".format(header,idx))
+            path_to_DG = os.path.join(self.output_dir, "{}_DynamicalGreen_{}.dat".format(self.header,idx))
             spectrum = np.loadtxt(path_to_DG)
             spectrum_dict[idx] = spectrum[:,2] + 1J*spectrum[:,3]
             if idx == 0 :
@@ -72,7 +73,7 @@ class CalcSpectrum:
 
     def get_energies(self):
         energy_list = []
-        with open(os.path.join(output_dir, "{}_energy.dat".format(header))) as f:
+        with open(os.path.join(self.output_dir, "{}_energy.dat".format(self.header))) as f:
             lines = f.readlines()
             for line in lines:
                 words = line.split()
@@ -81,10 +82,10 @@ class CalcSpectrum:
         self.energy_list = energy_list
         self.ene_min = energy_list[0]
         self.ene_max = energy_list[len(energy_list)-1]
-        for T in T_list:
+        for T in self.T_list:
             eta_ene = np.exp(-(self.ene_max-self.ene_min)/T)
             print("T = {}: exp[-beta(ene_max-ene_mix)] = {}".format(T, eta_ene))
-            if eta_ene > eta:
+            if eta_ene > self.eta:
                 print("Warning: At T = {}, eta_ene is larger than eta.".format(T))
         return energy_list
 
@@ -115,7 +116,6 @@ class CalcSpectrum:
                 for idx, value in enumerate(spectrum):
                     fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
 
-
     def _make_single_excitation(self, site_i, sigma_i, site_j, sigma_j, file_name = "single_ex.def", ex_state=0, flg_complex = True):
         # c_{i sigma_i} or c_{i sigma_i} + i c_{j sigma_j}
         nsingle = 2 
@@ -137,8 +137,6 @@ class CalcSpectrum:
                 else:
                     fw.write("{} {} {} 1.0 0.0\n".format(site_i, sigma_i, ex_state))
                     fw.write("{} {} {} 1.0 0.0\n".format(site_j, sigma_j, ex_state))
-        
-
 
     def _run_HPhi(self, exct_cut):
         for idx in range(exct_cut):
@@ -146,7 +144,7 @@ class CalcSpectrum:
             input_path = "namelist_ex_{}.def".format(idx)
             cmd = "{} -e {} > std_{}.out".format(self.path_to_HPhi, input_path, idx)
             subprocess.call(cmd, shell=True)
-            cmd = "mv ./output/{}_DynamicalGreen.dat ./output/{}_DynamicalGreen_{}.dat".format(header, header, idx)
+            cmd = "mv ./output/{0}_DynamicalGreen.dat ./output/{0}_DynamicalGreen_{1}.dat".format(self.header, idx)
             subprocess.call(cmd, shell=True)
 
     def get_one_body_green(self, n_site, exct_cut):
@@ -162,7 +160,7 @@ class CalcSpectrum:
             #Run HPhi
             self._run_HPhi(exct_cut)
             #Get Finite-T Green
-            frequencies, finite_spectrum_list = calcspectrum.get_finite_T_spectrum()
+            frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
             for T in self.T_list:
                 one_body_green[T][sitei][sigmai][sitei][sigmai] = finite_spectrum_list[T]
                 
@@ -187,7 +185,7 @@ class CalcSpectrum:
                     #Run HPhi
                     self._run_HPhi(exct_cut)
                     #Get Finite-T Green
-                    frequencies, finite_spectrum_list = calcspectrum.get_finite_T_spectrum()
+                    frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
                     for T in self.T_list:
                         one_body_green_tmp[idx][T] = finite_spectrum_list[T] - one_body_green[T][sitei][sigmai][sitei][sigmai]-one_body_green[T][sitej][sigmaj][sitej][sigmaj]
                 #Get Offdiagonal Green
@@ -195,16 +193,3 @@ class CalcSpectrum:
                     one_body_green[T][sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0][T] + 1J * one_body_green_tmp[1][T] )/2.0
                     one_body_green[T][sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[0][T] - 1J * one_body_green_tmp[1][T] )/2.0
         return one_body_green
-
-output_dir = "./output"
-filename = "TEST"
-header = "zvo"
-T_list = [0.01]
-exct = 2
-eta = 1e-4
-
-print("Check Energy")
-calcspectrum=CalcSpectrum(filename, T_list, exct, eta, "./HPhi", header)
-energy_list = calcspectrum.get_energies()
-one_body_g = calcspectrum.get_one_body_green(n_site=2, exct_cut = exct)
-print(one_body_g)

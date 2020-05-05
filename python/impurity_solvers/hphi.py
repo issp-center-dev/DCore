@@ -28,7 +28,8 @@ from pytriqs.operators import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
 from .base import SolverBase
-
+from .hphi_spectrum import CalcSpectrum
+from .pomerol import assign_from_numpy_array, set_tail
 
 
 class HPhiSolver(SolverBase):
@@ -61,6 +62,10 @@ class HPhiSolver(SolverBase):
         #   self.use_spin_orbit
 
         exec_path = os.path.expandvars(params_kw['exec_path'])
+
+        # Matsubara frequencies
+        omega_min = numpy.pi / self.beta  # n=0
+        omega_max = (2*self.n_iw - 1) * numpy.pi / self.beta  # n=n_iw-1
 
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
@@ -103,11 +108,11 @@ LanczosTarget  2
 LargeValue     4.000000000000000e+00
 NumAve         5
 ExpecInterval  20
-NOmega         200
-OmegaMax       1.200000000000000e+01     4.000000000000000e-02
-OmegaMin       -1.200000000000000e+01    4.000000000000000e-02
-OmegaOrg       0.000000000000000e+00     0.000000000000000e+00
-""".format(n_site, exct), end="", file=f)
+NOmega         {2}
+OmegaMax       0.0     {3}
+OmegaMin       0.0     {4}
+OmegaOrg       0.0     0.0
+""".format(n_site, exct, self.n_iw, omega_min, omega_max), end="", file=f)
 
         # Output calcmod.def
         with open('./calcmod.def', 'w') as f:
@@ -252,9 +257,48 @@ NInterAll      {0}
         with open('./stdout.log', 'w') as output_f:
             launch_mpi_subprocesses(mpirun_command, [exec_path, '-e', 'namelist.def'], output_f)
 
+        #
+        # output_dir = "./output"
+        prefix = "TEST"
+        header = "zvo"
+        T_list = [1./self.beta]
+        # exct = 2
+        eta = 1e-4
+
+        print("Check Energy")
+        calcspectrum = CalcSpectrum(prefix, T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
+        energy_list = calcspectrum.get_energies()
+        one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
+
+        # print(len(energy_list))
+        # print(energy_list)
+
+        # print(one_body_g)
+        gf = one_body_g[T_list[0]]
+
         # (3) Copy results into
         #   self._Sigma_iw
         #   self._Gimp_iw
+
+        # Change data structure of gf from [o1, s1, o2, s2, iw]
+        print(gf.shape)
+        assert gf.shape == (self.n_orb, 2, self.n_orb, 2, self.n_iw)
+        if self.use_spin_orbit:
+            # to [1, (o1,s1), (o2,s2), iw]
+            gf = gf.reshape((1, 2*norb, 2*norb, self.n_iw))
+            assert gf.shape == (1, 2*self.n_orb, 2*self.n_orb, self.n_iw)
+        else:
+            # to [s, o1, o2, iw]
+            gf = numpy.einsum("isjsw->sijw", gf)
+            assert gf.shape == (2, self.n_orb, self.n_orb, self.n_iw)
+        print(gf.shape)
+
+        assign_from_numpy_array(self._Gimp_iw, gf, self.block_names)
+
+        if triqs_major_version == 1:
+            set_tail(self._Gimp_iw)
+
+
 
     def name(self):
         return "HPhi"
