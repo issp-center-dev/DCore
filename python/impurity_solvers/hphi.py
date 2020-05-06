@@ -78,6 +78,11 @@ class HPhiSolver(SolverBase):
 
         n_site = self.n_orb + n_bath
 
+        exct_max = 4**n_site
+        if exct > exct_max:
+            print("Warning: exct={0} is larger than {1}. exct is set to {1}".format(exct, exct_max))
+            exct = exct_max
+
         # Output namelist.def
         with open('./namelist.def', 'w') as f:
             print("""\
@@ -112,7 +117,7 @@ NOmega         {2}
 OmegaMax       0.0     {3}
 OmegaMin       0.0     {4}
 OmegaOrg       0.0     0.0
-""".format(n_site, exct, self.n_iw, omega_min, omega_max), end="", file=f)
+""".format(n_site, exct, self.n_iw, omega_max, omega_min), end="", file=f)
 
         # Output calcmod.def
         with open('./calcmod.def', 'w') as f:
@@ -284,8 +289,8 @@ NInterAll      {0}
         print(gf.shape)
         assert gf.shape == (self.n_orb, 2, self.n_orb, 2, self.n_iw)
         if self.use_spin_orbit:
-            # to [1, (o1,s1), (o2,s2), iw]
-            gf = gf.reshape((1, 2*norb, 2*norb, self.n_iw))
+            # to [1, (s1,o1), (s2,o2), iw]
+            gf = gf.transpose((1, 0, 3, 2, 4)).reshape((1, 2*norb, 2*norb, self.n_iw))
             assert gf.shape == (1, 2*self.n_orb, 2*self.n_orb, self.n_iw)
         else:
             # to [s, o1, o2, iw]
