@@ -280,20 +280,20 @@ NInterAll      {0}
 
         # print(one_body_g)
         gf = one_body_g[T_list[0]]
+        print(gf.shape)
+        assert gf.shape == (self.n_orb, 2, self.n_orb, 2, self.n_iw)
 
         # (3) Copy results into
         #   self._Sigma_iw
         #   self._Gimp_iw
 
-        # Change data structure of gf from [o1, s1, o2, s2, iw]
-        print(gf.shape)
-        assert gf.shape == (self.n_orb, 2, self.n_orb, 2, self.n_iw)
+        # Change data structure of gf from [o1, s1, o2, s2, iw] to ...
         if self.use_spin_orbit:
-            # to [1, (s1,o1), (s2,o2), iw]
-            gf = gf.transpose((1, 0, 3, 2, 4)).reshape((1, 2*norb, 2*norb, self.n_iw))
+            # [1, (s1,o1), (s2,o2), iw]
+            gf = gf.transpose((1, 0, 3, 2, 4)).reshape((1, 2*self.n_orb, 2*self.n_orb, self.n_iw))
             assert gf.shape == (1, 2*self.n_orb, 2*self.n_orb, self.n_iw)
         else:
-            # to [s, o1, o2, iw]
+            # [s, o1, o2, iw]
             gf = numpy.einsum("isjsw->sijw", gf)
             assert gf.shape == (2, self.n_orb, self.n_orb, self.n_iw)
         print(gf.shape)
@@ -303,7 +303,39 @@ NInterAll      {0}
         if triqs_major_version == 1:
             set_tail(self._Gimp_iw)
 
+        if self.use_spin_orbit:
+            print("Sigma is not implemented for SOC")
+            raise NotImplementedError
 
+        # Make H0 matrix
+        h0_full = numpy.zeros((2, n_site, 2, n_site), dtype=complex)
+        for t in transfer:
+            h0_full[t.s1, t.i1, t.s2, t.i2] = t.t
+        h0_full = h0_full.reshape((2*n_site, 2*n_site))
+
+        # TODO: move into a function -- begin
+        # Cut H0 into block structure
+        n_block = len(self.gf_struct)
+        n_inner = h0_full.shape[0] / n_block
+        h0_block = [h0_full[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
+
+        # Construct G0 including bath sites
+        bath_names = ["bath" + str(i_bath) for i_bath in range(n_bath)]
+        gf_struct_full = {block: list(inner_names) + bath_names for block, inner_names in self.gf_struct.items()}
+        g0_full = make_block_gf(GfImFreq, gf_struct_full, self.beta, self.n_iw)
+        g0_full << iOmega_n
+        for i, block in enumerate(self.block_names):
+            g0_full[block] -= h0_block[i]
+        g0_full.invert()
+
+        # Project G0 onto impurity site
+        g0_imp = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
+        for block in self.block_names:
+            for o1, o2 in product(self.gf_struct[block], repeat=2):
+                g0_imp[block][o1, o2] << g0_full[block][o1, o2]
+        # TODO: move into a function -- end
+
+        self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)
 
     def name(self):
         return "HPhi"
