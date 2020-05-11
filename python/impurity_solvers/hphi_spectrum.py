@@ -37,7 +37,7 @@ class CalcSpectrum:
                         continue
                     if words[0] == "SingleExcitation":
                         continue
-                    if words[0] == "PairExciation":
+                    if words[0] == "PairExcitation":
                         continue
                     fex.write(line)
 
