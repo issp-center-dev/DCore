@@ -98,7 +98,7 @@ class AkwGrd(object):
 
         return avec, angle
 
-    def write_grd(self, fileout, omega):
+    def _write_grd(self, fileout, omega):
 
         # A[kx, ky, kz]
         ak = self._interpolate_omega(omega)
@@ -123,6 +123,12 @@ class AkwGrd(object):
             for val in ak.reshape(-1):
                 print(val, file=fout)
         print("done")
+
+    def write_3d_data(self, fileout, omega, format):
+        if format == 'grd':
+            self._write_grd(fileout, omega)
+        else:
+            raise ValueError("format='{}' is not supported".format(format))
 
 
 if __name__ == '__main__':
@@ -159,6 +165,5 @@ if __name__ == '__main__':
 
     akw = AkwGrd(args.path_input_file, interp=args.interp)
 
-    if args.format == 'grd':
-        # save 3D data in GRD format
-        akw.write_grd(args.path_output_file, args.omega)
+    # save 3D data
+    akw.write_3d_data(args.path_output_file, args.omega, format=args.format)
