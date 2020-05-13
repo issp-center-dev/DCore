@@ -13,7 +13,9 @@ import scipy.interpolate as interp
 
 class AkwGrd(object):
 
-    def __init__(self, filein, shift_origin=False):
+    def __init__(self, filein, interp='linear'):
+
+        self.interp = interp
 
         print("\nReading '{}'...".format(filein))
         with open(filein, 'r') as fin:
@@ -34,11 +36,11 @@ class AkwGrd(object):
         # read mesh data
         self.data = np.loadtxt(args.path_input_file).reshape((self.N_kx, self.N_ky, self.N_kz, self.N_omega, 5))
 
-        if shift_origin:
-            def shift(nx):
-                # Return the list [N/2, N/2+1, ..., N-1, 0, 1, ..., N/2-1]
-                return np.roll(range(nx), nx // 2)
-            self.data = self.data[shift(self.N_kx), :, :, :, :][:, shift(self.N_ky), :, :, :][:, :, shift(self.N_kz), :, :]
+        # if shift_origin:
+        #     def shift(nx):
+        #         # Return the list [N/2, N/2+1, ..., N-1, 0, 1, ..., N/2-1]
+        #         return np.roll(range(nx), nx // 2)
+        #     self.data = self.data[shift(self.N_kx), :, :, :, :][:, shift(self.N_ky), :, :, :][:, :, shift(self.N_kz), :, :]
 
     def _interpolate_omega(self, omega):
         """
@@ -67,7 +69,7 @@ class AkwGrd(object):
         # interpolate
         print("\nInterpolating...")
         for k in range(self.N_k):
-            f = interp.interp1d(omega_mesh, akw[k, :], kind='cubic')
+            f = interp.interp1d(omega_mesh, akw[k, :], kind=self.interp)
             ak[k] = f(omega)
         print("done")
 
@@ -144,13 +146,18 @@ if __name__ == '__main__':
                         default='grd',
                         choices=['grd',],
                         help="data format")
+    parser.add_argument('--interp',
+                        type=str,
+                        default='linear',
+                        help="Specifies the kind of interpolation for omega. See for details https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html")
     # parser.add_argument('--kz', type=int, default=None, help='wave vector along the z-direction')
     args = parser.parse_args()
 
     print("omega = {}".format(args.omega))
     print("format = {}".format(args.format))
+    print("interp = {}".format(args.interp))
 
-    akw = AkwGrd(args.path_input_file)
+    akw = AkwGrd(args.path_input_file, interp=args.interp)
 
     if args.format == 'grd':
         # save 3D data in GRD format
