@@ -15,7 +15,7 @@ class AkwGrd(object):
 
     def __init__(self, filein, shift_origin=False):
 
-        print("Reading {}...".format(filein))
+        print("\nReading '{}'...".format(filein))
         with open(filein, 'r') as fin:
             l = fin.readline()
             self.N_kx, self.N_ky, self.N_kz, self.N_omega = map(int, l.replace('#', '').split())
@@ -65,7 +65,7 @@ class AkwGrd(object):
         ak = np.empty(self.N_k, dtype=float)
 
         # interpolate
-        print("Interpolating...")
+        print("\nInterpolating...")
         for k in range(self.N_k):
             f = interp.interp1d(omega_mesh, akw[k, :], kind='cubic')
             ak[k] = f(omega)
@@ -105,7 +105,7 @@ class AkwGrd(object):
         avec, angles = self._lattice_info()
 
         # save in a file with GRD format
-        print("Saving data in GRD format...")
+        print("\nSaving data into '{}' in GRD format...".format(fileout))
         with open(fileout, 'w') as fout:
             # self._write_header(fout)
 
@@ -122,33 +122,6 @@ class AkwGrd(object):
                 print(val, file=fout)
         print("done")
 
-    def write_fix_kz(self, fileout, omega, kz):
-
-        # A[kx, ky, kz]
-        ak = self._interpolate_omega(omega)
-
-        # kx[kx, ky, kz]
-        # ky[kx, ky, kz]
-        kx_mesh = self.data[:, :, :, 0, 0]
-        ky_mesh = self.data[:, :, :, 0, 1]
-
-        kz_mesh = self.data[0, 0, :, 0, 2]
-        kz_index = kz
-
-        ak = ak[:, :, kz_index]
-        kx_mesh = kx_mesh[:, :, kz_index]
-        ky_mesh = ky_mesh[:, :, kz_index]
-
-        # save 2D data in a file
-        print("Saving 2D data...")
-        with open(fileout, 'w') as fout:
-            for i in range(ak.shape[0]):
-                for j in range(ak.shape[1]):
-                    print("{} {} {}".format(kx_mesh[i, j], ky_mesh[i, j], ak[i, j]), file=fout)
-                print("", file=fout)
-            print("", file=fout)
-        print("done")
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -157,24 +130,28 @@ if __name__ == '__main__':
                         default=None,
                         type=str,
                         help="input file name.")
-
     parser.add_argument('path_output_file',
                         action='store',
                         default=None,
                         type=str,
                         help="output file name.")
-    parser.add_argument('--omega', required=True, help='real_frequency')
-    parser.add_argument('--kz', type=int, default=None, help='wave vector along the z-direction')
+    parser.add_argument('--omega',
+                        required=True,
+                        type=float,
+                        help='Real frequency')
+    parser.add_argument('--format', '-f',
+                        type=str,
+                        default='grd',
+                        choices=['grd',],
+                        help="data format")
+    # parser.add_argument('--kz', type=int, default=None, help='wave vector along the z-direction')
     args = parser.parse_args()
 
-    fomega = float(args.omega)
+    print("omega = {}".format(args.omega))
+    print("format = {}".format(args.format))
 
     akw = AkwGrd(args.path_input_file)
 
-    if args.kz is None:
+    if args.format == 'grd':
         # save 3D data in GRD format
-        akw.write_grd(args.path_output_file, fomega)
-    else:
-        # save 2D data in gnuplot format
-        Nkz_new = int(args.kz)
-        akw.write_fix_kz(args.path_output_file, fomega, args.kz)
+        akw.write_grd(args.path_output_file, args.omega)
