@@ -68,12 +68,6 @@ print(" ", file=fout)
 # read mesh data
 data = np.loadtxt(args.path_input_file).reshape((N_kx, N_ky, N_kz, N_omega, 5))
 
-# Change the range of k from [0:2*pi] to [-pi:pi]
-def shift(nx):
-    # Return the list [N/2, N/2+1, ..., N-1, 0, 1, ..., N/2-1]
-    return np.roll(range(nx), nx // 2)
-data = data[shift(N_kx), :, :, :, :][:, shift(N_ky), :, :, :][:, :, shift(N_kz), :, :]
-
 if args.omega:
     print(N_kx, N_ky, N_kz, file=fout)
     omega_mesh = data[0, 0, 0, :, 3]
