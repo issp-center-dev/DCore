@@ -34,6 +34,7 @@ from .tools import launch_mpi_subprocesses, save_Sigma_w_sh_txt
 import impurity_solvers
 from . import sumkdft
 from lattice_models import create_lattice_model
+from lattice_models.tools import set_nk
 
 
 class DMFTPostSolver(DMFTCoreSolver):
@@ -483,19 +484,19 @@ def dcore_post(filename, np=1, prefix="./"):
     #
     # Generate k mesh and compute H(k) on the mesh
     #
-    nk_mesh = p["tool"]["nk_mesh"]
+    nk_div = set_nk(p["tool"]["nk_mesh"], p["tool"]["nk0_mesh"], p["tool"]["nk1_mesh"], p["tool"]["nk2_mesh"])
     kvec_mesh = None
-    if nk_mesh > 0:
+    if all(div != 0 for div in nk_div):
         print("\n################  Constructing H(k) for compute A(k, omega) on a mesh  ##################")
-        kx = numpy.linspace(0, 2*numpy.pi, nk_mesh+1)[:-1]
-        kvec_mesh = numpy.array([kxyz for kxyz in product(kx, repeat=3)])
+        k = [numpy.linspace(0, 2*numpy.pi, div+1)[:-1] for div in nk_div]
+        kvec_mesh = numpy.array([kxyz for kxyz in product(k[0], k[1], k[2])])
         lattice_model.write_dft_band_input_data(p, kvec_mesh, bands_data='dft_bands_mesh_input')
 
     #
     # Coompute DOS and A(k,w)
     #
     print("\n#############   Run DMFTCoreTools  ########################\n")
-    dct = DMFTCoreTools(seedname, p, n_k, xk, [nk_mesh]*3, kvec_mesh, prefix)
+    dct = DMFTCoreTools(seedname, p, n_k, xk, nk_div, kvec_mesh, prefix)
     dct.post()
     dct.momentum_distribution()
 

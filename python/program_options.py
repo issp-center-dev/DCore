@@ -110,7 +110,10 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "n_pade_max", int, -1, "Maximum number of Matsubara frequencies used for Pade approximation. If negative, this will be replaced with n_iw in [system] block.")
 
     parser.add_option("tool", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
-    parser.add_option("tool", "nk_mesh", int, 0, "Number of k points along each axis of a mesh for compute A(k,omega)")
+    parser.add_option("tool", "nk_mesh", int, 0, "Number of k points along each axis for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("tool", "nk0_mesh", int, 0, "Number of k points along b_0 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("tool", "nk1_mesh", int, 0, "Number of k points along b_1 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("tool", "nk2_mesh", int, 0, "Number of k points along b_2 for computation of A(k,omega) on a 3D mesh")
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")
