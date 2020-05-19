@@ -7,7 +7,7 @@ from ..tools import launch_mpi_subprocesses
 
 
 class CalcSpectrum:
-    def __init__(self, filename, T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
+    def __init__(self, filename, T_list, exct, eta, mpirun_command="", path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
         self.filename = filename
         self.T_list = T_list
         self.exct = exct
@@ -16,6 +16,7 @@ class CalcSpectrum:
         self.output_dir = output_dir
         self.nomega = 0
         self.path_to_HPhi = path_to_HPhi
+        self.mpirun_command = mpirun_command
 
     def Make_Spectrum_Input(self, spectrum_type="single"):
         for idx in range(self.exct):
@@ -146,7 +147,7 @@ class CalcSpectrum:
             input_path = "namelist_ex_{}.def".format(idx)
             exec_path = self.path_to_HPhi
             with open('./stdout_{}.log'.format(idx), 'w') as output_f:
-                launch_mpi_subprocesses(mpirun_command, [exec_path, '-e', input_path], output_f)
+                launch_mpi_subprocesses(self.mpirun_command, [exec_path, '-e', input_path], output_f)
             cmd = "mv ./output/{0}_DynamicalGreen.dat ./output/{0}_DynamicalGreen_{1}.dat".format(self.header, idx)
             subprocess.call(cmd, shell=True)
 

@@ -271,7 +271,7 @@ NInterAll      {0}
         eta = 1e-4
 
         print("Check Energy")
-        calcspectrum = CalcSpectrum(prefix, T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
+        calcspectrum = CalcSpectrum(prefix, T_list, mpirun_command, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
         energy_list = calcspectrum.get_energies()
         one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
 
