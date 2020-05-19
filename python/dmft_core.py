@@ -723,6 +723,11 @@ class DMFTCoreSolver(object):
 
             new_Sigma_iw, new_Gimp_iw = self.solve_impurity_models(Gloc_iw_sh, iteration_number)
 
+            numpy.savetxt("test_gimp_up.dat", new_Gimp_iw[0]['up'].data[self._n_iw:,0,0].view(float).reshape(-1,2))
+            numpy.savetxt("test_gimp_dn.dat", new_Gimp_iw[0]['down'].data[self._n_iw:,0,0].view(float).reshape(-1,2))
+            numpy.savetxt("test_sigma_up.dat", new_Sigma_iw[0]['up'].data[self._n_iw:,0,0].view(float).reshape(-1,2))
+            numpy.savetxt("test_sigma_dn.dat", new_Sigma_iw[0]['down'].data[self._n_iw:,0,0].view(float).reshape(-1,2))
+
             print("\nWall Time : %.1f sec" % (time.time() - t0))
             sys.stdout.flush()
 
