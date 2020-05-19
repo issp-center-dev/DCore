@@ -3,6 +3,8 @@ import itertools
 import numpy as np
 import os
 import sys
+from ..tools import launch_mpi_subprocesses
+
 
 class CalcSpectrum:
     def __init__(self, filename, T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
@@ -142,8 +144,9 @@ class CalcSpectrum:
         for idx in range(exct_cut):
             #print("Process: {}/{}".format(idx, exct_cut))
             input_path = "namelist_ex_{}.def".format(idx)
-            cmd = "{} -e {} > std_{}.out".format(self.path_to_HPhi, input_path, idx)
-            subprocess.call(cmd, shell=True)
+            exec_path = self.path_to_HPhi
+            with open('./stdout_{}.log'.format(idx), 'w') as output_f:
+                launch_mpi_subprocesses(mpirun_command, [exec_path, '-e', input_path], output_f)
             cmd = "mv ./output/{0}_DynamicalGreen.dat ./output/{0}_DynamicalGreen_{1}.dat".format(self.header, idx)
             subprocess.call(cmd, shell=True)
 
@@ -192,4 +195,11 @@ class CalcSpectrum:
                 for T in self.T_list:
                     one_body_green[T][sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0][T] + 1J * one_body_green_tmp[1][T] )/2.0
                     one_body_green[T][sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[0][T] - 1J * one_body_green_tmp[1][T] )/2.0
+
+        for key, greens in one_body_green[0].items():
+            for sitei, sigmai in itertools.product(range(n_site), range(2)):
+                for sitej, sigmaj in itertools.product(range(n_site), range(2)): 
+                    with open("green_{}{}{}{}_T{}.dat".format(sitei, sigmai, sitej, sigmaj, key), "w") as fw:
+                        for idx, value in enumerate(greens[sitei][sigmai][sitej][sigmaj]):
+                            fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
         return one_body_green
