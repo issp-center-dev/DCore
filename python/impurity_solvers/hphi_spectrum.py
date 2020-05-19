@@ -124,7 +124,6 @@ class CalcSpectrum:
         nsingle = 2 
         if (2 * site_i + sigma_i) == ( 2 * site_j + sigma_j):
             nsingle = 1
-            
         with open(file_name, "w") as fw:
             fw.write("===============================\n")
             fw.write("NSingle {}\n".format(nsingle)) 
@@ -160,13 +159,14 @@ class CalcSpectrum:
         print("Calculate Diagonal Green function")
         for sitei, sigmai in itertools.product(range(n_site), range(2)):
             print("G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitei, "u" if sigmai == 0 else "d"))
-            self._make_single_excitation(sitei, sigmai, sitei, sigmai)
-            #Run HPhi
-            self._run_HPhi(exct_cut)
-            #Get Finite-T Green
-            frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
-            for T in self.T_list:
-                one_body_green[T][sitei][sigmai][sitei][sigmai] = finite_spectrum_list[T]
+            for ex_state in range(2):
+                self._make_single_excitation(sitei, sigmai, sitei, sigmai, ex_state=ex_state)
+                #Run HPhi
+                self._run_HPhi(exct_cut)
+                #Get Finite-T Green
+                frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
+                for T in self.T_list:
+                    one_body_green[T][sitei][sigmai][sitei][sigmai] += finite_spectrum_list[T]
                 
         #off diagonal
         print("Calculate Off-Diagonal Green function")
@@ -183,24 +183,20 @@ class CalcSpectrum:
                 if sitei_idx >= sitej_idx:
                     continue
                 print("G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitej, "u" if sigmaj == 0 else "d"))
-                #True c_i + c_j, False: c_i + i c_j
-                for idx, flg in enumerate([True, False]):
-                    self._make_single_excitation(sitei, sigmai, sitej, sigmaj, flg_complex=flg)
-                    #Run HPhi
-                    self._run_HPhi(exct_cut)
-                    #Get Finite-T Green
-                    frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
-                    for T in self.T_list:
-                        one_body_green_tmp[idx][T] = finite_spectrum_list[T] - one_body_green[T][sitei][sigmai][sitei][sigmai]-one_body_green[T][sitej][sigmaj][sitej][sigmaj]
+                for ex_state in range(2):
+                    #True c_i + c_j, False: c_i + i c_j
+                    for idx, flg in enumerate([True, False]):
+                        self._make_single_excitation(sitei, sigmai, sitej, sigmaj, ex_state=ex_state, flg_complex=flg)
+                        #Run HPhi
+                        self._run_HPhi(exct_cut)
+                        #Get Finite-T Green
+                        frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
+                        for T in self.T_list:
+                            one_body_green_tmp[idx][T] += finite_spectrum_list[T]
+                for T in self.T_list:
+                    one_body_green_tmp[idx][T] -= one_body_green[T][sitei][sigmai][sitei][sigmai]+one_body_green[T][sitej][sigmaj][sitej][sigmaj]
                 #Get Offdiagonal Green
                 for T in self.T_list:
                     one_body_green[T][sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0][T] + 1J * one_body_green_tmp[1][T] )/2.0
                     one_body_green[T][sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[0][T] - 1J * one_body_green_tmp[1][T] )/2.0
-
-        for key, greens in one_body_green[0].items():
-            for sitei, sigmai in itertools.product(range(n_site), range(2)):
-                for sitej, sigmaj in itertools.product(range(n_site), range(2)): 
-                    with open("green_{}{}{}{}_T{}.dat".format(sitei, sigmai, sitej, sigmaj, key), "w") as fw:
-                        for idx, value in enumerate(greens[sitei][sigmai][sitej][sigmaj]):
-                            fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
         return one_body_green
