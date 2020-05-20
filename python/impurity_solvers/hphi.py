@@ -60,8 +60,8 @@ LargeValue     4.000000000000000e+00
 NumAve         5
 ExpecInterval  20
 NOmega         {2}
-OmegaMax       2.5     {3}
-OmegaMin       2.5     {4}
+OmegaMax       0.0     {3}
+OmegaMin       0.0     {4}
 OmegaOrg       0.0     0.0
 """
 
