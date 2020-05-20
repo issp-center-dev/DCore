@@ -32,6 +32,86 @@ from .hphi_spectrum import CalcSpectrum
 from .pomerol import assign_from_numpy_array, set_tail
 
 
+namelist_def = """\
+ModPara  modpara.def
+CalcMod  calcmod.def
+LocSpin  locspn.def
+Trans  trans.def
+InterAll  interall.def
+"""
+
+
+modpara_def = """\
+--------------------
+Model_Parameters   0
+--------------------
+HPhi_Cal_Parameters
+--------------------
+CDataFileHead  zvo
+CParaFileHead  zqp
+--------------------
+Nsite          {0}
+Lanczos_max    2000
+initial_iv     -1
+exct           {1}
+LanczosEps     14
+LanczosTarget  2
+LargeValue     4.000000000000000e+00
+NumAve         5
+ExpecInterval  20
+NOmega         {2}
+OmegaMax       2.5     {3}
+OmegaMin       2.5     {4}
+OmegaOrg       0.0     0.0
+"""
+
+
+calcmod_def = """\
+#CalcType = 0:Lanczos, 1:TPQCalc, 2:FullDiag, 3:CG, 4:Time-evolution
+#CalcModel = 0:Hubbard, 1:Spin, 2:Kondo, 3:HubbardGC, 4:SpinGC, 5:KondoGC
+#Restart = 0:None, 1:Save, 2:Restart&Save, 3:Restart
+#CalcSpec = 0:None, 1:Normal, 2:No H*Phi, 3:Save, 4:Restart, 5:Restart&Save
+CalcType   3
+CalcModel   3
+ReStart   0
+CalcSpec   0
+CalcEigenVec   0
+InitialVecType   0
+InputEigenVec   0
+OutputEigenVec   1
+InputHam   0
+OutputHam   0
+OutputExVec   0
+"""
+
+
+locspn_def = """\
+================================
+NlocalSpin     0
+================================
+========i_0LocSpn_1IteElc ======
+================================
+"""
+
+
+trans_def = """\
+========================
+NTransfer      {0}
+========================
+========i_j_s_tijs======
+========================
+"""
+
+
+interall_def = """\
+======================
+NInterAll      {0}
+======================
+========zInterAll=====
+======================
+"""
+
+
 class HPhiSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
@@ -85,69 +165,19 @@ class HPhiSolver(SolverBase):
 
         # Output namelist.def
         with open('./namelist.def', 'w') as f:
-            print("""\
-ModPara  modpara.def
-CalcMod  calcmod.def
-LocSpin  locspn.def
-Trans  trans.def
-InterAll  interall.def
-""", end="", file=f)
+            print(namelist_def, end="", file=f)
 
         # Output modpara.def
         with open('./modpara.def', 'w') as f:
-            print("""\
---------------------
-Model_Parameters   0
---------------------
-HPhi_Cal_Parameters
---------------------
-CDataFileHead  zvo
-CParaFileHead  zqp
---------------------
-Nsite          {0}
-Lanczos_max    2000
-initial_iv     -1
-exct           {1}
-LanczosEps     14
-LanczosTarget  2
-LargeValue     4.000000000000000e+00
-NumAve         5
-ExpecInterval  20
-NOmega         {2}
-OmegaMax       0.0     {3}
-OmegaMin       0.0     {4}
-OmegaOrg       0.0     0.0
-""".format(n_site, exct, self.n_iw, omega_max, omega_min), end="", file=f)
+            print(modpara_def.format(n_site, exct, self.n_iw, omega_max, omega_min), end="", file=f)
 
         # Output calcmod.def
         with open('./calcmod.def', 'w') as f:
-            print("""\
-#CalcType = 0:Lanczos, 1:TPQCalc, 2:FullDiag, 3:CG, 4:Time-evolution
-#CalcModel = 0:Hubbard, 1:Spin, 2:Kondo, 3:HubbardGC, 4:SpinGC, 5:KondoGC
-#Restart = 0:None, 1:Save, 2:Restart&Save, 3:Restart
-#CalcSpec = 0:None, 1:Normal, 2:No H*Phi, 3:Save, 4:Restart, 5:Restart&Save
-CalcType   3
-CalcModel   3
-ReStart   0
-CalcSpec   0
-CalcEigenVec   0
-InitialVecType   0
-InputEigenVec   0
-OutputEigenVec   1
-InputHam   0
-OutputHam   0
-OutputExVec   0
-""", end="", file=f)
+            print(calcmod_def, end="", file=f)
 
         # Output locspn.def
         with open('./locspn.def', 'w') as f:
-            print("""\
-================================
-NlocalSpin     0
-================================
-========i_0LocSpn_1IteElc ======
-================================
-""", end="", file=f)
+            print(locspn_def, end="", file=f)
 
             for i in range(n_site):
                 print("{0} 0".format(i), file=f)
@@ -211,13 +241,7 @@ NlocalSpin     0
 
         # Output trans.def
         with open('./trans.def', 'w') as f:
-            print("""\
-========================
-NTransfer      {0}
-========================
-========i_j_s_tijs======
-========================
-""".format(len(transfer)), end="", file=f)
+            print(trans_def.format(len(transfer)), end="", file=f)
 
             for t in transfer:
                 print(t.i1, t.s1, t.i2, t.s2, t.t.real, t.t.imag, file=f)
@@ -247,13 +271,7 @@ NTransfer      {0}
 
         # Output interall.def
         with open('./interall.def', 'w') as f:
-            print("""\
-======================
-NInterAll      {0}
-======================
-========zInterAll=====
-======================
-""".format(len(interall)), end="", file=f)
+            print(interall_def.format(len(interall)), end="", file=f)
 
             for u in interall:
                 print(u.i1, u.s1, u.i2, u.s2, u.i3, u.s3, u.i4, u.s4, u.U.real, u.U.imag, file=f)
