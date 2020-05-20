@@ -36,7 +36,7 @@ class CalcSpectrum:
                     words = line.split()
                     if len(words) == 0:
                         continue
-                    if words[0] == "CalcMod" or words[0] == "SpectrumVec":
+                    if words[0] in ["CalcMod", "SpectrumVec", "ModPara"]:
                         continue
                     if words[0] == "SingleExcitation":
                         continue
@@ -44,6 +44,7 @@ class CalcSpectrum:
                         continue
                     fex.write(line)
 
+                fex.write("ModPara modpara_ex.def\n")
                 fex.write("CalcMod calcmod_ex.def\n")
                 fex.write("SpectrumVec    {}_eigenvec_{}\n".format(self.header, idx))
                 if spectrum_type == "single":
@@ -119,6 +120,25 @@ class CalcSpectrum:
                 for idx, value in enumerate(spectrum):
                     fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
 
+    def _update_modpara(self, exct):
+        dict_mod={}
+        header = []
+        with open("modpara.def", "r") as fr:
+            lines = fr.readlines()
+            header = lines[:8]
+            for line in lines[8:]:
+                words = line.split()
+                dict_mod[words[0]] = words[1:]
+            dict_mod["OmegaOrg"] = [-self.energy_list[exct], 0]
+            with open("modpara_ex.def", "w") as fw:
+                for line in header:
+                    fw.write(line)
+                for key, value in dict_mod.items():
+                    if len(value) == 1:
+                        fw.write("{} {}\n".format(key, value[0]))
+                    else:
+                        fw.write("{} {} {}\n".format(key, value[0], value[1]))
+
     def _make_single_excitation(self, site_i, sigma_i, site_j, sigma_j, file_name = "single_ex.def", ex_state=0, flg_complex = True):
         # c_{i sigma_i} or c_{i sigma_i} + i c_{j sigma_j}
         nsingle = 2 
@@ -144,6 +164,7 @@ class CalcSpectrum:
     def _run_HPhi(self, exct_cut):
         for idx in range(exct_cut):
             #print("Process: {}/{}".format(idx, exct_cut))
+            self._update_modpara(idx)
             input_path = "namelist_ex_{}.def".format(idx)
             exec_path = self.path_to_HPhi
             with open('./stdout_{}.log'.format(idx), 'w') as output_f:
@@ -196,11 +217,4 @@ class CalcSpectrum:
                 for T in self.T_list:
                     one_body_green[T][sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0][T] + 1J * one_body_green_tmp[1][T] )/2.0
                     one_body_green[T][sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[0][T] - 1J * one_body_green_tmp[1][T] )/2.0
-
-        for key, greens in one_body_green[0].items():
-            for sitei, sigmai in itertools.product(range(n_site), range(2)):
-                for sitej, sigmaj in itertools.product(range(n_site), range(2)): 
-                    with open("green_{}{}{}{}_T{}.dat".format(sitei, sigmai, sitej, sigmaj, key), "w") as fw:
-                        for idx, value in enumerate(greens[sitei][sigmai][sitej][sigmaj]):
-                            fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
         return one_body_green
