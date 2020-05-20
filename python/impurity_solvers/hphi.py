@@ -21,6 +21,9 @@ import numpy
 from itertools import product
 import os
 from collections import namedtuple
+from warnings import warn
+import shlex
+import math
 
 from ..pytriqs_gf_compat import *
 # from pytriqs.archive import HDFArchive
@@ -143,6 +146,16 @@ class HPhiSolver(SolverBase):
 
         exec_path = os.path.expandvars(params_kw['exec_path'])
 
+        # The number of process (np) must be 4^m in HPhi
+        mpirun_command_power4 = mpirun_command
+        commands = shlex.split(mpirun_command)
+        np = int(commands[-1])
+        if not math.log(np, 4).is_integer():  # check if np = 4^m
+            np_new = 4**int(math.log(np, 4))
+            warn("np must be a power of 4 in HPhi. np is set to {}.".format(np_new))
+            commands[-1] = str(np_new)
+            mpirun_command_power4 = " ".join(commands)
+
         # Matsubara frequencies
         omega_min = numpy.pi / self.beta  # n=0
         omega_max = (2*self.n_iw - 1) * numpy.pi / self.beta  # n=n_iw-1
@@ -160,7 +173,7 @@ class HPhiSolver(SolverBase):
 
         exct_max = 4**n_site
         if exct > exct_max:
-            print("Warning: exct={0} is larger than {1}. exct is set to {1}".format(exct, exct_max))
+            warn("exct={0} is larger than {1}. exct is set to {1}".format(exct, exct_max))
             exct = exct_max
 
         # Output namelist.def
@@ -278,7 +291,7 @@ class HPhiSolver(SolverBase):
 
         # (2) Run a working horse
         with open('./stdout.log', 'w') as output_f:
-            launch_mpi_subprocesses(mpirun_command, [exec_path, '-e', 'namelist.def'], output_f)
+            launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f)
 
         #
         # output_dir = "./output"
@@ -289,7 +302,7 @@ class HPhiSolver(SolverBase):
         eta = 1e-4
 
         print("Check Energy")
-        calcspectrum = CalcSpectrum(prefix, T_list, mpirun_command=mpirun_command, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
+        calcspectrum = CalcSpectrum(prefix, T_list, mpirun_command=mpirun_command_power4, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
         energy_list = calcspectrum.get_energies()
         one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
 
