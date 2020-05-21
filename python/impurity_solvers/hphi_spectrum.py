@@ -62,7 +62,7 @@ class CalcSpectrum:
             print("Error: Please set NOmega in modpara file")
             sys.exit(1)
 
-    def read_spectrum(self):
+    def _read_spectrum(self):
         spectrum_dict={}
         frequencies =[]
         for idx in range(self.exct):
@@ -71,9 +71,9 @@ class CalcSpectrum:
             spectrum_dict[idx] = spectrum[:,2] + 1J*spectrum[:,3]
             if idx == 0 :
                 frequencies = spectrum[:, 0] + 1J*spectrum[:, 1]
-        self.spectrums_dict = spectrum_dict
-        self.frequencies = frequencies
-        return spectrum_dict
+        spectrums_dict = spectrum_dict
+        frequencies = frequencies
+        return frequencies, spectrum_dict
 
     def get_energies(self):
         energy_list = []
@@ -101,7 +101,7 @@ class CalcSpectrum:
         return Z
 
     def get_finite_T_spectrum(self):
-        self.read_spectrum()
+        frequencies, self.spectrums_dict = self._read_spectrum()
         finite_T_spectrum_dict ={}
         for T in self.T_list:
             Z = self._calc_Z(T)
@@ -111,7 +111,7 @@ class CalcSpectrum:
             spectrum /= Z
             finite_T_spectrum_dict[T]=spectrum
         self.finite_T_spectrum_dict = finite_T_spectrum_dict
-        return self.frequencies, finite_T_spectrum_dict
+        return frequencies, finite_T_spectrum_dict
 
     def print_finite_T_spectrum(self, file_name = "Dynamical_Green"):
         for key, spectrum in self.finite_T_spectrum_dict.items():
@@ -120,7 +120,7 @@ class CalcSpectrum:
                 for idx, value in enumerate(spectrum):
                     fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
 
-    def _update_modpara(self, exct):
+    def _update_modpara(self, exct, ex_state = 0):
         dict_mod={}
         header = []
         with open("modpara.def", "r") as fr:
@@ -129,7 +129,12 @@ class CalcSpectrum:
             for line in lines[8:]:
                 words = line.split()
                 dict_mod[words[0]] = words[1:]
-            dict_mod["OmegaOrg"] = [-self.energy_list[exct], 0]
+            dict_mod["OmegaOrg"] = [self.energy_list[exct], 0]
+            if ex_state == 0:
+                omega_max = dict_mod["OmegaMax"]
+                dict_mod["OmegaMax"] = [-1.0*float(omega_max[0]), -1.0*float(omega_max[1])] 
+                omega_min = dict_mod["OmegaMin"]
+                dict_mod["OmegaMin"] = [-1.0*float(omega_min[0]), -1.0*float(omega_min[1])]
             with open("modpara_ex.def", "w") as fw:
                 for line in header:
                     fw.write(line)
@@ -160,10 +165,10 @@ class CalcSpectrum:
                     fw.write("{} {} {} 1.0 0.0\n".format(site_i, sigma_i, ex_state))
                     fw.write("{} {} {} 1.0 0.0\n".format(site_j, sigma_j, ex_state))
 
-    def _run_HPhi(self, exct_cut):
+    def _run_HPhi(self, exct_cut, ex_state=0):
         for idx in range(exct_cut):
             #print("Process: {}/{}".format(idx, exct_cut))
-            self._update_modpara(idx)
+            self._update_modpara(idx, ex_state)
             input_path = "namelist_ex_{}.def".format(idx)
             exec_path = self.path_to_HPhi
             with open('./stdout_{}.log'.format(idx), 'w') as output_f:
@@ -183,15 +188,17 @@ class CalcSpectrum:
             for ex_state in range(2):
                 self._make_single_excitation(sitei, sigmai, sitei, sigmai, ex_state=ex_state)
                 #Run HPhi
-                self._run_HPhi(exct_cut)
+                self._run_HPhi(exct_cut, ex_state)
                 #Get Finite-T Green
-                frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
+                frequencies, finite_spectrum_list = calcspectrum.get_finite_T_spectrum()
+                if ex_state == 1:
+                    self.frequencies = frequencies
+                sign = 1.0 if ex_state ==1 else -1.0
                 for T in self.T_list:
-                    one_body_green[T][sitei][sigmai][sitei][sigmai] += finite_spectrum_list[T]
+                    one_body_green[T][sitei][sigmai][sitei][sigmai] += sign*finite_spectrum_list[T]
                 
         #off diagonal
         print("Calculate Off-Diagonal Green function")
-
         one_body_green_tmp = [{}, {}]
         for T in self.T_list:
             one_body_green_tmp[0][T] = np.zeros((self.nomega), dtype=np.complex)
@@ -209,11 +216,12 @@ class CalcSpectrum:
                     for idx, flg in enumerate([True, False]):
                         self._make_single_excitation(sitei, sigmai, sitej, sigmaj, ex_state=ex_state, flg_complex=flg)
                         #Run HPhi
-                        self._run_HPhi(exct_cut)
+                        self._run_HPhi(exct_cut, ex_state)
                         #Get Finite-T Green
                         frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
+                        sign = 1.0 if ex_state ==1 else -1.0
                         for T in self.T_list:
-                            one_body_green_tmp[idx][T] += finite_spectrum_list[T]
+                            one_body_green_tmp[idx][T] += sign*finite_spectrum_list[T]
                 for T in self.T_list:
                     one_body_green_tmp[idx][T] -= one_body_green[T][sitei][sigmai][sitei][sigmai]+one_body_green[T][sitej][sigmaj][sitej][sigmaj]
                 #Get Offdiagonal Green
