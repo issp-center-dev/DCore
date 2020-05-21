@@ -190,7 +190,7 @@ class CalcSpectrum:
                 #Run HPhi
                 self._run_HPhi(exct_cut, ex_state)
                 #Get Finite-T Green
-                frequencies, finite_spectrum_list = calcspectrum.get_finite_T_spectrum()
+                frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
                 if ex_state == 1:
                     self.frequencies = frequencies
                 sign = 1.0 if ex_state ==1 else -1.0
