@@ -71,7 +71,7 @@ class CalcSpectrum:
             spectrum_dict[idx] = spectrum[:,2] + 1J*spectrum[:,3]
             if idx == 0 :
                 frequencies = spectrum[:, 0] + 1J*spectrum[:, 1]
-        spectrums_dict = spectrum_dict
+        self.spectrums_dict = spectrum_dict
         frequencies = frequencies
         return frequencies, spectrum_dict
 
@@ -101,7 +101,7 @@ class CalcSpectrum:
         return Z
 
     def get_finite_T_spectrum(self):
-        frequencies, self.spectrums_dict = self._read_spectrum()
+        frequencies, spectrums_dict = self._read_spectrum()
         finite_T_spectrum_dict ={}
         for T in self.T_list:
             Z = self._calc_Z(T)
@@ -228,4 +228,11 @@ class CalcSpectrum:
                 for T in self.T_list:
                     one_body_green[T][sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0][T] + 1J * one_body_green_tmp[1][T] )/2.0
                     one_body_green[T][sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[0][T] - 1J * one_body_green_tmp[1][T] )/2.0
+
+            for key, greens in one_body_green.items():
+                for sitei, sigmai in itertools.product(range(n_site), range(2)):
+                    for sitej, sigmaj in itertools.product(range(n_site), range(2)):
+                        with open("green_{}{}{}{}_T{}.dat".format(sitei, sigmai, sitej, sigmaj, key), "w") as fw:
+                            for idx, value in enumerate(greens[sitei][sigmai][sitej][sigmaj]):
+                                fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
         return one_body_green
