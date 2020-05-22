@@ -149,12 +149,16 @@ class HPhiSolver(SolverBase):
         # The number of process (np) must be 4^m in HPhi
         mpirun_command_power4 = mpirun_command
         commands = shlex.split(mpirun_command)
-        np = int(commands[-1])
-        if not math.log(np, 4).is_integer():  # check if np = 4^m
-            np_new = 4**int(math.log(np, 4))
-            warn("np must be a power of 4 in HPhi. np is set to {}.".format(np_new))
-            commands[-1] = str(np_new)
-            mpirun_command_power4 = " ".join(commands)
+        try:
+            np = int(commands[-1])
+        except ValueError:
+            print("A check of np is skipped.")
+        else:
+            if not math.log(np, 4).is_integer():  # check if np = 4^m
+                np_new = 4**int(math.log(np, 4))
+                warn("np must be a power of 4 in HPhi. np is set to {}.".format(np_new))
+                commands[-1] = str(np_new)
+                mpirun_command_power4 = " ".join(commands)
 
         # Matsubara frequencies
         omega_min = numpy.pi / self.beta  # n=0
