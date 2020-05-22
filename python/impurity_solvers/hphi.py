@@ -341,7 +341,7 @@ class HPhiSolver(SolverBase):
         # Make H0 matrix
         h0_full = numpy.zeros((2, n_site, 2, n_site), dtype=complex)
         for t in transfer:
-            h0_full[t.s1, t.i1, t.s2, t.i2] = t.t
+            h0_full[t.s1, t.i1, t.s2, t.i2] = -t.t
         h0_full = h0_full.reshape((2*n_site, 2*n_site))
 
         # TODO: move into a function -- begin
