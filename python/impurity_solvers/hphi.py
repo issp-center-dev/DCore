@@ -160,9 +160,12 @@ class HPhiSolver(SolverBase):
                 commands[-1] = str(np_new)
                 mpirun_command_power4 = " ".join(commands)
 
-        # Matsubara frequencies
+        # Matsubara frequencies omega_n = (2*n+1)*pi*T
         omega_min = numpy.pi / self.beta  # n=0
-        omega_max = (2*self.n_iw - 1) * numpy.pi / self.beta  # n=n_iw-1
+        omega_max = (2*self.n_iw + 1) * numpy.pi / self.beta  # n=n_iw
+        # NOTE: omega_max is NOT included in the omega mesh.
+        #           omega_n = (omega_max - omega_min) / n_iw * n
+        #       for n=[0:n_iw)
 
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
