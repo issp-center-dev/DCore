@@ -21,6 +21,7 @@ import numpy
 
 from .dft_tools_compat import SumkDFTTools
 import pytriqs.utility.mpi as mpi
+from .pytriqs_gf_compat import *
 
 class SumkDFTDCorePost(SumkDFTTools):
     """
@@ -82,9 +83,8 @@ class SumkDFTDCorePost(SumkDFTTools):
 
         Parameters
         ----------
-        rot_mat : dict, optional
-             Keys are strings representing block names.
-             Values are 2D ndarrays representing the unitary matrix of a basis.
+        rot_mat : list of arrays, optional
+             List of complex 3D ndarrays (block, dim, dim)
         """
 
         if (mesh is None) and (not with_Sigma):
@@ -161,11 +161,14 @@ class SumkDFTDCorePost(SumkDFTTools):
 
         # ADDITION TO THE ORIGINAL FUNCTION
         #  Rotate basis
+        print("debug ", rot_mat)
         if rot_mat is not None:
             for icrsh in range(self.n_corr_shells):
+                ib = 0
                 for bname, gf in G_loc[icrsh]:
-                    G_loc[icrsh][bname] << 
-                        from_L_G_R(rot_mat[bname].transpose().conjugate(), G_loc[icrsh][bname], rot_mat[bname])
+                    U = rot_mat[self.corr_to_inequiv[icrsh]][ib,:,:]
+                    gf.from_L_G_R(U.transpose().conjugate(), gf, U)
+                    ib += 1
 
         # G_loc can now also be used to look at orbitally-resolved quantities
         for ish in range(self.n_inequiv_shells):

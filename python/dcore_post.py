@@ -56,11 +56,6 @@ class DMFTPostSolver(DMFTCoreSolver):
            Results are 'dos', 'dosproj', 'dosproj_orb'.
 
         """
-        dos_rot_mat = None
-        if self._params['tool']['pdos_basis'] != "None":
-            dos_rot_mat = set_potential(self._params['tool']['pdos_basis'],
-                                    self._n_inequiv_shells, self._dim_sh,
-                                    self._use_spin_orbit, check_unitary=True)
 
         params = self._make_sumkdft_params()
         params['calc_mode'] = 'dos'
@@ -68,7 +63,11 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['Sigma_w_sh'] = Sigma_w_sh
         params['mesh'] = mesh
         params['broadening'] = broadening
-        params['pdos_basis'] = dos_rot_mat
+        if self._params['tool']['pdos_basis'] != "None":
+            params['pdos_basis'] = set_potential(self._params['tool']['pdos_basis'],
+                                    'pdos_basis in tool block',
+                                    self._n_inequiv_shells, self._dim_sh,
+                                    self._use_spin_orbit, check_unitary=True)
         r = sumkdft.run(os.path.abspath(self._seedname+'.h5'),
                         './work/sumkdft_dos', self._mpirun_command, params)
         return r['dos'], r['dosproj'], r['dosproj_orb']
@@ -191,13 +190,13 @@ class DMFTCoreTools:
             ii = 1
             for isp in spin_block_names:
                 ii += 1
-                print("# [%d] Total DOS of spin %s" % (ii, isp), file=f)
+                print("# [%d] Total DOS of block %s" % (ii, isp), file=f)
             for ish in range(nsh):
                 block_dim = corr_shell_info[inequiv_to_corr[ish]]['block_dim']
                 for isp in spin_block_names:
                     for iorb in range(block_dim):
                         ii += 1
-                        print("# [%d] PDOS of shell%d,spin %s,band%d" % (ii, ish, isp, iorb), file=f)
+                        print("# [%d] PDOS of shell%d,block %s,orbital%d" % (ii, ish, isp, iorb), file=f)
             #
             for iom in range(self._Nomega):
                 print("%f" % om_mesh[iom], file=f, end="")

@@ -210,7 +210,7 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         from .sumkdft_post import SumkDFTDCorePost
         sk = SumkDFTDCorePost(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
         setup_sk(sk, 'w')
-        rot_mat = params['dos_rot_mat'] if 'dos_rot_mat' in params else None
+        rot_mat = params['pdos_basis'] if 'pdos_basis' in params else None
         results['dos'], results['dosproj'], results['dosproj_orb'] = \
             sk.pdos(broadening=params['broadening'],
                              mesh=params['mesh'],
