@@ -473,7 +473,23 @@ def read_potential(filename, mat):
         exit(1)
 
 
-def set_potential(input_str, name, n_inequiv_shells, dim_sh, spin_orbit):
+def is_unitary(mat):
+    # Return if mat is unitary
+    if mat.ndim != 2 or mat.shape[0] != mat.shape[1]:
+        return False
+    tmp = numpy.dot(mat.transpose().conjugate(), mat)
+
+    return numpy.allclose(tmp, numpy.identity(mat.shape[0]))
+
+def is_hermite(mat):
+    # Return if mat is hermite
+    if mat.ndim != 2 or mat.shape[0] != mat.shape[1]:
+        return False
+    return numpy.allclose(mat, numpy.conjugate(mat.transpose()))
+
+
+def set_potential(input_str, name, n_inequiv_shells, dim_sh, spin_orbit, check_hermite=False, check_unitary=False,
+        print_info=True):
     """
 
     Parameters
@@ -514,14 +530,21 @@ def set_potential(input_str, name, n_inequiv_shells, dim_sh, spin_orbit):
 
         for ish, file in files.items():
             read_potential(file, pot[ish])
+            for u in pot[ish]:
+                if check_unitary and not is_unitary(u):
+                    raise ValueError("Non unitary matrix!")
+                if check_hermite and not is_hermite(u):
+                    raise ValueError("Non hermite matrix!")
+
 
     # print potential
-    print("\n--- results for %s" % name)
-    for ish, pot_ish in enumerate(pot):
-        print("ish =", ish)
-        for sp in range(pot_ish.shape[0]):
-            print("sp =", sp)
-            print(pot_ish[sp])
+    if print_info:
+        print("\n--- results for %s" % name)
+        for ish, pot_ish in enumerate(pot):
+            print("ish =", ish)
+            for sp in range(pot_ish.shape[0]):
+                print("sp =", sp)
+                print(pot_ish[sp])
 
     return pot
 

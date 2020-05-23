@@ -29,7 +29,7 @@ from dmft_core import DMFTCoreSolver
 from sumkdft import SumkDFTCompat
 from program_options import create_parser, parse_parameters
 
-from .tools import launch_mpi_subprocesses
+from .tools import launch_mpi_subprocesses, set_potential
 import impurity_solvers
 from . import sumkdft
 from lattice_models import create_lattice_model
@@ -56,6 +56,11 @@ class DMFTPostSolver(DMFTCoreSolver):
            Results are 'dos', 'dosproj', 'dosproj_orb'.
 
         """
+        dos_rot_mat = None
+        if self._params['tool']['pdos_basis'] != "None":
+            dos_rot_mat = set_potential(self._params['tool']['pdos_basis'],
+                                    self._n_inequiv_shells, self._dim_sh,
+                                    self._use_spin_orbit, check_unitary=True)
 
         params = self._make_sumkdft_params()
         params['calc_mode'] = 'dos'
@@ -63,7 +68,9 @@ class DMFTPostSolver(DMFTCoreSolver):
         params['Sigma_w_sh'] = Sigma_w_sh
         params['mesh'] = mesh
         params['broadening'] = broadening
-        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos', self._mpirun_command, params)
+        params['pdos_basis'] = dos_rot_mat
+        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'),
+                        './work/sumkdft_dos', self._mpirun_command, params)
         return r['dos'], r['dosproj'], r['dosproj_orb']
 
     def calc_spaghettis(self, Sigma_w_sh, mesh, broadening):

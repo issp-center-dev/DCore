@@ -139,6 +139,29 @@ def test_symmetrization_Sigma_iw():
         for isp in range(2):
             numpy.testing.assert_allclose(data_symmetrized[:, isp, 0, isp, 0], data_symmetrized[:, isp, 1, isp, 1])
 
+def test_set_potential():
+    from dcore.tools import set_potential, is_unitary
+    from scipy.stats import unitary_group
+
+    n_inequiv_shells = 3
+    dim_sh = numpy.repeat(2, n_inequiv_shells)
+    spin_orbit = False
+    nb = 2
+
+    for ish in range(n_inequiv_shells):
+        with open('u{}.txt'.format(ish), 'w') as f:
+            for ib in range(nb):
+                U = unitary_group.rvs(dim_sh[ish])
+                assert is_unitary(U)
+                for i in range(dim_sh[ish]):
+                    for j in range(dim_sh[ish]):
+                        print(ib, i, j, U[i,j].real, U[i,j].imag, file=f)
+
+    pot = set_potential('{0: "u0.txt", 1: "u1.txt", 2: "u2.txt"}', 'dummy',
+                        n_inequiv_shells, dim_sh, spin_orbit, check_unitary=True)
+    print(pot)
+
 test_spin_moments_sh()
 test_save_load_Sigma_iw()
 test_symmetrization_Sigma_iw()
+test_set_potential()
