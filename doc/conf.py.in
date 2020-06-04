@@ -47,7 +47,7 @@ html_static_path = ['@CMAKE_SOURCE_DIR@/doc/_static']
 html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'searchbox.html']}
 
 #html_title = "DMFT software"
-html_logo = 'logo_dcore1.png'
+#html_logo = 'logo_dcore1.png'
 
 # no 'module' in the header
 html_domain_indices = False

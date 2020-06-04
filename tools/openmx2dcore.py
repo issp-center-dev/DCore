@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # DCore -- Integrated DMFT software for correlated electrons
 # Copyright (C) 2017 The University of Tokyo
