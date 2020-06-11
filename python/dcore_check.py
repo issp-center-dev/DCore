@@ -21,6 +21,7 @@ from .pytriqs_gf_compat import *
 
 from dmft_core import DMFTCoreSolver
 from matplotlib.gridspec import GridSpec
+from matplotlib.ticker import MaxNLocator
 import numpy
 import math
 
@@ -105,6 +106,9 @@ class DMFTCoreCheck(object):
 
         self.plt = plt
         self.oplot = oplot
+
+        plt.rcParams["font.size"] = 18
+        plt.rcParams["lines.markersize"] = 12
 
 
     def plot_sigma_ave(self, basename, fig_ext):
@@ -195,7 +199,8 @@ class DMFTCoreCheck(object):
 
         # set linestyles
         linestyles = ['-', ':', '--', '-.', '-', ':']
-        markers = ['v', 'x']
+        # markers = ['v', 'x']
+        markers = ['+', 'x']
         colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
 
         def get_ls(idx):
@@ -206,11 +211,19 @@ class DMFTCoreCheck(object):
 
         # plot
         self.__plot_init()
-        self.plt.figure(figsize=(8, 10))
-        gs = GridSpec(2, 1)
+
+        # align vertically
+        # self.plt.figure(figsize=(8, 10))
+        # gs = GridSpec(2, 1)
+
+        # align horizontally
+        self.plt.figure(figsize=(12, 6))
+        gs = GridSpec(1, 2)
 
         ax1 = self.plt.subplot(gs[0])
         ax2 = self.plt.subplot(gs[1])
+        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         for data in data_list:
             y = data['y']
@@ -218,21 +231,25 @@ class DMFTCoreCheck(object):
             iorb = data.get('iorb', 0)
             isp = data.get('isp', 0)
 
-            ax1.plot(iter, y, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            # ax1.plot(iter, y, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            ax1.plot(iter, y, label=label, ls=get_ls(0), marker=markers[isp], color=get_c(iorb))
             diff = abs(numpy.array(y[1:]) - numpy.array(y[:-1]))
-            ax2.plot(iter[1:], diff, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            # ax2.plot(iter[1:], diff, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            ax2.plot(iter[1:], diff, label=label, ls=get_ls(0), marker=markers[isp], color=get_c(iorb))
 
         filename = basename + fig_ext
         ax1.set_xlabel("iterations")
         ax1.set_ylabel(ylabel)
         ax1.set_xlim(left=iter[0])
-        ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        # ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        ax1.legend(fontsize=12)
 
         ax2.set_xlabel("iterations")
         ax2.set_ylabel("diff")
         ax2.set_yscale("log")
         ax2.set_xlim(left=iter[0])
-        ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        # ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        ax2.legend(fontsize=12)
 
         # self.plt.xlim(left=iter[0])
         self.plt.tight_layout()
