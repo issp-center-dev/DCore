@@ -571,6 +571,51 @@ def save_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
             print("", file=fo)
 
 
+def save_Sigma_w_sh_txt(filename, Sigma_w_sh, spin_names):
+    """
+    Save a list of self-energy in a text file (real frequency ver.)
+
+    :param filename:
+    :param Sigma_w_sh:
+    :param spin_names: ['up', 'down'] or ['ud']
+    """
+
+    n_sh = len(Sigma_w_sh)
+
+    assert isinstance(spin_names, list)
+
+    with open(filename, 'w') as fo:
+        print("# Local self energy at real frequency", file=fo)
+        #
+        # Column information
+        #
+        print("# [Column] Data", file=fo)
+        print("# [1] Frequency", file=fo)
+        icol = 1
+        for ish in range(n_sh):
+            for sp in spin_names:
+                block_dim = Sigma_w_sh[ish][sp].data.shape[1]
+                for iorb, jorb in product(range(block_dim), repeat=2):
+                    icol += 1
+                    print("# [%d] Re(Sigma_{shell=%d, spin=%s, %d, %d})" % (icol, ish, sp, iorb, jorb), file=fo)
+                    icol += 1
+                    print("# [%d] Im(Sigma_{shell=%d, spin=%s, %d, %d})" % (icol, ish, sp, iorb, jorb), file=fo)
+
+        #
+        # Write data
+        #
+        omega = [x.real for x in Sigma_w_sh[0].mesh]
+        for iom in range(len(omega)):
+            print("%f " % omega[iom], end="", file=fo)
+            for ish in range(n_sh):
+                for sp in spin_names:
+                    block_dim = Sigma_w_sh[ish][sp].data.shape[1]
+                    for iorb, jorb in product(range(block_dim), repeat=2):
+                        print("%f %f " % (Sigma_w_sh[ish][sp].data[iom, iorb, jorb].real,
+                                          Sigma_w_sh[ish][sp].data[iom, iorb, jorb].imag), end="", file=fo)
+            print("", file=fo)
+
+
 def readline_ignoring_comment(f):
     """
     Read a line ignoring lines starting with '#' or '%'

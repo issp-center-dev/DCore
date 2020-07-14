@@ -125,7 +125,7 @@ class Wannier90Model(LatticeModel):
                 f['dft_input']['proj_mat'] = proj_mat
 
 
-    def _write_dft_band_input_data(self, params, kvec):
+    def write_dft_band_input_data(self, params, kvec, bands_data='dft_bands_input'):
         """
 
         Returns
@@ -136,6 +136,8 @@ class Wannier90Model(LatticeModel):
             Number of orbitals at each k. It does not depend on k
         proj_mat : complex
             Projection onto each correlated orbitals
+        band_data : str
+            Where the data is to be written
         """
         n_k = kvec.shape[0]
         assert kvec.shape[1] == 3
@@ -194,9 +196,10 @@ class Wannier90Model(LatticeModel):
         # Output them into seedname.h5
         #
         with HDFArchive(seedname + '.h5', 'a') as f:
-            if not ('dft_bands_input' in f):
-                f.create_group('dft_bands_input')
-            f['dft_bands_input']['hopping'] = hopping
-            f['dft_bands_input']['n_k'] = n_k
-            f['dft_bands_input']['n_orbitals'] = numpy.full((n_k, nblock), nwan, dtype=int)
-            f['dft_bands_input']['proj_mat'] = proj_mat
+            if not (bands_data in f):
+                f.create_group(bands_data)
+            f[bands_data]['hopping'] = hopping
+            f[bands_data]['n_k'] = n_k
+            f[bands_data]['n_orbitals'] = numpy.full((n_k, nblock), nwan, dtype=int)
+            f[bands_data]['proj_mat'] = proj_mat
+        print('    Done')
