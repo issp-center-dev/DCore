@@ -374,10 +374,13 @@ class ALPSCTHYBSEGSolver(SolverBase):
             val = numpy.ndarray(n_w2b)
         """
 
+        use_chi_loc = False
+
         params_kw['cthyb.MEASURE_g2w'] = 1
         params_kw['cthyb.N_w2'] = num_wf
         params_kw['cthyb.N_W'] = num_wb
-        params_kw['cthyb.MEASURE_nnw'] = 1
+        if use_chi_loc:
+            params_kw['cthyb.MEASURE_nnw'] = 1
 
         self.solve(rot, mpirun_command, params_kw)
 
@@ -396,7 +399,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             g2_dict[(i1, i1, i2, i2)] = g2_loc[i1, i2]
 
         # Convert G2_iijj -> G2_ijij
-        # G2_iijj(wb, wf, wf') = -G2_ijij(wf'+wb, wf', wf-wf')^*
+        # G2_iijj(wb, wf, wf') = -G2_ijij(wf-wf', wf'+wb, wf')^*
         g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=complex)
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
             for wb in range(num_wb):
@@ -421,15 +424,17 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # Save chi(wb)
         # [(s1,o1), (s2,o2), wb]
-        chi_re = self._get_results("nnw_re", num_wb)
-        chi_im = self._get_results("nnw_im", num_wb)
-        chi_loc = chi_re + chi_im * 1.0J
-        # subtract <n><n>
-        chi_loc[:, :, 0] -= occup[:, None] * occup[None, :] * self.beta
-        # assign to dict
-        chi_dict = {}
-        for i1, i2 in product(range(2*self.n_orb), repeat=2):
-            chi_dict[(i1, i1, i2, i2)] = chi_loc[i1, i2]
+        chi_dict = None
+        if use_chi_loc:
+            chi_re = self._get_results("nnw_re", num_wb)
+            chi_im = self._get_results("nnw_im", num_wb)
+            chi_loc = chi_re + chi_im * 1.0J
+            # subtract <n><n>
+            chi_loc[:, :, 0] -= occup[:, None] * occup[None, :] * self.beta
+            # assign to dict
+            chi_dict = {}
+            for i1, i2 in product(range(2*self.n_orb), repeat=2):
+                chi_dict[(i1, i1, i2, i2)] = chi_loc[i1, i2]
 
         return g2_dict, chi_dict
 
