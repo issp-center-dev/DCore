@@ -385,14 +385,11 @@ class ALPSCTHYBSEGSolver(SolverBase):
         self.solve(rot, mpirun_command, params_kw)
 
         # Save G2(wb, wf, wf')
-        # [(s1,o1), (s2,o2), (wf,wf',wb)]
+        # [(s1,o1), (s2,o2), (wb,wf,wf')]
         g2_re = self._get_results("g2w_re", 4*num_wf*num_wf*num_wb)
         g2_im = self._get_results("g2w_im", 4*num_wf*num_wf*num_wb)
         g2_loc = (g2_re + g2_im * 1.0J) / self.beta
-        # [(wf,wf',wb)] -> [wf,wf',wb] -> [wb,wf,wf']
-        g2_loc = g2_loc.reshape((2*self.n_orb, 2*self.n_orb) + (2*num_wf, 2*num_wf, num_wb))\
-                       .transpose((0, 1) + (4, 2, 3))\
-                       .reshape((2*self.n_orb, 2*self.n_orb) + (num_wb, 2*num_wf, 2*num_wf))
+        g2_loc = g2_loc.reshape((2*self.n_orb, 2*self.n_orb) + (num_wb, 2*num_wf, 2*num_wf))
         # assign to dict
         g2_dict = {}
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
