@@ -1,0 +1,101 @@
+\documentclass[disablejfam,12pt]{article}
+\usepackage{graphicx}
+\usepackage{color}
+\pagestyle{empty}
+\setlength{\textheight}{240mm}
+\setlength{\textwidth}{160mm}
+\setlength{\columnsep}{5mm}
+\setlength{\topmargin}{-30mm}
+\setlength{\oddsidemargin}{0mm}
+\setlength{\evensidemargin}{0mm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{braket}
+
+\newcommand{\mathi}{\ensuremath{\mathrm{i}}}
+\newcommand{\mi}{\ensuremath{\mathrm{i}}}
+\newcommand{\barT}{\ensuremath{\bar{T}}}
+
+\author{Junya Otsuki}
+
+\begin{document}
+\title{ALPSCore/CT-HYB-SEGMENT}
+\maketitle
+\thispagestyle{empty}
+
+\section{Two-particle Green's function}
+
+\subsection{Definition}
+\begin{eqnarray}
+ G_{1234}(\tau_1, \tau_2, \tau_3, \tau_4) &\equiv& \braket{T_\tau c_1(\tau_1) c_2^\dagger(\tau_2) c_3(\tau_3) c_4^\dagger(\tau_4)}\\
+ G_{1234}(i \omega, i \omega', i\nu) &=& \frac{1}{\beta} \int_0^\beta  d \tau_{1} d \tau_{2} d \tau_{3} d \tau_{4} G_{1234}(\tau_{1}, \tau_{2}, \tau_{3}, \tau_{4}) e^{i\omega \tau_{12}} e^{i\omega' \tau_{34}}e^{i \nu \tau_{14}}
+\end{eqnarray}
+
+\subsection{Numerical data}
+For density-density interactions, we have two kinds of components
+$G_{iijj}(i\omega, i\omega', i\nu)$ and
+$G_{ijji}(i\omega, i\omega', i\nu)$.
+The program computes only
+$G_{iijj}(i\omega, i\omega', i\nu)$ for $i \geq j$ and $\nu \geq 0$.
+Other components need to be converted from this data.
+
+\subsection{Conjugate}
+By taking the complex conjugate, we obtain
+\begin{align}
+	G_{1234}(i \omega, i \omega', i\nu) = - G_{4321}(-i \omega', -i \omega, -i\nu)^*,
+	\label{eq:conjugate}
+\end{align}
+which leads to
+\begin{align}
+	G_{iijj}(i \omega, i \omega', i\nu) &= - G_{jjii}(-i \omega', -i \omega, -i\nu)^*,
+	\\
+	G_{ijji}(i \omega, i \omega', i\nu) &= - G_{ijji}(-i \omega', -i \omega, -i\nu)^*.
+\end{align}
+The first equation can be used to extend $G_{iijj}$ into the negative bosonic frequency side.
+\emph{But, we cannot obtain $G_{iijj}$ for $i<j$ and $\nu>0$}
+
+
+
+\subsection{Single-index interchange}
+By interchanging $c_2^{\dag}$ and $c_4^{\dag}$, we obtain
+\begin{align}
+	G_{1234}(i \omega, i \omega', i\nu) = - G_{1432}(i \omega' + i\nu, i \omega', i\omega - i\omega'),
+\end{align}
+which leads to
+\begin{align}
+	G_{iijj}(i \omega, i \omega', i\nu) = - G_{ijji}(i \omega' + i\nu, i \omega', i\omega - i\omega').
+\end{align}
+This equation can be used to convert $G_{iijj}$ to $G_{ijji}$. We note that finite bosonic frequencies of $G_{iijj}$ are required even if we need only the zero bosonic frequency of $G_{ijji}$.
+
+Similarly, we can obtain another relation by an exchange of $c_1$ and $c_3$
+\begin{align}
+	G_{1234}(i \omega, i \omega', i\nu) = - G_{3214}(i \omega, i \omega + i\nu, i\omega' - i\omega).
+\end{align}
+which leads to
+\begin{align}
+	G_{iijj}(i \omega, i \omega', i\nu) = - G_{jiij}(i \omega, i \omega + i\nu, i\omega' - i\omega).
+\end{align}
+
+
+
+\subsection{Two-index interchange}
+By interchanging $c_1 c_2^{\dag}$ and $c_3 c_4^{\dag}$, we obtain
+\begin{align}
+	G_{1234}(i \omega, i \omega', i\nu) &= G_{3412}(i \omega' + i\nu, i \omega + i\nu, -i\nu) \\
+	&= G_{2143}(-i \omega - i\nu, -i \omega' - i\nu, i\nu)^*.
+\end{align}
+Here, we used Eq.~(\ref{eq:conjugate}) in the second line.
+The first equation leads to
+\begin{align}
+	G_{iijj}(i \omega, i \omega', i\nu) &= G_{jjii}(i \omega' + i\nu, i \omega + i\nu, -i\nu), \\
+	G_{ijji}(i \omega, i \omega', i\nu) &= G_{jiij}(i \omega' + i\nu, i \omega + i\nu, -i\nu).
+\end{align}
+% \begin{align}
+% 	G_{iijj}(i \omega, i \omega', i\nu) = G_{iijj}(-i \omega - i\nu, -i \omega' - i\nu, i\nu)^*,
+% 	\\
+% 	G_{ijji}(i \omega, i \omega', i\nu) = G_{jiij}(-i \omega - i\nu, -i \omega' - i\nu, i\nu)^*.
+% \end{align}
+
+
+
+\end{document}
