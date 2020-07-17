@@ -42,39 +42,43 @@ Other components need to be converted from this data.
 \subsection{Conjugate}
 By taking the complex conjugate, we obtain
 \begin{align}
-	G_{1234}(i \omega, i \omega', i\nu) = - G_{4321}(-i \omega', -i \omega, -i\nu)^*,
+	G_{1234}(i \omega, i \omega', i\nu) = G_{4321}(-i \omega', -i \omega, -i\nu)^*,
 	\label{eq:conjugate}
 \end{align}
 which leads to
 \begin{align}
-	G_{iijj}(i \omega, i \omega', i\nu) &= - G_{jjii}(-i \omega', -i \omega, -i\nu)^*,
+	G_{iijj}(i \omega, i \omega', i\nu) &= G_{jjii}(-i \omega', -i \omega, -i\nu)^*,
+	\label{eq:conjugate-iijj}
 	\\
-	G_{ijji}(i \omega, i \omega', i\nu) &= - G_{ijji}(-i \omega', -i \omega, -i\nu)^*.
+	G_{ijji}(i \omega, i \omega', i\nu) &= G_{ijji}(-i \omega', -i \omega, -i\nu)^*.
 \end{align}
-The first equation can be used to extend $G_{iijj}$ into the negative bosonic frequency side.
-\emph{But, we cannot obtain $G_{iijj}$ for $i<j$ and $\nu>0$}
+Eq.~(\ref{eq:conjugate-iijj}) is used to extend $G_{iijj}$ into the negative bosonic frequency side.
+% \emph{But, we cannot obtain $G_{iijj}$ for $i<j$ and $\nu>0$}
 
 
 
 \subsection{Single-index interchange}
-By interchanging $c_2^{\dag}$ and $c_4^{\dag}$, we obtain
+By interchanging $c_2^{\dag}$ and $c_4^{\dag}$ or $c_1$ and $c_3$, we obtain
 \begin{align}
-	G_{1234}(i \omega, i \omega', i\nu) = - G_{1432}(i \omega' + i\nu, i \omega', i\omega - i\omega'),
+	G_{1234}(i \omega, i \omega', i\nu)
+	&= - G_{1432}(i \omega' + i\nu, i \omega', i\omega - i\omega') \\
+	&= - G_{3214}(i \omega, i \omega + i\nu, i\omega' - i\omega).
 \end{align}
 which leads to
 \begin{align}
-	G_{iijj}(i \omega, i \omega', i\nu) = - G_{ijji}(i \omega' + i\nu, i \omega', i\omega - i\omega').
+	G_{iijj}(i \omega, i \omega', i\nu)
+	&= - G_{ijji}(i \omega' + i\nu, i \omega', i\omega - i\omega') \\
+	&= - G_{jiij}(i \omega, i \omega + i\nu, i\omega' - i\omega),
 \end{align}
-This equation can be used to convert $G_{iijj}$ to $G_{ijji}$. We note that finite bosonic frequencies of $G_{iijj}$ are required even if we need only the zero bosonic frequency of $G_{ijji}$.
+and
+\begin{align}
+	G_{ijji}(i \omega, i \omega', i\nu)
+	&= - G_{iijj}(i \omega' + i\nu, i \omega', i\omega - i\omega') \label{eq:ijji_to_iijj}\\
+	&= - G_{jjii}(i \omega, i \omega + i\nu, i\omega' - i\omega),
+\end{align}
+Eq.~(\ref{eq:ijji_to_iijj}) is used for conversion from $G_{iijj}$ to $G_{ijji}$.
+We note that finite bosonic frequencies of $G_{iijj}$ are required even if we need only the zero bosonic frequency of $G_{ijji}$.
 
-Similarly, we can obtain another relation by an exchange of $c_1$ and $c_3$
-\begin{align}
-	G_{1234}(i \omega, i \omega', i\nu) = - G_{3214}(i \omega, i \omega + i\nu, i\omega' - i\omega).
-\end{align}
-which leads to
-\begin{align}
-	G_{iijj}(i \omega, i \omega', i\nu) = - G_{jiij}(i \omega, i \omega + i\nu, i\omega' - i\omega).
-\end{align}
 
 
 
@@ -95,6 +99,7 @@ The first equation leads to
 % 	\\
 % 	G_{ijji}(i \omega, i \omega', i\nu) = G_{jiij}(-i \omega - i\nu, -i \omega' - i\nu, i\nu)^*.
 % \end{align}
+
 
 
 
