@@ -172,7 +172,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
                      .reshape((2*self.n_orb))
         return array
 
-    def _get_results(self, group_prefix, n_data=1, dtype=float):
+    def _get_results(self, group_prefix, n_data, orbital_symmetrize, dtype=float):
         """
         Read results with two spin-orbital indices from HDF5 file
 
@@ -190,8 +190,9 @@ class ALPSCTHYBSEGSolver(SolverBase):
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 group = "%s_%d_%d" % (group_prefix, i1, i2)
                 if group in results:
-                    # Only i1>i2 is computed in CTQMC.
-                    array[i1, i2, :] = array[i2, i1, :] = results[group]["mean"]["value"]
+                    array[i1, i2, :] = results[group]["mean"]["value"]
+                    if orbital_symmetrize:  # Only i1>i2 is computed in CTQMC.
+                        array[i2, i1, :] = array[i1, i2, :]
 
         # [(o1,s1), (o2,s2)] -> [o1, s1, o2, s2] -> [s1, o1, s2, o2] -> [(s1,o1), (s2,o2)]
         array = array.reshape((self.n_orb, 2, self.n_orb, 2, -1))\
@@ -346,7 +347,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             set_tail(self._Gimp_iw)
 
         #   self.quant_to_save['nn_equal_time']
-        nn_equal_time = self._get_results("nn", 1)
+        nn_equal_time = self._get_results("nn", 1, orbital_symmetrize=True)
         # [(s1,o1), (s2,o2), 0]
         self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
@@ -386,8 +387,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # Save G2(wb, wf, wf')
         # [(s1,o1), (s2,o2), (wb,wf,wf')]
-        g2_re = self._get_results("g2w_re", 4*num_wf*num_wf*num_wb)
-        g2_im = self._get_results("g2w_im", 4*num_wf*num_wf*num_wb)
+        g2_re = self._get_results("g2w_re", 4*num_wf*num_wf*num_wb, orbital_symmetrize=False)
+        g2_im = self._get_results("g2w_im", 4*num_wf*num_wf*num_wb, orbital_symmetrize=False)
         g2_loc = (g2_re + g2_im * 1.0J) / self.beta
         g2_loc = g2_loc.reshape((2*self.n_orb, 2*self.n_orb) + (num_wb, 2*num_wf, 2*num_wf))
         # assign to dict
@@ -402,7 +403,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             if _wb >= 0:
                 return g2_loc[_i, _j, _wb, _wf1, _wf2]
             else:
-                # G2_iijj(-wb, wf, wf') = G2_jjii(wb, -wf', -wf)^*
+                # G2_iijj(wb, wf, wf') = G2_jjii(-wb, -wf', -wf)^*
                 return numpy.conj(g2_loc[_j, _i, -_wb, -_wf2, -_wf1])
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
             for wb in range(-num_wb+1, num_wb):  # include wb<0
@@ -411,7 +412,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
                         if wf1-wf2>=0:
                             g2_loc_tr[i1, i2, wf1-wf2, wf2+wb, wf2] = -get_g2(i1, i2, wb, wf1, wf2)
                         else:
-                            # G2_ijij(-wb, wf, wf') = G2_ijij(wb, -wf', -wf)^*
+                            # G2_ijij(wb, wf, wf') = G2_ijij(-wb, -wf', -wf)^*
                             g2_loc_tr[i1, i2, -(wf1-wf2), -wf2, -(wf2+wb)] = -numpy.conj(get_g2(i1, i2, wb, wf1, wf2))
                     except IndexError:
                         pass
@@ -429,8 +430,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # [(s1,o1), (s2,o2), wb]
         chi_dict = None
         if use_chi_loc:
-            chi_re = self._get_results("nnw_re", num_wb)
-            chi_im = self._get_results("nnw_im", num_wb)
+            chi_re = self._get_results("nnw_re", num_wb, orbital_symmetrize=True)
+            chi_im = self._get_results("nnw_im", num_wb, orbital_symmetrize=True)
             chi_loc = chi_re + chi_im * 1.0J
             # subtract <n><n>
             chi_loc[:, :, 0] -= occup[:, None] * occup[None, :] * self.beta
