@@ -396,26 +396,24 @@ class ALPSCTHYBSEGSolver(SolverBase):
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
             g2_dict[(i1, i1, i2, i2)] = g2_loc[i1, i2]
 
-        # Convert G2_iijj -> G2_ijij using
-        #   G2_iijj(wb, wf, wf') = -G2_ijij(wf-wf', wf'+wb, wf')^*
-        g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=complex)
+        # return g2_loc for arbitrary wb including wb<0
         def get_g2(_i, _j, _wb, _wf1, _wf2):
-            if _wb >= 0:
-                return g2_loc[_i, _j, _wb, _wf1, _wf2]
-            else:
-                # G2_iijj(wb, wf, wf') = G2_jjii(-wb, -wf', -wf)^*
-                return numpy.conj(g2_loc[_j, _i, -_wb, -_wf2, -_wf1])
+            try:
+                if _wb >= 0:
+                    return g2_loc[_i, _j, _wb, _wf1, _wf2]
+                else:
+                    # G2_iijj(wb, wf, wf') = G2_jjii(-wb, -wf', -wf)^*
+                    return numpy.conj(g2_loc[_j, _i, -_wb, -(1+_wf2), -(1+_wf1)])
+            except IndexError:
+                return 0
+
+        # Convert G2_iijj -> G2_ijij
+        g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=complex)
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
-            for wb in range(-num_wb+1, num_wb):  # include wb<0
+            for wb in range(num_wb):
                 for wf1, wf2 in product(range(2 * num_wf), repeat=2):
-                    try:
-                        if wf1-wf2>=0:
-                            g2_loc_tr[i1, i2, wf1-wf2, wf2+wb, wf2] = -get_g2(i1, i2, wb, wf1, wf2)
-                        else:
-                            # G2_ijij(wb, wf, wf') = G2_ijij(-wb, -wf', -wf)^*
-                            g2_loc_tr[i1, i2, -(wf1-wf2), -wf2, -(wf2+wb)] = -numpy.conj(get_g2(i1, i2, wb, wf1, wf2))
-                    except IndexError:
-                        pass
+                    # G2_ijij(wb, wf, wf') = -G2_iijj(wf-wf', wf'+wb, wf')^*
+                    g2_loc_tr[i1, i2, wb, wf1, wf2] = -get_g2(i1, i2, wf1-wf2, wf2+wb, wf2)
         # assign to dict
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
             # exclude i1=i2, which was already assigned by g2_loc
