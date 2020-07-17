@@ -172,7 +172,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
                      .reshape((2*self.n_orb))
         return array
 
-    def _get_results(self, group_prefix, n_data, orbital_symmetrize, dtype=float):
+    def _get_results(self, group_prefix, n_data, orbital_symmetrize, dtype=float, stop_if_data_not_exist=True):
         """
         Read results with two spin-orbital indices from HDF5 file
 
@@ -193,6 +193,9 @@ class ALPSCTHYBSEGSolver(SolverBase):
                     array[i1, i2, :] = results[group]["mean"]["value"]
                     if orbital_symmetrize:  # Only i1>i2 is computed in CTQMC.
                         array[i2, i1, :] = array[i1, i2, :]
+                elif stop_if_data_not_exist:
+                    raise Exception("data does not exist in sim.h5/simulation/results/{}. alps_cthyb might be old.".format(group))
+
 
         # [(o1,s1), (o2,s2)] -> [o1, s1, o2, s2] -> [s1, o1, s2, o2] -> [(s1,o1), (s2,o2)]
         array = array.reshape((self.n_orb, 2, self.n_orb, 2, -1))\
@@ -347,7 +350,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             set_tail(self._Gimp_iw)
 
         #   self.quant_to_save['nn_equal_time']
-        nn_equal_time = self._get_results("nn", 1, orbital_symmetrize=True)
+        nn_equal_time = self._get_results("nn", 1, orbital_symmetrize=True, stop_if_data_not_exist=False)
         # [(s1,o1), (s2,o2), 0]
         self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
