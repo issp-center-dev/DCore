@@ -617,7 +617,7 @@ class DMFTCoreSolver(object):
                     #
                     # Exchange
                     #
-                    dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] += numpy.sum(
+                    dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] -= numpy.sum(
                         u_mat[i1, 0:num_orb, 0:num_orb, i2]
                         * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
                     )
