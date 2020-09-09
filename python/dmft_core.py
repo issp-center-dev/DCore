@@ -224,7 +224,7 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
     #
     if dc_type == "HF_DFT" or dc_type == "HF_imp":
         if use_spin_orbit:
-            # dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
+            dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
             # dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
             # for s1, i1, s2, i2 in product(range(2), range(num_orb), range(2), range(num_orb)):
             #     #
