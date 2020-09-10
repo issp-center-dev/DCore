@@ -334,6 +334,9 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
     n_orb = delta_iw[block_names[0]].data.shape[1]
     n_blocks = len(block_names)
 
+    if n_blocks == 1:  # spin_orbit
+        n_bath *= 2
+
     # These arrays will be returned
     eps_full = numpy.zeros((n_bath * n_blocks,), dtype=float)
     hyb_full = numpy.zeros((n_orb * n_blocks, n_bath * n_blocks), dtype=float)
