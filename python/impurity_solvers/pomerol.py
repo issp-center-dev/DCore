@@ -201,18 +201,14 @@ class PomerolSolver(SolverBase):
         # save H0 into a file
         with open(file_h0, "w") as f:
             for i, j in product(range(h0_full.shape[0]), range(h0_full.shape[1])):
-                # TODO: real or complex
                 if abs(h0_full[i, j]) != 0:
-                    # print(i, j, h0_full[i,j].real, h0_full[i,j].imag, file=f)
-                    print(i, j, h0_full[i, j].real, file=f)
+                    print(i, j, h0_full[i,j].real, h0_full[i,j].imag, file=f)
 
         # (1c) Set U_{ijkl} for the solver
         with open(file_umat, "w") as f:
             for i, j, k, l in product(range(self.n_flavors), repeat=4):
-                # TODO: real or complex
                 if abs(self.u_mat[i, j, k, l]) != 0:
-                    # print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
-                    print(i, j, k, l, self.u_mat[i, j, k, l].real, file=f)
+                    print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
 
         # (2) Run a working horse
         with open('./stdout.log', 'w') as output_f:
