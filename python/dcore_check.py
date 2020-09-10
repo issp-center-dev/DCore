@@ -372,7 +372,7 @@ if __name__ == '__main__':
                         action='store',
                         default='check/',
                         type=str,
-                        help='prefix for output files'
+                        help='prefix for output files (default: check/)'
                         )
     parser.add_argument('--ext',
                         action='store',
