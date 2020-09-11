@@ -250,6 +250,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             'exec_path'           : '',
             'random_seed_offset'  : 0,
             'dry_run'             : False,
+            'neglect_offdiagonal' : False,
         }
 
         def _read(key):
@@ -297,6 +298,39 @@ class ALPSCTHYBSEGSolver(SolverBase):
             Delta_tau[name] << InverseFourier(self._Delta_iw[name])
         Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
 
+        # check if H0 is diagonal
+        H0_offdiag = H0.copy()
+        for i in range(H0_offdiag.shape[0]):
+            H0_offdiag[i, i] = 0
+        if numpy.linalg.norm(H0_offdiag) > 1e-10:
+            print("\nWARNING: The local Hamiltonian is not diagonal")
+            print("H0_loc =\n{}".format(H0))
+            if _read('neglect_offdiagonal'):
+                print("--> continue (neglect_offdiagonal=True)")
+            else:
+                print("--> exit. Set neglect_offdiagonal{bool}=True to continue calculation")
+                exit(1)
+
+        # TODO: check Delta_tau_data
+        #    Delta_{ab}(tau) should be diagonal, real, negative
+
+        # rotate H0 and Delta_tau if rot is given
+        if rot is not None:
+            print("\nERROR: basis_rotation is not supported in alps_cthyb_seg")
+            exit(1)
+
+            # rot^H . H0 . rot
+            # rot_mat = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
+            # if self.use_spin_orbit:
+            #     rot_mat_4dim = rot_mat.reshape((1, 2*self.n_orb, 1, 2*self.n_orb))
+            # else:
+            #     rot_mat_4dim = rot_mat.reshape((2, self.n_orb, 2, self.n_orb))
+            # for sp, name in enumerate(self.block_names):
+            #     # rot_mat[sp*self.n_orb:(sp+1)*self.n_orb, sp*self.n_orb:(sp+1)*self.n_orb] = rot[name]
+            #     rot_mat_4dim[sp, :, sp, :] = rot[name]
+            # H0_diag = numpy.dot(rot_mat.conjugate().T, numpy.dot(H0, rot_mat))
+            # print(H0_diag)
+
         # (1c) Set U_{ijkl} for the solver
         # Set up input parameters and files for ALPS/CTHYB-SEG
 
@@ -324,9 +358,6 @@ class ALPSCTHYBSEGSolver(SolverBase):
         with open('./input.ini', 'w') as f:
             for k, v in p_run.items():
                 print(k, " = ", v, file=f)
-
-        # TODO: check Delta_tau_deta
-        #    Delta_{ab}(tau) should be diagonal, real, negative
 
         with open('./delta', 'w') as f:
             for itau in range(self.n_tau):
