@@ -61,32 +61,68 @@ def to_numpy_array(g, names):
     return (data[:, :, index])[:, index, :]
 
 
+# def assign_from_numpy_array(g, data, names):
+#     """
+#     Does inversion of to_numpy_array
+#     data[spin,orb,iw]
+#     g[spin].data[iw,orb1,orb2]
+#     """
+#     # print(g.n_blocks)
+#     if g.n_blocks != 2:
+#         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
+#
+#     norb = data.shape[1]
+#     niw = data.shape[2]
+#     # print(data.shape)
+#     # print("norb:", norb)
+#
+#     # check number of Matsubara frequency
+#     assert data.shape[2]*2 == g[names[0]].data.shape[0]
+#     # print(g[names[0]].data.shape)
+#
+#     for spin in range(2):
+#         for orb in range(norb):
+#             # print(orb, spin, names[spin])
+#             # positive frequency
+#             g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
+#             # negative frequency
+#             g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
+
+
 def assign_from_numpy_array(g, data, names):
     """
     Does inversion of to_numpy_array
-    data[spin,orb,iw]
-    g[spin].data[iw,orb1,orb2] 
+
+    assign from
+        data[i, iw]  (i=(orb,spin))
+    to
+        g[spin].data[iw,orb1,orb2] (w/o SO) (spin='up', 'down')
+        g['ud'].data[iw,i1,i2]     (w/  SO)
+
     """
-    # print(g.n_blocks)
-    if g.n_blocks != 2:
+
+    if g.n_blocks > 2:
         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
 
-    norb = data.shape[1]
-    niw = data.shape[2]
-    # print(data.shape)
-    # print("norb:", norb)
+    # (n_sp, n_inner) = (2, n_orb)    w/o SO
+    #                   (1, 2*n_orb)  w/  SO
+    n_sp = g.n_blocks
+    n_inner = data.shape[0] / n_sp
+    niw = data.shape[1]
 
-    # check number of Matsubara frequency
-    assert data.shape[2]*2 == g[names[0]].data.shape[0]
-    # print(g[names[0]].data.shape)
+    # array which data are assigned from
+    data_from = data.reshape(n_inner, n_sp, niw)
 
-    for spin in range(2):
-        for orb in range(norb):
-            # print(orb, spin, names[spin])
+    # assign data_from to g
+    for sp in range(n_sp):
+        # array which data are assigned to
+        data_to = g[names[sp]].data
+        assert data_to.shape == (2*niw, n_inner, n_inner)
+        for i in range(n_inner):
             # positive frequency
-            g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
+            data_to[niw:, i, i] = data_from[i, sp, :]
             # negative frequency
-            g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
+            data_to[:niw, i, i] = numpy.conj(data_from[i, sp, ::-1])
 
 
 def dcore2alpscore(dcore_U):
@@ -305,9 +341,11 @@ class ALPSCTHYBSEGSolver(SolverBase):
         write_Umatrix(U, Uprime, J, self.n_orb)
 
         with open('./MUvector', 'w') as f:
-            for orb in range(self.n_orb):
-                for spin in range(2):
-                    print('{:.15e} '.format(-H0[2*orb+spin][2*orb+spin].real), file=f, end="")
+            # for orb in range(self.n_orb):
+            #     for spin in range(2):
+            #         print('{:.15e} '.format(-H0[2*orb+spin][2*orb+spin].real), file=f, end="")
+            for i in range(2*self.n_orb):
+                print('{:.15e} '.format(-H0[i, i].real), file=f, end="")
             print("", file=f)
 
         if _read('dry_run'):
@@ -333,14 +371,20 @@ class ALPSCTHYBSEGSolver(SolverBase):
         #   self._Gimp_iw
 
         def set_blockgf_from_h5(sigma, group):
-            swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=complex)
+            # swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=complex)
+            swdata = numpy.zeros((2*self.n_orb, self.n_iw), dtype=complex)
             with HDFArchive('sim.h5', 'r') as f:
-                for orb in range(self.n_orb):
-                    for spin in range(2):
-                        swdata_array = f[group][str(orb*2+spin)]["mean"]["value"]
-                        assert swdata_array.dtype == numpy.complex
-                        assert swdata_array.shape == (self.n_iw,)
-                        swdata[spin, orb, :] = swdata_array
+                # for orb in range(self.n_orb):
+                #     for spin in range(2):
+                #         swdata_array = f[group][str(orb*2+spin)]["mean"]["value"]
+                #         assert swdata_array.dtype == numpy.complex
+                #         assert swdata_array.shape == (self.n_iw,)
+                #         swdata[spin, orb, :] = swdata_array
+                for i in range(2*self.n_orb):
+                    swdata_array = f[group][str(i)]["mean"]["value"]
+                    assert swdata_array.dtype == numpy.complex
+                    assert swdata_array.shape == (self.n_iw,)
+                    swdata[i, :] = swdata_array
             assign_from_numpy_array(sigma, swdata, self.block_names)
 
         set_blockgf_from_h5(self._Sigma_iw, "S_omega")
