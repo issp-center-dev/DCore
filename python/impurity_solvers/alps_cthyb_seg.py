@@ -19,6 +19,7 @@ from __future__ import print_function
 import numpy
 from scipy.linalg import block_diag
 import os
+import sys
 from itertools import product
 from ..pytriqs_gf_compat import *
 from pytriqs.archive import HDFArchive
@@ -250,7 +251,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             'exec_path'           : '',
             'random_seed_offset'  : 0,
             'dry_run'             : False,
-            'neglect_offdiagonal' : False,
+            'neglect_offdiagonal' : True,
         }
 
         def _read(key):
@@ -302,13 +303,13 @@ class ALPSCTHYBSEGSolver(SolverBase):
         H0_offdiag = H0.copy()
         for i in range(H0_offdiag.shape[0]):
             H0_offdiag[i, i] = 0
-        if numpy.linalg.norm(H0_offdiag) > 1e-10:
-            print("\nWARNING: The local Hamiltonian is not diagonal")
-            print("H0_loc =\n{}".format(H0))
+        if numpy.linalg.norm(H0_offdiag) > 1e-6:
+            print("\nWARNING: The local Hamiltonian is not diagonal", file=sys.stderr)
+            print("H0_loc =\n{}".format(H0), file=sys.stderr)
             if _read('neglect_offdiagonal'):
-                print("--> continue (neglect_offdiagonal=True)")
+                print("--> continue. To stop calculation, set neglect_offdiagonal{bool}=False", file=sys.stderr)
             else:
-                print("--> exit. Set neglect_offdiagonal{bool}=True to continue calculation")
+                print("--> exit. To neglect this warning, set neglect_offdiagonal{bool}=True", file=sys.stderr)
                 exit(1)
 
         # TODO: check Delta_tau_data
@@ -316,8 +317,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # rotate H0 and Delta_tau if rot is given
         if rot is not None:
-            print("\nERROR: basis_rotation is not supported in alps_cthyb_seg")
-            exit(1)
+            raise ValueError("basis_rotation is not supported in alps_cthyb_seg")
 
             # rot^H . H0 . rot
             # rot_mat = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
