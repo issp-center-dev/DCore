@@ -19,23 +19,27 @@ List of available commands.
 
 (do)uble spin-major|orbital-major
     double the bases
-      spin-major    : 0 1 2 3 -> 0 1 2 3 0 1 2 3
-      orbital-major : 0 1 2 3 -> 0 0 1 1 2 2 3 3  
+      spin-major    : 0 1 2 ... -> 0 1 2 ... 0 1 2 ...
+      orbital-major : 0 1 2 ... -> 0 0 1 1 2 2 ...
 
-(r)earrange 3 4 5 6
-    rearrange orbitals
-    (arbitrary number of integers, >=0, <NWann, no duplicate)
+(r)earrange 4 5 2 3
+    rearrange bases
+      0 1 2 3 4 5 ... -> 4 5 2 3
+    Each integer should be >=0 and <NWann, and no duplicate.
+    If integers provided are fewer than NWann, some bases will be truncated.
 
 (t)ransform 0-3 file_unitary_matrix
-    transform the bases
-    (bases from 0 to 3 (4 bases) will be transformed)
+    transform bases
+      H_{i,j}(R) -> W^{dag}_{i,i'} H_{i',j'}(R) W_{j',j}
+    0-3 indicates bases from 0 to 3 (4 bases) will be transformed.
+    The file contains a unitary matrix W (4x4 in this example).
 
 (p)otential 0-3 file_potential
     add a local potential
-    File 'file_potential' includes a 4x4 complex matrix. 
+    The file contains a hermitian matrix H_{pot} (4x4 in this example).
 
 (di)agonalize 0-3:
-    transform the bases so that the local part becomes diagonal.
+    transform the bases so that the 0-3 block of H(R=0) becomes diagonal.
 
 (s)ave filename
     save a resultant hopping coefficients into a file
@@ -49,6 +53,12 @@ def is_unitary(matrix):
     assert matrix.shape[0] == matrix.shape[1]
     # M^dag.M = 1
     return numpy.allclose(numpy.dot(matrix.conjugate().T, matrix), numpy.identity(matrix.shape[0]))
+
+
+def is_hermitian(matrix):
+    assert matrix.shape[0] == matrix.shape[1]
+    # M^dag = M
+    return numpy.allclose(matrix.conjugate().T, matrix)
 
 
 class Wannier90( object ):
@@ -181,38 +191,51 @@ class Wannier90( object ):
         self.Nwann = nwann
         self.HamR = ham_new
 
-    def transform(self, unitary_matrix, istart, iend):
-        # TODO: specify U^dag.H.U or U.H.U^dag
+    def transform(self, w_matrix, istart, iend):
+        """
+        H_{i,j}(R) -> W^{dag}_{i,i'} H_{i',j'}(R) W_{j',j}
 
+        W: unitary matrix
+        """
         self._check_indices([istart, iend])
 
         # check if 'unitary_matrix' is unitary
-        if not is_unitary(unitary_matrix):
+        if not is_unitary(w_matrix):
             raise ValueError("The transformation matrix is not unitary")
 
         mat_full = numpy.identity(self.Nwann, dtype=complex)
-        mat_full[istart:iend+1, istart:iend+1] = unitary_matrix
+        mat_full[istart:iend+1, istart:iend+1] = w_matrix
 
         for ir in range(self.nrpts):
             h = self.HamR[ir]
             h_transformed = numpy.dot(mat_full.conjugate().T, numpy.dot(h, mat_full))
             self.HamR[ir] = h_transformed
 
-    def add_potential(self, potential_matrix, istart, iend):
+    def add_potential(self, v_matrix, istart, iend):
+        """
+        H_{i,j}(R=) += V_{i,j}
+
+        V: hermitian matrix
+        """
         self._check_indices([istart, iend])
+
+        # check if 'potential_matrix' is hermitian
+        if not is_hermitian(v_matrix):
+            raise ValueError("The potential matrix is not hermitian")
+
         ir = self.get_ir(numpy.array([0, 0, 0]))
-        self.HamR[ir, istart:iend+1, istart:iend+1] += potential_matrix
+        self.HamR[ir, istart:iend+1, istart:iend+1] += v_matrix
 
     def diagonalize(self, istart, iend):
         self._check_indices([istart, iend])
         ir = self.get_ir(numpy.array([0, 0, 0]))
         h0 = self.HamR[ir, istart:iend+1, istart:iend+1]
-        print(h0.shape)
+        # print(h0.shape)
 
         # TODO: check eigvec U^dag.H.U or U.H.U^dag
 
         eigval, eigvec = numpy.linalg.eigh(h0)
-        print(eigval)
+        print("Eigenvalues =", eigval)
 
         self.transform(eigvec, istart, iend)
 
@@ -299,7 +322,7 @@ if __name__ == '__main__':
     w90 = Wannier90(args.filename)
     w90.info()
 
-    print(help_commands)
+    print(help_commands, end="")
 
     while True:
         try:
@@ -308,6 +331,7 @@ if __name__ == '__main__':
             except NameError:
                 pass
 
+            print("\ncommand? ", end="")
             commands_str = input()
             # print(commands_str)
             commands = commands_str.split(' ')
@@ -319,7 +343,7 @@ if __name__ == '__main__':
 
             elif commands[0] in ('comamnds', 'c'):
                 _check_num_args(commands, 0)
-                print(help_commands)
+                print(help_commands, end="")
 
             elif commands[0] in ('hamiltonian', 'h'):
                 _check_num_args(commands, 3)
@@ -334,7 +358,7 @@ if __name__ == '__main__':
                 if spin_orbital not in ('spin-major', 'orbital-major'):
                     raise ValueError("'{}' should be either 'spin-major' or 'orbital-major'".format(spin_orbital))
                 w90.double(spin_orbital)
-                print("succeeded")
+                print("Succeeded")
 
             elif commands[0] in ('rearrange', 'r'):
                 _check_num_args(commands, 1)
@@ -343,7 +367,7 @@ if __name__ == '__main__':
                 print("indices = {}".format(indices))
 
                 w90.rearrange(indices)
-                print("succeeded")
+                print("Succeeded")
 
             elif commands[0] in ('transform', 't'):
                 _check_num_args(commands, 2)
@@ -356,7 +380,7 @@ if __name__ == '__main__':
                 # TODO: format of the matrix U, U^T, or U^dag?
 
                 w90.transform(matrix, istart, iend)
-                print("succeeded")
+                print("Succeeded")
 
             elif commands[0] in ('potential', 'p'):
                 _check_num_args(commands, 2)
@@ -368,7 +392,7 @@ if __name__ == '__main__':
                 matrix = _read_file(file_pot, (iend - istart + 1, iend - istart + 1))
 
                 w90.add_potential(matrix, istart, iend)
-                print("succeeded")
+                print("Succeeded")
 
             elif commands[0] in ('diagonalize', 'di'):
                 _check_num_args(commands, 1)
@@ -377,7 +401,7 @@ if __name__ == '__main__':
                 print("Diagonalize H(R=0) bases from {} to {}".format(istart, iend))
 
                 w90.diagonalize(istart, iend)
-                print("succeeded")
+                print("Succeeded")
 
             elif commands[0] in ('save', 's'):
                 _check_num_args(commands, 1)
@@ -385,7 +409,7 @@ if __name__ == '__main__':
                 fileout = commands[1]
                 print("Saving to file '{}'".format(fileout))
                 w90.save(fileout)
-                print("succeeded")
+                print("Succeeded")
 
             elif commands[0] in ('quit', 'q'):
                 _check_num_args(commands, 0)
