@@ -3,6 +3,11 @@ import numpy
 from itertools import product
 import datetime
 
+try:
+    input = raw_input  # for python2
+except NameError:
+    pass
+
 
 help_commands = """
 ------------------------------------------------------------------
@@ -42,7 +47,7 @@ List of available commands.
     transform the bases so that the 0-3 block of H(R=0) becomes diagonal.
 
 (s)ave filename
-    save a resultant hopping coefficients into a file
+    save the resultant hamiltonian into a file
 
 (q)uit
 ------------------------------------------------------------------
@@ -309,7 +314,7 @@ if __name__ == '__main__':
     )
 
     parser.add_argument('filename', action='store', default=None, type=str, help="Input filename. Normally, *seedname*_hr.dat")
-    parser.add_argument('--terminate-if-exception', '-t', action='store_true', help="Terminate the program when an exception occurs. This flag is recommended to activate when commands are give from a file.")
+    parser.add_argument('--terminate-if-exception', '-t', action='store_true', help="Terminate the program when an exception occurs. This flag is recommended to activate when commands are given from a file.")
 
     args = parser.parse_args()
     # print(args)
@@ -326,11 +331,6 @@ if __name__ == '__main__':
 
     while True:
         try:
-            try:
-                input = raw_input  # for python2
-            except NameError:
-                pass
-
             print("\ncommand? ", end="")
             commands_str = input()
             # print(commands_str)
@@ -421,14 +421,18 @@ if __name__ == '__main__':
         except ValueError as e:
             print("ERROR:", e)
             if args.terminate_if_exception:
-                break
+                sys.exit(1)
 
         except AssertionError as e:
             print("AssertionError:", e)
             if args.terminate_if_exception:
-                break
+                sys.exit(1)
 
         except IOError as e:
             print("IOError:", e)
             if args.terminate_if_exception:
-                break
+                sys.exit(1)
+
+        except EOFError:
+            print("EOF")
+            break
