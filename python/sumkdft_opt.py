@@ -17,21 +17,17 @@ class SumkDFT(SumkDFT):
         super(SumkDFT, self).__init__(hdf_file, h_field, use_dft_blocks, dft_data, symmcorr_data, parproj_data,
                                       symmpar_data, bands_data, transp_data, misc_data)
 
-        # Store True if proj_mat is a unit matrix
-        self.skip_projmat = self.check_if_proj_mat_is_a_unit_matrix()
-        self.skip_projmat = False
-        mpi.report("skip_projmat = {}".format(self.skip_projmat))
-
         # Make index for projection
         self.proj_index = self.make_proj_index()
         if self.proj_index is not None:
-            mpi.report("proj_index has been set")
+            mpi.report("proj_index is set.")
+            mpi.report("The fancy-index version of upfold and downfold are used.")
 
-###############################################################
-# OVERRIDE FUNCTIONS
-# Modified parts are indicated by "+++MODIFIED"
-# Added parts are indicated by "+++ADDED"
-###############################################################
+    ###############################################################
+    # OVERRIDE FUNCTIONS
+    # Modified parts are indicated by "+++MODIFIED"
+    # Added parts are indicated by "+++ADDED"
+    ###############################################################
 
     def downfold(self, ik, ish, bname, gf_to_downfold, gf_inp, shells='corr', ir=None, overwrite_gf_inp=False,
                  fac=1.0):
@@ -49,12 +45,6 @@ class SumkDFT(SumkDFT):
         """
 
         # +++ADDED
-        if self.skip_projmat:
-            if overwrite_gf_inp:
-                gf_inp += gf_to_downfold * fac
-                return None
-            else:
-                return gf_to_downfold.copy()
         if self.proj_index is not None:
             return self.downfold_index(ik, ish, bname, gf_to_downfold, gf_inp, shells, ir, overwrite_gf_inp, fac)
 
@@ -96,12 +86,6 @@ class SumkDFT(SumkDFT):
         """
 
         # +++ADDED
-        if self.skip_projmat:
-            if overwrite_gf_inp:
-                gf_inp += gf_to_upfold * fac
-                return None
-            else:
-                return gf_to_upfold.copy()
         if self.proj_index is not None:
             return self.upfold_index(ik, ish, bname, gf_to_upfold, gf_inp, shells, ir, overwrite_gf_inp, fac)
 
@@ -131,19 +115,17 @@ class SumkDFT(SumkDFT):
     def lattice_gf(self, ik, mu=None, iw_or_w="iw", beta=40, broadening=None, mesh=None, with_Sigma=True, with_dc=True):
         r"""
         """
+
+        # +++ADDED
+        # print_time function is inserted in several places for benchmark
         import time
         start = [time.time(),time.time()]
         def print_time(txt):
-            # global start
-            now = time.time()
-            # print("time {:>8.5f}sec @ {}".format(now-start[0], txt))
-            print("  time {:>8.5f}sec {:>8.5f}sec @ {}".format(now-start[0], now-start[1], txt))
-            start[0] = now
-
-        # print("\n=====================")
-        # print("Start extract_G_loc")
+            # now = time.time()
+            # print("  time {:>8.5f}sec {:>8.5f}sec @ {}".format(now-start[0], now-start[1], txt))
+            # start[0] = now
+            pass
         print_time("Start lattice_gf")
-
 
         if mu is None:
             mu = self.chemical_potential
@@ -201,7 +183,6 @@ class SumkDFT(SumkDFT):
 
         # Set up G_latt
         if set_up_G_latt:
-            print("*** set_up_G_latt")
             block_structure = [
                 range(self.n_orbitals[ik, ntoi[sp]]) for sp in spn]
             gf_struct = [(spn[isp], block_structure[isp])
@@ -226,7 +207,6 @@ class SumkDFT(SumkDFT):
                 self.cache_omega << iOmega_n
             elif iw_or_w == "w":
                 self.cache_omega << Omega + 1j * broadening
-
         print_time("Set up G_latt")
 
         # if iw_or_w == "iw":
@@ -236,7 +216,6 @@ class SumkDFT(SumkDFT):
         # +++MODIFIED
         # just copy from cache
         G_latt << self.cache_omega
-
         print_time("G_latt << iOmega_n")
 
         idmat = [numpy.identity(
@@ -248,7 +227,6 @@ class SumkDFT(SumkDFT):
             M[ibl] = self.hopping[ik, ind, 0:n_orb, 0:n_orb] - \
                 (idmat[ibl] * mu) - (idmat[ibl] * self.h_field * (1 - 2 * ibl))
         G_latt -= M
-
         print_time("G_latt -= M")
 
         if with_Sigma:
@@ -259,7 +237,6 @@ class SumkDFT(SumkDFT):
                     # +++MODIFIED
                     # Subtract directly from G_latt (no temporary storage is introduced)
                     self.upfold(ik, icrsh, bname, sigma_minus_dc[icrsh][bname], gf, overwrite_gf_inp=True, fac=-1)
-
         print_time("upfold")
 
         G_latt.invert()
@@ -273,17 +250,17 @@ class SumkDFT(SumkDFT):
         r"""
         """
 
+        # +++ADDED
+        # print_time function is inserted in several places for benchmark
         import time
         start = [time.time(),time.time()]
         def print_time(txt):
-            # global start
-            now = time.time()
-            # print("time {:>8.5f}sec @ {}".format(now-start[0], txt))
-            print("time {:>8.5f}sec {:>8.5f}sec @ {}".format(now-start[0], now-start[1], txt))
-            start[0] = now
-
-        print("\n=====================")
-        print("Start extract_G_loc")
+            # now = time.time()
+            # print("time {:>8.5f}sec {:>8.5f}sec @ {}".format(now-start[0], now-start[1], txt))
+            # start[0] = now
+            pass
+        # print("\n=====================")
+        # print("Start extract_G_loc")
         print_time("start")
 
         if mu is None:
@@ -367,46 +344,15 @@ class SumkDFT(SumkDFT):
                             self.inequiv_to_corr[ish]][block_sumk][ind1_sumk, ind2_sumk]
 
         print_time("symm, rotations, solver_to_sumk")
-        print("End extract_G_loc")
-        print("=====================\n")
+        # print("End extract_G_loc")
+        # print("=====================\n")
 
         # return only the inequivalent shells:
         return G_loc_inequiv
 
-###############################################################
-# ADDED FUNCTIONS
-###############################################################
-
-    def check_if_proj_mat_is_a_unit_matrix(self):
-        """
-        Return True if proj_mat is a unit matrix
-        """
-
-        def is_unitmatrix(mat):
-            if mat.ndim == 2 \
-                    and mat.shape[0] == mat.shape[1] \
-                    and numpy.allclose(mat, numpy.identity(mat.shape[0])):
-                return True
-            else:
-                return False
-
-        # print(self.proj_mat.shape)
-        projmat_is_a_unit_matrix = True
-        for ik in range(self.n_k):
-            for icrsh in range(self.n_corr_shells):
-                for isp, sp in enumerate(self.spin_block_names[self.corr_shells[icrsh]['SO']]):
-                    ind = self.spin_names_to_ind[
-                        self.corr_shells[icrsh]['SO']][sp]
-                    dim = self.corr_shells[icrsh]['dim']
-                    n_orb = self.n_orbitals[ik, ind]
-                    projmat = self.proj_mat[ik, ind, icrsh, 0:dim, 0:n_orb]
-                    # print(projmat.shape)
-                    # print(projmat)
-                    if not is_unitmatrix(projmat):
-                        projmat_is_a_unit_matrix = False
-                        break
-
-        return projmat_is_a_unit_matrix
+    ###############################################################
+    # ADDED FUNCTIONS
+    ###############################################################
 
     def make_proj_index(self):
         """
@@ -424,14 +370,8 @@ class SumkDFT(SumkDFT):
                     dim = self.corr_shells[icrsh]['dim']
                     n_orb = self.n_orbitals[ik, ind]
                     projmat = self.proj_mat[ik, ind, icrsh, 0:dim, 0:n_orb]
-                    # print(projmat.shape)
-                    # print(projmat)
-                    # index = numpy.where(projmat == 1)
-                    # print(index)
                     for i in range(dim):
-                    # for proj in projmat:
                         index = numpy.where(projmat[i] == 1)
-                        # print(index)
                         if len(index) != 1:
                             return None
                         else:
@@ -444,7 +384,6 @@ class SumkDFT(SumkDFT):
         fancy-index version of downfold
         """
 
-        # temp = gf_inp.copy()
         if overwrite_gf_inp:
             gf_downfolded = gf_inp
         else:
@@ -468,26 +407,15 @@ class SumkDFT(SumkDFT):
 
         # gf_downfolded.from_L_G_R(
         #     projmat, gf_to_downfold, projmat.conjugate().transpose())
-        # temp.from_L_G_R(
-        #     projmat, gf_to_downfold, projmat.conjugate().transpose())
 
-        # print("gf_downfolded.shape = {}".format(gf_downfolded.data.shape))
-        # print("gf_to_downfold.shape = {}".format(gf_to_downfold.data.shape))
-
-        # gf_downfolded.zero()
         i_start = projindex[0]
         i_end = projindex[0] + projindex.shape[0]
-        # print(i_start, i_end)
         if numpy.allclose(projindex, list(range(i_start, i_end))):
             gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, i_start:i_end, i_start:i_end] * fac
             gf_downfolded.tail.data[:, :, :] += gf_to_downfold.tail.data[:, i_start:i_end, i_start:i_end] * fac
         else:
             gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, projindex, :][:, :, projindex] * fac
             gf_downfolded.tail.data[:, :, :] += gf_to_downfold.tail.data[:, projindex, :][:, :, projindex] * fac
-        # print(gf_downfolded.tail)
-
-        # assert numpy.allclose(gf_downfolded.data, temp.data)
-        # assert numpy.allclose(gf_downfolded.tail.data, temp.tail.data)
 
         if overwrite_gf_inp:
             return None
@@ -499,7 +427,6 @@ class SumkDFT(SumkDFT):
         fancy-index version of upfold
         """
 
-        # temp = gf_inp.copy()
         if overwrite_gf_inp:
             gf_upfolded = gf_inp
         else:
@@ -523,49 +450,15 @@ class SumkDFT(SumkDFT):
 
         # gf_upfolded.from_L_G_R(
         #     projmat.conjugate().transpose(), gf_to_upfold, projmat)
-        # temp.from_L_G_R(
-        #     projmat.conjugate().transpose(), gf_to_upfold, projmat)
 
-        # print("gf_upfolded.shape = {}".format(gf_upfolded.data.shape))
-        # print("gf_to_upfold.shape = {}".format(gf_to_upfold.data.shape))
-
-        # print(projindex)
         i_start = projindex[0]
         i_end = projindex[0] + projindex.shape[0]
-        # print(i_start, i_end)
         if numpy.allclose(projindex, list(range(i_start, i_end))):
-        # if False:
-            # print("continuous")
-            # gf_upfolded.data[:, i_start:i_end, i_start:i_end] = gf_to_upfold.data
-            # gf_upfolded.tail.data[:, i_start:i_end, i_start:i_end] = gf_to_upfold.tail.data
-            # ***TEMP
             gf_upfolded.data[:, i_start:i_end, i_start:i_end] += gf_to_upfold.data * fac
             gf_upfolded.tail.data[:, i_start:i_end, i_start:i_end] += gf_to_upfold.tail.data * fac
         else:
-            # gf_upfolded.data[:, projindex, :][:, :, projindex] = gf_to_upfold.data
-            # gf_upfolded.tail.data[:, projindex, :][:, :, projindex] = gf_to_upfold.tail.data
             gf_upfolded.data[:, projindex, :][:, :, projindex] += gf_to_upfold.data * fac
             gf_upfolded.tail.data[:, projindex, :][:, :, projindex] += gf_to_upfold.tail.data * fac
-
-        # projindex_inv = numpy.full(n_orb, dim, dtype=int)
-        # for i, index in enumerate(projindex):
-        #     projindex_inv[index] = i
-        #
-        # gf_to_upfold_data = numpy.zeros(gf_upfolded.data.shape, dtype=complex)
-        # gf_to_upfold_data[:, 0:dim, 0:dim] = gf_to_upfold.data[:, :, :]
-        # gf_upfolded.data[:, :, :] = gf_to_upfold_data[:, projindex_inv, :][:, :, projindex_inv]
-        #
-        # gf_to_upfold_tail = numpy.zeros(gf_upfolded.tail.data.shape, dtype=complex)
-        # gf_to_upfold_tail[:, 0:dim, 0:dim] = gf_to_upfold.tail.data[:, :, :]
-        # gf_upfolded.tail.data[:, :, :] = gf_to_upfold_tail[:, projindex_inv, :][:, :, projindex_inv]
-
-
-        # gf_to_upfold_data_expanded = numpy.zeros(gf_upfolded.data.shape)
-        # gf_to_upfold_data_expanded[:, 0:dim, 0:dim] = gf_to_upfold.data[:, :, :]
-
-
-        # assert numpy.allclose(gf_upfolded.data, temp.data)
-        # assert numpy.allclose(gf_upfolded.tail.data, temp.tail.data)
 
         if overwrite_gf_inp:
             return None
