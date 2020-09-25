@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import numpy
 import copy
+from warnings import warn
 from pytriqs.gf.local import *
 import pytriqs.utility.mpi as mpi
 from .dft_tools_compat import SumkDFT
@@ -16,12 +17,6 @@ class SumkDFT_opt(SumkDFT):
 
         super(SumkDFT_opt, self).__init__(hdf_file, h_field, use_dft_blocks, dft_data, symmcorr_data, parproj_data,
                                       symmpar_data, bands_data, transp_data, misc_data)
-
-        # Make index for projection
-        self.proj_index = self.make_proj_index()
-        if self.proj_index is not None:
-            mpi.report("proj_index is set.")
-            mpi.report("The fancy-index version of upfold and downfold are used.")
 
     ###############################################################
     # OVERRIDE FUNCTIONS
@@ -45,7 +40,7 @@ class SumkDFT_opt(SumkDFT):
         """
 
         # +++ADDED
-        if self.proj_index is not None:
+        if self.index_works(shells):
             return self.downfold_index(ik, ish, bname, gf_to_downfold, gf_inp, shells, ir, overwrite_gf_inp, fac)
 
         gf_downfolded = gf_inp.copy()
@@ -86,7 +81,7 @@ class SumkDFT_opt(SumkDFT):
         """
 
         # +++ADDED
-        if self.proj_index is not None:
+        if self.index_works(shells):
             return self.upfold_index(ik, ish, bname, gf_to_upfold, gf_inp, shells, ir, overwrite_gf_inp, fac)
 
         gf_upfolded = gf_inp.copy()
@@ -353,6 +348,25 @@ class SumkDFT_opt(SumkDFT):
     ###############################################################
     # ADDED FUNCTIONS
     ###############################################################
+
+    def index_works(self, shells):
+        """
+        Return True if the index version of upfold/downfold can be used.
+        If True, proj_index is set (necessary for running the index version).
+        """
+        if shells=='corr':
+            # (Re)make proj_index if proj_index has not been computed or if proj_mat has been updated
+            if not hasattr(self, 'projmat_id') or self.projmat_id != id(self.proj_mat):
+                self.proj_index = self.make_proj_index()
+                self.projmat_id = id(self.proj_mat)  # Store ID(proj_mat) to skip making the index next time
+                if self.proj_index is not None:
+                    mpi.report("The fancy-index version of upfold/downfold is used.")
+            projindex = self.proj_index
+        elif shells=='all':
+            # TODO: make self.proj_index_all from self.proj_mat_all
+            projindex = None
+
+        return projindex is not None
 
     def make_proj_index(self):
         """
