@@ -2,19 +2,19 @@ from __future__ import print_function
 
 import numpy
 import copy
-from pytriqs.applications.dft.sumk_dft import SumkDFT
 from pytriqs.gf.local import *
 import pytriqs.utility.mpi as mpi
+from .dft_tools_compat import SumkDFT
 
 
-class SumkDFT(SumkDFT):
+class SumkDFT_opt(SumkDFT):
 
     def __init__(self, hdf_file, h_field=0.0, use_dft_blocks=False,
                  dft_data='dft_input', symmcorr_data='dft_symmcorr_input', parproj_data='dft_parproj_input',
                  symmpar_data='dft_symmpar_input', bands_data='dft_bands_input', transp_data='dft_transp_input',
                  misc_data='dft_misc_input'):
 
-        super(SumkDFT, self).__init__(hdf_file, h_field, use_dft_blocks, dft_data, symmcorr_data, parproj_data,
+        super(SumkDFT_opt, self).__init__(hdf_file, h_field, use_dft_blocks, dft_data, symmcorr_data, parproj_data,
                                       symmpar_data, bands_data, transp_data, misc_data)
 
         # Make index for projection
@@ -40,7 +40,7 @@ class SumkDFT(SumkDFT):
         ----------
         overwrite_gf_inp : bool, optional
 
-        fac : integer, optional
+        fac : float, optional
 
         """
 
@@ -81,7 +81,7 @@ class SumkDFT(SumkDFT):
         ----------
         overwrite_gf_inp : bool, optional
 
-        fac : integer, optional
+        fac : float, optional
 
         """
 
