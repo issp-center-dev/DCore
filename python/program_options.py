@@ -104,7 +104,7 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "omega_min", float, -1, "Minimum value of real frequency")
     parser.add_option("tool", "omega_max", float, 1, "Max value of real frequency")
     parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
-    parser.add_option("tool", "broadening", float, 0.1, "An additional Lorentzian broadening")
+    parser.add_option("tool", "broadening", float, 0.0, "An additional Lorentzian broadening")
     parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
     parser.add_option("tool", "omega_pade", float, 5.0, "Cutoff frequency for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.")
     parser.add_option("tool", "n_pade_min", int, 20, "Minimum number of Matsubara frequencies used for Pade approximation.")
