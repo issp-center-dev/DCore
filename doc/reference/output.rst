@@ -41,12 +41,9 @@ Files that have empty Reference in this table are explained in the following.
 
     All data are stored in ``dmft_out`` group.
     The following list summarizes data structure in the ``dmft_out`` group:
+    See :doc:`gf_format` for the data structure of the Green's function and self-energy.
 
     .. include:: dcore_out.txt
-
-    See
-    `TRIQS manual <https://triqs.ipht.cnrs.fr/1.x/reference/gfs/py/full.html#hdf5>`_
-    for the data structure of the Green's function and self-energy.
 
 -   solver_dependent_output
 
