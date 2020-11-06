@@ -1,0 +1,191 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Antiferromagnetic state in 3D Hubbard model &#8212; DCore  documentation</title>
+    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="antiferromagnetic-state-in-3d-hubbard-model">
+<h1>Antiferromagnetic state in 3D Hubbard model<a class="headerlink" href="#antiferromagnetic-state-in-3d-hubbard-model" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, you will learn the following:</p>
+<ul class="simple">
+<li>How to define a lattice model using the Wannier90 interface</li>
+<li>How to calculate antiferromagnetic states</li>
+<li>How to set an initial guess for the self-energy</li>
+</ul>
+<p>As a particular example, we consider the Hubbard model on a cubic lattice with nearest neighbor hopping of <span class="math notranslate nohighlight">\(t=1\)</span>.
+Within the single-site DMFT approximation, the model shows an antiferromagnetic transition at low temperature.
+The transition temperature was estimated as <span class="math notranslate nohighlight">\(T_\mathrm{c}/t\simeq 0.5\)</span> in <a class="reference external" href="https://link.aps.org/doi/10.1103/PhysRevB.72.060411">a previous study</a>.
+In this tutorial, we compute the antiferromagetic state below <span class="math notranslate nohighlight">\(T_\mathrm{c}\)</span> using the ALPS/CT-HYB solver.
+The complete input file is shown below.</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">seedname</span> <span class="o">=</span> <span class="s">cubic</span>
+<span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
+<span class="na">ncor</span> <span class="o">=</span> <span class="s">8</span>
+<span class="c1">#Numbers of orbitals on two inequivalent shells</span>
+<span class="na">norb</span> <span class="o">=</span> <span class="s">1, 1</span>
+<span class="na">nelec</span> <span class="o">=</span> <span class="s">8.0</span>
+<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(10.0, 0.0, 0.0), (10.0, 0.0, 0.0)]</span>
+<span class="c1">#Mapping from correlated shells to two inequivalent shells</span>
+<span class="na">corr_to_inequiv</span> <span class="o">=</span>  <span class="s">0, 1, 1, 0, 1, 0, 0, 1</span>
+<span class="na">nk</span> <span class="o">=</span> <span class="s">16</span>
+
+<span class="k">[mpi]</span>
+<span class="na">command</span> <span class="o">=</span> <span class="s">&#39;$MPIRUN -np #&#39;</span>
+
+<span class="k">[system]</span>
+<span class="na">beta</span> <span class="o">=</span> <span class="s">5.0</span>
+<span class="c1">#half filling (mu=U/2)</span>
+<span class="na">mu</span> <span class="o">=</span> <span class="s">5.0</span>
+<span class="na">fix_mu</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">ALPS/cthyb</span>
+<span class="na">timelimit{int}</span> <span class="o">=</span> <span class="s">60</span>
+<span class="na">exec_path{str}</span> <span class="o">=</span> <span class="s">$HOME/opt/CT-HYB/bin/hybmat</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span> <span class="o">=</span> <span class="s">30</span>
+<span class="na">initial_static_self_energy</span> <span class="o">=</span> <span class="s">{0: &#39;init_se_up.txt&#39;, 1: &#39;init_se_down.txt&#39;}</span>
+
+<span class="k">[tool]</span>
+<span class="na">broadening</span> <span class="o">=</span> <span class="s">0.1</span>
+<span class="na">knode</span> <span class="o">=</span> <span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span>
+<span class="na">nk_line</span> <span class="o">=</span> <span class="s">100</span>
+<span class="na">omega_max</span> <span class="o">=</span> <span class="s">10.0</span>
+<span class="na">omega_min</span> <span class="o">=</span> <span class="s">-10.0</span>
+<span class="na">Nomega</span> <span class="o">=</span> <span class="s">400</span>
+</pre></div>
+</div>
+<div class="section" id="define-lattice-model">
+<h2>Define lattice model<a class="headerlink" href="#define-lattice-model" title="Permalink to this headline">¶</a></h2>
+<p>First, we define the hopping matrix of the 3D Hubbard model with a 2x2x2 unit cell.
+Running <a class="reference download internal" download="" href="../../_downloads/36665470588cd3ccd44e89306f9c9175/mk_hr.py"><code class="xref download docutils literal notranslate"><span class="pre">mk_hr.py</span></code></a> generates a text file (cubic_hr.dat) in the Wannier90 format.
+The unit cell contains eight sites whose internal coordinates are (0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1), (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1).</p>
+<p>We now assume an antiferromagnetic order at <span class="math notranslate nohighlight">\(q=(\pi, \pi, \pi)\)</span>.
+To this end, we assign the eight sites (correlated shells) to two inequivalent shells by using the <cite>corr_to_inequiv</cite> parameter in the model section.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python mk_hr.py
+</pre></div>
+</div>
+</div>
+<div class="section" id="generate-initial-guess-for-self-energy">
+<h2>Generate initial guess for self-energy<a class="headerlink" href="#generate-initial-guess-for-self-energy" title="Permalink to this headline">¶</a></h2>
+<p>Second, we generate intial guesses for the (static) self-energies on the two inequivalent shells.
+Running <a class="reference download internal" download="" href="../../_downloads/4f013d26349fd96ca7be4fa78c7286b0/mk_init_se.py"><code class="xref download docutils literal notranslate"><span class="pre">mk_init_se.py</span></code></a> generates <cite>init_se_up.txt</cite> and <cite>init_se_down.txt</cite>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python mk_init_se.py
+</pre></div>
+</div>
+</div>
+<div class="section" id="self-consistent-calculations">
+<h2>Self-consistent calculations<a class="headerlink" href="#self-consistent-calculations" title="Permalink to this headline">¶</a></h2>
+<p>Now, DMFT calculations can be done as usual.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
+dcore_pre cubic.ini &gt; output-pre
+dcore cubic.ini --np <span class="m">48</span> &gt; output
+dcore_post cubic.ini --np <span class="m">48</span> &gt; output-post
+</pre></div>
+</div>
+<p>In the standard output of <cite>dcore</cite>, you will see that the magnetic moments converge to <span class="math notranslate nohighlight">\(\simeq 0.43\)</span> (86 % of the saturated moment).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Density Matrix
+
+  Inequivalent Shell  <span class="m">0</span>
+
+    Spin  up
+          <span class="m">0</span>.929-0.000j
+    Eigenvalues:  <span class="o">[</span><span class="m">0</span>.92877164<span class="o">]</span>
+
+    Spin  down
+          <span class="m">0</span>.072-0.000j
+    Eigenvalues:  <span class="o">[</span><span class="m">0</span>.07229858<span class="o">]</span>
+
+    Magnetic moment <span class="o">(</span>only spin contribution, <span class="nv">S</span><span class="o">=</span><span class="m">1</span>/2 gives <span class="m">0</span>.5<span class="o">)</span>
+      mx, my, mz : <span class="m">0</span>.0 <span class="m">0</span>.0 <span class="m">0</span>.428236533178
+
+  Inequivalent Shell  <span class="m">1</span>
+
+    Spin  up
+          <span class="m">0</span>.078-0.000j
+    Eigenvalues:  <span class="o">[</span><span class="m">0</span>.0779467<span class="o">]</span>
+
+    Spin  down
+          <span class="m">0</span>.930-0.000j
+    Eigenvalues:  <span class="o">[</span><span class="m">0</span>.92994248<span class="o">]</span>
+
+    Magnetic moment <span class="o">(</span>only spin contribution, <span class="nv">S</span><span class="o">=</span><span class="m">1</span>/2 gives <span class="m">0</span>.5<span class="o">)</span>
+      mx, my, mz : <span class="m">0</span>.0 <span class="m">0</span>.0 -0.425997888424
+</pre></div>
+</div>
+<p>Inequivalent shell0</p>
+<a class="reference internal image-reference" href="../../_images/iter_sigma-ish01.png"><img alt="../../_images/iter_sigma-ish01.png" class="align-center" src="../../_images/iter_sigma-ish01.png" style="width: 800px;" /></a>
+<p>Inequivalent shell1</p>
+<a class="reference internal image-reference" href="../../_images/iter_sigma-ish1.png"><img alt="../../_images/iter_sigma-ish1.png" class="align-center" src="../../_images/iter_sigma-ish1.png" style="width: 800px;" /></a>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

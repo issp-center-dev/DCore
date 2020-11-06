@@ -1,4 +1,4 @@
-Antiferromagnetic state in 3D Hubbard model
+Antiferromagnetic state
 ============================================
 
 In this tutorial, you will learn the following:
@@ -7,38 +7,74 @@ In this tutorial, you will learn the following:
 * How to calculate antiferromagnetic states
 * How to set an initial guess for the self-energy
 
-As a particular example, we consider the Hubbard model on a cubic lattice with nearest neighbor hopping of :math:`t=1`.
-Within the single-site DMFT approximation, the model shows an antiferromagnetic transition at low temperature.
-The transition temperature was estimated as :math:`T_\mathrm{c}/t\simeq 0.5` in `a previous study <https://link.aps.org/doi/10.1103/PhysRevB.72.060411>`_.
-In this tutorial, we compute the antiferromagetic state below :math:`T_\mathrm{c}` using the ALPS/CT-HYB solver.
-The complete input file is shown below.
+As a particular example, we consider the Hubbard model on a square lattice (:doc:`/tutorial/square/square`).
+Within the single-site DMFT approximation, the model shows an antiferromagnetic transition at low temperature (the Mermin-Wagner theorem is not fulfilled in DMFT).
+The transition temperature was estimated as :math:`T_\mathrm{c}/t\simeq 0.23` for :math:`U=4`.
+This means that the parameter set used in [:doc:`/tutorial/square/square`] is actually in the antiferromagnetic phase.
+In this tutorial, we compute the antiferromagetic solution below :math:`T_\mathrm{c}` using a CT-HYB solver.
 
-.. literalinclude:: cubic.ini
+.. in `a previous study <https://link.aps.org/doi/10.1103/PhysRevB.72.060411>`_.
+
+The complete input file is shown below:
+
+:download:`square_afm.ini`
+
+.. literalinclude:: square_afm.ini
    :language: ini
 
 Define lattice model
 ---------------------------
 
-First, we define the hopping matrix of the 3D Hubbard model with a 2x2x2 unit cell.
-Running :download:`mk_hr.py <mk_hr.py>` generates a text file (cubic_hr.dat) in the Wannier90 format.
-The unit cell contains eight sites whose internal coordinates are (0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1), (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1).
+..
+    First, we define the hopping matrix of the 3D Hubbard model with a 2x2x2 unit cell.
+    Running :download:`mk_hr.py <mk_hr.py>` generates a text file (cubic_hr.dat) in the Wannier90 format.
+    The unit cell contains four sites whose internal coordinates are (0, 0), (0, 1), (1, 0), (1, 1).
 
-We now assume an antiferromagnetic order at :math:`q=(\pi, \pi, \pi)`.
-To this end, we assign the eight sites (correlated shells) to two inequivalent shells by using the `corr_to_inequiv` parameter in the model section.
+    We now assume an antiferromagnetic order characterized by the wave vector :math:`q=(\pi, \pi)`.
+    To this end, we assign the four sites (correlated shells) to two inequivalent shells by using the ``corr_to_inequiv`` parameter in the model section.
+
+First, we define the hopping matrix of the 2D Hubbard model with a 2x2 unit cell.
+Running the script :download:`mk_hr_2.py` as
 
 .. code-block:: bash
 
-   python mk_hr.py
+   python mk_hr_2.py
+
+a text file in the Wannier90 format is generated (:download:`afm_dim2_hr.dat`).
+The unit cell contains four sites whose internal coordinates are (0, 0), (0, 1), (1, 0), (1, 1).
+
+We now assume an antiferromagnetic order characterized by the wave vector :math:`q=(\pi, \pi)`.
+To this end, we assign the four sites (correlated shells) to two inequivalent shells by using the ``corr_to_inequiv`` parameter in the model section.
+
 
 Generate initial guess for self-energy
 --------------------------------------
 
-Second, we generate intial guesses for the (static) self-energies on the two inequivalent shells.
-Running :download:`mk_init_se.py <mk_init_se.py>` generates `init_se_up.txt` and `init_se_down.txt`.
+..
+    Second, we generate intial guesses for the (static) self-energies on the two inequivalent shells.
+    Running :download:`mk_init_se.py <mk_init_se.py>` generates `init_se_up.txt` and `init_se_down.txt`.
+
+    .. code-block:: bash
+
+        python mk_init_se.py
+
+Second, we set up intial guesses for the (static) self-energies on the two inequivalent shells.
+For one shell, we use the text file :download:`init_se_up.txt` containing
 
 .. code-block:: bash
 
-   python mk_init_se.py
+    0 0 0 -1.0 0.0
+    1 0 0 1.0 0.0
+
+and for the other, we use :download:`init_se_down.txt` containing
+
+.. code-block:: bash
+
+    0 0 0 1.0 0.0
+    1 0 0 -1.0 0.0
+
+Thus, spin moments tend to turn up on inequivalent shell0 and turn down on shell1.
+
 
 Self-consistent calculations
 ------------------------------
@@ -52,46 +88,46 @@ Now, DMFT calculations can be done as usual.
    dcore_post cubic.ini --np 48 > output-post
 
 
-In the standard output of `dcore`, you will see that the magnetic moments converge to :math:`\simeq 0.43` (86 % of the saturated moment).
+In the standard output of ``dcore``, you will see that the magnetic moments converge to :math:`\simeq 0.28` (57 % of the saturated moment).
 
 .. code-block:: bash
 
-   Density Matrix
-   
-     Inequivalent Shell  0
-   
-       Spin  up
-             0.929-0.000j
-       Eigenvalues:  [0.92877164]
-   
-       Spin  down
-             0.072-0.000j
-       Eigenvalues:  [0.07229858]
-   
-       Magnetic moment (only spin contribution, S=1/2 gives 0.5)
-         mx, my, mz : 0.0 0.0 0.428236533178
-   
-     Inequivalent Shell  1
-   
-       Spin  up
-             0.078-0.000j
-       Eigenvalues:  [0.0779467]
-   
-       Spin  down
-             0.930-0.000j
-       Eigenvalues:  [0.92994248]
-   
-       Magnetic moment (only spin contribution, S=1/2 gives 0.5)
-         mx, my, mz : 0.0 0.0 -0.425997888424
+    Density Matrix
 
-Inequivalent shell0
+      Inequivalent Shell  0
 
-.. image:: check/iter_sigma-ish0.png
-   :width: 800
+        Spin  up
+              0.784-0.000j
+        Eigenvalues:  [0.7837032]
+
+        Spin  down
+              0.218+0.000j
+        Eigenvalues:  [0.2182982]
+
+        Magnetic moment (only spin contribution, S=1/2 gives 0.5)
+          mx,my,mz= 0.0 0.0 0.282702499302
+
+      Inequivalent Shell  1
+
+        Spin  up
+              0.218-0.000j
+        Eigenvalues:  [0.21842138]
+
+        Spin  down
+              0.784-0.000j
+        Eigenvalues:  [0.78360972]
+
+        Magnetic moment (only spin contribution, S=1/2 gives 0.5)
+          mx,my,mz= 0.0 0.0 -0.282594174364
+
+The graph below is one of the figures generated by ``dcore_check``, which shows the convergence of the spin moment for inequivalent shell0:
+
+.. image:: check/iter_spin-ish0.png
+   :width: 80%
    :align: center
 
-Inequivalent shell1
+For inequivalent shell1, the spin moment points the opposite directions:
 
-.. image:: check/iter_sigma-ish1.png
-   :width: 800
+.. image:: check/iter_spin-ish1.png
+   :width: 80%
    :align: center
