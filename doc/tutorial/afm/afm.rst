@@ -1,4 +1,4 @@
-Antiferromagnetic state in 3D Hubbard model
+Antiferromagnetic state
 ============================================
 
 In this tutorial, you will learn the following:
@@ -9,7 +9,7 @@ In this tutorial, you will learn the following:
 
 As a particular example, we consider the Hubbard model on a square lattice (:doc:`/tutorial/square/square`).
 Within the single-site DMFT approximation, the model shows an antiferromagnetic transition at low temperature (the Mermin-Wagner theorem is not fulfilled in DMFT).
-The transition temperature was estimated as :math:`T_\mathrm{c}/t\simeq 0.23` for :math:`U=4` (see for example ??).
+The transition temperature was estimated as :math:`T_\mathrm{c}/t\simeq 0.23` for :math:`U=4`.
 This means that the parameter set used in [:doc:`/tutorial/square/square`] is actually in the antiferromagnetic phase.
 In this tutorial, we compute the antiferromagetic solution below :math:`T_\mathrm{c}` using a CT-HYB solver.
 
