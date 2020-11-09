@@ -171,109 +171,164 @@ class DMFTCoreCheck(object):
 
         print(" Output " + filename)
 
-
-    def plot_iter_mu(self, basename, fig_ext):
+    def _plot_iter(self, basename, fig_ext, data_list, ylabel):
         """
-        plot chemical potential as a function of iteration number
-        """
-        self.__plot_init()
+        A core method for plot of convergence
 
-        iter = [ itr for itr in range(1, self.n_iter+1) ]
-        mu = [ self.solver.chemical_potential(itr) for itr in range(1, self.n_iter+1) ]
+        Parameters
+        ----------
+        basename
+        fig_ext
+        data_list: list of dict. The dict must includes
+            'y': numpy.ndarray  (mandatory)
+            'label': string  ('' if not provided)
+            'iorb': int  (0 if not provided)
+            'isp': int  (0 if not prvided)
+        ylabel: string
 
-        # save data
-        filename = basename + ".dat"
-        numpy.savetxt(filename, zip(iter, mu), fmt="%d %.10e")
-        print(" Output " + filename)
+        Returns
+        -------
 
-        # plot
-        filename = basename + fig_ext
-        self.plt.figure(figsize=(8, 10))
-        gs = GridSpec(2, 1)
-
-        self.plt.subplot(gs[0])
-        self.plt.plot(iter, mu, marker="o")
-        self.plt.xlabel("iterations")
-        self.plt.ylabel("$\mu$")
-
-        # diff
-        self.plt.subplot(gs[1])
-        self.plt.plot(iter[1:], abs(numpy.array(mu[1:])-numpy.array(mu[:-1])), marker="o")
-        self.plt.xlabel("iterations")
-        self.plt.ylabel("diff")
-        self.plt.yscale("log")
-
-        self.plt.savefig(filename)
-        print(" Output " + filename)
-
-    def plot_iter_sigma(self, basename, fig_ext):
-        """
-        plot renormalization factor as a function of iteration number
         """
 
-        iter = [ itr for itr in range(1, self.n_iter+1) ]
-        z_all = []
-        label_orb_diag = []
-        z_orb_diag = []
+        iter = [itr for itr in range(1, self.n_iter + 1)]
 
-        # plot
+        # set linestyles
         linestyles = ['-', ':', '--', '-.', '-', ':']
         markers = ['v', 'x']
         colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+
         def get_ls(idx):
-            return linestyles[idx%len(linestyles)]
+            return linestyles[idx % len(linestyles)]
 
         def get_c(idx):
-            return colors[idx%len(colors)]
+            return colors[idx % len(colors)]
 
-        w0 = self.n_iw
-        for ish in range(self.n_sh):
-            self.__plot_init()
-            self.plt.figure(figsize=(8, 10))
-            gs = GridSpec(2, 1)
+        # plot
+        self.__plot_init()
+        self.plt.figure(figsize=(8, 10))
+        gs = GridSpec(2, 1)
 
-            ax1 = self.plt.subplot(gs[0])
-            ax2 = self.plt.subplot(gs[1])
+        ax1 = self.plt.subplot(gs[0])
+        ax2 = self.plt.subplot(gs[1])
 
-            norb = self.shell_info[ish]['block_dim']
-            for isp, spn in enumerate(self.spin_names):
-                for iorb in range(norb):
-                    sigma0 = numpy.array([ self.solver.Sigma_iw_sh(itr)[ish][spn].data[w0, iorb, iorb].imag
-                                           for itr in range(1, self.n_iter+1) ])
-                    z = 1./(1-sigma0/numpy.pi*self.beta)
-                    z_orb_diag.append(z)
-                    label_orb_diag.append("shell=%d, spin=%s, %d" %(ish,spn,iorb))
-    
-                    label = "shell=%d, spin=%s, %d" %(ish,spn,iorb)
-                    ax1.plot(iter, z, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
-                    diff = abs(numpy.array(z[1:])-numpy.array(z[:-1]))
-                    ax2.plot(iter[1:], diff, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+        for data in data_list:
+            y = data['y']
+            label = data.get('label', '')
+            iorb = data.get('iorb', 0)
+            isp = data.get('isp', 0)
 
-            filename = basename + '-ish{}'.format(ish) + fig_ext
-            ax1.set_xlabel("iterations")
-            ax1.set_ylabel("Renormalization factor")
-            ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+            ax1.plot(iter, y, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            diff = abs(numpy.array(y[1:]) - numpy.array(y[:-1]))
+            ax2.plot(iter[1:], diff, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
 
-            # diff
-            ax2.set_xlabel("iterations")
-            ax2.set_ylabel("diff")
-            ax2.set_yscale("log")
-            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        filename = basename + fig_ext
+        ax1.set_xlabel("iterations")
+        ax1.set_ylabel(ylabel)
+        ax1.set_xlim(left=iter[0])
+        ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
 
-            self.plt.tight_layout()
-            self.plt.savefig(filename)
-            print(" Output " + filename)
+        ax2.set_xlabel("iterations")
+        ax2.set_ylabel("diff")
+        ax2.set_yscale("log")
+        ax2.set_xlim(left=iter[0])
+        ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+
+        # self.plt.xlim(left=iter[0])
+        self.plt.tight_layout()
+        self.plt.savefig(filename)
+        print(" Output " + filename)
 
         # save data
         filename = basename + ".dat"
         with open(filename, "w") as f:
             for i, itr in enumerate(iter):
                 print(itr, file=f, end="")
-                for z in z_orb_diag:
-                    print("", z[i], file=f, end="")
+                for data in data_list:
+                    y = data['y']
+                    print("", y[i], file=f, end="")
                 print("", file=f)
         print(" Output " + filename)
 
+    def plot_iter_mu(self, basename, fig_ext):
+        """
+        plot chemical potential as a function of iteration number
+        """
+        mu = [ self.solver.chemical_potential(itr) for itr in range(1, self.n_iter+1) ]
+        data = {'y': mu}
+        self._plot_iter(basename, fig_ext, [data, ], "$\mu$")
+
+    def plot_iter_occupation(self, basename, fig_ext):
+        """
+        plot Occupation number as a function of iteration number
+        """
+
+        for ish in range(self.n_sh):
+            # Make a graph for each shell
+            data_list = []
+            norb = self.shell_info[ish]['block_dim']
+            for isp, spn in enumerate(self.spin_names):
+                for iorb in range(norb):
+                    occup = numpy.array([self.solver.density_matrix(itr)[ish][spn][iorb, iorb].real
+                                         for itr in range(1, self.n_iter + 1)])
+
+                    data = {
+                        'y': occup,
+                        'label': "shell=%d, spin=%s, %d" % (ish, spn, iorb),
+                        'iorb': iorb,
+                        'isp': isp,
+                    }
+                    data_list.append(data)
+
+            self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Occupation number")
+
+    def plot_iter_spin_moment(self, basename, fig_ext):
+        """
+        plot spin moment as a function of iteration number
+        """
+
+        labels = ["$S_x$", "$S_y$", "$S_z$"]
+        for ish in range(self.n_sh):
+            # Make a graph for each shell
+            data_list = []
+            for j in range(3):
+                smoment = numpy.array([self.solver.spin_moment(itr)[ish][j]
+                                       for itr in range(1, self.n_iter + 1)])
+
+                data = {
+                    'y': smoment,
+                    'label': "shell=%d, %s" % (ish, labels[j]),
+                    'iorb': j,  # change the color depending on the spin direction
+                }
+                data_list.append(data)
+
+            self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Spin moment")
+
+    def plot_iter_sigma(self, basename, fig_ext):
+        """
+        plot renormalization factor as a function of iteration number
+        """
+
+        w0 = self.n_iw
+        for ish in range(self.n_sh):
+            # Make a graph for each shell
+            data_list = []
+            norb = self.shell_info[ish]['block_dim']
+            for isp, spn in enumerate(self.spin_names):
+                for iorb in range(norb):
+                    sigma0 = numpy.array([self.solver.Sigma_iw_sh(itr)[ish][spn].data[w0, iorb, iorb].imag
+                                          for itr in range(1, self.n_iter + 1)])
+                    z = 1. / (1 - sigma0 / numpy.pi * self.beta)
+
+                    data = {
+                        'y': z,
+                        'label': "shell=%d, spin=%s, %d" % (ish, spn, iorb),
+                        'iorb': iorb,
+                        'isp': isp,
+                    }
+                    data_list.append(data)
+
+            self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Renormalization factor")
 
 
 def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
@@ -292,6 +347,8 @@ def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
     check.plot_sigma_ave(basename=prefix+"sigma_ave", fig_ext=ext)
     check.plot_iter_mu(basename=prefix+"iter_mu", fig_ext=ext)
     check.plot_iter_sigma(basename=prefix+"iter_sigma", fig_ext=ext)
+    check.plot_iter_occupation(basename=prefix+"iter_occup", fig_ext=ext)
+    check.plot_iter_spin_moment(basename=prefix+"iter_spin", fig_ext=ext)
 
 
 if __name__ == '__main__':
