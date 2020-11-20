@@ -84,6 +84,8 @@ class NullSolver(SolverBase):
         # (3) Copy results into
         #   self._Sigma_iw
         #   self._Gimp_iw
+        # Only _Sigma_iw is used for updating Delta(iw), but _Gimp_iw is also required.
+        # _Gimp_iw used for, e.g., checking the self-consistency condition.
 
     def name(self):
         return "null"
