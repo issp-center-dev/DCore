@@ -734,6 +734,8 @@ class DMFTCoreSolver(object):
 
         x0 = quantities_to_check()
 
+        converge_count = 0
+
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
@@ -847,9 +849,16 @@ class DMFTCoreSolver(object):
                 print(" | converge_tol = %.1e" %tol)
                 print(" | max_error    = %.1e" %max_error)
                 if max_error < tol:
-                    print(" | converged --- iteration = %d" %iteration_number)
-                    break
+                    converge_count += 1
+                    print(" | convergence criterion satisfied. count={}".format(converge_count))
+                else:
+                    converge_count = 0
+                    print(" | convergence criterion not satisfied. count={}".format(converge_count))
                 x0 = x1
+
+                if converge_count == self._params["control"]["n_converge"]:
+                    print(" | converged --- iteration=%d" % iteration_number)
+                    break
 
             sys.stdout.flush()
 
