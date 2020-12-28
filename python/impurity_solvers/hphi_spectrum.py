@@ -120,7 +120,7 @@ class CalcSpectrum:
                 for idx, value in enumerate(spectrum):
                     fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
 
-    def _update_modpara(self, exct, ex_state = 0):
+    def _update_modpara(self, exct, ex_state=0):
         dict_mod={}
         header = []
         with open("modpara.def", "r") as fr:
