@@ -3,12 +3,9 @@ import itertools
 import numpy as np
 import os
 import sys
-from ..tools import launch_mpi_subprocesses
-
 
 class CalcSpectrum:
-    def __init__(self, filename, T_list, exct, eta, mpirun_command="", path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
-        self.filename = filename
+    def __init__(self, T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
         self.T_list = T_list
         self.exct = exct
         self.eta = eta
@@ -16,7 +13,6 @@ class CalcSpectrum:
         self.output_dir = output_dir
         self.nomega = 0
         self.path_to_HPhi = path_to_HPhi
-        self.mpirun_command = mpirun_command
 
     def Make_Spectrum_Input(self, spectrum_type="single"):
         for idx in range(self.exct):
@@ -167,12 +163,11 @@ class CalcSpectrum:
 
     def _run_HPhi(self, exct_cut, ex_state=0):
         for idx in range(exct_cut):
-            #print("Process: {}/{}".format(idx, exct_cut))
             self._update_modpara(idx, ex_state)
             input_path = "namelist_ex_{}.def".format(idx)
             exec_path = self.path_to_HPhi
-            with open('./stdout_{}.log'.format(idx), 'w') as output_f:
-                launch_mpi_subprocesses(self.mpirun_command, [exec_path, '-e', input_path], output_f)
+            cmd = "{} -e {} > std_{}.log".format(exec_path, input_path, idx)
+            subprocess.call(cmd, shell=True)
             cmd = "mv ./output/{0}_DynamicalGreen.dat ./output/{0}_DynamicalGreen_{1}.dat".format(self.header, idx)
             subprocess.call(cmd, shell=True)
 
@@ -229,3 +224,29 @@ class CalcSpectrum:
                     one_body_green[T][sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0][T] + 1J * one_body_green_tmp[1][T] )/2.0
                     one_body_green[T][sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[0][T] - 1J * one_body_green_tmp[1][T] )/2.0
         return one_body_green
+
+if __name__ == "__main__":
+
+    args = sys.argv
+    if len(args) != 2:
+        print("Error: Wrong argument.")
+        print("Usage: python hphi_spectrum.py filename")
+        exit(1)
+
+    file_name = sys.argv[1]
+    import toml
+    dict_toml = toml.load(open(file_name))
+    #def __init__(T_list, exct, eta, mpirun_command="", path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
+
+    T_list = dict_toml.get("T_list", [1.0])
+    exct = dict_toml.get("exct", 10)
+    eta = dict_toml.get("eta", 1e-4)
+    path_to_HPhi = dict_toml.get("path_to_HPhi", "./HPhi")
+    header = dict_toml.get("header", "zvo")
+    output_dir = dict_toml.get("output_dir", "./output")
+    n_site = dict_toml.get("n_site", 2)
+    calcspectrum = CalcSpectrum(T_list, exct, eta, path_to_HPhi, header, output_dir)
+    energy_list = calcspectrum.get_energies()
+    one_body_g = calcspectrum.get_one_body_green(n_site=n_site, exct_cut=exct)
+    np.save(one_body_g)
+    print(one_body_g)
