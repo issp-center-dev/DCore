@@ -87,7 +87,7 @@ class SolverBase(object):
         # self.G0_iw must be set to proper values before solve() is called.
         self._G0_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
 
-        # Output data.
+        # Output data
         # These objects must be filled with results in solve().
         # Default value of Sigma_iw is 0, which will be used for the first iteration of DMFT self-consistent procedure.
         self._Sigma_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
@@ -95,6 +95,11 @@ class SolverBase(object):
         self._Gimp_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
         self._Sigma_w = None
         #"self._G_l = None # Please define it if Legendre basis is used
+
+        # Optional output data
+        # This object will be saved into HDF5 file.
+        self.quant_to_save = {}
+        self.quant_to_save['nn_equal_time'] = numpy.zeros((self.n_flavors, self.n_flavors), dtype=float)
 
     def name(self):
         return "Base solver"

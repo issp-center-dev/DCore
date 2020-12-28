@@ -131,6 +131,12 @@ def write_Umatrix(U, Uprime, J, norb):
             print("", file=f)
 
 
+def set_tail(g_block):
+    for bname, gf in g_block:
+        gf.tail.zero()
+        gf.tail[1] = numpy.identity(gf.N1)
+
+
 class ALPSCTHYBSEGSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
@@ -267,15 +273,39 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # (3) Copy results into
         #   self._Sigma_iw
-        swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=complex)
+        #   self._Gimp_iw
+
+        def set_blockgf_from_h5(sigma, group):
+            swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=complex)
+            with HDFArchive('sim.h5', 'r') as f:
+                for orb in range(self.n_orb):
+                    for spin in range(2):
+                        swdata_array = f[group][str(orb*2+spin)]["mean"]["value"]
+                        assert swdata_array.dtype == numpy.complex
+                        assert swdata_array.shape == (self.n_iw,)
+                        swdata[spin, orb, :] = swdata_array
+            assign_from_numpy_array(sigma, swdata, self.block_names)
+
+        set_blockgf_from_h5(self._Sigma_iw, "S_omega")
+        set_blockgf_from_h5(self._Gimp_iw, "G_omega")
+
+        if triqs_major_version == 1:
+            set_tail(self._Gimp_iw)
+
+        #   self.quant_to_save['nn_equal_time']
+        nn_equal_time = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=float)
         with HDFArchive('sim.h5', 'r') as f:
-            for orb in range(self.n_orb):
-                for spin in range(2):
-                    swdata_array = f["S_omega"][str(orb*2+spin)]["mean"]["value"]
-                    assert swdata_array.dtype == numpy.complex
-                    assert swdata_array.shape == (self.n_iw,)
-                    swdata[spin, orb, :] = swdata_array
-        assign_from_numpy_array(self._Sigma_iw, swdata, self.block_names)
+            results = f["simulation"]["results"]
+            for i1, i2 in product(range(2*self.n_orb), repeat=2):
+                name = "nn_%d_%d" % (i1, i2)
+                if name in results:
+                    # Only i1>i2 is computed in CTQMC.
+                    nn_equal_time[i1, i2] = nn_equal_time[i2, i1] = results[name]["mean"]["value"]
+        # [(o1,s1), (o2,s2)] -> [o1, s1, o2, s2] -> [s1, o1, s2, o2] -> [(s1,o1), (s2,o2)]
+        nn_equal_time = nn_equal_time.reshape((self.n_orb, 2, self.n_orb, 2))\
+                                     .transpose((1, 0, 3, 2))\
+                                     .reshape((2*self.n_orb, 2*self.n_orb))
+        self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :]  # copy
 
     def name(self):
         return "ALPS/cthyb-seg"
