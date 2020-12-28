@@ -40,7 +40,7 @@ elif [ "_${TRAVIS_BRANCH}" == "_master" ]; then
   mkdir -p master
   cp -r ${ROOTDIR}/dcore_doc/* master
   git add master
-elif [ -n ${TRAVIS_TAG}]; then
+elif [ -n ${TRAVIS_TAG} ]; then
   mkdir -p ${TRAVIS_TAG}
   cp -r ${ROOTDIR}/dcore_doc/* ${TRAVIS_TAG}
   git add ${TRAVIS_TAG}

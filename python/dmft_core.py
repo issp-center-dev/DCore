@@ -202,8 +202,71 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     #      Local impurity Green's function is saved as "Gimp_iw" in DCore v2.
     #      This is intended to distinguish the local impurity Green's function from the one computed by SumkDFT.
 
-    return sol.get_Sigma_iw(), sol.get_Gimp_iw(), sol.get_Sigma_w()
+    r = {
+        'Sigma_iw': sol.get_Sigma_iw(),
+        'Gimp_iw': sol.get_Gimp_iw(),
+        'Sigma_w': sol.get_Sigma_w(),
+        'quant_to_save': sol.quant_to_save,
+    }
+    return r
 
+
+def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
+
+    # dim_tot is the dimension of spin x orbit for SO = 1 or that of orbital for SO=0
+    # dim_tot = self._dim_sh[ish]
+    # TODO: num_orb can be deleted, if inverse transformation of .tools.to_spin_full_U_matrix is implemented}
+    num_orb = int(u_mat.shape[0] / 2)
+
+    dc_imp_sh = {}  # This will be returned
+    #
+    # Hartree-Fock contribution
+    #
+    if dc_type == "HF_DFT" or dc_type == "HF_imp":
+        if use_spin_orbit:
+            dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
+            dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+            dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"], optimize=True)  # Hartree
+            dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"], optimize=True)  # Fock
+        else:
+            for sp1 in spin_block_names:
+                u_mat_reduce = u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]  # TODO: make a function
+                dens_mat_tot = sum(dens_mat.values())  # spin-sum of density matrix
+
+                dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
+                dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot, optimize=True)  # Hartree
+                dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1], optimize=True)  # Fock
+    #
+    # Fully-Localized Limit (FLL)
+    #
+    elif dc_type == "FLL":
+        if use_spin_orbit:
+            raise NotImplementedError
+        else:
+            u_sum = numpy.einsum("ijij", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb], optimize=True)
+            j_sum = numpy.einsum("ijji", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb], optimize=True)
+
+            u_ave = u_sum / num_orb**2  # U
+            u_j_ave = (u_sum - j_sum) / (num_orb*(num_orb-1))  # U-J
+            j_ave = u_ave - u_j_ave  # J
+
+            n_sp = {sp: numpy.sum(numpy.diag(dens_mat[sp])).real for sp in spin_block_names}
+            n_tot = sum(n_sp.values())
+
+            print("\n      FLL formula")
+            print("        U_ave = {0:.3f}".format(u_ave))
+            print("        J_ave = {0:.3f}".format(j_ave))
+            print("        n_sp  = {}".format(n_sp))
+            print("        n_tot = {}".format(n_tot))
+
+            dc_imp_sh = {}
+            for sp in spin_block_names:
+                dc = u_ave * (n_tot - 0.5) - j_ave * (n_sp[sp] - 0.5)
+                dc_imp_sh[sp] = numpy.identity(num_orb) * dc
+    else:
+        raise ValueError("Here should not be reached")
+
+    return dc_imp_sh
 
 
 class DMFTCoreSolver(object):
@@ -310,6 +373,10 @@ class DMFTCoreSolver(object):
 
         if 'impurity_solver' in self._params:
             self._solver_params = create_solver_params(self._params['impurity_solver'])
+
+        # physical quantities to save
+        self._quant_to_save_latest = {}  # only the latest results are saved (overwritten)
+        self._quant_to_save_history = {}  # histories are retained
 
         self._sanity_check()
 
@@ -421,11 +488,12 @@ class DMFTCoreSolver(object):
 
         raise_if_mpi_imported()
 
-        for ish in range(self._n_inequiv_shells):
+        for icrsh in range(self._n_corr_shells):
             for sp1 in self._spin_block_names:
-                if not numpy.allclose(self._dc_imp[ish][sp1], self._dc_imp[ish][sp1].conjugate().transpose()):
+                if not numpy.allclose(self._dc_imp[icrsh][sp1], self._dc_imp[icrsh][sp1].conjugate().transpose()):
                     raise RuntimeError("dc_imp is not hermite!")
 
+        for ish in range(self._n_inequiv_shells):
             if make_hermite_conjugate(self._sh_quant[ish].Sigma_iw, check_only=True) > 1e-8:
                 raise RuntimeError("Sigma_iw is not hermite conjugate!")
 
@@ -497,8 +565,7 @@ class DMFTCoreSolver(object):
         return r['Gloc_iw_sh'], r['dm_sh']
 
 
-    def print_density_matrix(self, dm_sh):
-        smoments = spin_moments_sh(dm_sh)
+    def print_density_matrix(self, dm_sh, smoment_sh):
         print("\nDensity Matrix")
         for ish in range(self._n_inequiv_shells):
             print("\n  Inequivalent Shell ", ish)
@@ -513,7 +580,7 @@ class DMFTCoreSolver(object):
                 print('    Eigenvalues: ', evals)
             print('')
             print('    Magnetic moment (only spin contribution, S=1/2 gives 0.5)')
-            print('      mx,my,mz= {} {} {}'.format(smoments[ish][0], smoments[ish][1], smoments[ish][2]))
+            print('      mx,my,mz= {} {} {}'.format(smoment_sh[ish][0], smoment_sh[ish][1], smoment_sh[ish][2]))
 
 
     def solve_impurity_models(self, Gloc_iw_sh, iteration_number, mesh=None):
@@ -533,16 +600,20 @@ class DMFTCoreSolver(object):
         Sigma_iw_sh = []
         Gimp_iw_sh = []
         Sigma_w_sh = []
+        quant_to_save_sh = []
         for ish in range(self._n_inequiv_shells):
             print('')
             work_dir = 'work/imp_shell'+str(ish)+'_ite'+str(iteration_number)
             print('Solving impurity model for inequivalent shell {} in {}...'.format(ish, work_dir))
             print('')
             sys.stdout.flush()
-            Sigma_iw, Gimp_iw, Sigma_w = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
-                             self._params["impurity_solver"]["basis_rotation"], self._Umat[ish], self._gf_struct[ish],
-                                 self._beta, self._n_iw,
-                                 self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, work_dir)
+            r = solve_impurity_model(solver_name, self._solver_params, self._mpirun_command,
+                                     self._params["impurity_solver"]["basis_rotation"],
+                                     self._Umat[ish], self._gf_struct[ish], self._beta, self._n_iw,
+                                     self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish], mesh, ish, work_dir)
+            Sigma_iw = r['Sigma_iw']
+            Gimp_iw = r['Gimp_iw']
+            Sigma_w = r['Sigma_w']
             if make_hermite_conjugate(Sigma_iw) > 1e-8:
                 print("Warning: Sigma_iw is not hermite conjugate!")
             if make_hermite_conjugate(Gimp_iw) > 1e-8:
@@ -552,6 +623,17 @@ class DMFTCoreSolver(object):
             if not mesh is None:
                 Sigma_w_sh.append(Sigma_w)
             Gimp_iw_sh.append(Gimp_iw)
+
+            quant_to_save_sh.append(r['quant_to_save'])
+
+        # convert data structure of quant_to_save_sh from [sh][key] to [key][sh]
+        # and add it to self._quant_to_save
+        # TODO: maybe, for better visibility, return quant_to_save_sh and do the process below in do_steps()
+        quant_to_save_dict = {key: [] for key in quant_to_save_sh[0].keys()}
+        for quant_dict in quant_to_save_sh:
+            for key, quant in quant_dict.items():
+                quant_to_save_dict[key].append(quant)
+        self._quant_to_save_latest.update(quant_to_save_dict)
 
         # FIXME: DON'T CHANGE THE NUMBER OF RETURNED VALUES. USE DICT INSTEAD.
         if mesh is None:
@@ -567,88 +649,49 @@ class DMFTCoreSolver(object):
 
         """
 
+        dc_type = self._params['system']['dc_type']
+        print("\n  set DC (dc_type = {})".format(dc_type))
+
+        def print_matrix(mat):
+            dim = mat.shape[0]
+            for i1 in range(dim):
+                print("          ", end="")
+                for i2 in range(dim):
+                    print("{0:.3f} ".format(mat[i1, i2]), end="")
+                print("")
+
         # Loop over inequivalent shells
-        self._dc_imp = []
+        _dc_imp = []
         for ish in range(self._n_inequiv_shells):
             u_mat = self._Umat[self._sk.inequiv_to_corr[ish]]
-
-            # dim_tot is the dimension of spin x orbit for SO = 1 or that of orbital for SO=0
-            dim_tot = self._dim_sh[ish]
-            num_orb = int(u_mat.shape[0] / 2)
-
             dens_mat = dm_sh[self._sk.inequiv_to_corr[ish]]
 
-            print("")
-            print("    DC for inequivalent shell {0}".format(ish))
-            print("\n      2-index U:".format(ish))
-            for i1 in range(num_orb):
-                print("          ", end="")
-                for i2 in range(num_orb):
-                    print("{0:.3f} ".format(u_mat[i1, i2, i1, i2]), end="")
-                print("")
-            print("\n      2-index J:".format(ish))
-            for i1 in range(num_orb):
-                print("          ", end="")
-                for i2 in range(num_orb):
-                    print("{0:.3f} ".format(u_mat[i1, i2, i2, i1]), end="")
-                print("")
+            num_orb = int(u_mat.shape[0] / 2)
+            # TODO: num_orb can be deleted, if inverse transformation of .tools.to_spin_full_U_matrix is implemented}
 
+            # print U matrix, J matrix, density matrix
+            print("\n    DC for inequivalent shell {0}".format(ish))
+            print("\n      2-index U:".format(ish))
+            print_matrix(numpy.einsum("ijij->ij", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]))
+            print("\n      2-index J:".format(ish))
+            print_matrix(numpy.einsum("ijji->ij", u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]))
             print("\n      Local Density Matrix:".format(ish))
             for sp1 in self._spin_block_names:
                 print("        Spin {0}".format(sp1))
-                for i1 in range(num_orb):
-                    print("          ", end="")
-                    for i2 in range(num_orb):
-                        print("{0:.3f} ".format(dens_mat[sp1][i1, i2]), end="")
-                    print("")
+                print_matrix(dens_mat[sp1][0:num_orb, 0:num_orb])
 
-            if self._use_spin_orbit:
-                dc_imp_sh = {}
-                dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-                for s1, i1, s2, i2 in product(range(2), range(num_orb), range(2), range(num_orb)):
-                    #
-                    # Hartree
-                    #
-                    dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s1 * num_orb] += numpy.sum(
-                        u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb,
-                                                              s2 * num_orb:s2 * num_orb + num_orb]
-                    )
-                    #
-                    # Exchange
-                    #
-                    dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] += numpy.sum(
-                        u_mat[i1, 0:num_orb, 0:num_orb, i2]
-                        * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
-                    )
-                self._dc_imp.append(dc_imp_sh)
-            else:
-                dc_imp_sh = {}
-                for sp1 in self._spin_block_names:
-                    dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
-                    for i1, i2 in product(range(num_orb), repeat=2):
-                        #
-                        # Hartree
-                        #
-                        for sp2 in self._spin_block_names:
-                            dc_imp_sh[sp1][i1, i2] += \
-                                numpy.sum(u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat[sp2][:, :])
-                        #
-                        # Exchange
-                        #
-                        dc_imp_sh[sp1][i1, i2] += \
-                            - numpy.sum(u_mat[i1, 0:num_orb, 0:num_orb, i2] * dens_mat[sp1][:, :])
-                self._dc_imp.append(dc_imp_sh)
+            # calculated DC
+            _dc_imp.append(calc_dc(dc_type, u_mat, dens_mat, self.spin_block_names, self._use_spin_orbit))
 
+            # print DC self energy
             print("\n      DC Self Energy:")
             for sp1 in self._spin_block_names:
                 print("        Spin {0}".format(sp1))
-                for i1 in range(dim_tot):
-                    print("          ", end="")
-                    for i2 in range(dim_tot):
-                        print("{0:.3f} ".format(self._dc_imp[ish][sp1][i1, i2]), end="")
-                    print("")
+                print_matrix(_dc_imp[ish][sp1])
             print("")
 
+        # Now copy dc_imp to all correlated shells
+        self._dc_imp = [_dc_imp[self._sk.corr_to_inequiv[icrsh]] for icrsh in range(self._n_corr_shells)]
 
     def do_steps(self, max_step):
         """
@@ -664,6 +707,7 @@ class DMFTCoreSolver(object):
 
         previous_present = self._previous_runs > 0
         with_dc = self._params['system']['with_dc']
+        dc_type = self._params['system']['dc_type']
         sigma_mix = self._params['control']['sigma_mix']  # Mixing factor of Sigma after solution of the AIM
         output_group = self._output_group
 
@@ -690,6 +734,8 @@ class DMFTCoreSolver(object):
 
         x0 = quantities_to_check()
 
+        converge_count = 0
+
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
@@ -708,10 +754,16 @@ class DMFTCoreSolver(object):
 
             # Compute Gloc_iw where the chemical potential is adjusted if needed
             Gloc_iw_sh, dm_sh = self.calc_Gloc()
-            self.print_density_matrix(dm_sh)
+            smoment_sh = spin_moments_sh(dm_sh)
+            self.print_density_matrix(dm_sh, smoment_sh)
+            self._quant_to_save_history['density_matrix'] = dm_sh
+            self._quant_to_save_history['spin_moment'] = smoment_sh
 
-            for ish in range(self._n_inequiv_shells):
-                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, float(Gloc_iw_sh[ish].total_density())))
+            # Compute Total charge from G_loc
+            charge_loc = [float(Gloc_iw_sh[ish].total_density()) for ish in range(self._n_inequiv_shells)]
+            for ish, charge in enumerate(charge_loc):
+                print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
+            self._quant_to_save_history['total_charge_loc'] = charge_loc
 
             print("\nWall Time : %.1f sec" % (time.time() - t0))
             sys.stdout.flush()
@@ -721,9 +773,15 @@ class DMFTCoreSolver(object):
             print("\nWall Time : %.1f sec" % (time.time() - t0))
             sys.stdout.flush()
 
+            #
             # Solved. Now do post-processing:
-            for ish in range(self._n_inequiv_shells):
-                print("\nTotal charge of impurity problem : %.6f" % new_Gimp_iw[ish].total_density())
+            #
+
+            # Compute Total charge from G_imp
+            charge_imp = [new_Gimp_iw[ish].total_density() for ish in range(self._n_inequiv_shells)]
+            for ish, charge in enumerate(charge_imp):
+                print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
+            self._quant_to_save_history['total_charge_imp'] = charge_imp
 
             # Symmetrize over spin components
             if self._params["control"]["time_reversal"]:
@@ -736,7 +794,6 @@ class DMFTCoreSolver(object):
                 for ish in range(self._n_inequiv_shells):
                     symmetrize_spin(new_Gimp_iw[ish])
                     symmetrize_spin(new_Sigma_iw[ish])
-
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.
@@ -753,12 +810,28 @@ class DMFTCoreSolver(object):
                 if len(symm_generators[ish]) > 0:
                     self._sh_quant[ish].Sigma_iw << symmetrize(self._sh_quant[ish].Sigma_iw, symm_generators[ish])
 
-            # Write data to the hdf5 archive:
+            # update DC correction
+            if with_dc and dc_type == "HF_imp":
+                dm_imp = [new_Gimp_iw[ish].density() for ish in range(self._n_inequiv_shells)]
+                self.set_dc_imp(dm_imp)
+
+            self._quant_to_save_history.update(chemical_potential=self._chemical_potential,
+                                               dc_imp=self._dc_imp,
+                                               dc_energ=self._dc_energ)
+
+            # Save data to the hdf5 archive
             with HDFArchive(self._output_file, 'a') as ar:
                 ar[output_group]['iterations'] = iteration_number
-                ar[output_group]['chemical_potential'][str(iteration_number)] = self._chemical_potential
-                ar[output_group]['dc_imp'][str(iteration_number)] = self._dc_imp
-                ar[output_group]['dc_energ'][str(iteration_number)] = self._dc_energ
+
+                # save histories
+                for key, val in self._quant_to_save_history.items():
+                    if not key in ar[output_group]:
+                        ar[output_group].create_group(key)
+                    ar[output_group][key][str(iteration_number)] = val
+
+                # save the latest results
+                for key, val in self._quant_to_save_latest.items():
+                    ar[output_group][key] = val
 
             # Save the history of Sigma in DCore format
             with h5py.File(self._output_file, 'a') as ar:
@@ -776,9 +849,16 @@ class DMFTCoreSolver(object):
                 print(" | converge_tol = %.1e" %tol)
                 print(" | max_error    = %.1e" %max_error)
                 if max_error < tol:
-                    print(" | converged --- iteration = %d" %iteration_number)
-                    break
+                    converge_count += 1
+                    print(" | convergence criterion satisfied. count={}".format(converge_count))
+                else:
+                    converge_count = 0
+                    print(" | convergence criterion not satisfied. count={}".format(converge_count))
                 x0 = x1
+
+                if converge_count == self._params["control"]["n_converge"]:
+                    print(" | converged --- iteration=%d" % iteration_number)
+                    break
 
             sys.stdout.flush()
 
@@ -787,6 +867,14 @@ class DMFTCoreSolver(object):
     def chemical_potential(self, iteration_number):
         with HDFArchive(self._output_file, 'r') as ar:
             return ar[self._output_group]['chemical_potential'][str(iteration_number)]
+
+    def density_matrix(self, iteration_number):
+        with HDFArchive(self._output_file, 'r') as ar:
+            return ar[self._output_group]['density_matrix'][str(iteration_number)]
+
+    def spin_moment(self, iteration_number):
+        with HDFArchive(self._output_file, 'r') as ar:
+            return ar[self._output_group]['spin_moment'][str(iteration_number)]
 
     @property
     def n_inequiv_shells(self):

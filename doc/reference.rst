@@ -8,3 +8,4 @@ Reference Manual
    reference/input
    reference/output
    impuritysolvers
+   tools

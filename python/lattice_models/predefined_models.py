@@ -237,7 +237,7 @@ class NNNHoppingModel(LatticeModel):
             turn_on_spin_orbit(seedname + '.h5', seedname + '.h5')
 
 
-    def _write_dft_band_input_data(self, params, kvec):
+    def write_dft_band_input_data(self, params, kvec, bands_data='dft_bands_input'):
         """
 
         Returns
@@ -284,12 +284,13 @@ class NNNHoppingModel(LatticeModel):
         # Output them into seedname.h5
         #
         with HDFArchive(params['model']['seedname'] + '.h5', 'a') as f:
-            if not ('dft_bands_input' in f):
-                f.create_group('dft_bands_input')
-            f['dft_bands_input']['hopping'] = hopping
-            f['dft_bands_input']['n_k'] = n_k
-            f['dft_bands_input']['n_orbitals'] = n_orbitals
-            f['dft_bands_input']['proj_mat'] = proj_mat
+            if not (bands_data in f):
+                f.create_group(bands_data)
+            f[bands_data]['hopping'] = hopping
+            f[bands_data]['n_k'] = n_k
+            f[bands_data]['n_orbitals'] = n_orbitals
+            f[bands_data]['proj_mat'] = proj_mat
+        print('    Done')
 
 
 class ChainModel(NNNHoppingModel):
