@@ -189,7 +189,8 @@ def _main_mpi(model_hdf5_file, input_file, output_file):
         sk.set_mu(params['mu'])
 
     if params['calc_mode'] == 'Gloc':
-        from .dft_tools_compat import SumkDFT
+        # from .dft_tools_compat import SumkDFT
+        from .sumkdft_opt import SumkDFT_opt as SumkDFT  # optimized version
         sk = SumkDFT(hdf_file=model_hdf5_file, use_dft_blocks=False, h_field=0.0)
         setup_sk(sk, 'iwn')
         if params['adjust_mu']:
