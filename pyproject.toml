@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "dcore"
+version = "3.0.0b1"
+description = ""
+authors = ["Hiroshi Shinaoka <h.shinaoka@gmail.com>",
+           'J. Otsuki',
+           'K. Yoshimi',
+           'M. Kawamura',
+           'N. Takemori',
+           'Y. Motoyama']
+
+[tool.poetry.dependencies]
+python = "^3.5"
+numpy = "*"
+scipy = "*"
+h5py = "*"
+mpi4py = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+dcore_pre      = "dcore.dcore_pre:run"
+dcore          = "dcore.dcore:run"
+dcore_check    = "dcore.dcore_check:run"
+dcore_post     = "dcore.dcore_post:run"
+dcore_bse      = "dcore.dcore_bse:run"
+openmx2dcore   = "dcore.openmx2dcore:run"
