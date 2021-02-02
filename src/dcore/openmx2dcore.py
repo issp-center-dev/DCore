@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-from __future__ import print_function
+
 import sys
 import numpy
 
@@ -124,10 +124,8 @@ def openmx2dcore(system_name, seedname):
                     print("", file=f)
 
 
-if __name__ == '__main__':
-
+def run():
     args = sys.argv
-
     if len(args) != 3:
         print("\nUsage:\n")
         print("  $ openmx2dcore.py {system.name in openmx-input} {seedname}\n")
