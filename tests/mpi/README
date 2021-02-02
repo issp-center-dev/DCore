@@ -1,0 +1,3 @@
+Test funtions that import mpi4py.
+Such tests must be isolated from those in the non-mpi directry,
+and must be run in a different pytest process.
