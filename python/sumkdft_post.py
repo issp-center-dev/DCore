@@ -20,9 +20,10 @@ from __future__ import print_function
 import numpy
 
 from .dft_tools_compat import SumkDFTTools
+from .sumkdft_opt import SumkDFT_opt
 import pytriqs.utility.mpi as mpi
 
-class SumkDFTDCorePost(SumkDFTTools):
+class SumkDFTDCorePost(SumkDFTTools, SumkDFT_opt):
     """
 
     Extends the SumkDFTTools class with some tools for postprocessing in DCore.

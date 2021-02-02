@@ -224,24 +224,7 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
     #
     if dc_type == "HF_DFT" or dc_type == "HF_imp":
         if use_spin_orbit:
-            # dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
-            # dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
-            # for s1, i1, s2, i2 in product(range(2), range(num_orb), range(2), range(num_orb)):
-            #     #
-            #     # Hartree
-            #     #
-            #     dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s1 * num_orb] += numpy.sum(
-            #         u_mat[i1, 0:num_orb, i2, 0:num_orb] * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb,
-            #                                               s2 * num_orb:s2 * num_orb + num_orb]
-            #     )
-            #     #
-            #     # Exchange
-            #     #
-            #     dc_imp_sh["ud"][i1 + s1 * num_orb, i2 + s2 * num_orb] += numpy.sum(
-            #         u_mat[i1, 0:num_orb, 0:num_orb, i2]
-            #         * dens_mat["ud"][s2 * num_orb:s2 * num_orb + num_orb, s1 * num_orb:s1 * num_orb + num_orb]
-            #     )
-            # TODO: Check if the following code is equivalent to the above.
+            dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
             dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
             dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"], optimize=True)  # Hartree
             dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"], optimize=True)  # Fock
@@ -751,6 +734,8 @@ class DMFTCoreSolver(object):
 
         x0 = quantities_to_check()
 
+        converge_count = 0
+
         t0 = time.time()
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
@@ -864,9 +849,16 @@ class DMFTCoreSolver(object):
                 print(" | converge_tol = %.1e" %tol)
                 print(" | max_error    = %.1e" %max_error)
                 if max_error < tol:
-                    print(" | converged --- iteration = %d" %iteration_number)
-                    break
+                    converge_count += 1
+                    print(" | convergence criterion satisfied. count={}".format(converge_count))
+                else:
+                    converge_count = 0
+                    print(" | convergence criterion not satisfied. count={}".format(converge_count))
                 x0 = x1
+
+                if converge_count == self._params["control"]["n_converge"]:
+                    print(" | converged --- iteration=%d" % iteration_number)
+                    break
 
             sys.stdout.flush()
 
