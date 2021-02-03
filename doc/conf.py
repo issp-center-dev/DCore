@@ -3,7 +3,6 @@
 # TRIQS documentation build configuration file
 
 import sys
-#sys.path.insert(0, "@TRIQS_SPHINXEXT_PATH@/numpydoc")
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
@@ -18,16 +17,13 @@ extensions = ['sphinx.ext.autodoc',
 source_suffix = '.rst'
 todo_include_todos = True
 
-#spelling_lang='en_US'
-#spelling_word_list_filename='spelling_wordlist.txt'
-
-
 project = u'DCore'
 copyright = u'2017, The University of Tokyo'
-version = '@DCORE_VERSION@'
+#version = '@DCORE_VERSION@'
 
 #mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
-templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
+#templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
+templates_path = ['_templates']
 
 html_theme = 'wild'
 import wild_sphinx_theme
@@ -42,7 +38,8 @@ html_context = {'header_title': 'DCore',
                                  ['Presentatation', 'presentation'],
                                  ['Issues', 'issues'],
                                  ['About DCore', 'about']]}
-html_static_path = ['@CMAKE_SOURCE_DIR@/doc/_static']
+#html_static_path = ['@CMAKE_SOURCE_DIR@/doc/_static']
+html_static_path = ['doc/_static']
 #html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
 html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'searchbox.html']}
 

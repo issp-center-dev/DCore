@@ -1,6 +1,6 @@
-#import pkg_resources
-#version = pkg_resources.get_distribution('dcore').version
-version = '3.0.0b1'
+import pkg_resources
+version = pkg_resources.get_distribution('dcore').version
+#version = '3.0.0b1'
 
 def show_version():
   print("\nYou are using the DCore version %s\n"%version)
