@@ -241,7 +241,7 @@ class Wannier90Converter(ConverterTools):
                     nki = [2 * rvec[:, idir].max() + 1 for idir in range(3)]
                     # it will be the same as in the win only when nki is odd, because of the
                     # wannier90 convention: if we have nki k-points along the i-th direction,
-                    # then we should get 2*(nki/2)+nki%2 R points along that
+                    # then we should get 2*(nki//2)+nki%2 R points along that
                     # direction
                     n_k, k_mesh, bz_weights = self.kmesh_build(nki)
                 self.n_k = n_k
