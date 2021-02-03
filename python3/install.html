@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Installation &#8212; DCore  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/dcore.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="install-script">
+<h2>Install script<a class="headerlink" href="#install-script" title="Permalink to this headline">¶</a></h2>
+<p>You may use <a class="reference external" href="https://github.com/wistaria/MateriAppsInstaller">MateriAppsInstaller</a>, a collection of install scripts, to install prerequisites (TRIQS 1.4.x) and DCore.</p>
+</div>
+<div class="section" id="download">
+<h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
+<p>You can download the source files in two ways.</p>
+<ul>
+<li><p><strong>[Release version]</strong></p>
+<p>Go to the <a class="reference external" href="https://github.com/issp-center-dev/DCore/releases">release page</a> and download the latest tar or zip file.
+You can unpack, for example, the tar file by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ tar zxvf v2.x.x.tar.gz
+</pre></div>
+</div>
+</li>
+<li><p><strong>[Develop version]</strong></p>
+<p>Newly implemented features are available in the source code in GitHub repository. You can clone the repository by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/issp-center-dev/DCore.git dcore.src
+</pre></div>
+</div>
+<p>The master branch basically corresponds to the latest released package, and the develop branch includes new features.
+Note that develop branches may not be well tested and contains some bugs.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><dl>
+<dt><a class="reference external" href="https://triqs.github.io/triqs/">TRIQS</a> and <a class="reference external" href="https://triqs.github.io/dft_tools/">TRIQS/DFTTools</a>.</dt><dd><p>They must be installed prior to installing all other programs.
+If not, please install them following our instruction for <a class="reference internal" href="install_triqs14x.html"><span class="doc">TRIQS 1.4.x</span></a> or <a class="reference internal" href="install_triqs21x.html"><span class="doc">TRIQS 2.1.x</span></a>.</p>
+<p>In the following, we suppose that <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> is installed in directory <em>path_to_triqs</em>.</p>
+</dd>
+</dl>
+</li>
+<li><p>You will also need at least one impurity solver.</p>
+<p>For example, the following programs are supported at present:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="impuritysolvers/alpscore_cthyb/cthyb.html"><span class="doc">ALPS/CT-HYB</span></a></p></li>
+<li><p><a class="reference internal" href="impuritysolvers/alpscore_ctseg/ctseg.html"><span class="doc">ALPS/CT-HYB-SEGMENT</span></a></p></li>
+<li><p><a class="reference internal" href="impuritysolvers/triqs_cthyb/cthyb.html"><span class="doc">TRIQS/cthyb</span></a></p></li>
+<li><p><a class="reference internal" href="impuritysolvers/triqs_hubbard_one/hubbard_one.html"><span class="doc">Hubbard-I solver</span></a> (not available for TRIQS 2.1.x)</p></li>
+</ul>
+<p>See <a class="reference internal" href="impuritysolvers.html"><span class="doc">Impurity solvers</span></a> for a complete list of supported impurity solvers and their user manuals.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="installation-steps">
+<h2>Installation steps<a class="headerlink" href="#installation-steps" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>Create an empty directory where you will compile the code</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mkdir dcore.build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> dcore.build
+</pre></div>
+</div>
+</li>
+<li><p>In the build directory, call cmake command with an option to specify the path to TRIQS library</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cmake -DTRIQS_PATH<span class="o">=</span>path_to_triqs path_to_dcore_src -DCMAKE_INSTALL_PREFIX<span class="o">=</span>path_to_dcore_install_directory
+</pre></div>
+</div>
+<p>Here, <em>path_to_triqs</em> refers to your <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> install directory, and <em>path_to_dcore_src</em> refers to the <code class="docutils literal notranslate"><span class="pre">DCore</span></code> source directory.
+Please set CMAKE_INSTALL_PREFIX to the directory where DCore will be installed.
+If the cmake command succeeded, you will see the following message.</p>
+<p>DCore invokes some MPI parallelized impurity solver in a DMFT loop.
+If your system MPI command is not “mpirun”, please provide the name of the correct one to DCore through cmake by using the flag “-DMPIEXEC”.
+The default value is “mpirun -np #” (# is replaced by the number of processors).
+For instance, if your wrapper is “mpijob” and you do not need to specify the number of processors explicitly, please use <code class="docutils literal notranslate"><span class="pre">-DMPIEXEC=&quot;mpijob&quot;</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>-- Build files have been written to: /.../dcore.build
+</pre></div>
+</div>
+</li>
+<li><p>Build DCore by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make
+</pre></div>
+</div>
+</li>
+<li><p>We recommend to run the tests to check if DCore is built correctly. Type</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
+</pre></div>
+</div>
+<p>Some of tests invoke an MPI parallelized impourity solver.
+Note that it is not allowed to run MPI programs interactively on some system.
+In this case, please run tests as a job.</p>
+<p>The test results look like</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Running tests...
+/usr/local/Cellar/cmake/3.13.4/bin/ctest --force-new-ctest-process
+Test project /Users/hiroshi/build/dcore
+      Start  <span class="m">1</span>: typed_parser
+ <span class="m">1</span>/12 Test  <span class="c1">#1: typed_parser .....................   Passed    1.38 sec</span>
+      Start  <span class="m">2</span>: tools
+ <span class="m">2</span>/12 Test  <span class="c1">#2: tools ............................   Passed    0.75 sec</span>
+      Start  <span class="m">3</span>: openmx
+ <span class="m">3</span>/12 Test  <span class="c1">#3: openmx ...........................   Passed    0.70 sec</span>
+      Start  <span class="m">4</span>: respack
+ <span class="m">4</span>/12 Test  <span class="c1">#4: respack ..........................   Passed    0.81 sec</span>
+      Start  <span class="m">5</span>: pre_preset
+ <span class="m">5</span>/12 Test  <span class="c1">#5: pre_preset .......................   Passed    1.69 sec</span>
+      Start  <span class="m">6</span>: pre_wannier
+ <span class="m">6</span>/12 Test  <span class="c1">#6: pre_wannier ......................   Passed    3.02 sec</span>
+      Start  <span class="m">7</span>: pre_wannier_so
+ <span class="m">7</span>/12 Test  <span class="c1">#7: pre_wannier_so ...................   Passed    0.95 sec</span>
+      Start  <span class="m">8</span>: pre_respack
+ <span class="m">8</span>/12 Test  <span class="c1">#8: pre_respack ......................   Passed    0.94 sec</span>
+      Start  <span class="m">9</span>: pre_respack_so
+ <span class="m">9</span>/12 Test  <span class="c1">#9: pre_respack_so ...................   Passed    1.03 sec</span>
+      Start <span class="m">10</span>: alps_cthyb
+<span class="m">10</span>/12 Test <span class="c1">#10: alps_cthyb .......................   Passed    3.02 sec</span>
+      Start <span class="m">11</span>: chain_hubbardI_so
+<span class="m">11</span>/12 Test <span class="c1">#11: chain_hubbardI_so ................   Passed   28.28 sec</span>
+      Start <span class="m">12</span>: chain_hubbardI
+<span class="m">12</span>/12 Test <span class="c1">#12: chain_hubbardI ...................   Passed   23.49 sec</span>
+
+<span class="m">100</span>% tests passed, <span class="m">0</span> tests failed out of <span class="m">12</span>
+
+Total Test <span class="nb">time</span> <span class="o">(</span>real<span class="o">)</span> <span class="o">=</span>  <span class="m">66</span>.11 sec
+</pre></div>
+</div>
+<p>In the above example, all tests have passed in 66 sec.</p>
+</li>
+<li><p>Finally, install by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make install
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> is installed in the directory <em>path_to_dcore_install_directory</em>.</p>
+</li>
+</ol>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

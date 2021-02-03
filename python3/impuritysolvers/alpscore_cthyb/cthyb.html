@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CT-QMC: ALPS/CT-HYB &#8212; DCore  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ct-qmc-alps-ct-hyb">
+<span id="howtoalpscthyb"></span><h1>CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code><a class="headerlink" href="#ct-qmc-alps-ct-hyb" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/ALPSCore/CT-HYB">ALPS/CT-HYB solver</a> implements the CT-HYB QMC algorithm and is developed by H. Shinaoka, E. Gull and P. Werner.
+The spin-orbit coupling is supported by default.
+One can call ALPS/CT-HYB from DCore through the “ALPS/cthyb” interface.
+For the moment, this interface is the first choice for QMC solvers in DCore
+as it is used by developers of DCore on a regular basis.</p>
+<p>The old triqs_interface for DCore v1.x has retired.
+The new interface involved in DCore 2.x requires only the installation of ALPS/CT-HYB 1.x.
+Please follow <a class="reference external" href="https://github.com/ALPSCore/CT-HYB/wiki">the instruction on the official site</a>.</p>
+<p>A minimum working example is the following.
+We assumed that the executable is installed at “$HOME/opt/CT-HYB/bin/hybmat”.
+The solver runs for 300 seconds.</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
+<span class="na">name</span> <span class="o">=</span> <span class="s">ALPS/cthyb</span>
+<span class="na">timelimit{int}</span> <span class="o">=</span> <span class="s">300</span>
+<span class="na">exec_path{str}</span> <span class="o">=</span> <span class="s">$HOME/opt/CT-HYB/bin/hybmat</span>
+</pre></div>
+</div>
+<p>ALPS/CT-HYB have many input parameters.
+Please refer to <a class="reference external" href="https://github.com/ALPSCore/CT-HYB/wiki/Input-parameters">the reference manual</a> for a list of available input parameters.
+The DCore interface supports support all of them.
+For instance, one can enable verbose model as follows.
+Note that one must specify type for input parameters of ALPS/CT-HYB.</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
+<span class="na">verbose{int}</span> <span class="o">=</span> <span class="s">1</span>
+</pre></div>
+</div>
+<p>The DCore interface generates input files for ALPS/CT-HYB into a working directory at work/imp_shell&lt;ish&gt;_ite&lt;ite&gt; (ish is the index of the shell and ite is the iteration).
+Then, ALPS/CT-HYB is excecuted in the working directory.</p>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reference Manual &#8212; DCore  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/dcore.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Reference Manual</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="reference-manual">
+<h1>Reference Manual<a class="headerlink" href="#reference-manual" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference/programs.html">Programs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/programs.html#pre-processing-dcore-pre">Pre-processing : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/programs.html#main-program-dcore">Main program : <code class="docutils literal notranslate"><span class="pre">dcore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/programs.html#convergence-check-dcore-check">Convergence-check : <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/programs.html#post-processing-dcore-post">Post-processing : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/programs.html#online-help">Online help</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/input.html">Input-file format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#model-block">[model] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#system-block">[system] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#impurity-solver-block">[impurity_solver] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#control-block">[control] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#tool-block">[tool] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#mpi-block">[mpi] block</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/output.html">Output-file format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore-pre"><code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore"><code class="docutils literal notranslate"><span class="pre">dcore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore-check"><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore-post"><code class="docutils literal notranslate"><span class="pre">dcore_post</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="impuritysolvers.html">Impurity solvers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="impuritysolvers/alpscore_cthyb/cthyb.html">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="impuritysolvers/triqs_cthyb/cthyb.html">CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="impuritysolvers/alpscore_ctseg/ctseg.html">CT-QMC with segment implementation: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB-SEGMENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="impuritysolvers/triqs_hubbard_one/hubbard_one.html">Hubbard-I approximation: <code class="docutils literal notranslate"><span class="pre">TRIQS/hubbard-I</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="impuritysolvers/pomerol/pomerol.html">Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">pomerol</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="impuritysolvers/null.html">Non-interacting limit: <code class="docutils literal notranslate"><span class="pre">null</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="impuritysolvers/how_to_integrate.html">How to integrate your own solver</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tools/akw_converter/akw.html">A(k,w) converter</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Reference Manual</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

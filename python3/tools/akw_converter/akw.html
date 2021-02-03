@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A(k,w) converter &#8212; DCore  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">A(k,w) converter</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="a-k-w-converter">
+<h1>A(k,w) converter<a class="headerlink" href="#a-k-w-converter" title="Permalink to this headline">¶</a></h1>
+<p>DCore can generate four-dimensional data of <span class="math notranslate nohighlight">\(A(\boldsymbol{k},\omega)\)</span> on a linear grid.
+An auxiliary tool <code class="docutils literal notranslate"><span class="pre">akw_converter</span></code> converts these data into three-dimensional volumeric data with a fixed value of <span class="math notranslate nohighlight">\(\omega\)</span> that is suitable for reading with existing 3D graphic softwares such as VESTA.</p>
+<div class="section" id="how-to-use">
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<p>The following steps should be done after all calculations are finished, namely, self-consistent calculation by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and even post calculations by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
+<ol class="arabic">
+<li><p><strong>Modifying ini file</strong></p>
+<p>A parameter <code class="docutils literal notranslate"><span class="pre">nk_mesh</span></code> is added to the ini file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tools</span><span class="p">]</span>
+<span class="n">nk_mesh</span> <span class="o">=</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>This parameter activates a grid calculation.
+<span class="math notranslate nohighlight">\(A(\boldsymbol{k},\omega)\)</span> is to be computed on a four-dimensional grid of size <span class="math notranslate nohighlight">\(100^3 \times N_{\omega}\)</span>.
+In order to reduce the data size, one could instead specify a set of 3 parameters as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tools</span><span class="p">]</span>
+<span class="n">nk0_mesh</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">nk1_mesh</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">nk2_mesh</span> <span class="o">=</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<p>In this case, <span class="math notranslate nohighlight">\(k_z\)</span> is computed on 0, pi/2, pi and 3pi/3.
+Note that the k-grid is generated in the <em>primitive</em> reciprocal space.
+It is also highly recommended to reduce the number of frequency points. For example, if only the Fermi surface is of interest, one can set</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Nomega</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">omega_max</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">omega_min</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+</pre></div>
+</div>
+<p>Then, <span class="math notranslate nohighlight">\(\omega=0\)</span> and two additional points are selected (<code class="docutils literal notranslate"><span class="pre">Nomega</span> <span class="pre">=</span> <span class="pre">1</span></code> is not allowed).
+In this way, the data points are reduced to <span class="math notranslate nohighlight">\(100^2 \times 4 \times 3\)</span>.</p>
+</li>
+<li><p><strong>Executing dcore_post</strong></p>
+<p>Now, <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> is (re-)executed by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dcore_post</span> <span class="o">--</span><span class="n">np</span> <span class="mi">4</span> <span class="o">--</span><span class="n">prefix</span> <span class="n">post_grd</span><span class="o">/</span> <span class="n">square</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
+<p>The number of processes in the <code class="docutils literal notranslate"><span class="pre">--np</span></code> option  (4 above) should be changed according to your environment.
+An output directory is specified by the <code class="docutils literal notranslate"><span class="pre">--prefix</span></code> option (default is ‘post/’).
+In this case, the data are saved in ‘post_grd’ directory.
+We recommend to use this option to have k-path data and k-grid data in separate directories.</p>
+<p>The four-dimensional grid data are save in a file ‘<em>seed</em>_akw_mesh_*sp*.dat’, where <em>seed</em> is the seed name given in the ini file, and <em>sp</em> is the spin index (‘up’ and ‘down’ if spin-orbit coupling is not considered and ‘ud’ otherwise).</p>
+</li>
+<li><p><strong>Executing akw_converter.py</strong></p>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">akw_converter</span></code> is executed.
+<code class="docutils literal notranslate"><span class="pre">akw_converter.py</span></code> is installed in bin directory, where other executables such as <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> are installed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">akw_converter</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">omega</span> <span class="mf">0.0</span> <span class="n">post_grd</span><span class="o">/</span><span class="n">square_akw_mesh_up</span><span class="o">.</span><span class="n">dat</span> <span class="n">post_grd</span><span class="o">/</span><span class="n">akw_up</span><span class="o">.</span><span class="n">grd</span>
+</pre></div>
+</div>
+<p>The value of <span class="math notranslate nohighlight">\(\omega\)</span> is given by the <code class="docutils literal notranslate"><span class="pre">--omega</span></code> option. If data do not exist just on this <span class="math notranslate nohighlight">\(\omega\)</span>, <span class="math notranslate nohighlight">\(A(\boldsymbol{k},\omega)\)</span> is interpolated using 2 points nearby (depending on the kind of interpolation method).
+The first argument is the path to the four-dimensional data generated by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>. The second argument is the output file name. The default format is <strong>GRD</strong>, and the output filename should have extension ‘grd’.</p>
+<p>The full option of <code class="docutils literal notranslate"><span class="pre">akw_converter</span></code> can be seen by the command</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">akw_converter</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>As an example, we solve
+<a class="reference internal" href="../../tutorial/square/square.html"><span class="doc">the square-lattice model in tutorial</span></a>.
+The ini file is changed as below.</p>
+<p><a class="reference download internal" download="" href="../../_downloads/31788b3693fc3cb21a91ecc717e68725/dmft_square_akw.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_square_akw.ini</span></code></a></p>
+<p>We use the CT-HYB solver to obtain a better spectrum.
+The occupation number is changed from n=1 to n=0.8 to break the particle-hole symmetry.</p>
+<p>A GRD file generated by the converter is opened by VESTA.
+A two-dimensional plot is made by “Utilities –&gt; 2D Data Display”.
+The plot clearly shows the Fermi surface in the square-lattice mode:</p>
+<a class="reference internal image-reference" href="../../_images/vesta_2d_data_display.png"><img alt="../../_images/vesta_2d_data_display.png" class="align-center" src="../../_images/vesta_2d_data_display.png" style="width: 600px;" /></a>
+<p>We note that one needs to change some configuration to have the above plot.
+One goes to “Slice” and change (1) “Distance from origin” from 0.5 to 0 to select <span class="math notranslate nohighlight">\(k_z=0\)</span> plane, and (2) “Ranges of fractional coordinates” from [0:1] to [-0.5:0.5] to shift the Gamma point to the center of the plot.
+The figure below shows the Slice panel:</p>
+<a class="reference internal image-reference" href="../../_images/vesta_slice.png"><img alt="../../_images/vesta_slice.png" class="align-center" src="../../_images/vesta_slice.png" style="width: 300px;" /></a>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">A(k,w) converter</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
