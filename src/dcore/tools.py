@@ -26,6 +26,7 @@ from itertools import *
 import ast
 import math
 import scipy
+from scipy import linalg as scipy_linalg
 
 from triqs.utility.h5diff import compare, failures
 from triqs.utility.h5diff import h5diff as h5diff_org
@@ -429,7 +430,7 @@ def spin_moments_sh(dm_sh):
         if len(dm_dict) == 1:
             dm = dm_dict['ud']
         else:
-            dm = scipy.linalg.block_diag(dm_dict['up'], dm_dict['down'])
+            dm = scipy_linalg.block_diag(dm_dict['up'], dm_dict['down'])
 
         assert dm.shape[0] == dm.shape[1]
 
