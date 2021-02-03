@@ -83,6 +83,7 @@ setup(
     install_requires=[
         'numpy',
         'scipy',
+        'h5py',
         ],
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme'],
@@ -95,6 +96,11 @@ setup(
 
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
+    entry_points={
+        "console_scripts": [
+            "dcore = dcore.dcore:run"
+        ]
+    },
 
-    zip_safe=True,      # reconsider when adding data files
+    zip_safe=False,
     )

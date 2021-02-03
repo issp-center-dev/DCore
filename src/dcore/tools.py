@@ -725,7 +725,7 @@ def load_giw(h5file, path, g):
         assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
     else:
         assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
-    assert h5file[path + '/__version'][()] == 'DCore_GfImFreq_v1'
+    assert h5file[path + '/__version'][()].decode('utf-8') == 'DCore_GfImFreq_v1'
 
     g.data[...] = float_to_complex_array(h5file[path + '/data'][()])
     if triqs_major_version == 1 and path + '/tail' in h5file:

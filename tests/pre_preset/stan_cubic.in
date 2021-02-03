@@ -1,5 +1,0 @@
-[model]
-t = 1.0
-kanamori = [(4.0,0.0,0.0)]
-lattice =  cubic
-seedname = stan_test_cubic
