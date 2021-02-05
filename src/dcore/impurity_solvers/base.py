@@ -22,9 +22,7 @@ from triqs.operators import *
 
 from itertools import *
 import numpy
-import subprocess
 import os
-import shlex
 import copy
 
 from ..tools import *
@@ -216,9 +214,7 @@ def creat_mapping_flatten_index(gf_struct):
     # Map (block_name, index) to an index in the flatten spin-orbital space
     # If blocks are 'up' and 'down', 'up' appears FIRST.
     if isinstance(gf_struct, list):
-        print("degug1", gf_struct)
         gf_struct = {x[0]: x[1] for x in gf_struct}
-        print("degug2", gf_struct)
 
     to_flatten_index = {}
     if len(gf_struct) == 1:
