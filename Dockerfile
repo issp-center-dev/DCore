@@ -27,6 +27,7 @@ RUN ls -la
 RUN python3 setup.py install --user
 
 # Build doc
+RUN python3 -m dcore.option_tables doc/reference
 RUN sphinx-build -b html doc html
 RUN find /home/triqs/src/DCore/html
 

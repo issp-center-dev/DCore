@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-#
-# TRIQS documentation build configuration file
 
 import sys
 
@@ -19,27 +17,21 @@ todo_include_todos = True
 
 project = u'DCore'
 copyright = u'2017, The University of Tokyo'
-#version = '@DCORE_VERSION@'
-
-#mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
-#templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
-templates_path = ['_templates']
 
 html_theme = 'wild'
 import wild_sphinx_theme
 html_theme_path = [wild_sphinx_theme.get_theme_dir()]
 
-#html_theme_path = ['@TRIQS_THEMES_PATH@']
 html_show_sphinx = False
 html_context = {'header_title': 'DCore',
                 'header_subtitle': 'integrated DMFT software for CORrelated Electrons',
                 'header_links': [['Install', 'install'],
                                  ['Documentation', 'documentation'],
-                                 ['Presentatation', 'presentation'],
+                                 #['Presentatation', 'presentation'],
                                  ['Issues', 'issues'],
                                  ['About DCore', 'about']]}
 #html_static_path = ['@CMAKE_SOURCE_DIR@/doc/_static']
-html_static_path = ['doc/_static']
+#html_static_path = ['doc/_static']
 #html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
 html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'searchbox.html']}
 
@@ -60,4 +52,4 @@ rst_epilog = '.. |BRANCH| replace:: {}'.format('@GIT_BRANCH_NAME@')
 
 # overwrite css of html_theme
 def setup(app):
-    app.add_stylesheet('dcore.css')
+    app.add_css_file('dcore.css')
