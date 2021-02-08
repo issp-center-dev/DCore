@@ -22,9 +22,7 @@ import sys
 import os
 import re
 import time
-import builtins
 import numpy
-import scipy
 import copy
 import ast
 import h5py
@@ -760,7 +758,7 @@ class DMFTCoreSolver(object):
             self._quant_to_save_history['spin_moment'] = smoment_sh
 
             # Compute Total charge from G_loc
-            charge_loc = [float(Gloc_iw_sh[ish].total_density()) for ish in range(self._n_inequiv_shells)]
+            charge_loc = [Gloc_iw_sh[ish].total_density().real for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_loc):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_loc'] = charge_loc
@@ -778,7 +776,7 @@ class DMFTCoreSolver(object):
             #
 
             # Compute Total charge from G_imp
-            charge_imp = [new_Gimp_iw[ish].total_density() for ish in range(self._n_inequiv_shells)]
+            charge_imp = [new_Gimp_iw[ish].total_density().real for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_imp):
                 print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_imp'] = charge_imp

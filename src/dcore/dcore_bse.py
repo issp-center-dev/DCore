@@ -124,7 +124,7 @@ def subtract_disconnected(xloc, gimp, spin_names, freqs=None):
             g_ij[(i, j)] = gimp[sp].data[:, o1, o2]
 
     assert g_ij[(0, 0)].shape[0] % 2 == 0
-    w0 = g_ij[(0, 0)].shape[0] / 2
+    w0 = g_ij[(0, 0)].shape[0] // 2
 
     def g(_i, _j, _w):
         return g_ij[(_i, _j)][w0 + _w]
