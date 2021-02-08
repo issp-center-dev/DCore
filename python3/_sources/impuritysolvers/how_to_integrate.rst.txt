@@ -4,12 +4,12 @@ How to integrate your own solver
 You can use your own impurity solver from DCore by wrapping the executable as appropriate.
 The null solver serves as a template of wrapper code.
 
-    :download:`null_solver.py <../../python/dcore/impurity_solvers/null_solver.py>`
+    :download:`null_solver.py <../../src/dcore/impurity_solvers/null_solver.py>`
 
 Follow the instructions below.
 
 ..
-    .. literalinclude:: ../../python/dcore/impurity_solvers/null_solver.py
+    .. literalinclude:: ../../src/dcore/impurity_solvers/null_solver.py
        :language: python
 
 Copy the template
