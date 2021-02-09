@@ -31,7 +31,7 @@ html_context = {'header_title': 'DCore',
                                  ['Issues', 'issues'],
                                  ['About DCore', 'about']]}
 #html_static_path = ['@CMAKE_SOURCE_DIR@/doc/_static']
-#html_static_path = ['doc/_static']
+html_static_path = ['_static']
 #html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
 html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'searchbox.html']}
 
