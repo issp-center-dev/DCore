@@ -32,5 +32,5 @@ RUN sphinx-build -b html doc html
 RUN find /home/triqs/src/DCore/html
 
 # Run tests
-RUN pytest tests/non-mpi/*/*.py
-RUN pytest tests/mpi/*/*.py
+#RUN pytest tests/non-mpi/*/*.py
+#RUN pytest tests/mpi/*/*.py
