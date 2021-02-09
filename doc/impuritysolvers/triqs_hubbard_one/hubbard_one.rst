@@ -3,7 +3,7 @@ Hubbard-I approximation: ``TRIQS/hubbard-I``
 
 This impurity solver implements the Hubbard-I approximation.
 For installation, follow
-https://triqs.github.io/triqs/1.4/applications/hubbardI/
+https://triqs.github.io/hubbardI/latest/
 
 .. note::
 

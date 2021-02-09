@@ -21,11 +21,12 @@ Prerequisites
 
    For example, the following programs are supported:
 
+   * :doc:`Hubbard-I solver<impuritysolvers/triqs_hubbard_one/hubbard_one>`
    * :doc:`ALPS/CT-HYB<impuritysolvers/alpscore_cthyb/cthyb>`
    * :doc:`ALPS/CT-HYB-SEGMENT<impuritysolvers/alpscore_ctseg/ctseg>`
    * :doc:`TRIQS/cthyb<impuritysolvers/triqs_cthyb/cthyb>`
-   * :doc:`Hubbard-I solver<impuritysolvers/triqs_hubbard_one/hubbard_one>` (not available for TRIQS 2.1.x)
 
+   We recommend to use the Hubbard-I solver for tests because this is fast.
    See :doc:`impuritysolvers` for a complete list of supported impurity solvers and their user manuals.
 
 
