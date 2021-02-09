@@ -42,23 +42,16 @@
             
   <div class="section" id="ct-qmc-triqs-cthyb">
 <span id="howtocthyb"></span><h1>CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code><a class="headerlink" href="#ct-qmc-triqs-cthyb" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This document was written for ver.1.x, and might include descriptions incompatible with the latest version.
-If you encounter some problem, see the release note of ver.2.0 and check the differences between ver.1.x and ver.2.0.</p>
-</div>
 <div class="section" id="install">
 <h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
-<p>Follow the installation guide in <a class="reference external" href="https://triqs.github.io/cthyb/1.4/">TRIQS/cthyb</a>.</p>
+<p>Follow the installation guide in <a class="reference external" href="https://triqs.github.io/cthyb/latest/">TRIQS/cthyb</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul>
-<li><p>Checkout tag <strong>1.4.2</strong> on master branch, or download the released package
-from <a class="reference external" href="https://github.com/TRIQS/cthyb/releases/tag/1.4.2">here</a>.</p></li>
 <li><p>Be sure to use the same C++ compiler as the one used to build the <code class="docutils literal notranslate"><span class="pre">TRIQS</span></code> library.</p></li>
 <li><p>If you want to treat the spin-orbit coupling in <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code> solver,
 it must be built with the following CMake options:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DHYBRIDISATION_IS_COMPLEX</span><span class="o">=</span><span class="n">ON</span> <span class="o">-</span><span class="n">DLOCAL_HAMILTONIAN_IS_COMPLEX</span><span class="o">=</span><span class="n">ON</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DLocal_hamiltonian_is_complex</span><span class="o">=</span><span class="n">ON</span> <span class="o">-</span><span class="n">DHybridisation_is_complex</span><span class="o">=</span><span class="n">ON</span>
 </pre></div>
 </div>
 </li>
