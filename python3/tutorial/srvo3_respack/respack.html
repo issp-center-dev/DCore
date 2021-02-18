@@ -42,7 +42,7 @@ If you encounter some problem, see the release note of ver.2.0 and check the dif
 <p>This tutorial requires large computational resources or the long simulation time.</p>
 </div>
 <p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
-<a class="reference internal image-reference" href="../../_images/struct_srvo31.png"><img alt="../../_images/struct_srvo31.png" class="align-center" src="../../_images/struct_srvo31.png" style="width: 200px;" /></a>
+<a class="reference internal image-reference" href="../../_images/struct_srvo3.png"><img alt="../../_images/struct_srvo3.png" class="align-center" src="../../_images/struct_srvo3.png" style="width: 200px;" /></a>
 <div class="section" id="scf-calculation-of-quantum-espresso">
 <h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/123b09c7e170e0d3df9d62846503fdcb/scf_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3_r.in</span></code></a></p>
@@ -282,7 +282,7 @@ you can plot the original and the wannier-interpolated band structure simultaneo
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> pw.x -in band_srvo3_r.in
 </pre></div>
 </div>
-<p><a class="reference download internal" download="" href="../../_downloads/5dfd3276e7b2cd4ddc08b4256f1670a8/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/b7c0a744734ec13b6f191c706fe2ff2d/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&amp;BANDS
 prefix = &quot;srvo3&quot;,
 outdir = &quot;./&quot;,
@@ -297,7 +297,7 @@ outdir = &quot;./&quot;,
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;dir-wan/dat.iband&quot; u ($1*2.5731):2 tit &quot;Wannier&quot; w l
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../../_images/band_srvo31.png"><img alt="../../_images/band_srvo31.png" class="align-center" src="../../_images/band_srvo31.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/band_srvo3.png"><img alt="../../_images/band_srvo3.png" class="align-center" src="../../_images/band_srvo3.png" style="width: 500px;" /></a>
 </div>
 </div>
 <div class="section" id="dielectric-matrix-and-effective-interaction">
@@ -394,7 +394,7 @@ $ sed -e <span class="s2">&quot;s/every 10/every 3/g&quot;</span> srvo3_akw.gp
 $ gnuplot nis_akw.gp
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../../_images/akw_srvo34.png"><img alt="../../_images/akw_srvo34.png" class="align-center" src="../../_images/akw_srvo34.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/akw_srvo33.png"><img alt="../../_images/akw_srvo33.png" class="align-center" src="../../_images/akw_srvo33.png" style="width: 500px;" /></a>
 <p>“x” indicates the original band structure.</p>
 </div>
 </div>
