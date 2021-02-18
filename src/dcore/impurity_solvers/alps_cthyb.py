@@ -306,9 +306,6 @@ class ALPSCTHYBSolver(SolverBase):
             # G_iw with 1/iwn tail
             for name in self.block_names:
                 self._Gimp_iw[name] << LegendreToMatsubara(G_l[name])
-                if triqs_major_version == 1:
-                    self._Gimp_iw[name].tail.zero()
-                    self._Gimp_iw[name].tail[1] = numpy.identity(G_l[name].N1)
             make_hermite_conjugate(self._Gimp_iw)
 
             # Two-particle GF

@@ -44,7 +44,7 @@ def test_spin_moments_sh():
 
 def test_save_load_Sigma_iw():
     from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt
-    from dcore.tools import make_block_gf, save_giw, load_giw, triqs_major_version
+    from dcore.tools import make_block_gf, save_giw, load_giw
     from triqs.gf import GfImFreq
 
     nsh = 2
@@ -60,8 +60,6 @@ def test_save_load_Sigma_iw():
         for ish in range(nsh):
             for sp in spin_names:
                 Sigma_iw_sh[ish][sp].data[:,:,:] = numpy.random.randn(2*n_points, norb, norb) + 1J * numpy.random.randn(2*n_points, norb, norb)
-                if triqs_major_version == 1:
-                    Sigma_iw_sh[ish][sp].tail.data[...] = numpy.random.randn(*Sigma_iw_sh[ish][sp].tail.data.shape)
 
         save_Sigma_iw_sh_txt('Sigma_iw_sh.txt', Sigma_iw_sh, spin_names)
 
@@ -90,8 +88,6 @@ def test_save_load_Sigma_iw():
 
 
         assert numpy.allclose(Sigma_iw_sh0.data, Sigma_iw_sh0_loaded.data)
-        if triqs_major_version == 1:
-            numpy.allclose(Sigma_iw_sh0.tail.data, Sigma_iw_sh0_loaded.tail.data)
 
         # Interpolation
         Sigma_iw_sh_twice_beta = [make_block_gf(GfImFreq, gf_struct, 2*beta, 2*n_points) for ish in range(nsh)]

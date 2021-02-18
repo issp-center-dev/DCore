@@ -346,9 +346,6 @@ class ALPSCTHYBSEGSolver(SolverBase):
         set_blockgf_from_h5(self._Sigma_iw, "S_omega")
         set_blockgf_from_h5(self._Gimp_iw, "G_omega")
 
-        if triqs_major_version == 1:
-            set_tail(self._Gimp_iw)
-
         #   self.quant_to_save['nn_equal_time']
         nn_equal_time = self._get_results("nn", 1, orbital_symmetrize=True, stop_if_data_not_exist=False)
         # [(s1,o1), (s2,o2), 0]

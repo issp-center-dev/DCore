@@ -36,8 +36,6 @@ from triqs.operators import *
 
 from triqs import version
 
-triqs_major_version = int(version.version.split('.')[0])
-
 """
 THIS MODULE MUST NOT DEPEND ON MPI!
 """
@@ -122,27 +120,20 @@ def get_block_size(g):
         block of g (e.g. number of orbitals)
     """
 
-    if triqs_major_version == 1:
-        assert isinstance(g, GfImFreq) or isinstance(g, GfImTime) or isinstance(g, GfLegendre), 'Unsupported type {}'.format(type(g))
-        return len(g.indices)
-    elif triqs_major_version >= 2:
-        assert len(g.indices[0]) == len(g.indices[1])
-        return len(g.indices[0])
+    assert len(g.indices[0]) == len(g.indices[1])
+    return len(g.indices[0])
 
 def extract_H0_from_tail(G0_iw):
     if isinstance(G0_iw, BlockGf):
         return {name:extract_H0_from_tail(b) for name, b in G0_iw}
     elif isinstance(G0_iw.mesh, MeshImFreq):
-        if triqs_major_version == 1:
-            return numpy.array(G0_iw.tail[2])
-        elif triqs_major_version >= 2:
-           import triqs.gf.gf_fnt as gf_fnt
-           assert len(G0_iw.target_shape) in [0,2], "extract_H0_from_tail(G0_iw) requires a matrix or scalar_valued Green function"
-           assert gf_fnt.is_gf_hermitian(G0_iw), "extract_H0_from_tail(G0_iw) requires a Green function with the property G0_iw[iw][i,j] = conj(G0_iw[-iw][j,i])"
-           tail, err = gf_fnt.fit_hermitian_tail(G0_iw)
-           if err > 1e-5:
-               print("WARNING: delta extraction encountered a sizeable tail-fit error: ", err)
-           return tail[2]
+       import triqs.gf.gf_fnt as gf_fnt
+       assert len(G0_iw.target_shape) in [0,2], "extract_H0_from_tail(G0_iw) requires a matrix or scalar_valued Green function"
+       assert gf_fnt.is_gf_hermitian(G0_iw), "extract_H0_from_tail(G0_iw) requires a Green function with the property G0_iw[iw][i,j] = conj(G0_iw[-iw][j,i])"
+       tail, err = gf_fnt.fit_hermitian_tail(G0_iw)
+       if err > 1e-5:
+           print("WARNING: delta extraction encountered a sizeable tail-fit error: ", err)
+       return tail[2]
     else:
         raise RuntimeError('extract_H0_from_tail does not support type {}'.format(type(G0_iw)))
 
@@ -695,15 +686,10 @@ def save_giw(h5file, path, g):
 
     """
 
-    if triqs_major_version == 1:
-        assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
-    else:
-        assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
+    assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
 
     h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
     h5file[path + '/data'] = complex_to_float_array(g.data)
-    if triqs_major_version == 1:
-        h5file[path + '/tail'] = complex_to_float_array(g.tail.data)
     h5file[path + '/wn'] = numpy.array([complex(x) for x in g.mesh]).imag
 
 
@@ -722,18 +708,13 @@ def load_giw(h5file, path, g):
 
     """
 
-    if triqs_major_version == 1:
-        assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
-    else:
-        assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
+    assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
     version_str = h5file[path + '/__version'][()]
     if isinstance(version_str, bytes):
         version_str = version_str.decode('utf-8')
     assert version_str == 'DCore_GfImFreq_v1'
 
     g.data[...] = float_to_complex_array(h5file[path + '/data'][()])
-    if triqs_major_version == 1 and path + '/tail' in h5file:
-        g.tail.data[...] = float_to_complex_array(h5file[path + '/tail'][()])
 
     omega_imag = numpy.array([complex(x) for x in g.mesh]).imag
     if not numpy.allclose(omega_imag, h5file[path + '/wn'][()]):
@@ -773,11 +754,6 @@ def make_hermite_conjugate(Sigma_iw, check_only=False):
     flag = True
     max_diff = 0.0
     for name, g in Sigma_iw:
-        # symmetrize tail
-        if triqs_major_version == 1:
-            for i in range(g.tail.data.shape[0]):
-                g.tail.data[i, :, :] = 0.5 * (g.tail.data[i, :, :] + g.tail.data[i, :, :].conjugate().transpose())
-
         n_points = g.data.shape[0]//2
         for i in range(n_points):
             diff = numpy.amax(numpy.abs(g.data[i + n_points, :, :]-g.data[n_points - i - 1, :, :].conj().transpose()))
