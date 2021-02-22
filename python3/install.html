@@ -92,7 +92,17 @@ You can unpack, for example, the tar file by</p>
 <p>The master branch basically corresponds to the latest released package, and the develop branch includes new features.
 Note that develop branches may not be well tested and contains some bugs.</p>
 <p>Please execute the following command in the source directory to install DCore.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python setup.py install
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install .
+</pre></div>
+</div>
+<p>If you do not have root privileges, please try</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install . --user
+</pre></div>
+</div>
+<p>If both of them did not work, you could build a binary package and install it as follows</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ rm -rf dist
+$ python3 setup.py bdist_wheel
+$ pip3 install dist/dcore-*.whl
 </pre></div>
 </div>
 <p>One can run unit tests using the installed DCore by executing the following commands.</p>
