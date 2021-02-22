@@ -70,7 +70,21 @@ You can download the source files in two ways.
 
   .. code-block:: bash
 
-      $ python setup.py install
+      $ pip3 install .
+ 
+  If you do not have root privileges, please try
+
+  .. code-block:: bash
+
+      $ pip3 install . --user
+ 
+  If both of them did not work, you could build a binary package and install it as follows
+
+  .. code-block:: bash
+
+      $ rm -rf dist
+      $ python3 setup.py bdist_wheel
+      $ pip3 install dist/dcore-*.whl
 
   One can run unit tests using the installed DCore by executing the following commands.
 
