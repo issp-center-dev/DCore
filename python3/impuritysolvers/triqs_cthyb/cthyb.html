@@ -121,7 +121,7 @@ n_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span
 n_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">50</span>
 n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">100</span>
 
-<span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">0</span> <span class="m">5</span><span class="sb">`</span>
+<span class="k">for</span> i <span class="k">in</span> <span class="sb">`</span>seq <span class="m">0</span> <span class="m">5</span><span class="sb">`</span>
 <span class="k">do</span>
     sed -e <span class="s2">&quot;/n_cycles/c n_cycles{int} = </span><span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
         -e <span class="s2">&quot;/n_wamup_cycles/c n_warmup_cycles{int} = </span><span class="si">${</span><span class="nv">n_wamup_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
@@ -288,7 +288,7 @@ n_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span
 n_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">50</span>
 n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">100</span>
 
-<span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">0</span> <span class="m">5</span><span class="sb">`</span>
+<span class="k">for</span> i <span class="k">in</span> <span class="sb">`</span>seq <span class="m">0</span> <span class="m">5</span><span class="sb">`</span>
 <span class="k">do</span>
     sed -e <span class="s2">&quot;/n_cycles/c n_cycles{int} = </span><span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
         -e <span class="s2">&quot;/n_wamup_cycles/c n_warmup_cycles{int} = </span><span class="si">${</span><span class="nv">n_wamup_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
