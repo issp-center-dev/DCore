@@ -26,6 +26,7 @@ import numpy
 import copy
 import ast
 import h5py
+import builtins
 
 from .program_options import *
 
@@ -40,7 +41,7 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
 def __gettype(name):
-    t = getattr(__builtin__, name)
+    t = getattr(builtins, name)
     if isinstance(t, type):
         return t
     raise ValueError(name)
