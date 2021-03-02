@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 import numpy
-from scipy.linalg import block_diag
 import os
+import shutil
+import sys
 from itertools import product
 from triqs.gf import *
 from h5 import HDFArchive
@@ -53,7 +53,7 @@ def to_numpy_array(g, names):
 
     # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
     # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
-    norb = int(n_spin_orbital//2)
+    norb = n_spin_orbital//2
     index = numpy.zeros(n_spin_orbital, dtype=int)
     index[0::2] = numpy.arange(norb)
     index[1::2] = numpy.arange(norb) + norb
@@ -61,32 +61,68 @@ def to_numpy_array(g, names):
     return (data[:, :, index])[:, index, :]
 
 
+# def assign_from_numpy_array(g, data, names):
+#     """
+#     Does inversion of to_numpy_array
+#     data[spin,orb,iw]
+#     g[spin].data[iw,orb1,orb2]
+#     """
+#     # print(g.n_blocks)
+#     if g.n_blocks != 2:
+#         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
+#
+#     norb = data.shape[1]
+#     niw = data.shape[2]
+#     # print(data.shape)
+#     # print("norb:", norb)
+#
+#     # check number of Matsubara frequency
+#     assert data.shape[2]*2 == g[names[0]].data.shape[0]
+#     # print(g[names[0]].data.shape)
+#
+#     for spin in range(2):
+#         for orb in range(norb):
+#             # print(orb, spin, names[spin])
+#             # positive frequency
+#             g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
+#             # negative frequency
+#             g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
+
+
 def assign_from_numpy_array(g, data, names):
     """
     Does inversion of to_numpy_array
-    data[spin,orb,iw]
-    g[spin].data[iw,orb1,orb2] 
+
+    assign from
+        data[i, iw]  (i=(orb,spin))
+    to
+        g[spin].data[iw,orb1,orb2] (w/o SO) (spin='up', 'down')
+        g['ud'].data[iw,i1,i2]     (w/  SO)
+
     """
-    # print(g.n_blocks)
-    if g.n_blocks != 2:
+
+    if g.n_blocks > 2:
         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
 
-    norb = data.shape[1]
-    niw = data.shape[2]
-    # print(data.shape)
-    # print("norb:", norb)
+    # (n_sp, n_inner) = (2, n_orb)    w/o SO
+    #                   (1, 2*n_orb)  w/  SO
+    n_sp = g.n_blocks
+    n_inner = data.shape[0] // n_sp
+    niw = data.shape[1]
 
-    # check number of Matsubara frequency
-    assert data.shape[2]*2 == g[names[0]].data.shape[0]
-    # print(g[names[0]].data.shape)
+    # array which data are assigned from
+    data_from = data.reshape(n_inner, n_sp, niw)
 
-    for spin in range(2):
-        for orb in range(norb):
-            # print(orb, spin, names[spin])
+    # assign data_from to g
+    for sp in range(n_sp):
+        # array which data are assigned to
+        data_to = g[names[sp]].data
+        assert data_to.shape == (2*niw, n_inner, n_inner)
+        for i in range(n_inner):
             # positive frequency
-            g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
+            data_to[niw:, i, i] = data_from[i, sp, :]
             # negative frequency
-            g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
+            data_to[:niw, i, i] = numpy.conj(data_from[i, sp, ::-1])
 
 
 def dcore2alpscore(dcore_U):
@@ -97,7 +133,7 @@ def dcore2alpscore(dcore_U):
     alps_J = numpy.zeros((dcore_U_len, dcore_U_len), dtype=float)
 
     # m_range = range(size)
-    for i, j in product(list(range(dcore_U_len)), list(range(dcore_U_len))):
+    for i, j in product(range(dcore_U_len), range(dcore_U_len)):
         alps_U[i, j] = dcore_U[i, j, i, j].real - dcore_U[i, j, j, i].real
         alps_Uprime[i, j] = dcore_U[i, j, i, j].real
         alps_J[i, j] = dcore_U[i, j, j, i].real
@@ -116,8 +152,8 @@ def write_Umatrix(U, Uprime, J, norb):
     Uprime_four = func(Uprime)
     J_four = func(J)
 
-    for a1, a2 in product(list(range(norb)), repeat=2):
-        for s1, s2 in product(list(range(2)), repeat=2):  # spin-1/2
+    for a1, a2 in product(range(norb), repeat=2):
+        for s1, s2 in product(range(2), repeat=2):  # spin-1/2
             if a1 == a2:
                 Uout[a1, s1, a2, s2] = U_four[a1, s1, a2, s2]
             else:
@@ -130,11 +166,6 @@ def write_Umatrix(U, Uprime, J, norb):
                 print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
             print("", file=f)
 
-
-def set_tail(g_block):
-    for bname, gf in g_block:
-        gf.tail.zero()
-        gf.tail[1] = numpy.identity(gf.N1)
 
 
 class ALPSCTHYBSEGSolver(SolverBase):
@@ -187,7 +218,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         array = numpy.zeros(data_shape, dtype=dtype)
         with HDFArchive('sim.h5', 'r') as f:
             results = f["simulation"]["results"]
-            for i1, i2 in product(list(range(2*self.n_orb)), repeat=2):
+            for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 group = "%s_%d_%d" % (group_prefix, i1, i2)
                 if group in results:
                     array[i1, i2, :] = results[group]["mean"]["value"]
@@ -214,6 +245,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             'exec_path'           : '',
             'random_seed_offset'  : 0,
             'dry_run'             : False,
+            'neglect_offdiagonal' : True,
         }
 
         def _read(key):
@@ -261,6 +293,38 @@ class ALPSCTHYBSEGSolver(SolverBase):
             Delta_tau[name] << Fourier(self._Delta_iw[name])
         Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
 
+        # check if H0 is diagonal
+        H0_offdiag = H0.copy()
+        for i in range(H0_offdiag.shape[0]):
+            H0_offdiag[i, i] = 0
+        if numpy.linalg.norm(H0_offdiag) > 1e-6:
+            print("\nWARNING: The local Hamiltonian is not diagonal", file=sys.stderr)
+            print("H0_loc =\n{}".format(H0), file=sys.stderr)
+            if _read('neglect_offdiagonal'):
+                print("--> continue. To stop calculation, set neglect_offdiagonal{bool}=False", file=sys.stderr)
+            else:
+                print("--> exit. To neglect this warning, set neglect_offdiagonal{bool}=True", file=sys.stderr)
+                exit(1)
+
+        # TODO: check Delta_tau_data
+        #    Delta_{ab}(tau) should be diagonal, real, negative
+
+        # rotate H0 and Delta_tau if rot is given
+        if rot is not None:
+            raise ValueError("basis_rotation is not supported in alps_cthyb_seg")
+
+            # rot^H . H0 . rot
+            # rot_mat = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
+            # if self.use_spin_orbit:
+            #     rot_mat_4dim = rot_mat.reshape((1, 2*self.n_orb, 1, 2*self.n_orb))
+            # else:
+            #     rot_mat_4dim = rot_mat.reshape((2, self.n_orb, 2, self.n_orb))
+            # for sp, name in enumerate(self.block_names):
+            #     # rot_mat[sp*self.n_orb:(sp+1)*self.n_orb, sp*self.n_orb:(sp+1)*self.n_orb] = rot[name]
+            #     rot_mat_4dim[sp, :, sp, :] = rot[name]
+            # H0_diag = numpy.dot(rot_mat.conjugate().T, numpy.dot(H0, rot_mat))
+            # print(H0_diag)
+
         # (1c) Set U_{ijkl} for the solver
         # Set up input parameters and files for ALPS/CTHYB-SEG
 
@@ -278,7 +342,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         if os.path.exists('./input.out.h5'):
             shutil.move('./input.out.h5', './input_prev.out.h5')
         # Set parameters specified by the user
-        for k, v in list(params_kw.items()):
+        for k, v in params_kw.items():
             if k in internal_params:
                 continue
             if k in p_run:
@@ -286,11 +350,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
             p_run[k] = v
 
         with open('./input.ini', 'w') as f:
-            for k, v in list(p_run.items()):
+            for k, v in p_run.items():
                 print(k, " = ", v, file=f)
-
-        # TODO: check Delta_tau_deta
-        #    Delta_{ab}(tau) should be diagonal, real, negative
 
         with open('./delta', 'w') as f:
             for itau in range(self.n_tau):
@@ -305,9 +366,11 @@ class ALPSCTHYBSEGSolver(SolverBase):
         write_Umatrix(U, Uprime, J, self.n_orb)
 
         with open('./MUvector', 'w') as f:
-            for orb in range(self.n_orb):
-                for spin in range(2):
-                    print('{:.15e} '.format(-H0[2*orb+spin][2*orb+spin].real), file=f, end="")
+            # for orb in range(self.n_orb):
+            #     for spin in range(2):
+            #         print('{:.15e} '.format(-H0[2*orb+spin][2*orb+spin].real), file=f, end="")
+            for i in range(2*self.n_orb):
+                print('{:.15e} '.format(-H0[i, i].real), file=f, end="")
             print("", file=f)
 
         if _read('dry_run'):
@@ -333,14 +396,20 @@ class ALPSCTHYBSEGSolver(SolverBase):
         #   self._Gimp_iw
 
         def set_blockgf_from_h5(sigma, group):
-            swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=complex)
+            # swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=complex)
+            swdata = numpy.zeros((2*self.n_orb, self.n_iw), dtype=complex)
             with HDFArchive('sim.h5', 'r') as f:
-                for orb in range(self.n_orb):
-                    for spin in range(2):
-                        swdata_array = f[group][str(orb*2+spin)]["mean"]["value"]
-                        assert swdata_array.dtype == numpy.complex
-                        assert swdata_array.shape == (self.n_iw,)
-                        swdata[spin, orb, :] = swdata_array
+                # for orb in range(self.n_orb):
+                #     for spin in range(2):
+                #         swdata_array = f[group][str(orb*2+spin)]["mean"]["value"]
+                #         assert swdata_array.dtype == numpy.complex
+                #         assert swdata_array.shape == (self.n_iw,)
+                #         swdata[spin, orb, :] = swdata_array
+                for i in range(2*self.n_orb):
+                    swdata_array = f[group][str(i)]["mean"]["value"]
+                    assert swdata_array.dtype == numpy.complex
+                    assert swdata_array.shape == (self.n_iw,)
+                    swdata[i, :] = swdata_array
             assign_from_numpy_array(sigma, swdata, self.block_names)
 
         set_blockgf_from_h5(self._Sigma_iw, "S_omega")
@@ -351,7 +420,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # [(s1,o1), (s2,o2), 0]
         self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_G2loc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         compute local G2 in p-h channel
             X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
@@ -393,7 +462,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         g2_loc = g2_loc.reshape((2*self.n_orb, 2*self.n_orb) + (num_wb, 2*num_wf, 2*num_wf))
         # assign to dict
         g2_dict = {}
-        for i1, i2 in product(list(range(2*self.n_orb)), repeat=2):
+        for i1, i2 in product(range(2*self.n_orb), repeat=2):
             g2_dict[(i1, i1, i2, i2)] = g2_loc[i1, i2]
 
         # return g2_loc for arbitrary wb including wb<0
@@ -409,13 +478,13 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # Convert G2_iijj -> G2_ijij
         g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=complex)
-        for i1, i2 in product(list(range(2*self.n_orb)), repeat=2):
+        for i1, i2 in product(range(2*self.n_orb), repeat=2):
             for wb in range(num_wb):
-                for wf1, wf2 in product(list(range(2 * num_wf)), repeat=2):
+                for wf1, wf2 in product(range(2 * num_wf), repeat=2):
                     # G2_ijij(wb, wf, wf') = -G2_iijj(wf-wf', wf'+wb, wf')^*
                     g2_loc_tr[i1, i2, wb, wf1, wf2] = -get_g2(i1, i2, wf1-wf2, wf2+wb, wf2)
         # assign to dict
-        for i1, i2 in product(list(range(2*self.n_orb)), repeat=2):
+        for i1, i2 in product(range(2*self.n_orb), repeat=2):
             # exclude i1=i2, which was already assigned by g2_loc
             if i1 != i2:
                 g2_dict[(i1, i2, i1, i2)] = g2_loc_tr[i1, i2]
@@ -435,12 +504,12 @@ class ALPSCTHYBSEGSolver(SolverBase):
             chi_loc[:, :, 0] -= occup[:, None] * occup[None, :] * self.beta
             # assign to dict
             chi_dict = {}
-            for i1, i2 in product(list(range(2*self.n_orb)), repeat=2):
+            for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 chi_dict[(i1, i1, i2, i2)] = chi_loc[i1, i2]
 
         return g2_dict, chi_dict
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         raise Exception("This solver does not support the sparse sampling.")
 
     def name(self):

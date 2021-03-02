@@ -28,7 +28,7 @@ from triqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
 from .base import SolverBase
 
-VERSION_REQUIRED = 1.4
+VERSION_REQUIRED = 1.5
 
 
 def check_version(_mpirun_command, _exec_path):
