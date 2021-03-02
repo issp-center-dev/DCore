@@ -202,16 +202,16 @@ class PomerolSolver(SolverBase):
             for i, j in product(list(range(h0_full.shape[0])), list(range(h0_full.shape[1]))):
                 # TODO: real or complex
                 if abs(h0_full[i, j]) != 0:
-                    # print(i, j, h0_full[i,j].real, h0_full[i,j].imag, file=f)
-                    print(i, j, h0_full[i, j].real, file=f)
+                    print(i, j, h0_full[i,j].real, h0_full[i,j].imag, file=f)
+                    # print(i, j, h0_full[i, j].real, file=f)
 
         # (1c) Set U_{ijkl} for the solver
         with open(file_umat, "w") as f:
             for i, j, k, l in product(list(range(self.n_flavors)), repeat=4):
                 # TODO: real or complex
                 if abs(self.u_mat[i, j, k, l]) != 0:
-                    # print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
-                    print(i, j, k, l, self.u_mat[i, j, k, l].real, file=f)
+                    print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
+                    #print(i, j, k, l, self.u_mat[i, j, k, l].real, file=f)
 
         # (2) Run a working horse
         with open('./stdout.log', 'w') as output_f:
@@ -222,7 +222,7 @@ class PomerolSolver(SolverBase):
         #   self._Gimp_iw
 
         # load data as a complex type
-        gf_1d = numpy.loadtxt(file_gf).view(complex).reshape(-1)
+        gf_1d = numpy.loadtxt(file_gf).view(numpy.complex128).reshape(-1)
         if not self.use_spin_orbit:
             gf = gf_1d.reshape((2, self.n_orb, self.n_orb, self.n_iw))
         else:
@@ -245,7 +245,7 @@ class PomerolSolver(SolverBase):
 
         # Cut H0 into block structure
         n_block = len(self.gf_struct)
-        n_inner = h0_full.shape[0] / n_block
+        n_inner = h0_full.shape[0] // n_block
         h0_block = [h0_updn[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
 
         # Construct G0 including bath sites
@@ -274,7 +274,7 @@ class PomerolSolver(SolverBase):
             print(" reading", filename)
 
             # load data as a complex type
-            data = numpy.loadtxt(filename).view(complex).reshape(-1)
+            data = numpy.loadtxt(filename).view(numpy.complex128).reshape(-1)
 
             g2_loc[(i1, i2, i3, i4)] = data * fac
 
@@ -288,7 +288,7 @@ class PomerolSolver(SolverBase):
         dir_suscep = params_kw.get('dir_suscep', './susceptibility')
         return self._read_common(dir_suscep)
 
-    def calc_G2loc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         compute local G2 in p-h channel
             X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
@@ -329,7 +329,7 @@ class PomerolSolver(SolverBase):
 
         return g2_loc, chi_loc
 
-    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         """
 
         Parameters

@@ -670,6 +670,8 @@ def complex_to_float_array(a):
     return a.view(float).reshape(a.shape + (2,))
 
 def float_to_complex_array(a):
+    if numpy.iscomplexobj(a):
+        return a
     return a.view(complex).reshape(a.shape[:-1])
 
 def save_giw(h5file, path, g):

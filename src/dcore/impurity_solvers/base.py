@@ -147,7 +147,7 @@ class SolverBase(object):
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
 
-    def calc_G2loc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute Xloc(m, n, n') in p-h channel
                 and chi_loc(m) (optional)
@@ -174,7 +174,7 @@ class SolverBase(object):
         """
         pass
 
-    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         """
         Compute Xloc(m, n, n') in p-h channel only for specified frequency points
                 and chi_loc(m) (optional)
@@ -198,11 +198,52 @@ class SolverBase(object):
 
         Returns
         -------
-        Xloc
+        Xloc: ndarray or dict
+           ndarray: (n_flavors, n_flavors, n_flavors, n_flavors, n_freqs)
+           dict: key is (flavor0, flavor1, flavor2, flavor3), val is a ndarray of size (n_freqs,)
         chi_loc
 
         """
         pass
+
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
+        """
+        Compute G2(m, n, n') in p-h channel only for specified frequency points.
+        The definition of G2 is given in Eq. (3) of note/bse.pdf.
+
+        Parameters
+        ----------
+        rot
+        mpirun_command:
+            The same as solve()
+
+        freqs_ph: 2d int ndarray of shape (n_freqs, 3)
+            The three integers at each row represent one bosonic frequency and two fermionic frequencies
+            in the particle-hole convention.
+            These frequencies must be given in the order of (boson, fermion, fermion).
+
+        params_kw:
+            The same as solve()
+
+        Returns
+        -------
+        G2loc: ndarray or dict
+           ndarray: (n_flavors, n_flavors, n_flavors, n_flavors, n_freqs)
+           dict: key is (flavor0, flavor1, flavor2, flavor3), val is a ndarray of size (n_freqs,)
+
+        """
+        Xloc, _ =  self.calc_Xloc_ph_sparse(rot, mpirun_command, freqs_ph, 0, params_kw)
+        # Convert Xloc to G2 using Eq. (4) in note/bse.pdf:
+        #   G2loc_{pqrs} = beta * Xloc_{qprs}
+        if isinstance(Xloc, numpy.ndarray):
+            return self.beta * Xloc.transpose((1,0,2,3,4))
+        elif isinstance(Xloc, dict):
+            G2loc = {}
+            for k, v in Xloc.items():
+                G2loc[(k[1], k[0], k[2], k[3])] = self.beta * v
+            return G2loc
+        else:
+            raise ValueError("Xloc must be a ndarray or a dict!")
 
 
     @classmethod

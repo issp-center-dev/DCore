@@ -88,6 +88,9 @@ You can download the source files in two ways.
 
   One can run unit tests using the installed DCore by executing the following commands.
 
+  Executables such as dcore_pre may be installed into $HOME/.local/bin/dcore if you install DCore with the "--user" option.
+  Please add this directory to your PATH environment if needed.
+
   You can build documentations as follows.
 
   .. code-block:: bash

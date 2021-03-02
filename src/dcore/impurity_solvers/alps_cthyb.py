@@ -124,10 +124,10 @@ class ALPSCTHYBSolver(SolverBase):
 
         self._solve_impl(rot, mpirun_command, None, params_kw)
 
-    def calc_G2loc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
-        raise RuntimeError("calc_G2loc_ph is not implemented!")
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+        raise RuntimeError("calc_Xloc_ph is not implemented!")
 
-    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
         self._solve_impl(rot, mpirun_command, freqs_ph, params_kw)
 
         return self._G2loc_ph_sparse, None
@@ -224,7 +224,7 @@ class ALPSCTHYBSolver(SolverBase):
         }
 
         if not freqs_ph is None:
-            p_run['measurement.G2.on'] = 1
+            p_run['measurement.G2.matsubara.on'] = 1
             p_run['measurement.G2.matsubara.frequencies_PH'] = 'freqs_PH.txt'
 
         if os.path.exists('./input.out.h5'):
@@ -310,7 +310,7 @@ class ALPSCTHYBSolver(SolverBase):
 
             # Two-particle GF
             if not freqs_ph is None:
-                data_G2 = float_to_complex_array(f['/G2/matsubara/data'][()])
+                data_G2 = f['G2']['matsubara']['data']
                 data_G2 = data_G2.reshape((self.n_flavors, self.n_flavors, self.n_flavors, self.n_flavors, -1))
                 # from ALPS/CT-HYB to DCore notation
                 self._G2loc_ph_sparse = data_G2.transpose((1,0,2,3,4))/self.beta
