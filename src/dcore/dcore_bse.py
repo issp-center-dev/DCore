@@ -37,6 +37,21 @@ from dcore import impurity_solvers
 from bse_tools.h5bse import h5BSE
 
 
+def to_str(x):
+    if isinstance(x, bytes):
+        return x.decode('utf-8')
+    return x
+
+def compare_str_list(list1, list2):
+    if len(list1) != len(list2):
+        return False
+    for x, y in zip(list1, list2):
+        if to_str(x) != to_str(y):
+            return False
+    return True
+
+
+
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
                               Sigma_iw, Gloc_iw, num_wb, num_wf, ish, freqs=None):
     """
@@ -271,8 +286,8 @@ class SaveBSE:
         h5bse = h5BSE(self.h5_file, self.bse_grp)
         if bse_info == 'check':
             # check equivalence of info
-            assert h5bse.get(key=('block_name',)) == self.block2.namelist
-            assert h5bse.get(key=('inner_name',)) == self.inner2.namelist
+            #assert compare_str_list(h5bse.get(key=('block_name',)), self.block2.namelist)
+            #assert compare_str_list(h5bse.get(key=('inner_name',)), self.inner2.namelist)
             assert h5bse.get(key=('beta',)) == beta
         elif bse_info == 'save':
             # save info
