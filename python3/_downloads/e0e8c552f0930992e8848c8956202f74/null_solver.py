@@ -67,7 +67,7 @@ class NullSolver(SolverBase):
         self._Delta_iw = delta(self._G0_iw)
         Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta)
         for name, block in self._Delta_iw:
-            Delta_tau[name] << InverseFourier(self._Delta_iw[name])
+            Delta_tau[name] << Fourier(self._Delta_iw[name])
 
         # (1c) Set U_{ijkl} for the solver
         # for i, j, k, l in product(range(self.n_flavors), repeat=4):
