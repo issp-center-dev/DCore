@@ -261,6 +261,7 @@ class PomerolSolver(SolverBase):
         g0_imp = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
         for block in self.block_names:
             for o1, o2 in product(self.gf_struct[block], repeat=2):
+                print("debug ", o1, o2)
                 g0_imp[block][o1, o2] << g0_full[block][o1, o2]
 
         self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)

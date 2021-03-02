@@ -385,7 +385,7 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
 
 def umat2dd(dcore_U):
 
-    n_orb = dcore_U.shape[0]/2  # spin-1/2
+    n_orb = dcore_U.shape[0]//2  # spin-1/2
 
     # extract density-density part
     dcore_U_len = len(dcore_U)

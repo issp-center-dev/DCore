@@ -258,7 +258,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         self._Delta_iw = delta(self._G0_iw)
         Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         for name in self.block_names:
-            Delta_tau[name] << InverseFourier(self._Delta_iw[name])
+            Delta_tau[name] << Fourier(self._Delta_iw[name])
         Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
 
         # (1c) Set U_{ijkl} for the solver
