@@ -449,8 +449,11 @@ class Wannier90Converter(ConverterTools):
                             "Inconsistent indices for R vector n. %s" % ir)
 
                 # fill h_of_r with the matrix elements of the Hamiltonian
+                fermi_energy = 0.0
+                if hasattr(self, 'fermi_energy'):
+                    fermi_energy = self.fermi_energy
                 if not numpy.any(rcurr) and ii == jj:
-                    h_of_r[ir][ii, jj] = complex(float(cline[5]) - self.fermi_energy, float(cline[6]))
+                    h_of_r[ir][ii, jj] = complex(float(cline[5]) - fermi_energy, float(cline[6]))
                 else:
                     h_of_r[ir][ii, jj] = complex(float(cline[5]), float(cline[6]))
 

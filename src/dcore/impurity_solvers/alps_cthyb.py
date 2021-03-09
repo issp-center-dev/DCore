@@ -225,7 +225,7 @@ class ALPSCTHYBSolver(SolverBase):
 
         if not freqs_ph is None:
             p_run['measurement.G2.matsubara.on'] = 1
-            p_run['measurement.G2.matsubara.frequencies_PH'] = 'freqs_PH.txt'
+            p_run['measurement.G2.matsubara.frequencies_PH'] = './freqs_PH.txt'
 
         if os.path.exists('./input.out.h5'):
             shutil.move('./input.out.h5', './input_prev.out.h5')
@@ -264,7 +264,7 @@ class ALPSCTHYBSolver(SolverBase):
             with open('./freqs_PH.txt', 'w') as f:
                 print(freqs_ph.shape[0], file=f)
                 for i in range(freqs_ph.shape[0]):
-                    print('{} {} {}'.format(*freqs_ph[i,:]), file=f)
+                    print('{}  {} {} {}'.format(i, *freqs_ph[i,:]), file=f)
 
         if _read('dry_run'):
             return

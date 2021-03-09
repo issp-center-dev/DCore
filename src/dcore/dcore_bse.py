@@ -42,6 +42,7 @@ def to_str(x):
         return x.decode('utf-8')
     return x
 
+
 def compare_str_list(list1, list2):
     if len(list1) != len(list2):
         return False
@@ -49,7 +50,6 @@ def compare_str_list(list1, list2):
         if to_str(x) != to_str(y):
             return False
     return True
-
 
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
