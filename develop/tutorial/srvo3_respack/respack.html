@@ -1,27 +1,29 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
     <title>Downfolding with RESPACK (SrVO3) &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Downfolding with RESPACK (SrVO<sub>3</sub>)</a></li> 
       </ul>
     </div>  
 
@@ -30,22 +32,22 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="downfolding-with-respack-srvo3">
+  <section id="downfolding-with-respack-srvo3">
 <span id="respacksrvo3"></span><h1>Downfolding with RESPACK (SrVO<sub>3</sub>)<a class="headerlink" href="#downfolding-with-respack-srvo3" title="Permalink to this headline">¶</a></h1>
 <div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">This document was written for ver.1.x, and might include descriptions incompatible with the latest version.
+<p class="admonition-title">Warning</p>
+<p>This document was written for ver.1.x, and might include descriptions incompatible with the latest version.
 If you encounter some problem, see the release note of ver.2.0 and check the differences between ver.1.x and ver.2.0.</p>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">This tutorial requires large computational resources or the long simulation time.</p>
+<p class="admonition-title">Note</p>
+<p>This tutorial requires large computational resources or the long simulation time.</p>
 </div>
 <p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
-<a class="reference internal image-reference" href="../../_images/struct_srvo31.png"><img alt="../../_images/struct_srvo31.png" class="align-center" src="../../_images/struct_srvo31.png" style="width: 200px;" /></a>
-<div class="section" id="scf-calculation-of-quantum-espresso">
+<a class="reference internal image-reference" href="../../_images/struct_srvo3.png"><img alt="../../_images/struct_srvo3.png" class="align-center" src="../../_images/struct_srvo3.png" style="width: 200px;" /></a>
+<section id="scf-calculation-of-quantum-espresso">
 <h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference download internal" download="" href="../../_downloads/db170e8a4a8aea98431a41a43d190555/scf_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3_r.in</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/123b09c7e170e0d3df9d62846503fdcb/scf_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3_r.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
  <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
   <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
@@ -92,12 +94,12 @@ the ultrasoft pseudopotentials or PAW.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in scf_srvo3.in
 </pre></div>
 </div>
-</div>
-<div class="section" id="wannierization">
+</section>
+<section id="wannierization">
 <h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
 <p>Next, we perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.</p>
-<p><a class="reference download internal" download="" href="../../_downloads/898bdf3554e9e5f2c345681256c1a65c/nscf_respack.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_respack.in</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/14d3cce84048e472e1adf185c76a2cb7/nscf_respack.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_respack.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
  <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;nscf&#39;</span>
   <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
@@ -144,7 +146,7 @@ in the wannierization.</p>
 <p>This program locates in the <code class="docutils literal notranslate"><span class="pre">util/qe2respack/</span></code> directory of RESPACK.</p>
 <p>Execute <code class="docutils literal notranslate"><span class="pre">calc_wannier</span></code> (in <code class="docutils literal notranslate"><span class="pre">src/wannier/</span></code> of RESPACK) for the actual wannierization.
 with the following input file:</p>
-<p><a class="reference download internal" download="" href="../../_downloads/fcf7c41eb8c15f209b663ebb2199cebb/respack.in"><code class="xref download docutils literal notranslate"><span class="pre">respack.in</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/84f0dfc3e33b00e85ab1c5c5a5d7229c/respack.in"><code class="xref download docutils literal notranslate"><span class="pre">respack.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">PARAM_CHIQW</span>
 <span class="n">Num_freq_grid</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">flg_cRPA</span> <span class="o">=</span> <span class="mi">1</span>
@@ -190,12 +192,12 @@ with the following input file:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ calc_wannier &lt; respack.in
 </pre></div>
 </div>
-<div class="section" id="optional-check-wannierization">
+<section id="optional-check-wannierization">
 <h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
 <p>If you want to check the quality of the wannierization,
 you can plot the original and the wannier-interpolated band structure simultaneously.</p>
 <p>First, compute the band structure with the following input file:</p>
-<p><a class="reference download internal" download="" href="../../_downloads/2d22d9fca258b770614ac60d8fa267bc/band_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">band_srvo3_r.in</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/5eb1c33ccd25b7707d38c97d89a3f4e0/band_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">band_srvo3_r.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
  <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span>
   <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
@@ -282,7 +284,7 @@ you can plot the original and the wannier-interpolated band structure simultaneo
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> pw.x -in band_srvo3_r.in
 </pre></div>
 </div>
-<p><a class="reference download internal" download="" href="../../_downloads/b28566da906e210b3cdf4deb9ab0b5da/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/b7c0a744734ec13b6f191c706fe2ff2d/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&amp;BANDS
 prefix = &quot;srvo3&quot;,
 outdir = &quot;./&quot;,
@@ -294,13 +296,13 @@ outdir = &quot;./&quot;,
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> bands.x -in bands_srvo3.in
 </pre></div>
 </div>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="err">plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;dir-wan/dat.iband&quot; u ($1*2.5731):2 tit &quot;Wannier&quot; w l</span>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;dir-wan/dat.iband&quot; u ($1*2.5731):2 tit &quot;Wannier&quot; w l
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../../_images/band_srvo31.png"><img alt="../../_images/band_srvo31.png" class="align-center" src="../../_images/band_srvo31.png" style="width: 500px;" /></a>
-</div>
-</div>
-<div class="section" id="dielectric-matrix-and-effective-interaction">
+<a class="reference internal image-reference" href="../../_images/band_srvo3.png"><img alt="../../_images/band_srvo3.png" class="align-center" src="../../_images/band_srvo3.png" style="width: 500px;" /></a>
+</section>
+</section>
+<section id="dielectric-matrix-and-effective-interaction">
 <h2>Dielectric matrix and Effective interaction<a class="headerlink" href="#dielectric-matrix-and-effective-interaction" title="Permalink to this headline">¶</a></h2>
 <p>Next, we move on the calculation of the dielectric matrix with cRPA.
 We use the program <code class="docutils literal notranslate"><span class="pre">calc_chiqw</span></code> (in <code class="docutils literal notranslate"><span class="pre">src/calc_chiqw</span></code> in RESPACK) as</p>
@@ -319,10 +321,10 @@ $ calc_j3d &lt; respack.in
 </pre></div>
 </div>
 <p>The command-line argument (<code class="docutils literal notranslate"><span class="pre">&quot;srvo3&quot;</span></code> in this case) must be the same as <code class="docutils literal notranslate"><span class="pre">seedname</span></code> in the DCore input.</p>
-</div>
-<div class="section" id="dmft-calculation">
+</section>
+<section id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference download internal" download="" href="../../_downloads/8227fdfda7e38f7f5d1905ac89e0205a/srvo3_respack.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/10fc7c42a65156219ff44a58832511f2/srvo3_respack.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
 <span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
 <span class="na">seedname</span> <span class="o">=</span> <span class="s">srvo3</span>
@@ -368,47 +370,48 @@ $ calc_j3d &lt; respack.in
 </div>
 <p>Please see <a class="reference internal" href="../../impuritysolvers/triqs_cthyb/cthyb.html#howtocthyb"><span class="std std-ref">CT-QMC: TRIQS/cthyb</span></a> for the details of the parameter setting.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The parameter <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be tuned in inverse proportion to the number of MPI processes.
+<p class="admonition-title">Note</p>
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be tuned in inverse proportion to the number of MPI processes.
 The following result is obtained with 432 MPI processes at <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">10000</span></code>
 (70 seconds per DMFT cycle on ISSP system B).
 If we want to compute by using 32 MPI processes at the same accuracy,
 <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be 10000*432/32=135000.</p>
 </div>
-<div class="section" id="dmft-setup-dcore-pre">
+<section id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3_respack.ini
 </pre></div>
 </div>
-</div>
-<div class="section" id="running-the-dmft-calculation-dcore">
+</section>
+<section id="running-the-dmft-calculation-dcore">
 <h3>Running the DMFT calculation: dcore<a class="headerlink" href="#running-the-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3_respack.ini
 </pre></div>
 </div>
-</div>
-<div class="section" id="post-processing-and-data-analysis-dcore-post">
+</section>
+<section id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3_respack.ini
 $ sed -e <span class="s2">&quot;s/every 10/every 3/g&quot;</span> srvo3_akw.gp
 $ gnuplot nis_akw.gp
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../../_images/akw_srvo34.png"><img alt="../../_images/akw_srvo34.png" class="align-center" src="../../_images/akw_srvo34.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/akw_srvo33.png"><img alt="../../_images/akw_srvo33.png" class="align-center" src="../../_images/akw_srvo33.png" style="width: 500px;" /></a>
 <p>“x” indicates the original band structure.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h3><a href="../../contents.html">Table of Contents</a></h3>
+<h3><a href="../../index.html">Table of Contents</a></h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../index.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">DCore</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
@@ -416,17 +419,15 @@ $ gnuplot nis_akw.gp
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -434,7 +435,8 @@ $ gnuplot nis_akw.gp
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Downfolding with RESPACK (SrVO<sub>3</sub>)</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
