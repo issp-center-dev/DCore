@@ -1,0 +1,2 @@
+No test funtions do not import mpi4py.
+mpi4py can be imported in a subprocess.

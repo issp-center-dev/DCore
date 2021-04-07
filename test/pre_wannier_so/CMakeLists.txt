@@ -1,4 +1,0 @@
-FILE(COPY chain_hr.dat DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-FILE(COPY chain_ref.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-add_python_test(pre_wannier_so)

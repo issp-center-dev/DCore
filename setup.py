@@ -1,0 +1,68 @@
+"""
+Setup script for irbasis_x
+"""
+from setuptools import setup, find_packages
+
+VERSION = '3.0.0b1'
+REPO_URL = "https://github.com/issp-center-dev/DCore.git"
+LONG_DESCRIPTION = ""
+
+setup(
+    name='dcore',
+    version=VERSION,
+
+    description='DMFT software for CORrelated Electrons',
+    #long_description=LONG_DESCRIPTION,
+    #long_description_content_type='text/markdown',
+    keywords=' '.join([
+        'condensed-matter',
+        'dmft',
+        ]),
+    classifiers=[
+        'Development Status :: 5 - Stable',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: Developers',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Programming Language :: Python :: 3',
+        ],
+
+    url=REPO_URL,
+    author=', '.join([
+        'H. Shinaoka',
+        'J. Otsuki',
+        'K. Yoshimi',
+        'M. Kawamura',
+        'N. Takemori',
+        'Y. Motoyama'
+        ]),
+    author_email='h.shinaoka@gmail.com',
+
+    python_requires='>=3, <4',
+    install_requires=[
+        'numpy',
+        'scipy',
+        'h5py',
+        ],
+    extras_require={
+        'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme'],
+        },
+
+    setup_requires=[
+        'numpy',
+        'scipy',
+        ],
+
+    package_dir={'': 'src'},
+    packages=find_packages(where='src'),
+    entry_points={
+        "console_scripts": [
+            "dcore_pre = dcore.dcore_pre:run",
+            "dcore = dcore.dcore:run",
+            "dcore_post = dcore.dcore_post:run",
+            "dcore_check = dcore.dcore_check:run",
+            "dcore_bse = dcore.dcore_bse:run",
+        ]
+    },
+
+    zip_safe=False,
+    )
