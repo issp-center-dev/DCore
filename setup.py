@@ -3,7 +3,7 @@ Setup script for irbasis_x
 """
 from setuptools import setup, find_packages
 
-VERSION = '3.0.0b1'
+VERSION = '3.0.0'
 REPO_URL = "https://github.com/issp-center-dev/DCore.git"
 LONG_DESCRIPTION = ""
 
@@ -19,7 +19,7 @@ setup(
         'dmft',
         ]),
     classifiers=[
-        'Development Status :: 5 - Stable',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
         'Topic :: Scientific/Engineering :: Physics',
