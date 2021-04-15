@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Antiferromagnetic state &#8212; DCore  documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
@@ -41,7 +40,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="antiferromagnetic-state">
+  <div class="section" id="antiferromagnetic-state">
 <h1>Antiferromagnetic state<a class="headerlink" href="#antiferromagnetic-state" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial, you will learn the following:</p>
 <ul class="simple">
@@ -99,7 +98,7 @@ In this tutorial, we compute the antiferromagetic solution below <span class="ma
 </pre></div>
 </div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">/path/to/alps_cthyb</span></code> for <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span> <span class="pre">exec_path{str}</span></code> parameter needs to be replaced with a full path to <code class="docutils literal notranslate"><span class="pre">alps_cthyb</span></code> executable in your environment.</p>
-<section id="define-lattice-model">
+<div class="section" id="define-lattice-model">
 <h2>Define lattice model<a class="headerlink" href="#define-lattice-model" title="Permalink to this headline">¶</a></h2>
 <p>First, we define the hopping matrix of the 2D Hubbard model with a 2x2 unit cell.
 Running the script <a class="reference download internal" download="" href="../../_downloads/f5004a655513f71ac3586bee0d7b700c/mk_hr_2.py"><code class="xref download docutils literal notranslate"><span class="pre">mk_hr_2.py</span></code></a> as</p>
@@ -110,8 +109,8 @@ Running the script <a class="reference download internal" download="" href="../.
 The unit cell contains four sites whose internal coordinates are (0, 0), (0, 1), (1, 0), (1, 1).</p>
 <p>We now assume an antiferromagnetic order characterized by the wave vector <span class="math notranslate nohighlight">\(q=(\pi, \pi)\)</span>.
 To this end, we assign the four sites (correlated shells) to two inequivalent shells by using the <code class="docutils literal notranslate"><span class="pre">corr_to_inequiv</span></code> parameter in the model section.</p>
-</section>
-<section id="generate-initial-guess-for-self-energy">
+</div>
+<div class="section" id="generate-initial-guess-for-self-energy">
 <h2>Generate initial guess for self-energy<a class="headerlink" href="#generate-initial-guess-for-self-energy" title="Permalink to this headline">¶</a></h2>
 <p>Second, we set up intial guesses for the (static) self-energies on the two inequivalent shells.
 For one shell, we use the text file <a class="reference download internal" download="" href="../../_downloads/4e848f2f03c74363cb3c6e24386afad8/init_se_up.txt"><code class="xref download docutils literal notranslate"><span class="pre">init_se_up.txt</span></code></a> containing</p>
@@ -125,8 +124,8 @@ For one shell, we use the text file <a class="reference download internal" downl
 </pre></div>
 </div>
 <p>Thus, spin moments tend to turn up on inequivalent shell0 and turn down on shell1.</p>
-</section>
-<section id="self-consistent-calculations">
+</div>
+<div class="section" id="self-consistent-calculations">
 <h2>Self-consistent calculations<a class="headerlink" href="#self-consistent-calculations" title="Permalink to this headline">¶</a></h2>
 <p>Now, DMFT calculations can be done as usual.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
@@ -169,8 +168,8 @@ dcore_post cubic.ini --np <span class="m">48</span> &gt; output-post
 <a class="reference internal image-reference" href="../../_images/iter_spin-ish0.png"><img alt="../../_images/iter_spin-ish0.png" class="align-center" src="../../_images/iter_spin-ish0.png" style="width: 80%;" /></a>
 <p>For inequivalent shell1, the spin moment points the opposite directions:</p>
 <a class="reference internal image-reference" href="../../_images/iter_spin-ish1.png"><img alt="../../_images/iter_spin-ish1.png" class="align-center" src="../../_images/iter_spin-ish1.png" style="width: 80%;" /></a>
-</section>
-</section>
+</div>
+</div>
 
 
             <div class="clearer"></div>

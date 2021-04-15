@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SrVO3 &#8212; DCore  documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
@@ -40,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="srvo3">
+  <div class="section" id="srvo3">
 <span id="id1"></span><h1>SrVO<sub>3</sub><a class="headerlink" href="#srvo3" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -48,15 +47,15 @@
 </div>
 <p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
 <a class="reference internal image-reference" href="../../_images/struct_srvo3.png"><img alt="../../_images/struct_srvo3.png" class="align-center" src="../../_images/struct_srvo3.png" style="width: 200px;" /></a>
-<section id="construction-of-wannier-functions">
+<div class="section" id="construction-of-wannier-functions">
 <h2>Construction of Wannier functions<a class="headerlink" href="#construction-of-wannier-functions" title="Permalink to this headline">¶</a></h2>
 <p>Maximally localized Wannier functions for the <em>t</em><sub>2g</sub> manifold can be constructed by using DFT code.
 Please download precomputed data for Wannier functions</p>
 <p><a class="reference download internal" download="" href="../../_downloads/e0c7729f347f01bbd41c0c07f818c779/srvo3_hr.dat"><code class="xref download docutils literal notranslate"><span class="pre">srvo3_hr.dat</span></code></a></p>
 <p>and save it to your working directly. This data was computed by using Quantum ESPRESSO and Wannier90.
 The procedure of Wanniernization is detailed in <a class="reference internal" href="qe/qe.html"><span class="doc">Wanniernization using Quantum ESPRESSO</span></a> and <a class="reference internal" href="openmx/openmx.html"><span class="doc">Wanniernization using OpenMX</span></a>.</p>
-</section>
-<section id="dmft-calculation">
+</div>
+<div class="section" id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/c64f73d0e3b58daa5cfb6f9b75b04860/srvo3.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
@@ -152,19 +151,19 @@ Please see <a class="reference internal" href="../../impuritysolvers/triqs_cthyb
 The total computational time for 12 iterations is around 30 mins.</p>
 <p>The accuracy of QMC results can be improved by setting a longer simulation time (ALPS/CT-HYB) or a larger n_cycles (TRIQS/cthyb).
 For ALPS/CT-HYB, the parameter time_limit is given in seconds.</p>
-<section id="dmft-setup-dcore-pre">
+<div class="section" id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3.ini
 </pre></div>
 </div>
-</section>
-<section id="running-self-consistent-dmft-calculation-dcore">
+</div>
+<div class="section" id="running-self-consistent-dmft-calculation-dcore">
 <h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3.ini --np <span class="m">48</span>
 </pre></div>
 </div>
-</section>
-<section id="post-processing-and-data-analysis-dcore-post">
+</div>
+<div class="section" id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3.ini --np <span class="m">48</span>
 $ <span class="nb">cd</span> post
@@ -173,9 +172,9 @@ $ gnuplot srvo3_akw.gp
 </div>
 <a class="reference internal image-reference" href="../../_images/akw_srvo3.png"><img alt="../../_images/akw_srvo3.png" class="align-center" src="../../_images/akw_srvo3.png" style="width: 500px;" /></a>
 <p>The left and right panels show results for up and down spins, respectively.</p>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
             <div class="clearer"></div>

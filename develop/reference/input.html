@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Input-file format &#8212; DCore  documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/wild.css" type="text/css" />
@@ -41,7 +40,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="input-file-format">
+  <div class="section" id="input-file-format">
 <h1>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h1>
 <p>The input file consists of five parameter blocks named <code class="docutils literal notranslate"><span class="pre">[model]</span></code>, <code class="docutils literal notranslate"><span class="pre">[system]</span></code>, <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span></code>, <code class="docutils literal notranslate"><span class="pre">[control]</span></code>, and <code class="docutils literal notranslate"><span class="pre">[tool]</span></code>.</p>
 <p>The following table shows which blocks are used by each program.</p>
@@ -102,7 +101,7 @@
 </table>
 <p>For example, we can see that <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> needs to be re-executed only when [model] block is changed.</p>
 <p>The parameters included in each block are explained below.</p>
-<section id="model-block">
+<div class="section" id="model-block">
 <h2>[model] block<a class="headerlink" href="#model-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes parameters for defining a model to be solved.</p>
 <table class="docutils align-default">
@@ -227,7 +226,7 @@
 </tr>
 </tbody>
 </table>
-<section id="lattice">
+<div class="section" id="lattice">
 <h3>lattice<a class="headerlink" href="#lattice" title="Permalink to this headline">¶</a></h3>
 <p>For model calculations, the following preset models are defined:</p>
 <ul class="simple">
@@ -252,8 +251,8 @@ The data structure follows <strong>DFTTools</strong>. For details, see
 <p>The pre-process <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> does not touch the data in <code class="docutils literal notranslate"><span class="pre">dft_input</span></code> group, and write only additional data such as interactions into <code class="docutils literal notranslate"><span class="pre">DCore</span></code> group.</p>
 </li>
 </ul>
-</section>
-<section id="interaction">
+</div>
+<div class="section" id="interaction">
 <h3>interaction<a class="headerlink" href="#interaction" title="Permalink to this headline">¶</a></h3>
 <p>Model Hamiltonian is defined as</p>
 <div class="math notranslate nohighlight">
@@ -374,8 +373,8 @@ c_{i \alpha \sigma}^\dagger c_{i \beta \sigma}^\dagger c_{i \alpha \sigma} c_{i 
 <p>It can not be used in conjunction to the Hubbard-I solver or
 the double-counting correction.</p>
 </div>
-</section>
-<section id="local-potential">
+</div>
+<div class="section" id="local-potential">
 <h3>local potential<a class="headerlink" href="#local-potential" title="Permalink to this headline">¶</a></h3>
 <p>An arbitrary local potential can be implemented using parameters <code class="docutils literal notranslate"><span class="pre">local_potential_*</span></code>.
 The format looks like</p>
@@ -394,9 +393,9 @@ The parameter <code class="docutils literal notranslate"><span class="pre">local
 </pre></div>
 </div>
 <p>and the magnetic field is specified by <code class="docutils literal notranslate"><span class="pre">local_potential_factor</span></code>.</p>
-</section>
-</section>
-<section id="system-block">
+</div>
+</div>
+<div class="section" id="system-block">
 <h2>[system] block<a class="headerlink" href="#system-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.</p>
 <table class="docutils align-default">
@@ -468,8 +467,8 @@ U_{\alpha \gamma \beta \delta}
 U_{\alpha \gamma \delta \beta}
 \langle c_{\gamma \sigma'}^\dagger c_{\delta \sigma}\rangle_0,\]</div>
 <p>where <span class="math notranslate nohighlight">\(\langle \cdots \rangle_0\)</span> indicates the expectation value at the initial (Kohn-Sham) state.</p>
-</section>
-<section id="impurity-solver-block">
+</div>
+<div class="section" id="impurity-solver-block">
 <h2>[impurity_solver] block<a class="headerlink" href="#impurity-solver-block" title="Permalink to this headline">¶</a></h2>
 <p>This block specifies an impurity solver to be used and necessary parameters for running the solver program.</p>
 <table class="docutils align-default">
@@ -501,8 +500,8 @@ U_{\alpha \gamma \delta \beta}
 </table>
 <p>Additionally, we have to specify solver-dependent parameters in the way like <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span> <span class="pre">=</span> <span class="pre">500000</span></code>.
 For details, see <a class="reference internal" href="../impuritysolvers.html"><span class="doc">the reference manual for each solver</span></a>.</p>
-</section>
-<section id="control-block">
+</div>
+<div class="section" id="control-block">
 <h2>[control] block<a class="headerlink" href="#control-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes parameters that control the self-consistency loop of DMFT.</p>
 <table class="docutils align-default">
@@ -567,8 +566,8 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </tr>
 </tbody>
 </table>
-</section>
-<section id="tool-block">
+</div>
+<div class="section" id="tool-block">
 <h2>[tool] block<a class="headerlink" href="#tool-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes parameters that are solely used by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table class="docutils align-default">
@@ -668,8 +667,8 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </tr>
 </tbody>
 </table>
-</section>
-<section id="mpi-block">
+</div>
+<div class="section" id="mpi-block">
 <h2>[mpi] block<a class="headerlink" href="#mpi-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes parameters which are read by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table class="docutils align-default">
@@ -696,8 +695,8 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </table>
 <p>When an option <code class="docutils literal notranslate"><span class="pre">-DMPIEXEC=&lt;MPIRUN&gt;</span></code> is passed to the <code class="docutils literal notranslate"><span class="pre">cmake</span></code> command,
 The default value of <code class="docutils literal notranslate"><span class="pre">command</span></code> will be replaced with <code class="docutils literal notranslate"><span class="pre">&lt;MPIRUN&gt;</span></code>.</p>
-</section>
-</section>
+</div>
+</div>
 
 
             <div class="clearer"></div>

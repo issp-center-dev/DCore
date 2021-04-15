@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FAQ/Troubleshooting &#8212; DCore  documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/wild.css" type="text/css" />
@@ -40,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="faq-troubleshooting">
+  <div class="section" id="faq-troubleshooting">
 <h1>FAQ/Troubleshooting<a class="headerlink" href="#faq-troubleshooting" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -78,55 +77,55 @@
 </li>
 </ul>
 </div>
-<section id="general">
+<div class="section" id="general">
 <h2><a class="toc-backref" href="#id1">General</a><a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
-<section id="can-dcore-compute-the-double-occupancy">
+<div class="section" id="can-dcore-compute-the-double-occupancy">
 <h3><a class="toc-backref" href="#id2">Can <strong>DCore</strong> compute the double occupancy?</a><a class="headerlink" href="#can-dcore-compute-the-double-occupancy" title="Permalink to this headline">¶</a></h3>
 <p>It depends on impurity solvers.
 For example, ALPS/CT-HYB-SEGMENT supports it, but other CT-QMC codes do not at present.</p>
 <p>In general, capability of computing <strong>local</strong> physical quantities totally depends on impurity solvers.
 See the documentation of each solver for which local quantities can be computed.</p>
-</section>
-<section id="can-dcore-compute-the-internal-energy">
+</div>
+<div class="section" id="can-dcore-compute-the-internal-energy">
 <h3><a class="toc-backref" href="#id3">Can <strong>DCore</strong> compute the internal energy?</a><a class="headerlink" href="#can-dcore-compute-the-internal-energy" title="Permalink to this headline">¶</a></h3>
 <p>No, it is not implemented yet.</p>
 <p>If you want to compute it, you need to access to G(k,iw) in HDF5 file, and take summation over k and iw in an appropiate way.</p>
-</section>
-</section>
-<section id="dcore-pre">
+</div>
+</div>
+<div class="section" id="dcore-pre">
 <h2><a class="toc-backref" href="#id4"><code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code></a><a class="headerlink" href="#dcore-pre" title="Permalink to this headline">¶</a></h2>
-<section id="when-should-i-re-execute-dcore-pre">
+<div class="section" id="when-should-i-re-execute-dcore-pre">
 <h3><a class="toc-backref" href="#id5">When should I re-execute <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>?</a><a class="headerlink" href="#when-should-i-re-execute-dcore-pre" title="Permalink to this headline">¶</a></h3>
 <p>When you change any parameters in <strong>[model] block</strong>.
 <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> will re-construct the model database in <em>seedname</em>.h5.</p>
 <p>For changes of parameters other than [model] block, on the other hand, you can restart <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, skipping <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>.</p>
-</section>
-</section>
-<section id="dcore">
+</div>
+</div>
+<div class="section" id="dcore">
 <h2><a class="toc-backref" href="#id6"><code class="docutils literal notranslate"><span class="pre">dcore</span></code></a><a class="headerlink" href="#dcore" title="Permalink to this headline">¶</a></h2>
-<section id="how-should-i-judge-convergence-of-the-dmft-loop">
+<div class="section" id="how-should-i-judge-convergence-of-the-dmft-loop">
 <h3><a class="toc-backref" href="#id7">How should I judge convergence of the DMFT loop?</a><a class="headerlink" href="#how-should-i-judge-convergence-of-the-dmft-loop" title="Permalink to this headline">¶</a></h3>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> and look at the generated figures.
 We do not implement automatic convergence check, because results by QMC solvers include statistical errors and simple convergence criteria does not work.</p>
-</section>
-<section id="the-dmft-loop-does-not-converge">
+</div>
+<div class="section" id="the-dmft-loop-does-not-converge">
 <h3><a class="toc-backref" href="#id8">The DMFT loop does not converge</a><a class="headerlink" href="#the-dmft-loop-does-not-converge" title="Permalink to this headline">¶</a></h3>
 <p>If the chemical potential and/or self-energy look oscillating as a function of the iteration number, decrease <code class="docutils literal notranslate"><span class="pre">sigma_mix</span></code> parameter in [control] block.</p>
 <p>You might also need to improve the accuracy of QMC sampling by increasing the measurement time.</p>
 <p>If the oscillation persists, consider expanding the unitcell to address a symmetry broken solution.</p>
-</section>
-<section id="can-i-enforce-zero-magnetic-moment">
+</div>
+<div class="section" id="can-i-enforce-zero-magnetic-moment">
 <h3><a class="toc-backref" href="#id9">Can I enforce zero magnetic moment?</a><a class="headerlink" href="#can-i-enforce-zero-magnetic-moment" title="Permalink to this headline">¶</a></h3>
 <p>Yes. Use <code class="docutils literal notranslate"><span class="pre">time_reversal</span></code> flag in [control] block.
 See <a class="reference internal" href="../reference/input.html"><span class="doc">Input-file format</span></a>.</p>
-</section>
-<section id="can-i-fix-the-sign-of-the-magnetic-moment-in-ordered-states">
+</div>
+<div class="section" id="can-i-fix-the-sign-of-the-magnetic-moment-in-ordered-states">
 <h3><a class="toc-backref" href="#id10">Can I fix the sign of the magnetic moment in ordered states?</a><a class="headerlink" href="#can-i-fix-the-sign-of-the-magnetic-moment-in-ordered-states" title="Permalink to this headline">¶</a></h3>
 <p>Yes. Set the initial static self-energy using <code class="docutils literal notranslate"><span class="pre">initial_static_self_energy</span></code> parameter in [control] block.
 This works as a local potential in the first iteration.
 See <a class="reference internal" href="../reference/input.html"><span class="doc">Input-file format</span></a> for details.</p>
-</section>
-<section id="can-i-set-an-initial-self-energy-for-the-dmft-loop">
+</div>
+<div class="section" id="can-i-set-an-initial-self-energy-for-the-dmft-loop">
 <h3><a class="toc-backref" href="#id11">Can I set an initial self-energy for the DMFT loop?</a><a class="headerlink" href="#can-i-set-an-initial-self-energy-for-the-dmft-loop" title="Permalink to this headline">¶</a></h3>
 <p>Yes. Use <code class="docutils literal notranslate"><span class="pre">initial_self_energy</span></code> parameter in [control] block.
 See <a class="reference internal" href="../reference/input.html"><span class="doc">Input-file format</span></a>.</p>
@@ -137,11 +136,11 @@ Then, assign this file to <code class="docutils literal notranslate"><span class
 <span class="n">initial_self_energy</span> <span class="o">=</span> <span class="n">sigma_init</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
-</section>
-</section>
-<section id="dcore-check">
+</div>
+</div>
+<div class="section" id="dcore-check">
 <h2><a class="toc-backref" href="#id12"><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code></a><a class="headerlink" href="#dcore-check" title="Permalink to this headline">¶</a></h2>
-<section id="can-i-change-the-file-format-for-figures">
+<div class="section" id="can-i-change-the-file-format-for-figures">
 <h3><a class="toc-backref" href="#id13">Can I change the file format for figures?</a><a class="headerlink" href="#can-i-change-the-file-format-for-figures" title="Permalink to this headline">¶</a></h3>
 <p>Yes. Use <code class="docutils literal notranslate"><span class="pre">--ext</span></code> option to specify the file extension.
 If you prefer PDF, for example, the command reads</p>
@@ -149,11 +148,11 @@ If you prefer PDF, for example, the command reads</p>
 </pre></div>
 </div>
 <p>The argument of <code class="docutils literal notranslate"><span class="pre">--ext</span></code> can be png, pdf, eps, jpg, … (the ones supported by <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> module).</p>
-</section>
-</section>
-<section id="impurity-solvers">
+</div>
+</div>
+<div class="section" id="impurity-solvers">
 <h2><a class="toc-backref" href="#id14">Impurity solvers</a><a class="headerlink" href="#impurity-solvers" title="Permalink to this headline">¶</a></h2>
-<section id="what-is-the-difference-between-alps-ct-hyb-and-triqs-cthyb">
+<div class="section" id="what-is-the-difference-between-alps-ct-hyb-and-triqs-cthyb">
 <h3><a class="toc-backref" href="#id15">What is the difference between ALPS/CT-HYB and TRIQS/cthyb?</a><a class="headerlink" href="#what-is-the-difference-between-alps-ct-hyb-and-triqs-cthyb" title="Permalink to this headline">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code> is developed by one of the main developers of DCore, H. Shinaoka.
 Both of <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code> and <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code> implement the hybridization-expansion continuous-time quantum Monte Carlo method.
@@ -161,8 +160,8 @@ The main difference is the reliability of measurement of the single-particle Gre
 ALPS/CT-HYB uses a more elaborate algorithm (worm sampling).
 The non-worm conventional sampling, which is implemented in <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code>,
 may give wrong results in some situations (e.g. SOI coupling with orbital-diagonal bath).</p>
-</section>
-<section id="solver-dependent-parameter-is-not-recognized">
+</div>
+<div class="section" id="solver-dependent-parameter-is-not-recognized">
 <h3><a class="toc-backref" href="#id16">Solver-dependent parameter is not recognized</a><a class="headerlink" href="#solver-dependent-parameter-is-not-recognized" title="Permalink to this headline">¶</a></h3>
 <p>The variable type should be specified to be recognized as a solver parameter.
 For example, integer variable with name <em>num</em> is written as</p>
@@ -171,13 +170,13 @@ For example, integer variable with name <em>num</em> is written as</p>
 </pre></div>
 </div>
 <p>The type can be int, str, and float.</p>
-</section>
-<section id="can-i-use-my-impurity-solver">
+</div>
+<div class="section" id="can-i-use-my-impurity-solver">
 <h3><a class="toc-backref" href="#id17">Can I use my impurity solver?</a><a class="headerlink" href="#can-i-use-my-impurity-solver" title="Permalink to this headline">¶</a></h3>
 <p>Yes. Follow the instruction in <a class="reference internal" href="../impuritysolvers/how_to_integrate.html"><span class="doc">How to integrate your own solver</span></a></p>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
             <div class="clearer"></div>

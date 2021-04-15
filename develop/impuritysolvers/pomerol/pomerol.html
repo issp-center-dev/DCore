@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Exact diagonalization solver: pomerol &#8212; DCore  documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
@@ -42,11 +41,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="exact-diagonalization-solver-pomerol">
+  <div class="section" id="exact-diagonalization-solver-pomerol">
 <h1>Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">pomerol</span></code><a class="headerlink" href="#exact-diagonalization-solver-pomerol" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">pomerol</span></code> is an exact diagonalization (ED) library implemented in c++.
 <code class="docutils literal notranslate"><span class="pre">DCore</span></code> provides an interface to <code class="docutils literal notranslate"><span class="pre">pomerol</span></code> library to compute an approximate solution of DMFT with discritized hybridization function.</p>
-<section id="features">
+<div class="section" id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Arbitrary temperature</p></li>
@@ -54,16 +53,16 @@
 <li><p>[experimental] two-particle Green’s function</p></li>
 <li><p>[todo] tail evaluation of Gf</p></li>
 </ul>
-</section>
-<section id="install">
+</div>
+<div class="section" id="install">
 <h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
 <p>The following library/program needs to be installed:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/aeantipov/pomerol">pomerol library</a></p></li>
 <li><p><a class="reference external" href="https://github.com/j-otsuki/pomerol2dcore">pomerol2dcore</a></p></li>
 </ul>
-</section>
-<section id="how-to-use">
+</div>
+<div class="section" id="how-to-use">
 <h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
 <p>Mandatory parameters:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
@@ -83,8 +82,8 @@ For <code class="docutils literal notranslate"><span class="pre">n_bath&gt;0</sp
 <p>Then, the finite-size system consisting of the impurity site and <code class="docutils literal notranslate"><span class="pre">n_bath</span></code> bath sites are solve by ED method.
 The size of the Hilbert space increases exponentially according to <span class="math notranslate nohighlight">\(2^{n_\textrm{spn-orb}}\)</span> where <span class="math notranslate nohighlight">\(n_\textrm{spn-orb}=2*n_\mathrm{orb} + 2*n_\mathrm{bath}\)</span>.
 Because of storage limitation, <span class="math notranslate nohighlight">\(n_\textrm{spn-orb} \simeq 16\)</span> is the limits in this solver.</p>
-</section>
-<section id="example">
+</div>
+<div class="section" id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="../../tutorial/square/square.html"><span class="doc">The square-lattice model in tutorial</span></a> is solved by the pomerol solver using the following input parameter set:</p>
 <p><a class="reference download internal" download="" href="../../_downloads/20038bb177c668c41dc9aaf6a269b495/dmft_square_pomerol.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_square_pomerol.ini</span></code></a></p>
@@ -128,8 +127,8 @@ Because of storage limitation, <span class="math notranslate nohighlight">\(n_\t
 The figure below shows the renormalization factor as a function of <code class="docutils literal notranslate"><span class="pre">n_bath</span></code>.
 Convergence to the CTHYB result is obtained around <code class="docutils literal notranslate"><span class="pre">n_bath=3</span></code>.</p>
 <a class="reference internal image-reference" href="../../_images/renorm.png"><img alt="../../_images/renorm.png" class="align-center" src="../../_images/renorm.png" style="width: 700px;" /></a>
-</section>
-</section>
+</div>
+</div>
 
 
             <div class="clearer"></div>

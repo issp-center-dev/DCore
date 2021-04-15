@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Multiorbital model by a QMC solver &#8212; DCore  documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
@@ -41,7 +40,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="multiorbital-model-by-a-qmc-solver">
+  <div class="section" id="multiorbital-model-by-a-qmc-solver">
 <h1>Multiorbital model by a QMC solver<a class="headerlink" href="#multiorbital-model-by-a-qmc-solver" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference download internal" download="" href="../../_downloads/4597ad694e31bb00dcb3d29f11e8e0c8/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_bethe.ini</span></code></a></p>
 <p>An interesting phenomena called spin-freezing transition occurs in multi-orbital models
@@ -80,7 +79,7 @@ In this tutorial, we solve the three-orbital model on a Bethe lattice to reprodu
 <span class="na">Nomega</span> <span class="o">=</span> <span class="s">100</span>
 </pre></div>
 </div>
-<section id="pre-process-dcore-pre">
+<div class="section" id="pre-process-dcore-pre">
 <h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this headline">¶</a></h2>
 <p>We first generate a h5 file that is necessary for DMFT calculations.
 The script <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
@@ -88,8 +87,8 @@ The script <code class="docutils literal notranslate"><span class="pre">dcore_pr
 </pre></div>
 </div>
 <p>If successful, a h5 file named <em>seedname</em>.h5 (<code class="docutils literal notranslate"><span class="pre">bethe.h5</span></code> in the present case) is generated.</p>
-</section>
-<section id="dmft-loop-dcore">
+</div>
+<div class="section" id="dmft-loop-dcore">
 <h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this headline">¶</a></h2>
 <p>The DMFT loop is performed by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> program.
 In this tutorial, we use continuous-time QMC implementation of ALPS/CT-HYB.
@@ -183,8 +182,8 @@ For instance, <code class="docutils literal notranslate"><span class="pre">check
 <a class="reference download internal" download="" href="../../_downloads/fe6ab51628368b87c407fbbc52cae95f/sigma-PRL101-166405.txt"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.
 The plot should look like the following.</p>
 <a class="reference internal image-reference" href="../../_images/sigma.png"><img alt="../../_images/sigma.png" class="align-center" src="../../_images/sigma.png" style="width: 600px;" /></a>
-</section>
-</section>
+</div>
+</div>
 
 
             <div class="clearer"></div>
