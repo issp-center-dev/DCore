@@ -1,21 +1,21 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Multiorbital model by a QMC solver &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Antiferromagnetic state" href="../afm/afm.html" />
     <link rel="prev" title="The first example: 2D Hubbard model" href="../square/square.html" /> 
@@ -29,8 +29,9 @@
         <li class="right" >
           <a href="../square/square.html" title="The first example: 2D Hubbard model"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../tutorial.html" accesskey="U">Tutorial</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" accesskey="U">Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Multiorbital model by a QMC solver</a></li> 
       </ul>
     </div>  
 
@@ -41,7 +42,7 @@
             
   <div class="section" id="multiorbital-model-by-a-qmc-solver">
 <h1>Multiorbital model by a QMC solver<a class="headerlink" href="#multiorbital-model-by-a-qmc-solver" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference download internal" download="" href="../../_downloads/df30b8bb5b8a75323b909ef5d07204b7/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_bethe.ini</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/4597ad694e31bb00dcb3d29f11e8e0c8/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_bethe.ini</span></code></a></p>
 <p>An interesting phenomena called spin-freezing transition occurs in multi-orbital models
 [<a class="reference external" href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.101.166405">P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008)</a>].
 The spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: <span class="math notranslate nohighlight">\(\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}\)</span>.
@@ -95,7 +96,7 @@ The runtime of the impurity solver is set to 300 sec.
 You should not use the Hubbard-I solver for a metallic system.
 One can run the program with 24 MPI processes as follows.
 For solving the same model with TRIQS/cthyb, use
-<a class="reference download internal" download="" href="../../_downloads/2f2e84c909cf20ced9d977bbc46eb85c/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">this</span> <span class="pre">input</span> <span class="pre">file</span></code></a> instead.</p>
+<a class="reference download internal" download="" href="../../_downloads/0d8365707d661033e0421229beeb5ac6/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">this</span> <span class="pre">input</span> <span class="pre">file</span></code></a> instead.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
 $ dcore dmft_bethe.ini --np <span class="m">24</span>
 </pre></div>
@@ -176,23 +177,24 @@ For instance, <code class="docutils literal notranslate"><span class="pre">check
 <a class="reference internal image-reference" href="../../_images/iter_sigma-ish02.png"><img alt="../../_images/iter_sigma-ish02.png" class="align-center" src="../../_images/iter_sigma-ish02.png" style="width: 800px;" /></a>
 <p>If those results are not converged, one can restart DMFT iterations.</p>
 <p>You can plot the data for positive Matsubara frequencies as follows (like Fig. 3 of PRL 101, 166405 (2008)) using
-<a class="reference download internal" download="" href="../../_downloads/10eb32d33fbfb594dab7101aab1fadba/plot.plt"><code class="xref download docutils literal notranslate"><span class="pre">a</span> <span class="pre">gnuplot</span> <span class="pre">command</span> <span class="pre">file</span></code></a>.</p>
+<a class="reference download internal" download="" href="../../_downloads/4519b5b5cc0b7ae13b9fb5f08ee6a320/plot.plt"><code class="xref download docutils literal notranslate"><span class="pre">a</span> <span class="pre">gnuplot</span> <span class="pre">command</span> <span class="pre">file</span></code></a>.</p>
 <p>The reference data extracted from PRL 101, 166405 (2008) are available
-<a class="reference download internal" download="" href="../../_downloads/c3756d97e9ffd673b1e1222a863f81ff/sigma-PRL101-166405.txt"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.
+<a class="reference download internal" download="" href="../../_downloads/fe6ab51628368b87c407fbbc52cae95f/sigma-PRL101-166405.txt"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.
 The plot should look like the following.</p>
 <a class="reference internal image-reference" href="../../_images/sigma.png"><img alt="../../_images/sigma.png" class="align-center" src="../../_images/sigma.png" style="width: 600px;" /></a>
 </div>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h3><a href="../../contents.html">Table of Contents</a></h3>
+<h3><a href="../../index.html">Table of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../index.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">DCore</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../../basicnotions/structure.html">Minimum introduction: Structure of DCore</a></li>
@@ -213,17 +215,15 @@ The plot should look like the following.</p>
   <p class="topless"><a href="../afm/afm.html"
                         title="next chapter">Antiferromagnetic state</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -237,8 +237,9 @@ The plot should look like the following.</p>
         <li class="right" >
           <a href="../square/square.html" title="The first example: 2D Hubbard model"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../contents.html">DCore  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../tutorial.html" >Tutorial</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" >Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Multiorbital model by a QMC solver</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
