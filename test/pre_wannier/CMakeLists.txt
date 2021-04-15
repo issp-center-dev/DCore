@@ -1,4 +1,0 @@
-FILE(COPY nis_hr.dat DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-FILE(COPY nis_ref.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-add_python_test(pre_wannier)

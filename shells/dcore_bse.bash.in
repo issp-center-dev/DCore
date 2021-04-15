@@ -1,5 +1,0 @@
-#!/bin/bash
-
-export PYTHONPATH=@DCORE_DEP_PYTHONPATH@:$PYTHONPATH
-
-@PYTHON_INTERPRETER@ -m dcore.dcore_bse $@
