@@ -59,6 +59,7 @@ test_square_params = [
     (numpy.array([2]),    True),
     (numpy.array([2, 2]), True),
     (numpy.array([2, 4]), True),
+    (numpy.array([6, 8]), True),
     (numpy.array([2, 2]), False),
     #(numpy.array([2, 4]),  False),
 ]
@@ -68,6 +69,8 @@ def test_square(nso_corr_sh, spin_orbit, request):
     Each orbital forms a correlated shell
     """
     numpy.random.seed(100)
+
+    assert all(nso_corr_sh % 2 == 0)
 
     nf = numpy.sum(nso_corr_sh)
     ncorr_shell = n_inequiv_sh = len(nso_corr_sh)
