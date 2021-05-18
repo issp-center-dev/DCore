@@ -116,10 +116,10 @@ class Wannier90Model(LatticeModel):
                 proj_mat = f['dft_input']['proj_mat']
                 n_k, nb, n_corr, max_dim_sh, max_n_orb = proj_mat.shape
                 assert nb == 1
-                # (n_k, nb, n_corr, orb, spin, orb, spin) => (n_k, nb, n_corr, spin, orb, spin, orb)
+                # (n_k, nb, n_corr, nso, orb, spin) => (n_k, nb, n_corr, nso, spin, orb)
                 assert max_dim_sh//2 > 0
-                proj_mat = proj_mat.reshape((n_k, nb, n_corr, max_dim_sh//2, 2, max_n_orb//2, 2))
-                proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
+                proj_mat = proj_mat.reshape((n_k, nb, n_corr, max_dim_sh, max_n_orb//2, 2))
+                proj_mat = proj_mat.transpose((0, 1, 2, 3, 5, 4))
                 proj_mat = proj_mat.reshape((n_k, 1, n_corr, max_dim_sh, max_n_orb))
                 f['dft_input']['proj_mat'] = proj_mat
 

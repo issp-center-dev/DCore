@@ -2,13 +2,12 @@ import os
 import numpy
 from numpy.testing import assert_allclose
 
-from triqs.gf import GfImFreq, BlockGf
 from h5 import HDFArchive
 
 from dcore.dcore_pre import dcore_pre
 from dcore.dcore import dcore
-from dcore.tools import float_to_complex_array, save_Sigma_iw_sh_txt
-from dcore._testing import mk_hr_square
+from dcore.tools import float_to_complex_array, save_Sigma_iw_sh_txt, gf_block_names
+from dcore._testing import mk_hr_square, create_random_self_energy
 
 import pytest
 
@@ -54,28 +53,14 @@ cutoff_IR = {cutoff}'''
         print(ini_str, file=f)
 
 
-def create_random_self_energy(dim_sh, beta, n_iw, noise):
-    # Random self-energy
-    Sigma_iw_sh = []
-    sigma_iw_numpy_sh = []
-    for ish in range(len(dim_sh)):
-        s = GfImFreq(indices = numpy.arange(dim_sh[ish]).tolist(),
-           beta = beta, n_points = n_iw, name = "sh{ish}")
-        data_ = noise * numpy.random.randn(n_iw, dim_sh[ish], dim_sh[ish])
-        data_ = data_ + data_.transpose((0, 2, 1))
-        data_pn_ = numpy.empty((2*n_iw, dim_sh[ish], dim_sh[ish]))
-        data_pn_[n_iw:, :, :] = data_
-        data_pn_[0:n_iw, :, :] = data_[::-1, :, :]
-        s.data[...] = data_pn_
-        sigma_iw_numpy_sh.append(data_pn_)
-        Sigma_iw_sh.append(BlockGf(name_list = ['ud'], block_list = [s], make_copies = True))
-    return Sigma_iw_sh, sigma_iw_numpy_sh
 
 
 test_square_params = [
     (numpy.array([2]),    True),
     (numpy.array([2, 2]), True),
     (numpy.array([2, 4]), True),
+    (numpy.array([2, 2]), False),
+    #(numpy.array([2, 4]),    False),
 ]
 @pytest.mark.parametrize("nso_corr_sh, spin_orbit", test_square_params)
 def test_square(nso_corr_sh, spin_orbit, request):
@@ -102,21 +87,25 @@ def test_square(nso_corr_sh, spin_orbit, request):
         dim_sh = nso_corr_sh//nspin
     noise = 0.0
 
+    block_names = gf_block_names(spin_orbit)
+
     org_dir = os.getcwd()
     os.chdir(request.fspath.dirname)
 
     # Make Wannier90 file
-    mk_hr_square(nf, t, 'square')
+    if spin_orbit:
+        mk_hr_square(nf, t, 'square')
+    else:
+        mk_hr_square(nf//2, t, 'square')
 
     # Random self-energy
-    print("dim_sh", dim_sh)
-    Sigma_iw_sh, _ = \
-        create_random_self_energy(dim_sh, beta, n_iw, noise)
-    for ish in range(len(Sigma_iw_sh)):
-        print(ish, Sigma_iw_sh[ish]['ud'].data.shape)
+    Sigma_iw_sh = \
+        create_random_self_energy(block_names, dim_sh, beta, n_iw, noise)
     
     # Save self-energy
-    save_Sigma_iw_sh_txt('Sigma.txt', Sigma_iw_sh, ['ud'])
+    for ish in range(len(Sigma_iw_sh)):
+        print(ish, Sigma_iw_sh[ish])
+    save_Sigma_iw_sh_txt('Sigma.txt', Sigma_iw_sh, block_names)
 
     # Generate square.init
     _write_ini('square.ini', spin_orbit, nso_corr_sh, nf, beta, n_iw, nk1, nk2, Lambda, cutoff)
@@ -128,9 +117,10 @@ def test_square(nso_corr_sh, spin_orbit, request):
     # Check the self-energy saved by dcore
     with HDFArchive('square.out.h5', 'r') as h:
         for ish in range(ncorr_shell):
-            x = float_to_complex_array(h['dmft_out']['Sigma_iw']['ite1']
-                [f"""sh{ish}"""]['ud']['data'])
-            y = Sigma_iw_sh[ish]['ud'].data
-            assert_allclose(x, y)
+            for bname in block_names:
+                x = float_to_complex_array(h['dmft_out']['Sigma_iw']['ite1']
+                    [f"""sh{ish}"""][bname]['data'])
+                y = Sigma_iw_sh[ish][bname].data
+                assert_allclose(x, y)
 
     os.chdir(org_dir)
