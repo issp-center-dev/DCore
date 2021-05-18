@@ -353,6 +353,7 @@ class DMFTCoreSolver(object):
         #
         # Read or set up seedname.out.h5
         #
+        self._loaded_initial_self_energy = False
         if restart:
             if os.path.exists(self._output_file):
                 self._read_output_file__restart()
@@ -454,6 +455,7 @@ class DMFTCoreSolver(object):
         # Set initial value to self-energy
         if self._params["control"]["initial_static_self_energy"] != "None":
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Setting initial value to self-energy @@@@@@@@@@@@@@@@@@@@@@@@")
+            self._loaded_initial_self_energy = True
             init_se = set_potential(self._params["control"]["initial_static_self_energy"],
                                     "initial_static_self_energy",
                                     self.n_inequiv_shells, self._dim_sh, self.use_spin_orbit)
@@ -463,6 +465,7 @@ class DMFTCoreSolver(object):
                     self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
 
         elif self._params["control"]["initial_self_energy"] != "None":
+            self._loaded_initial_self_energy = True
             Sigma_iw_sh_tmp = [self._sh_quant[ish].Sigma_iw for ish in range(self.n_inequiv_shells)]
             load_Sigma_iw_sh_txt(self._params["control"]["initial_self_energy"], Sigma_iw_sh_tmp, self.spin_block_names)
             print('')
@@ -796,7 +799,7 @@ class DMFTCoreSolver(object):
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.
-            if iteration_number > 1 or previous_present:
+            if iteration_number > 1 or previous_present or self._loaded_initial_self_energy:
                 for ish in range(self._n_inequiv_shells):
                     self._sh_quant[ish].Sigma_iw << sigma_mix * new_Sigma_iw[ish] \
                                 + (1.0-sigma_mix) * self._sh_quant[ish].Sigma_iw

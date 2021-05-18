@@ -60,7 +60,7 @@ test_square_params = [
     (numpy.array([2, 2]), True),
     (numpy.array([2, 4]), True),
     (numpy.array([2, 2]), False),
-    #(numpy.array([2, 4]),    False),
+    #(numpy.array([2, 4]),  False),
 ]
 @pytest.mark.parametrize("nso_corr_sh, spin_orbit", test_square_params)
 def test_square(nso_corr_sh, spin_orbit, request):
@@ -85,7 +85,7 @@ def test_square(nso_corr_sh, spin_orbit, request):
         dim_sh = nso_corr_sh
     else:
         dim_sh = nso_corr_sh//nspin
-    noise = 0.0
+    noise = 0.1
 
     block_names = gf_block_names(spin_orbit)
 
