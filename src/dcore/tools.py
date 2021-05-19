@@ -553,12 +553,12 @@ def save_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names):
         #
         omega = [x for x in Sigma_iw_sh[0].mesh]
         for iom in range(len(omega)):
-            print("%f " % omega[iom].imag, end="", file=fo)
+            print("%.15e " % omega[iom].imag, end="", file=fo)
             for ish in range(n_sh):
                 for sp in spin_names:
                     block_dim = Sigma_iw_sh[ish][sp].data.shape[1]
                     for iorb, jorb in product(list(range(block_dim)), repeat=2):
-                        print("%f %f " % (Sigma_iw_sh[ish][sp].data[iom, iorb, jorb].real,
+                        print("%.15e %.15e " % (Sigma_iw_sh[ish][sp].data[iom, iorb, jorb].real,
                                           Sigma_iw_sh[ish][sp].data[iom, iorb, jorb].imag), end="", file=fo)
             print("", file=fo)
 
@@ -651,7 +651,8 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2, int
             raise RuntimeError("Mesh is not compatible!")
 
     from scipy import interpolate
-    interp = interpolate.interp1d(omega_in, data[:, 1:], axis=0, fill_value=0.0, bounds_error=False)
+    interp = interpolate.interp1d(omega_in, data[:,1:], kind='nearest',
+        axis=0, fill_value=(data[0,1:], data[-1,1:]), bounds_error=False)
 
     for iom in range(nomega_out):
         data_interp = interp(omega_out[iom])
@@ -665,6 +666,9 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2, int
                     imag = data_interp[icol]
                     icol += 1
                     Sigma_iw_sh[ish][sp].data[iom, iorb, jorb] = complex(re, imag)
+    if data.shape[1] != \
+        numpy.sum([2*Sigma_iw_sh[ish][sp].data.shape[1]**2 for ish in range(n_sh) for sp in spin_names]) + 1:
+        raise RuntimeError("Dimensions of the input data are wrong!")
 
 def complex_to_float_array(a):
     return a.view(float).reshape(a.shape + (2,))
