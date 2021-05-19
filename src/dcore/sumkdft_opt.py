@@ -458,13 +458,8 @@ class SumkDFT_opt(SumkDFT):
 
         # gf_upfolded.from_L_G_R(
         #     projmat.conjugate().transpose(), gf_to_upfold, projmat)
-
-        i_start = projindex[0]
-        i_end = projindex[0] + projindex.shape[0]
-        if numpy.allclose(projindex, list(range(i_start, i_end))):
-            gf_upfolded.data[:, i_start:i_end, i_start:i_end] += gf_to_upfold.data * fac
-        else:
-            gf_upfolded.data[:, projindex, :][:, :, projindex] += gf_to_upfold.data * fac
+        gf_upfolded.data[numpy.ix_(range(gf_to_upfold.data.shape[0]), projindex, projindex)] \
+            += gf_to_upfold.data * fac
 
         if overwrite_gf_inp:
             return None
