@@ -4,13 +4,14 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>The first example: 2D Hubbard model &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -39,7 +40,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="the-first-example-2d-hubbard-model">
+  <section id="the-first-example-2d-hubbard-model">
 <h1>The first example: 2D Hubbard model<a class="headerlink" href="#the-first-example-2d-hubbard-model" title="Permalink to this headline">¶</a></h1>
 <p>The first example is the two-dimensional Hubbard model.
 We first use the exact diagonalization solver <a class="reference internal" href="../../impuritysolvers/pomerol/pomerol.html"><span class="doc">pomerol</span></a> and see the influence of the Coulomb repulsion U on the single-particle excitations. A better result can be obtained using the CT-QMC solver, which will be explained later.</p>
@@ -81,7 +82,7 @@ We first use the exact diagonalization solver <a class="reference internal" href
 </pre></div>
 </div>
 <p>The parameter <code class="docutils literal notranslate"><span class="pre">exec_path{str}</span></code> in <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span></code> block needs to be edited, if <code class="docutils literal notranslate"><span class="pre">pomerol2dcore</span></code> executable is not in your path: Please specify the full path to <code class="docutils literal notranslate"><span class="pre">pomerol2dcore</span></code>.</p>
-<div class="section" id="pre-process-dcore-pre">
+<section id="pre-process-dcore-pre">
 <h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this headline">¶</a></h2>
 <p>We first generate an HDF5 file that is necessary for DMFT calculations.
 The script <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
@@ -89,8 +90,8 @@ The script <code class="docutils literal notranslate"><span class="pre">dcore_pr
 </pre></div>
 </div>
 <p>Then, an HDF5 file named <em>seedname</em>.h5 (<code class="docutils literal notranslate"><span class="pre">square.h5</span></code> in the present case) is generated.</p>
-</div>
-<div class="section" id="dmft-loop-dcore">
+</section>
+<section id="dmft-loop-dcore">
 <h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this headline">¶</a></h2>
 <p>One can perform a DMFT self-consistent calculation with <code class="docutils literal notranslate"><span class="pre">dcore</span></code> program.
 In this tutorial, we use the exact diagonalization solver just for simplicity.
@@ -139,8 +140,8 @@ Results for the self-energy and Green’s function in each iteration are accumul
 For instance, <code class="docutils literal notranslate"><span class="pre">check/iter_sigma-ish0.png</span></code> shows how the renormalization factor converges for each orbital.</p>
 <a class="reference internal image-reference" href="../../_images/iter_sigma-ish04.png"><img alt="../../_images/iter_sigma-ish04.png" class="align-center" src="../../_images/iter_sigma-ish04.png" style="width: 80%;" /></a>
 <p>The iteration is terminated when the diff (lower figure) reaches <code class="docutils literal notranslate"><span class="pre">converge_tol</span> <span class="pre">=</span> <span class="pre">1e-5</span></code> at the 13th iteration.</p>
-</div>
-<div class="section" id="spectral-function-dcore-post">
+</section>
+<section id="spectral-function-dcore-post">
 <h2>Spectral function : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectral-function-dcore-post" title="Permalink to this headline">¶</a></h2>
 <p>We can calculate real-frequency quantities such as the density of states and the momentum-dependent single-particle excitations using <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> program.
 The analytical continuation from Matsubara frequency to real frequencies is performed using the Pade approximation.</p>
@@ -168,8 +169,8 @@ We can plot it using gnuplot as follows:</p>
 </div>
 <p>The result is shown below.</p>
 <a class="reference internal image-reference" href="../../_images/dos1.png"><img alt="../../_images/dos1.png" class="align-center" src="../../_images/dos1.png" style="width: 80%;" /></a>
-</div>
-<div class="section" id="another-impurity-solver-cthyb-seg">
+</section>
+<section id="another-impurity-solver-cthyb-seg">
 <h2>Another impurity solver: CTHYB-SEG<a class="headerlink" href="#another-impurity-solver-cthyb-seg" title="Permalink to this headline">¶</a></h2>
 <p>The spectrum presented above shows some artificial features due to a limited number of the bath sites. The infinite limit of the baths (a continuous hybridization function) can be treated with the CT-QMC method. Here, we use the hybridization expansion CT-QMC solver <a class="reference internal" href="../../impuritysolvers/alpscore_ctseg/ctseg.html"><span class="doc">ALPS/cthyb-seg</span></a>.</p>
 <p>The file below shows the input file for ALPS/cthyb-seg:</p>
@@ -220,8 +221,8 @@ Unlike in the ED solver, we do not use <code class="docutils literal notranslate
 <a class="reference internal image-reference" href="../../_images/akw2.png"><img alt="../../_images/akw2.png" class="align-center" src="../../_images/akw2.png" style="width: 700px;" /></a>
 <p>The artificial features observed in the ED solver has gone. This graph shows characteristics for correlated bands such as renormalized band width, low-energy quasiparticles (sharp peak), and broadening away from the Fermi level.</p>
 <p>We note that spectra computed using the Pade analytical continuation is extremely sensitive to statistical errors. For this reason, this figure might not be reproduced even with the same input. In such cases, try improving the QMC accuracy by increasing the number of MPI processes or by increasing <code class="docutils literal notranslate"><span class="pre">MAX_TIME{int}</span></code> parameter.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>

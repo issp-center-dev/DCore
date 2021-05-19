@@ -4,17 +4,18 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Antiferromagnetic state in 3D Hubbard model &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -31,7 +32,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="antiferromagnetic-state-in-3d-hubbard-model">
+  <section id="antiferromagnetic-state-in-3d-hubbard-model">
 <h1>Antiferromagnetic state in 3D Hubbard model<a class="headerlink" href="#antiferromagnetic-state-in-3d-hubbard-model" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial, you will learn the following:</p>
 <ul class="simple">
@@ -83,7 +84,7 @@ The complete input file is shown below.</p>
 <span class="na">Nomega</span> <span class="o">=</span> <span class="s">400</span>
 </pre></div>
 </div>
-<div class="section" id="define-lattice-model">
+<section id="define-lattice-model">
 <h2>Define lattice model<a class="headerlink" href="#define-lattice-model" title="Permalink to this headline">¶</a></h2>
 <p>First, we define the hopping matrix of the 3D Hubbard model with a 2x2x2 unit cell.
 Running <a class="reference download internal" download="" href="../../_downloads/1716d9c448f19ba68a74a1137ed0f742/mk_hr.py"><code class="xref download docutils literal notranslate"><span class="pre">mk_hr.py</span></code></a> generates a text file (cubic_hr.dat) in the Wannier90 format.
@@ -93,16 +94,16 @@ To this end, we assign the eight sites (correlated shells) to two inequivalent s
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python mk_hr.py
 </pre></div>
 </div>
-</div>
-<div class="section" id="generate-initial-guess-for-self-energy">
+</section>
+<section id="generate-initial-guess-for-self-energy">
 <h2>Generate initial guess for self-energy<a class="headerlink" href="#generate-initial-guess-for-self-energy" title="Permalink to this headline">¶</a></h2>
 <p>Second, we generate intial guesses for the (static) self-energies on the two inequivalent shells.
 Running <a class="reference download internal" download="" href="../../_downloads/5e5d410f56d52db83608fae79a58b290/mk_init_se.py"><code class="xref download docutils literal notranslate"><span class="pre">mk_init_se.py</span></code></a> generates <cite>init_se_up.txt</cite> and <cite>init_se_down.txt</cite>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python mk_init_se.py
 </pre></div>
 </div>
-</div>
-<div class="section" id="self-consistent-calculations">
+</section>
+<section id="self-consistent-calculations">
 <h2>Self-consistent calculations<a class="headerlink" href="#self-consistent-calculations" title="Permalink to this headline">¶</a></h2>
 <p>Now, DMFT calculations can be done as usual.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
@@ -145,8 +146,8 @@ dcore_post cubic.ini --np <span class="m">48</span> &gt; output-post
 <a class="reference internal image-reference" href="../../_images/iter_sigma-ish01.png"><img alt="../../_images/iter_sigma-ish01.png" class="align-center" src="../../_images/iter_sigma-ish01.png" style="width: 800px;" /></a>
 <p>Inequivalent shell1</p>
 <a class="reference internal image-reference" href="../../_images/iter_sigma-ish1.png"><img alt="../../_images/iter_sigma-ish1.png" class="align-center" src="../../_images/iter_sigma-ish1.png" style="width: 800px;" /></a>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>

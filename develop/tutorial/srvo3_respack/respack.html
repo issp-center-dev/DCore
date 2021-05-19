@@ -4,17 +4,18 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Downfolding with RESPACK (SrVO3) &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -31,7 +32,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="downfolding-with-respack-srvo3">
+  <section id="downfolding-with-respack-srvo3">
 <span id="respacksrvo3"></span><h1>Downfolding with RESPACK (SrVO<sub>3</sub>)<a class="headerlink" href="#downfolding-with-respack-srvo3" title="Permalink to this headline">¶</a></h1>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -44,7 +45,7 @@ If you encounter some problem, see the release note of ver.2.0 and check the dif
 </div>
 <p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
 <a class="reference internal image-reference" href="../../_images/struct_srvo3.png"><img alt="../../_images/struct_srvo3.png" class="align-center" src="../../_images/struct_srvo3.png" style="width: 200px;" /></a>
-<div class="section" id="scf-calculation-of-quantum-espresso">
+<section id="scf-calculation-of-quantum-espresso">
 <h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/123b09c7e170e0d3df9d62846503fdcb/scf_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3_r.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
@@ -93,8 +94,8 @@ the ultrasoft pseudopotentials or PAW.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in scf_srvo3.in
 </pre></div>
 </div>
-</div>
-<div class="section" id="wannierization">
+</section>
+<section id="wannierization">
 <h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
 <p>Next, we perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.</p>
@@ -191,7 +192,7 @@ with the following input file:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ calc_wannier &lt; respack.in
 </pre></div>
 </div>
-<div class="section" id="optional-check-wannierization">
+<section id="optional-check-wannierization">
 <h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
 <p>If you want to check the quality of the wannierization,
 you can plot the original and the wannier-interpolated band structure simultaneously.</p>
@@ -299,9 +300,9 @@ outdir = &quot;./&quot;,
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/band_srvo3.png"><img alt="../../_images/band_srvo3.png" class="align-center" src="../../_images/band_srvo3.png" style="width: 500px;" /></a>
-</div>
-</div>
-<div class="section" id="dielectric-matrix-and-effective-interaction">
+</section>
+</section>
+<section id="dielectric-matrix-and-effective-interaction">
 <h2>Dielectric matrix and Effective interaction<a class="headerlink" href="#dielectric-matrix-and-effective-interaction" title="Permalink to this headline">¶</a></h2>
 <p>Next, we move on the calculation of the dielectric matrix with cRPA.
 We use the program <code class="docutils literal notranslate"><span class="pre">calc_chiqw</span></code> (in <code class="docutils literal notranslate"><span class="pre">src/calc_chiqw</span></code> in RESPACK) as</p>
@@ -320,8 +321,8 @@ $ calc_j3d &lt; respack.in
 </pre></div>
 </div>
 <p>The command-line argument (<code class="docutils literal notranslate"><span class="pre">&quot;srvo3&quot;</span></code> in this case) must be the same as <code class="docutils literal notranslate"><span class="pre">seedname</span></code> in the DCore input.</p>
-</div>
-<div class="section" id="dmft-calculation">
+</section>
+<section id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/10fc7c42a65156219ff44a58832511f2/srvo3_respack.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
@@ -376,19 +377,19 @@ The following result is obtained with 432 MPI processes at <code class="docutils
 If we want to compute by using 32 MPI processes at the same accuracy,
 <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be 10000*432/32=135000.</p>
 </div>
-<div class="section" id="dmft-setup-dcore-pre">
+<section id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3_respack.ini
 </pre></div>
 </div>
-</div>
-<div class="section" id="running-the-dmft-calculation-dcore">
+</section>
+<section id="running-the-dmft-calculation-dcore">
 <h3>Running the DMFT calculation: dcore<a class="headerlink" href="#running-the-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3_respack.ini
 </pre></div>
 </div>
-</div>
-<div class="section" id="post-processing-and-data-analysis-dcore-post">
+</section>
+<section id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3_respack.ini
 $ sed -e <span class="s2">&quot;s/every 10/every 3/g&quot;</span> srvo3_akw.gp
@@ -397,9 +398,9 @@ $ gnuplot nis_akw.gp
 </div>
 <a class="reference internal image-reference" href="../../_images/akw_srvo33.png"><img alt="../../_images/akw_srvo33.png" class="align-center" src="../../_images/akw_srvo33.png" style="width: 500px;" /></a>
 <p>“x” indicates the original band structure.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             <div class="clearer"></div>

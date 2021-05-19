@@ -4,13 +4,14 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Wanniernization using OpenMX &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wild.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/dcore.css" />
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/doctools.js"></script>
@@ -30,7 +31,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="wanniernization-using-openmx">
+  <section id="wanniernization-using-openmx">
 <h1>Wanniernization using OpenMX<a class="headerlink" href="#wanniernization-using-openmx" title="Permalink to this headline">¶</a></h1>
 <p>OpenMX is a first-principles program package based on
 the numerical localized basis set and pseudopotentials.
@@ -40,7 +41,7 @@ In this tutorial, we demonstrate the calculation of SrVO<sub>3</sub>.</p>
 <p class="admonition-title">Note</p>
 <p>This tutorial requires large computational resources or long simulation time.</p>
 </div>
-<div class="section" id="scf-computation-and-wannier-with-openmx">
+<section id="scf-computation-and-wannier-with-openmx">
 <h2>SCF computation and Wannier with OpenMX<a class="headerlink" href="#scf-computation-and-wannier-with-openmx" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../../_downloads/c023139646f06e58203ae42058b13bf3/scf.dat"><code class="xref download docutils literal notranslate"><span class="pre">scf.dat</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
@@ -136,8 +137,8 @@ It can be performed with <code class="docutils literal notranslate"><span class=
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ openmx2dcore.py SrVO3 srvo3
 </pre></div>
 </div>
-</div>
-<div class="section" id="dmft-calculation">
+</section>
+<section id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../../_downloads/90e0825153f3d161a26ce497aa915e47/srvo3_openmx.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
@@ -192,19 +193,19 @@ The following result is obtained with 432 MPI processes at <code class="docutils
 If we want to compute by using 32 MPI processes at the same accuracy,
 <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be 10000*432/32=135000.</p>
 </div>
-<div class="section" id="dmft-setup-dcore-pre">
+<section id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3.ini
 </pre></div>
 </div>
-</div>
-<div class="section" id="running-self-consistent-dmft-calculation-dcore">
+</section>
+<section id="running-self-consistent-dmft-calculation-dcore">
 <h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3.ini
 </pre></div>
 </div>
-</div>
-<div class="section" id="post-processing-and-data-analysis-dcore-post">
+</section>
+<section id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3.ini
 $ sed -e <span class="s2">&quot;s/every 10/every 1/g&quot;</span> srvo3_akw.gp
@@ -213,9 +214,9 @@ $ gnuplot nis_akw.gp
 </div>
 <a class="reference internal image-reference" href="../../../_images/akw_srvo31.png"><img alt="../../../_images/akw_srvo31.png" class="align-center" src="../../../_images/akw_srvo31.png" style="width: 500px;" /></a>
 <p>“+” indicates the original band structure.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             <div class="clearer"></div>

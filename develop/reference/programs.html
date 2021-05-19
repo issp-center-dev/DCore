@@ -4,17 +4,18 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Programs &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Input-file format" href="input.html" />
@@ -40,21 +41,21 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="programs">
+  <section id="programs">
 <h1>Programs<a class="headerlink" href="#programs" title="Permalink to this headline">¶</a></h1>
 <p><strong>DCore</strong> consists of four main programs, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code>  and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.
 All programs read a single input file (say <em>input.ini</em>) which contains parameters classified into blocks.
 See <a class="reference internal" href="input.html"><span class="doc">Input-file format</span></a>, for details on the relation between the parameter blocks and each program.</p>
 <p>In the following, brief explanations are given for each program.</p>
-<div class="section" id="pre-processing-dcore-pre">
+<section id="pre-processing-dcore-pre">
 <h2>Pre-processing : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-processing-dcore-pre" title="Permalink to this headline">¶</a></h2>
 <p>This program generates model HDF5 file (<em>seedname</em>.h5).
 You need to execute this program before running the main program, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore_pre input.ini
 </pre></div>
 </div>
-</div>
-<div class="section" id="main-program-dcore">
+</section>
+<section id="main-program-dcore">
 <h2>Main program : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#main-program-dcore" title="Permalink to this headline">¶</a></h2>
 <p>This is the main program, which performs DMFT cycle and output the self energy etc. into a HDF5
 file (<em>seedname</em>.out.h5).</p>
@@ -97,8 +98,8 @@ The behavior is summarized below.</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="convergence-check-dcore-check">
+</section>
+<section id="convergence-check-dcore-check">
 <span id="program-dcore-check"></span><h2>Convergence-check : <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code><a class="headerlink" href="#convergence-check-dcore-check" title="Permalink to this headline">¶</a></h2>
 <p>This program is used to check the convergence of the DMFT loop.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore_check input.ini [--prefix PREFIX] [--ext EXT]
@@ -130,8 +131,8 @@ All results are stored in <strong>check</strong> directory without specified.</p
 in the <code class="docutils literal notranslate"><span class="pre">[tool]</span></code> block.</p>
 </li>
 </ul>
-</div>
-<div class="section" id="post-processing-dcore-post">
+</section>
+<section id="post-processing-dcore-post">
 <span id="program-dcore-post"></span><h2>Post-processing : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this headline">¶</a></h2>
 <p>This program computes the total DOS (<em>seedname</em>_dos.dat) and momenum-resolved spectral function (<em>seedname</em>_akw.dat) reading the DMFT results in <em>seedname</em>.out.h5.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post input.ini --np <span class="m">4</span>
@@ -147,8 +148,8 @@ The computed spectral function can be drawn by</p>
 <a class="reference internal image-reference" href="../_images/akw_srvo3.png"><img alt="../_images/akw_srvo3.png" class="align-center" src="../_images/akw_srvo3.png" style="width: 500px;" /></a>
 <p>“+” indicates the original band structure.
 The original band structure is shifted by the chemical potential specified by <code class="docutils literal notranslate"><span class="pre">mu</span></code> in <code class="docutils literal notranslate"><span class="pre">[system]</span></code> block.</p>
-</div>
-<div class="section" id="online-help">
+</section>
+<section id="online-help">
 <h2>Online help<a class="headerlink" href="#online-help" title="Permalink to this headline">¶</a></h2>
 <p>For all programs, online help is available by <code class="docutils literal notranslate"><span class="pre">-h</span></code> option.
 For example, the help of the main program <code class="docutils literal notranslate"><span class="pre">dcore</span></code> looks like</p>
@@ -167,8 +168,8 @@ optional arguments:
 </div>
 <p>Additionally, the complete list of the input parameters are shown.
 It would help readers to make use of the latest features in the <strong>develop</strong> branch that are not documented in this manual.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
