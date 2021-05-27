@@ -13,6 +13,10 @@ from dcore._testing import mk_hr_square, create_random_self_energy, gk_from_w90,
 
 import pytest
 
+np = 1
+if 'DCORE_TEST_NUM_PROC' in os.environ:
+    np = int(os.environ['DCORE_TEST_NUM_PROC'])
+
 
 def _write_ini(file, spin_orbit, nso_inequiv_sh, corr_to_inequiv, beta, n_iw, nk1, nk2, gk_smpl_freqs):
     n_corr_sh = corr_to_inequiv.size
@@ -126,7 +130,7 @@ def test_square(norb_inequiv_sh, spin_orbit, gk_smpl_freqs, corr_to_inequiv, req
 
     # Run dcore_pre & dcore
     dcore_pre("square.ini")
-    dcore("square.ini")
+    dcore("square.ini", np)
     
     # Check the self-energy saved by dcore
     check_self_energy('square', Sigma_iw_sh, block_names)
@@ -146,7 +150,7 @@ def test_square(norb_inequiv_sh, spin_orbit, gk_smpl_freqs, corr_to_inequiv, req
                 print(idx, w, file=f)
 
     # Run dcore_gk
-    dcore_gk("square.ini")
+    dcore_gk("square.ini", np)
 
     # Read from square_gk.h5
     h = HDFArchive('./square_gk.h5', 'r')

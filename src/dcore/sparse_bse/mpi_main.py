@@ -18,15 +18,14 @@ from dcore.irbasis_util import fit_iw, construct_basis
 def compute_glk(gk_file):
     comm = MPI.COMM_WORLD
     gkw, smpl_freqs, Lambda, cutoff, beta = None, None, None, None, None
-    if mpi.is_master_node:
-        with HDFArchive(gk_file,  'r') as h:
-            gkw = float_to_complex_array(h['data'])
-            smpl_freqs = h['smpl_freqs']
-            Lambda = h['Lambda_IR']
-            cutoff = h['cutoff_IR']
-            Lambda = h['Lambda_IR']
-            cutoff = h['cutoff_IR']
-            beta = h['beta']
+    with HDFArchive(gk_file,  'r') as h:
+        gkw = float_to_complex_array(h['data'])
+        smpl_freqs = h['smpl_freqs']
+        Lambda = h['Lambda_IR']
+        cutoff = h['cutoff_IR']
+        Lambda = h['Lambda_IR']
+        cutoff = h['cutoff_IR']
+        beta = h['beta']
     gkw = comm.bcast(gkw)
     smpl_freqs = comm.bcast(smpl_freqs)
     Lambda = comm.bcast(Lambda)
@@ -137,7 +136,7 @@ def run(input_file, gk_file, g2loc_file, output_file):
 
     nq = qsample[0].size
     num_wb = wb_sample.size
-    chi = numpy.empty((num_wb, nq, nf, nf, nf, nf), dtype=numpy.complex128)
+    chi = numpy.zeros((num_wb, nq, nf, nf, nf, nf), dtype=numpy.complex128)
 
     # Reshape one-particle gf
     glk = glk.reshape((nl, nf, nf, nk1, nk2, nk3))
@@ -170,7 +169,7 @@ def run(input_file, gk_file, g2loc_file, output_file):
     chi = chi.transpose((0,1, 3,2, 5,4, 7,6, 9,8)) # (num_wb,nq) + (2,norb)*4
 
     # Save results into a HDF5 file
-    if mpi.is_master_node:
+    if mpi.is_master_node():
         with HDFArchive(output_file, 'w') as h:
             h['chi'] = complex_to_float_array(chi)
     return

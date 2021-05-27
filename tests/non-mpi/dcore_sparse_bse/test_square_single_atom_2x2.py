@@ -18,6 +18,11 @@ import pytest
 
 from dcore import irbasis_x_available
 
+np = 1
+if 'DCORE_TEST_NUM_PROC' in os.environ:
+    np = int(os.environ['DCORE_TEST_NUM_PROC'])
+
+
 def _write_ini(file, spin_orbit, nso_inequiv_sh, corr_to_inequiv, U, beta,
     n_iw, nk1, nk2, gk_smpl_freqs, Lambda_IR, cutoff_IR, cutoff_IR_2P):
     n_corr_sh = corr_to_inequiv.size
@@ -132,7 +137,7 @@ def test_square(norb_inequiv_sh, spin_orbit, corr_to_inequiv, request):
     check_self_energy('square', Sigma_iw_ref, block_names)
 
     # Run dcore_gk
-    dcore_gk("square.ini")
+    dcore_gk("square.ini", np)
     basis_f = construct_basis('F', beta, Lambda_IR, cutoff_IR)
     smpl_freqs = basis_f.wsample//2
     with HDFArchive('./square_gk.h5', 'r') as h:
@@ -167,7 +172,7 @@ def test_square(norb_inequiv_sh, spin_orbit, corr_to_inequiv, request):
         G2_loc_ref = G2loc(U, beta, wsample_ph_g2loc)
         assert_allclose(G2_loc_ref, G2_loc_read.reshape(G2_loc_ref.shape))
 
-    dcore_sparse_bse("square.ini")
+    dcore_sparse_bse("square.ini", np)
 
     with HDFArchive('square_chi.h5', 'r') as h:
         # chi: (nwb, nq, nf, nf, nf, nf)
