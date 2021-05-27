@@ -1,6 +1,8 @@
 
 import numpy
 from itertools import product
+
+from numpy.testing import assert_allclose
 #import sympy
 #import pytransform3d
 #import re
@@ -61,7 +63,7 @@ class Wannier90( object ):
         else:
             raise RuntimeError("Invalid spin_orbital_order: {}".format(spin_orbital_order))
 
-    def get_Hk(self, kvec):
+    def get_Hk(self, kvec, check_hermite=False):
         """
         Compute H(k)
         :param kvec: (float, float, float). Fraction coordinates in k space.
@@ -72,6 +74,8 @@ class Wannier90( object ):
         for iR in range(self.nrpts):
             factor = numpy.exp(2J*numpy.pi*(self.irvec[iR,0]*kvec[0]+self.irvec[iR,1]*kvec[1]+self.irvec[iR,2]*kvec[2]))
             Hk += self.HamR_full[iR,:,:] * factor / self.ndgen[iR]
+        if check_hermite:
+            assert_allclose(Hk, Hk.T.conjugate())
         return Hk
 
     def save(self, filename):

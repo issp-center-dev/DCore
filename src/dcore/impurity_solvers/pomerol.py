@@ -329,41 +329,39 @@ class PomerolSolver(SolverBase):
 
         return g2_loc, chi_loc
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, wsample_ph, params_kw):
         """
 
         Parameters
         ----------
-        freqs_ph : numpy.ndarray[N, 3]  frequency points (in the order of boson, fermion, fermion)
-        num_wb : for chi_loc
+        wsample_ph : 3*numpy.ndarray[N, 3]
+           Sampling frequencies (in the order of fermion, fermion, boson)
 
         Returns
         -------
-        g2_loc : dict
-            key = (i1, i2, i3, i4)
-            val = numpy.ndarray(N)
-
-        chi_loc : dict (None if not computed)
-            key = (i1, i2, i3, i4)
-            val = numpy.ndarray(n_w2b)
+        g2_loc : complex array of shape (nflavor, nflavor, nflavor, nflavor, nfreq)
         """
 
         # Save frequencies list
         file_freqs = "freqs.in"
         with open(file_freqs, "w") as f:
-            for freq in freqs_ph:
-                print(freq[0], freq[1], freq[2], file=f)
+            for wf1, wf2, wb in zip(*wsample_ph):
+                print(wb//2, wf1//2, wf2//2, file=f)
 
         params_kw['flag_vx'] = 1
         params_kw['file_freqs'] = file_freqs
         params_kw['flag_suscep'] = 1
-        params_kw['n_wb'] = num_wb
 
         self.solve(rot, mpirun_command, params_kw)
 
-        g2_loc = self._read_g2loc(params_kw)
-        chi_loc = self._read_chiloc(params_kw)
-        return g2_loc, chi_loc
+        G2loc_dict = self._read_g2loc(params_kw)
+        G2loc = numpy.zeros((self.n_flavors,) * 4 + (wsample_ph[0].size,), dtype=numpy.complex128)
+        # To irbasis_x's convention
+        for k, v in G2loc_dict.items():
+            G2loc[k[1], k[0], k[2], k[3], :] = self.beta * v
+        return G2loc
+
 
     def name(self):
         return "pomerol"

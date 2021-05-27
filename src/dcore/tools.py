@@ -671,9 +671,11 @@ def load_Sigma_iw_sh_txt(filename, Sigma_iw_sh, spin_names, atol_omega=1e-2, int
         raise RuntimeError("Dimensions of the input data are wrong!")
 
 def complex_to_float_array(a):
+    a = numpy.ascontiguousarray(a)
     return a.view(float).reshape(a.shape + (2,))
 
 def float_to_complex_array(a):
+    a = numpy.ascontiguousarray(a)
     if numpy.iscomplexobj(a):
         return a
     return a.view(complex).reshape(a.shape[:-1])
@@ -768,10 +770,11 @@ def make_hermite_conjugate(Sigma_iw, check_only=False):
                 g.data[i + n_points, :, :] = g.data[n_points - i - 1, :, :].conj().transpose()
     return max_diff
 
+
 def _to_numpy_array(g):
     """
     Convert BlockGf object to numpy.
-    If there are two blocks, we assume that they are spin1 and spin2 sectors.
+    If there are two blocks, we assume that they are up and down components.
     """
 
     block_names = gf_block_names(g.n_blocks==1)

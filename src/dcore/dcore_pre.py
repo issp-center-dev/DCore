@@ -22,7 +22,6 @@ import numpy
 import re
 import ast
 import h5py
-from dcore.lattice_models import tools
 from h5 import HDFArchive
 from dcore.program_options import create_parser
 from triqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
@@ -30,7 +29,7 @@ from triqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_
 from dcore.converters.wannier90 import Wannier90Converter
 
 from dcore.tools import *
-from dcore.sumkdft import SumkDFTCompat
+from dcore.sumkdft_compat import SumkDFTCompat
 
 from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import print_local_fields

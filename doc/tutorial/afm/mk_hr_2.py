@@ -46,7 +46,7 @@ print('Use the following line for input of DCore')
 print('corr_to_inequiv = ', ", ".join([str(numpy.sum(p)%2) for p in pos_in_unit_cell]))
 
 # Write data to *_hr.dat
-with file(filename, 'w') as f:
+with open(filename, 'w') as f:
     print(datetime.now(), file=f)
     print(num_sites, file=f)
     print(nrpts, file=f)

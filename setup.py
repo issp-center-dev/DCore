@@ -37,7 +37,7 @@ setup(
         ]),
     author_email='h.shinaoka@gmail.com',
 
-    python_requires='>=3, <4',
+    python_requires='>=3.6, <4',
     install_requires=[
         'numpy',
         'scipy',
@@ -61,6 +61,7 @@ setup(
             "dcore_post = dcore.dcore_post:run",
             "dcore_check = dcore.dcore_check:run",
             "dcore_bse = dcore.dcore_bse:run",
+            "dcore_gk = dcore.dcore_gk:run",
         ]
     },
 
