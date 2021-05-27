@@ -5,7 +5,7 @@ from itertools import product
 from triqs.gf import GfImFreq, BlockGf
 from h5 import HDFArchive
 
-from .tools import float_to_complex_array
+from .tools import float_to_complex_array, get_block_size
 from .dcore_w90tool import Wannier90
 
 def mk_hr_square_2x2(nspin, t, seedname):
@@ -142,7 +142,7 @@ def blockgf_sh_to_numpy(blockgf_sh, corr_to_inequiv):
     Return a numpy array that contains the Green's function data of
     all corrleted shells from given BlockGf objects defined on inequivalent shells.
 
-    The data is ordered as (crsh0, up), (crsh1, up), ..., (crsh0, down), (crsh1, down), ...
+    The spin orbitals are ordered as (crsh0, up), (crsh1, up), ..., (crsh0, down), (crsh1, down), ...
 
     blockgf_sh: list of BlockGf objects
        Green's function data for inequivalent shells
@@ -158,7 +158,19 @@ def blockgf_sh_to_numpy(blockgf_sh, corr_to_inequiv):
         bl_arr_ud[:, 0:nf//2, 0:nf//2] = bl_arr_u
         bl_arr_ud[:, nf//2:, nf//2:] = bl_arr_d
     else:
-        bl_arr_ud = block_to_numpy(blockgf_sh, 'ud', corr_to_inequiv)
+        ncrsh = corr_to_inequiv.size
+        nfreqs = blockgf_sh[0]['ud'].data.shape[0]
+        num_so_inequiv_sh = numpy.array([get_block_size(bg['ud']) for bg in blockgf_sh])
+        num_so_crsh = numpy.array([num_so_inequiv_sh[corr_to_inequiv[icrsh]] for icrsh in range(ncrsh)])
+        num_orb = numpy.sum(num_so_crsh)//2
+        bl_arr_ud = numpy.zeros((nfreqs, 2, num_orb, 2, num_orb), dtype=numpy.complex128)
+        offset = 0
+        for icrsh in range(ncrsh):
+            offset_next = offset + num_so_crsh[icrsh]//2
+            bl_arr_ud[:, :, offset:offset_next, :, offset:offset_next] = \
+                blockgf_sh[corr_to_inequiv[icrsh]]['ud'].data.reshape((nfreqs, 2, num_so_crsh[icrsh]//2, 2, num_so_crsh[icrsh]//2))
+            offset = offset_next
+        bl_arr_ud = bl_arr_ud.reshape((bl_arr_ud.shape[0], 2*num_orb, 2*num_orb))
     return bl_arr_ud
 
 

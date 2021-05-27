@@ -116,6 +116,13 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "nk0_mesh", int, 0, "Number of k points along b_0 for computation of A(k,omega) on a 3D mesh")
     parser.add_option("tool", "nk1_mesh", int, 0, "Number of k points along b_1 for computation of A(k,omega) on a 3D mesh")
     parser.add_option("tool", "nk2_mesh", int, 0, "Number of k points along b_2 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("tool", "Lambda_IR", float, 1e+4, "IR parameter for computing G(k,iw)")
+    parser.add_option("tool", "cutoff_IR", float, 1e-5, "IR cutoff parameter for computing G(k,iw)")
+    parser.add_option("tool", "cutoff_IR_2P", float, 1e-5, "IR cutoff parameter for computing two-particle quantities")
+    parser.add_option("tool", "gk_smpl_freqs", str, "dense", "Sampling fermionic frequencies for dcore_gk. dense or the name of a text file that contains sampling frequencies."
+        "For gk_smpl_freqs = dense, all fermionic frequencies in the range of [-n_iw, n_iw] are used. A valid text file must contain the number of sampling frequencies in its first line."
+        "Each line after the first line must contain two integer numbers: The first one is an sequential index of a sampling frequency (start from 0), and the second one is a fermionic sampling frequency (i.e, -1, 0, 1)."
+    )
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")
@@ -126,6 +133,13 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
 
+    # [vertex]
+    parser.add_option("vertex", "wb_ph", str, "", "sparse, or a list of indices of bosonic frequencies separated by commas or spaces.")
+
+    # [sparse bse]
+    parser.add_option("sparse_bse", "qsample", str, "", "Path to a file that contains bosonic momenta"
+        " The first line is the number of momenta. From the second line, each line must contain an sequential index (start from 0) and "
+        " and three integer numbers representing a bosonic mementum (mod nk0, nk1, nk2).")
 
     return parser
 
