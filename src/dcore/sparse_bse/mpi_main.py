@@ -156,10 +156,11 @@ def run(input_file, gk_file, g2loc_file, output_file):
         X0q_ph = bse_dmft.compute_X0q_ph(glk, basis_f, solver.wsample_X0, qsample_local)
         X0loc = bse_dmft.compute_X0loc_ph(glk, basis_f, solver.wsample_X0)
 
+        # Project Floc_sh to wb
+        Floc_sh_wb = [x[offset:offset_next,...] for x in Floc_sh]
+
         # chi_local: (nf, nf, nf, nf, nq_local)
-        print("debug", len(Floc_sh))
-        print("debug", corr_to_inequiv)
-        chi_local_ = solver.solve(X0q_ph, X0loc, Floc_sh, corr_to_inequiv)
+        chi_local_ = solver.solve(X0q_ph, X0loc, Floc_sh_wb, corr_to_inequiv)
         chi[idx_wb, slice_local, ...] = numpy.moveaxis(chi_local_, -1, 0)
 
         offset = offset_next
@@ -171,6 +172,9 @@ def run(input_file, gk_file, g2loc_file, output_file):
     # Save results into a HDF5 file
     if mpi.is_master_node():
         with HDFArchive(output_file, 'w') as h:
+            h['nk'] = numpy.array([nk1, nk2, nk3])
+            h['qsample'] = qsample
+            h['wb_sample'] = wb_sample
             h['chi'] = complex_to_float_array(chi)
     return
 

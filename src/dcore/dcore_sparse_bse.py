@@ -25,6 +25,9 @@ from h5.archive import HDFArchive
 
 def dcore_sparse_bse(filename, np=1, prefix="./"):
     # Construct a parser with default values
+    print("\n############  Reading Input File  #################\n")
+    print("  Input File Name : ", filename)
+    print("")
     pars = create_parser(['model', 'mpi', 'sparse_bse'])
 
     # Parse keywords and store
@@ -34,6 +37,9 @@ def dcore_sparse_bse(filename, np=1, prefix="./"):
     seedname = p["model"]["seedname"]
     mpirun_command = p['mpi']['command'].replace('#', str(np))
 
+    print("\n############  Reading qsample File  #################\n")
+    print("  qsample File Name : ", p['sparse_bse']['qsample'])
+    print('')
     with open(p['sparse_bse']['qsample'], 'r') as f:
         num_q = int(f.readline())
         qsample = [], [], []
@@ -57,12 +63,19 @@ def dcore_sparse_bse(filename, np=1, prefix="./"):
     # Make input.h5
     with HDFArchive('input.h5', 'w') as h:
         h['qsample'] = qsample
+    
+    # make output directory
+    output_dir = os.path.abspath(f'{cwd_org}/{prefix}')
+    print(f'output dir is {output_dir}.')
+    if not os.path.exists(output_dir):
+        print('Creating output dir...')
+        os.makedirs(output_dir)
 
     commands = [sys.executable, "-m", "dcore.sparse_bse.mpi_main"]
     commands.append('input.h5')
     commands.append(f'{cwd_org}/{seedname}_gk.h5')
     commands.append(f'{cwd_org}/{seedname}_g2loc.h5')
-    commands.append(f'{cwd_org}/{prefix}/{seedname}_chi.h5')
+    commands.append(f'{output_dir}/{seedname}_chi.h5')
     with open('./output', 'w') as stdout_file:
         launch_mpi_subprocesses(mpirun_command, commands, stdout_file)
 
@@ -90,7 +103,7 @@ def run():
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
     parser.add_argument('--prefix',
                         action='store',
-                        default='sparse_bse/',
+                        default='./',
                         type=str,
                         help='prefix for output files (default: post/)'
                         )

@@ -143,7 +143,6 @@ def dcore_gk(filename, np=1, prefix="./"):
         (nw, 2, nf//2, 2, nf//2) +
         (p['model']['nk0'], p['model']['nk1'], p['model']['nk2'])
     )
-    print("debug gk", gk[0, :, :, 0, 0,   0, 0, 0])
 
     # Spin orbitals are ordered regardless of 
     # the value of "spin_orbit" option as follows:

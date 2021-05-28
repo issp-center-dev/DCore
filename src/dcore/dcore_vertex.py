@@ -84,6 +84,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         elif wb_str == 'sparse':
             basis_b = construct_basis('B', p['system']['beta'], Lambda_IR, cutoff_IR)
             wb_sample = basis_b.wsample//2
+            wb_sample = wb_sample[wb_sample >= 0]
         else:
             # Try to interpret wb_str as integers
             str_ = wb_str.replace(',', ' ').split()

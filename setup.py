@@ -62,6 +62,8 @@ setup(
             "dcore_check = dcore.dcore_check:run",
             "dcore_bse = dcore.dcore_bse:run",
             "dcore_gk = dcore.dcore_gk:run",
+            "dcore_vertex = dcore.dcore_vertex:run",
+            "dcore_sparse_bse = dcore.dcore_sparse_bse:run",
         ]
     },
 

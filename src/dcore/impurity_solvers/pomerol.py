@@ -20,7 +20,6 @@
 import numpy
 from itertools import product
 import os
-import subprocess
 
 from triqs.gf import *
 from triqs.operators import *
