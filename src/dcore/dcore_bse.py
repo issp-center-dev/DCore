@@ -29,9 +29,9 @@ from h5 import HDFArchive
 
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import create_parser, parse_parameters
-from dcore import sumkdft
 from dcore.tools import *
 from dcore import impurity_solvers
+from .sumkdft_workers.launcher import run_sumkdft
 
 # from BSE repo
 from bse_tools.h5bse import h5BSE
@@ -438,7 +438,9 @@ class DMFTBSESolver(DMFTCoreSolver):
                     q_str = line.split()[1]
                     q_points.append(tuple(map(int, q_str.split('.'))))
             params['X0q_qpoints_saved'] = q_points
-        sumkdft.run(os.path.abspath(self._seedname + '.h5'), './work/sumkdft_bse', self._mpirun_command, params)
+        r = run_sumkdft(
+            'SumkDFTWorkerBSE',
+            os.path.abspath(self._seedname+'.h5'), './work/sumkdft_bse', self._mpirun_command, params)
 
     def _calc_bse_xloc(self):
         """
@@ -491,24 +493,8 @@ class DMFTBSESolver(DMFTCoreSolver):
         solver_name = self._params['impurity_solver']['name']
 
         # generate sampling points of Matsubara frequencies
-        flag_sparse = self._params['bse']['sparse_sampling']
-        if flag_sparse:
-            print("\nFrequency sampling: sparse")
-            if self._params['bse']['sparse_mode'] == 'ph-2D':
-                # numpy.array of shape=(N, 3)
-                freqs = gen_sparse_freqs(self._params['bse']['num_wb'],
-                                         self._params['bse']['sparse_Lambda'],
-                                         self._params['bse']['sparse_sv_cutoff'])
-            elif self._params['bse']['sparse_mode'] == '3D':
-                # numpy.array of shape=(N, 3)
-                freqs = gen_sparse_freqs_3D(self._params['bse']['sparse_Lambda'],
-                        self._params['bse']['sparse_sv_cutoff'])
-            else:
-                raise RuntimeError('Invalid sparse_mode: {}'.format(self._params['bse']['sparse_mode']))
-            bse.save_sparse_info(freqs)
-        else:
-            print("\nFrequency sampling: box")
-            freqs = None
+        print("\nFrequency sampling: box")
+        freqs = None
 
         for ish in range(self._n_inequiv_shells):
             print("\nSolving impurity model for inequivalent shell " + str(ish) + " ...")
@@ -527,10 +513,7 @@ class DMFTBSESolver(DMFTCoreSolver):
             for icrsh in range(self._n_corr_shells):
                 if ish == self._sk.corr_to_inequiv[icrsh]:
                     # X_loc
-                    if flag_sparse:
-                        bse.save_xloc_sparse(x_loc, icrsh=icrsh)
-                    else:
-                        bse.save_xloc(x_loc, icrsh=icrsh)
+                    bse.save_xloc(x_loc, icrsh=icrsh)
                     # chi_loc
                     if chi_loc is not None:
                         bse.save_chiloc(chi_loc, icrsh=icrsh)
@@ -659,13 +642,7 @@ def dcore_bse(filename, np=1):
     #
     # Compute data for BSE
     #
-    if p['bse']['sparse_sampling']:
-        if p['bse']['sparse_fit_mode'] == 'full':
-            solver.calc_bse()
-        solver.fit_Xloc(save_only = (p['bse']['sparse_fit_mode']=='save_only'))
-
-    else:
-        solver.calc_bse()
+    solver.calc_bse()
 
 
     #

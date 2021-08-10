@@ -74,7 +74,7 @@ echo ""
 $BSE_DIR/bin/misc/print_latest_commit.sh
 
 # Generate q_path.dat
-python $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
+python3 $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
 check_status
 
 # Plot input to BSE
@@ -82,7 +82,7 @@ $BSE_DIR/python/plot/plot_bse_input.py --no3dplot
 check_status
 
 # BSE
-python $BSE_DIR/python/bse_tools/bse_tool.py -s BSE -i dmft_bse.h5 -q q_path.dat -o file
+python3 $BSE_DIR/python/bse_tools/bse_tool.py -s BSE -i dmft_bse.h5 -q q_path.dat -o file
 check_status
-python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chiq_eigen.dat
-python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi0q_eigen.dat --mode='chi0'
+python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chiq_eigen.dat
+python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi0q_eigen.dat --mode='chi0'

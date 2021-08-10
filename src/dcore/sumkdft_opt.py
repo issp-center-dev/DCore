@@ -13,7 +13,7 @@ class SumkDFT_opt(SumkDFT):
                  symmpar_data='dft_symmpar_input', bands_data='dft_bands_input', transp_data='dft_transp_input',
                  misc_data='dft_misc_input'):
 
-        super(SumkDFT_opt, self).__init__(hdf_file, h_field, use_dft_blocks, dft_data, symmcorr_data, parproj_data,
+        super().__init__(hdf_file, h_field, use_dft_blocks, dft_data, symmcorr_data, parproj_data,
                                       symmpar_data, bands_data, transp_data, misc_data)
 
     ###############################################################

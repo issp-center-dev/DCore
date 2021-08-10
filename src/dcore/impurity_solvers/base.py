@@ -143,7 +143,7 @@ class SolverBase(object):
 
         """
 
-        pass
+        return NotImplementedError()
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
 
@@ -172,9 +172,9 @@ class SolverBase(object):
             return None if not computed
 
         """
-        pass
+        return NotImplementedError()
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
+    def calc_Xloc_ph_sparse(self, rot, mpirun_command, wsample_ph, num_wb, params_kw):
         """
         Compute Xloc(m, n, n') in p-h channel only for specified frequency points
                 and chi_loc(m) (optional)
@@ -185,10 +185,9 @@ class SolverBase(object):
         mpirun_command:
             The same as solve()
 
-        freqs_ph: 2d int ndarray of shape (n_freqs, 3)
-            The three integers at each row represent one bosonic frequency and two fermionic frequencies
-            in the particle-hole convention.
-            These frequencies must be given in the order of (boson, fermion, fermion).
+        wsample_ph : 3*numpy.ndarray[N, 3]
+           Sampling frequencies (in the order of fermion, fermion, boson)
+           Fermion/boson frequencies are indexed by even/add integer numbers.
 
         num_wb:
             for chi_loc
@@ -204,9 +203,9 @@ class SolverBase(object):
         chi_loc
 
         """
-        pass
+        return NotImplementedError()
 
-    def calc_G2loc_ph_sparse(self, rot, mpirun_command, freqs_ph, params_kw):
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, wsample_ph, params_kw):
         """
         Compute G2(m, n, n') in p-h channel only for specified frequency points.
         The definition of G2 is given in Eq. (3) of note/bse.pdf.
@@ -217,10 +216,9 @@ class SolverBase(object):
         mpirun_command:
             The same as solve()
 
-        freqs_ph: 2d int ndarray of shape (n_freqs, 3)
-            The three integers at each row represent one bosonic frequency and two fermionic frequencies
-            in the particle-hole convention.
-            These frequencies must be given in the order of (boson, fermion, fermion).
+        wsample_ph : 3*numpy.ndarray[N, 3]
+           Sampling frequencies (in the order of fermion, fermion, boson)
+           Fermion/boson frequencies are indexed by even/add integer numbers.
 
         params_kw:
             The same as solve()
@@ -232,7 +230,7 @@ class SolverBase(object):
            dict: key is (flavor0, flavor1, flavor2, flavor3), val is a ndarray of size (n_freqs,)
 
         """
-        Xloc, _ =  self.calc_Xloc_ph_sparse(rot, mpirun_command, freqs_ph, 0, params_kw)
+        Xloc, _ =  self.calc_Xloc_ph_sparse(rot, mpirun_command, wsample_ph, 0, params_kw)
         # Convert Xloc to G2 using Eq. (4) in note/bse.pdf:
         #   G2loc_{pqrs} = beta * Xloc_{qprs}
         if isinstance(Xloc, numpy.ndarray):

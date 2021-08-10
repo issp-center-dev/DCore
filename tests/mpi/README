@@ -1,3 +1,5 @@
-Test funtions that import mpi4py.
+Test funtions that import mpi4py and are run with mpirun.
+
+Note:
 Such tests must be isolated from those in the non-mpi directry,
 and must be run in a different pytest process.
