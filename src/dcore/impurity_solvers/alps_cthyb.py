@@ -127,12 +127,12 @@ class ALPSCTHYBSolver(SolverBase):
     def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         raise RuntimeError("calc_Xloc_ph is not implemented!")
 
-    def calc_Xloc_ph_sparse(self, rot, mpirun_command, freqs_ph, num_wb, params_kw):
-        self._solve_impl(rot, mpirun_command, freqs_ph, params_kw)
+    def calc_G2loc_ph_sparse(self, rot, mpirun_command, wsample_ph, params_kw):
+        self._solve_impl(rot, mpirun_command, wsample_ph, params_kw)
 
         return self._G2loc_ph_sparse, None
 
-    def _solve_impl(self, rot, mpirun_command, freqs_ph, params_kw):
+    def _solve_impl(self, rot, mpirun_command, wsample_ph, params_kw):
         """
         In addition to the parameters described in the docstring of SolverBase,
         params_kw must may contain the following parameters.
@@ -223,7 +223,7 @@ class ALPSCTHYBSolver(SolverBase):
             'measurement.G1.n_matsubara'      : self.n_iw,
         }
 
-        if not freqs_ph is None:
+        if not wsample_ph is None:
             p_run['measurement.G2.matsubara.on'] = 1
             p_run['measurement.G2.matsubara.frequencies_PH'] = './freqs_PH.txt'
 
@@ -260,11 +260,12 @@ class ALPSCTHYBSolver(SolverBase):
             for f1, f2 in product(list(range(self.n_flavors)), list(range(self.n_flavors))):
                 print('{} {} {:.15e} {:.15e}'.format(f1, f2, rot_mat_alps[f1, f2].real, rot_mat_alps[f1, f2].imag), file=f)
 
-        if not freqs_ph is None:
+        if not wsample_ph is None:
+            nsmpl_freq = wsample_ph[0].shape[0]
             with open('./freqs_PH.txt', 'w') as f:
-                print(freqs_ph.shape[0], file=f)
-                for i in range(freqs_ph.shape[0]):
-                    print('{}  {} {} {}'.format(i, *freqs_ph[i,:]), file=f)
+                print(nsmpl_freq, file=f)
+                for i in range(nsmpl_freq):
+                    print('{}  {} {} {}'.format(i, wsample_ph[0][i]//2, wsample_ph[1][i]//2, wsample_ph[2][i]//2), file=f)
 
         if _read('dry_run'):
             return
@@ -289,7 +290,6 @@ class ALPSCTHYBSolver(SolverBase):
         if not os.path.exists('./input.out.h5'):
             raise RuntimeError("Output HDF5 file of ALPS/CT-HYB does not exist. Something went wrong!")
 
-        #G_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         with HDFArchive('input.out.h5', 'r') as f:
             # Sign
             sign = f['Sign']
@@ -309,12 +309,9 @@ class ALPSCTHYBSolver(SolverBase):
             make_hermite_conjugate(self._Gimp_iw)
 
             # Two-particle GF
-            if not freqs_ph is None:
-                data_G2 = f['G2']['matsubara']['data']
-                data_G2 = data_G2.reshape((self.n_flavors, self.n_flavors, self.n_flavors, self.n_flavors, -1))
-                # from ALPS/CT-HYB to DCore notation
-                self._G2loc_ph_sparse = data_G2.transpose((1,0,2,3,4))/self.beta
-                del data_G2
+            if not wsample_ph is None:
+                self._G2loc_ph_sparse = (f['G2']['matsubara']['data']).\
+                    reshape((self.n_flavors, self.n_flavors, self.n_flavors, self.n_flavors, -1))
 
         # Solve Dyson's eq to obtain Sigma_iw
         # Sigma_iw = G0_iw^{-1} - G_imp_iw^{-1}

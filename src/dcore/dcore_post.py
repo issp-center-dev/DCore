@@ -22,17 +22,17 @@ import numpy
 import copy
 from itertools import product
 
-from h5 import HDFArchive
 from triqs.gf import *
 from triqs.operators import *
 
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import create_parser, parse_parameters, parse_bvec
-from dcore.tools import launch_mpi_subprocesses, save_Sigma_w_sh_txt
+from dcore.tools import save_Sigma_w_sh_txt
 from dcore import impurity_solvers
-from dcore import sumkdft
+#from dcore import sumkdft
 from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import set_nk
+from .sumkdft_workers.launcher import run_sumkdft
 
 
 class DMFTPostSolver(DMFTCoreSolver):
@@ -58,12 +58,13 @@ class DMFTPostSolver(DMFTCoreSolver):
         """
 
         params = self._make_sumkdft_params()
-        params['calc_mode'] = 'dos'
         params['mu'] = self._chemical_potential
         params['Sigma_w_sh'] = Sigma_w_sh
         params['mesh'] = mesh
         params['broadening'] = broadening
-        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos', self._mpirun_command, params)
+        r = run_sumkdft(
+            'SumkDFTWorkerDOS',
+            os.path.abspath(self._seedname+'.h5'), './work/sumkdft_dos', self._mpirun_command, params)
         return r['dos'], r['dosproj'], r['dosproj_orb']
 
     def calc_spaghettis(self, Sigma_w_sh, mesh, broadening, kmesh_type):
@@ -85,7 +86,10 @@ class DMFTPostSolver(DMFTCoreSolver):
             params['bands_data'] = 'dft_bands_mesh_input'
         else:
             raise RuntimeError('Invalid kmesh_type: {}'.format(kmesh_type))
-        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_spaghettis', self._mpirun_command, params)
+        #r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_spaghettis', self._mpirun_command, params)
+        r = run_sumkdft(
+            'SumkDFTWorkerSpaghettis',
+            os.path.abspath(self._seedname+'.h5'), './work/sumkdft_spaghettis', self._mpirun_command, params)
         return r['akw']
 
     def calc_momentum_distribution(self):
@@ -99,7 +103,9 @@ class DMFTPostSolver(DMFTCoreSolver):
         params = self._make_sumkdft_params()
         params['calc_mode'] = 'momentum_distribution'
         params['mu'] = self._chemical_potential
-        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_momentum_distribution', self._mpirun_command, params)
+        r = run_sumkdft(
+            'SumkDFTWorkerMomDist',
+            os.path.abspath(self._seedname+'.h5'), './work/sumkdft_mom_dist', self._mpirun_command, params)
         return r['den']
 
     def calc_Sigma_w(self, mesh):

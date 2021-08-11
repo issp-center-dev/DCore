@@ -29,8 +29,9 @@ import h5py
 import builtins
 
 from .program_options import *
+from .sumkdft_workers.launcher import run_sumkdft
 
-from . import sumkdft
+from .sumkdft_compat import SumkDFTCompat
 
 from .tools import *
 
@@ -301,7 +302,7 @@ class DMFTCoreSolver(object):
         #
         # Read dft input data
         #
-        self._sk = sumkdft.SumkDFTCompat(hdf_file=seedname+'.h5')
+        self._sk = SumkDFTCompat(hdf_file=seedname+'.h5')
         sk = self._sk
 
         self._use_spin_orbit = sk.SO != 0
@@ -523,11 +524,12 @@ class DMFTCoreSolver(object):
         """
 
         params = self._make_sumkdft_params()
-        params['calc_mode'] = 'Gloc'
         params['adjust_mu'] = True
         params['with_dc'] = False
 
-        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft_G0loc', self._mpirun_command, params)
+        r = run_sumkdft(
+            'SumkDFTWorkerGloc',
+            os.path.abspath(self._seedname+'.h5'), './work/sumkdft_G0loc', self._mpirun_command, params)
 
         # Make sure Gloc_iw is hermite conjugate (for triqs 2.x)
         for ish, g in enumerate(r['Gloc_iw_sh']):
@@ -550,7 +552,9 @@ class DMFTCoreSolver(object):
         params['calc_mode'] = 'Gloc'
         if (not self._params['system']['fix_mu']) and (not self._read_only):
             params['adjust_mu'] = True
-        r = sumkdft.run(os.path.abspath(self._seedname+'.h5'), './work/sumkdft', self._mpirun_command, params)
+        r = run_sumkdft(
+            'SumkDFTWorkerGloc',
+            os.path.abspath(self._seedname+'.h5'), './work/sumkdft_Gloc', self._mpirun_command, params)
 
         if params['adjust_mu']:
             self._chemical_potential = r['mu']
@@ -885,6 +889,10 @@ class DMFTCoreSolver(object):
     @property
     def inequiv_to_corr(self):
         return self._sk.inequiv_to_corr
+
+    @property
+    def corr_to_inequiv(self):
+        return self._sk.corr_to_inequiv
 
     @property
     def iteration_number(self):

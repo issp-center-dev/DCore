@@ -17,3 +17,10 @@
 #
 
 from .version import version as __version__
+
+irbasis_x_available = False
+try:
+    import irbasis_x
+    irbasis_x_available = True
+except ImportError:
+    pass
