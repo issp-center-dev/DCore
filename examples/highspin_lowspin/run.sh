@@ -78,9 +78,9 @@ python3 $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
 check_status
 
 # BSE
-mpirun -np $NUM_PROC python3 $BSE_DIR/python/bse_tools/bse_tool.py --toml ../bse.toml
+mpirun -np $NUM_PROC python3 $BSE_DIR/python/bse_tools/bse_tool.py ../bse.in
 check_status
-mpirun -np $NUM_PROC python3 $BSE_DIR/python/bse_tools/bse_post.py --toml ../bse.toml
+python3 $BSE_DIR/python/bse_tools/bse_post.py ../bse.in
 check_status
 
 # Plot BSE results
