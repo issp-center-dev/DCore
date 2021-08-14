@@ -405,7 +405,7 @@ class Wannier90Converter(ConverterTools):
             num_wf = int(hr_data[1])
             nrpt = int(hr_data[2])
         except ValueError:
-            mpi.report("Could not read number of WFs or R vectors")
+            raise RuntimeError("Could not read number of WFs or R vectors")
 
         # allocate arrays to save the R vector indexes and degeneracies and the
         # Hamiltonian

@@ -176,6 +176,10 @@ def run(input_file, gk_file, g2loc_file, output_file):
             h['qsample'] = qsample
             h['wb_sample'] = wb_sample
             h['chi'] = complex_to_float_array(chi)
+            h['wsample_Floc_ph'] = wsample_Floc_ph
+            h.create_group('Floc_sh')
+            for ish, Floc_sh_ in enumerate(Floc_sh):
+                h['Floc_sh'][f'sh{ish}'] = complex_to_float_array(Floc_sh_)
     return
 
 

@@ -233,8 +233,17 @@ def extract_H0(G0_iw, block_names, hermitianize=True):
 
     return data
 
+def _ph_symmetrize(eps):
+    N = eps.size
+    half_eps = eps[0:N//2]
+    if N%2 == 0:
+        return numpy.hstack((half_eps, -half_eps[::-1]))
+    else:
+        return numpy.hstack((half_eps, 0.0, -half_eps[::-1]))
 
-def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
+
+
+def fit_delta_iw(delta_iw, beta, n_bath, n_fit, ph_symmetric, verbose, **fit_params):
     """
     Fit Delta(iw) using scipy
 
@@ -247,6 +256,7 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
     beta: [float] 1/T
     n_bath: [int] number of bath
     n_fit: [int] number of repetition of fitting
+    ph_symmetric: [bool] particle-hole symmetric
     **fit_params: [dict] optional parameters to the fitting function
 
     Returns
@@ -268,6 +278,8 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
     # delta_fit = sum_{l=1}^{n_bath} V_{o1, l} * V_{l, o2} / (iw - eps_{l})
     def distance(x):
         _eps = x[0:n_bath]
+        if ph_symmetric:
+            _eps = _ph_symmetrize(_eps)
         _hyb = x[n_bath:].reshape(n_orb, n_bath)
 
         # denom[i,j] = (freqs[i] - eps[j])
@@ -281,7 +293,7 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
 
     # Determine eps and V which minimize the distance between delta_iw and delta_fit
     dis_min = 1.0e+10
-    # [0:n_bath] -> eps_{l},  [n_bath:n_orb*n_bath] -> V_{o,l}
+    # [0:n_bath] -> eps_{l},  [n_bath:n_bath+n_orb*n_bath] -> V_{o,l}
     result_best = numpy.zeros(n_bath + n_orb * n_bath, dtype=float)
     for l in range(n_fit):
         # initial guess, random values in the range [-1:1]
@@ -299,11 +311,13 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
             result_best = result.copy()
 
     eps = result_best[0:n_bath]
+    if ph_symmetric:
+        eps = _ph_symmetrize(eps)
     hyb = result_best[n_bath:].reshape(n_orb, n_bath)
     return eps, hyb
 
 
-def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1e-5, verbose=False):
+def extract_bath_params(delta_iw, beta, block_names, n_bath, ph_symmetric=False, n_fit=5, fit_gtol=1e-5, verbose=False):
     """
     Determine bath parameters by fitting Delta(iw)
 
@@ -313,6 +327,7 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
     beta: [float] 1/T
     block_names: [list] block names
     n_bath: [int] number of bath
+    ph_symmetric: [bool] particle-hole symmetric
     n_fit: [int] number of repetition of fitting. The best fit result will be taken.
     fit_gtol: [float] A fitting parameter: Gradient norm must be less than gtol before successful termination.
 
@@ -355,7 +370,7 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
         assert delta_iw[b].data.shape[1] == delta_iw[b].data.shape[2] == n_orb
 
         # use only positive Matsubara freq
-        eps, hyb = fit_delta_iw(delta_iw[b].data[n_w//2:n_w, :, :], beta, n_bath, n_fit, verbose, **fit_params)
+        eps, hyb = fit_delta_iw(delta_iw[b].data[n_w//2:n_w, :, :], beta, n_bath, n_fit, ph_symmetric, verbose, **fit_params)
         assert eps.shape == (n_bath,)
         assert hyb.shape == (n_orb, n_bath)
         eps_list.append(eps)
