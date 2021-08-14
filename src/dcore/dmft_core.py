@@ -91,7 +91,7 @@ class ShellQuantity(object):
 def _load_symm_generators(input_str, spin_orbit, dim_sh):
     """
     Load generators for symmetrization
-    
+
     Parameters
     ----------
     input_str: input string
@@ -572,6 +572,9 @@ class DMFTCoreSolver(object):
 
 
     def print_density_matrix(self, dm_sh, smoment_sh):
+        # dm_sh and smoment_sh are defined for inequivalent shells
+        assert len(dm_sh) == len(smoment_sh) == self._n_inequiv_shells
+
         print("\nDensity Matrix")
         for ish in range(self._n_inequiv_shells):
             print("\n  Inequivalent Shell ", ish)
@@ -666,11 +669,14 @@ class DMFTCoreSolver(object):
                     print("{0:.3f} ".format(mat[i1, i2]), end="")
                 print("")
 
+        # dm_sh is defined for inequivalent shells
+        assert len(dm_sh) == self._n_inequiv_shells
+
         # Loop over inequivalent shells
         _dc_imp = []
         for ish in range(self._n_inequiv_shells):
-            u_mat = self._Umat[self._sk.inequiv_to_corr[ish]]
-            dens_mat = dm_sh[self._sk.inequiv_to_corr[ish]]
+            u_mat = self._Umat[ish]
+            dens_mat = dm_sh[ish]
 
             num_orb = int(u_mat.shape[0] / 2)
             # TODO: num_orb can be deleted, if inverse transformation of .tools.to_spin_full_U_matrix is implemented}
