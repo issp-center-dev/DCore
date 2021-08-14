@@ -669,8 +669,8 @@ class DMFTCoreSolver(object):
         # Loop over inequivalent shells
         _dc_imp = []
         for ish in range(self._n_inequiv_shells):
-            u_mat = self._Umat[self._sk.inequiv_to_corr[ish]]
-            dens_mat = dm_sh[self._sk.inequiv_to_corr[ish]]
+            u_mat = self._Umat[ish]
+            dens_mat = dm_sh[ish]
 
             num_orb = int(u_mat.shape[0] / 2)
             # TODO: num_orb can be deleted, if inverse transformation of .tools.to_spin_full_U_matrix is implemented}
