@@ -22,8 +22,9 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
 
         # Local Green's function and Density matrix
         Gloc = sk.extract_G_loc(with_dc=with_dc)
-        dm = sk.density_matrix(beta=beta)
+        dm_corr_sh = sk.density_matrix(beta=beta)
+        dm_sh = [dm_corr_sh[sk.inequiv_to_corr[ish]] for ish in range(sk.n_inequiv_shells)]
         if mpi.is_master_node():
             results['Gloc_iw_sh'] = Gloc
-            results['dm_sh'] = dm
+            results['dm_sh'] = dm_sh
             self.save_result(results)
