@@ -24,18 +24,22 @@ from irbasis_x import bse_dmft
 from .dmft_core import DMFTCoreSolver
 from .program_options import create_parser, parse_parameters
 from .tools import *
+import h5py
 from .irbasis_util import construct_basis
 from . import impurity_solvers
 
-def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot,
+def calc_Floc_impurity_model(solver_name, solver_params, mpirun_command, basis_rot,
                               Umat, gf_struct, beta, n_iw,
                               Sigma_iw, Gloc_iw, ish, wsample_ph):
     """
-    Calculate G2 of an impurity model
+    Calculate Floc of an impurity model
     """
     wsample_ph = irbasis_x.freq.check_ph_convention(*wsample_ph)
 
     Solver = impurity_solvers.solver_classes[solver_name]
+
+    if not Solver.is_Floc_computable():
+        raise RuntimeError(f"Floc is not computable with {solver_name}!")
 
     raise_if_mpi_imported()
 
@@ -56,11 +60,11 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     os.chdir(work_dir)
 
     # Solve the model
-    G2loc = sol.calc_G2loc_ph_sparse(rot, mpirun_command, wsample_ph, s_params)
+    Floc = sol.calc_Floc_ph_sparse(rot, mpirun_command, wsample_ph, s_params)
 
     os.chdir(work_dir_org)
 
-    return G2loc, sol.get_Gimp_iw()
+    return Floc
 
 
 class DMFTBSESolver(DMFTCoreSolver):
@@ -103,7 +107,7 @@ class DMFTBSESolver(DMFTCoreSolver):
                 wsample_ph[i].append(solver.wsample_Floc[i])
         wsample_ph = tuple(map(numpy.hstack, wsample_ph))
 
-        with HDFArchive(self._seedname + '_g2loc.h5', 'w') as h:
+        with h5py.File(self._seedname + '_Floc.h5', 'w') as h:
             h['wb_sample'] = wb_sample
             h['Lambda_IR'] = Lambda_IR
             h['cutoff_IR'] = cutoff_IR
@@ -114,22 +118,21 @@ class DMFTBSESolver(DMFTCoreSolver):
             else:
                 h['nso_sh'] = 2 * numpy.array(self._dim_sh)
             h['wsample_ph'] = wsample_ph
-            h.create_group('data')
             for ish in range(self._n_inequiv_shells):
                 print("\nSolving impurity model for inequivalent shell " + str(ish) + " ...")
                 sys.stdout.flush()
-                g2loc, _ = calc_g2_in_impurity_model(
+                Floc = calc_Floc_impurity_model(
                     solver_name, self._solver_params, self._mpirun_command,
                     self._params["impurity_solver"]["basis_rotation"],
                     self._Umat[ish], self._gf_struct[ish],
                     self._beta, self._n_iw,
                     self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                     ish, wsample_ph)
-                g2loc = numpy.moveaxis(g2loc, -1, 0) # (nfreq, nf, nf, nf, nf)
-                nw, nf = g2loc.shape[0], g2loc.shape[1]
-                g2loc = g2loc.reshape((nw,) + (2, nf//2)* 4)
+                Floc = numpy.moveaxis(Floc, -1, 0) # (nfreq, nf, nf, nf, nf)
+                nw, nf = Floc.shape[0], Floc.shape[1]
+                Floc = Floc.reshape((nw,) + (2, nf//2)* 4)
 
-                h['data'][f'sh{ish}'] = complex_to_float_array(g2loc)
+                h[f'data/sh{ish}'] = complex_to_float_array(Floc)
 
 
 def dcore_vertex(filename, np=1):

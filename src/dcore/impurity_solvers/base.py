@@ -248,6 +248,11 @@ class SolverBase(object):
     def is_gf_realomega_available(cls):
         return False
 
+    @classmethod
+    def is_Floc_computable(cls):
+        """ Can compute local full vertex """
+        return False
+
 
 def creat_mapping_flatten_index(gf_struct):
     # Map (block_name, index) to an index in the flatten spin-orbital space

@@ -47,7 +47,9 @@ def compute_glk(gk_file):
     glk = fit_iw(basis_f, gkw, axis=0)
     return glk, basis_f
 
+"""
 def compute_Floc_from_G2loc(g2loc_file, gloc_l, basis_f):
+    # Read local two-particle Green's function and compute local full vertex (Floc)
     with HDFArchive(g2loc_file, 'r') as h:
         nsh = h['n_inequiv_sh']
         nso_sh = h['nso_sh']
@@ -106,9 +108,44 @@ def compute_Floc_from_G2loc(g2loc_file, gloc_l, basis_f):
         )
 
     return Floc_sh, wb_sample, wsample_ph, basis, corr_to_inequiv
+"""
 
 
-def run(input_file, gk_file, g2loc_file, output_file):
+def compute_Floc(Floc_file, basis_f):
+    """ Read local full vertex (Floc) """
+    with HDFArchive(Floc_file, 'r') as h:
+        nsh = h['n_inequiv_sh']
+        nso_sh = h['nso_sh']
+        Lambda_IR = h['Lambda_IR']
+        cutoff_IR = h['cutoff_IR']
+        corr_to_inequiv = h['corr_to_inequiv']
+        Floc_sh = []
+        wsample_ph = h['wsample_ph']
+        wb_sample = h['wb_sample']
+        for ish in range(nsh): # inequivalent shell
+            Floc_sh.append(
+                float_to_complex_array(h['data'][f'sh{ish}'])
+            )
+        nfreqs = Floc_sh[0].shape[0]
+        for ish in range(nsh): # inequivalent shell
+            assert Floc_sh[ish].shape == (nfreqs,) + (2, nso_sh[ish]//2) * 4
+            Floc_sh[ish] = Floc_sh[ish].reshape((nfreqs,) + (nso_sh[ish],) * 4)
+
+    # Read Floc for each inequivalent shell
+    nsh = len(Floc_sh)
+
+    # Mappling from an inequivalent shell to one of the corresponding correlated shells
+    inequiv_to_corr = numpy.array([
+        numpy.where(corr_to_inequiv==ish)[0][0] for ish in range(nsh)
+    ])
+    assert all([corr_to_inequiv[inequiv_to_corr[ish]] == ish for ish in range(nsh)])
+
+    basis = irbasis_x.FourPointBasis(Lambda_IR, basis_f.beta, cutoff_IR, vertex=True)
+
+    return Floc_sh, wb_sample, wsample_ph, basis, corr_to_inequiv
+
+
+def run(input_file, gk_file, g2loc_file, Floc_file, output_file):
     comm = MPI.COMM_WORLD
 
     # Input file
@@ -131,8 +168,16 @@ def run(input_file, gk_file, g2loc_file, output_file):
     # Compute Floc
     # gloc_l: (nl, orb, spin, orb, spin)
     gloc_l = numpy.mean(glk, axis=(-3,-2,-1))
+    #if g2loc_file != '':
+        #Floc_sh, wb_sample, wsample_Floc_ph, basis, corr_to_inequiv = \
+            #compute_Floc_from_G2loc(g2loc_file, gloc_l, basis_f)
+    #elif Floc_file != '':
+        #Floc_sh, wb_sample, wsample_Floc_ph, basis, corr_to_inequiv = \
+            #compute_Floc(Floc_file, basis_f)
+    #else:
+        #raise RuntimeError("Neigher g2loc_file or Floc_file is not provided!")
     Floc_sh, wb_sample, wsample_Floc_ph, basis, corr_to_inequiv = \
-        compute_Floc_from_G2loc(g2loc_file, gloc_l, basis_f)
+            compute_Floc(Floc_file, basis_f)
 
     nq = qsample[0].size
     num_wb = wb_sample.size
@@ -176,10 +221,10 @@ def run(input_file, gk_file, g2loc_file, output_file):
             h['qsample'] = qsample
             h['wb_sample'] = wb_sample
             h['chi'] = complex_to_float_array(chi)
-            h['wsample_Floc_ph'] = wsample_Floc_ph
-            h.create_group('Floc_sh')
-            for ish, Floc_sh_ in enumerate(Floc_sh):
-                h['Floc_sh'][f'sh{ish}'] = complex_to_float_array(Floc_sh_)
+            #h['wsample_Floc_ph'] = wsample_Floc_ph
+            #h.create_group('Floc_sh')
+            #for ish, Floc_sh_ in enumerate(Floc_sh):
+                #h['Floc_sh'][f'sh{ish}'] = complex_to_float_array(Floc_sh_)
     return
 
 
@@ -189,11 +234,12 @@ if __name__ == '__main__':
             description='MPI program for solving BSE')
         parser.add_argument('input_file')
         parser.add_argument('gk_file')
-        parser.add_argument('g2loc_file')
         parser.add_argument('output_file')
+        parser.add_argument('--g2loc_file', default='')
+        parser.add_argument('--Floc_file', default='')
         args = parser.parse_args()
 
-        run(args.input_file, args.gk_file, args.g2loc_file, args.output_file)
+        run(args.input_file, args.gk_file, args.g2loc_file, args.Floc_file, args.output_file)
 
 
     except Exception as e:

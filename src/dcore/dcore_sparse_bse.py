@@ -74,8 +74,14 @@ def dcore_sparse_bse(filename, np=1, prefix="./"):
     commands = [sys.executable, "-m", "dcore.sparse_bse.mpi_main"]
     commands.append('input.h5')
     commands.append(f'{cwd_org}/{seedname}_gk.h5')
-    commands.append(f'{cwd_org}/{seedname}_g2loc.h5')
     commands.append(f'{output_dir}/{seedname}_chi.h5')
+    commands.append(f'--Floc_file={cwd_org}/{seedname}_Floc.h5')
+    #if p['sparse_bse']['input_vertex_format'].lower() == 'floc':
+        #commands.append(f'--Floc_file={cwd_org}/{seedname}_Floc.h5')
+    #elif p['sparse_bse']['input_vertex_format'].lower() == 'g2loc':
+        #commands.append(f'--g2loc_file={cwd_org}/{seedname}_g2loc.h5')
+    #else:
+        #raise ValueError("Invalid input_vertex_format!")
     with open('./output', 'w') as stdout_file:
         launch_mpi_subprocesses(mpirun_command, commands, stdout_file)
 
