@@ -266,17 +266,19 @@ class PomerolSolver(SolverBase):
         self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)
 
     def _read_common(self, dir_name, fac=1.0):
+        print("\n Reading files in directory '%s'" % dir_name)
         g2_loc = {}
         for i1, i2, i3, i4 in product(list(range(self.n_flavors)), repeat=4):
             filename = dir_name + "/%d_%d_%d_%d.dat" % (i1, i2, i3, i4)
             if not os.path.exists(filename):
                 continue
-            print(" reading", filename)
+            # print(" reading", filename)
 
             # load data as a complex type
             data = numpy.loadtxt(filename).view(numpy.complex128).reshape(-1)
 
             g2_loc[(i1, i2, i3, i4)] = data * fac
+        print(" %d data loaded" % len(g2_loc))
 
         return g2_loc
 
