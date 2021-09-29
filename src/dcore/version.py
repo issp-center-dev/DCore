@@ -7,3 +7,6 @@ def show_version():
 
 def show_git_hash():
   print("\nYou are using the DCore git hash %s based on triqs git hash %s\n"%(dcore_hash, triqs_hash))
+
+def print_header():
+  print(f"#### DCore {version} ####")

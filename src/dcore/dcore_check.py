@@ -353,7 +353,9 @@ def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
 def run():
     import argparse
     from dcore.option_tables import generate_all_description
-    from dcore.version import version
+    from dcore.version import version, print_header
+
+    print_header()
 
     parser = argparse.ArgumentParser(
         prog='dcore_check.py',
