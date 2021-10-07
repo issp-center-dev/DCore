@@ -165,22 +165,6 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
         print('Warning G0_iw is not hermite conjugate: {}'.format(diff))
     sol.set_G0_iw(G0_iw)
 
-    # Compute rotation matrix to the diagonal basis if supported
-    if basis_rot == 'None':
-        rot = None
-    elif basis_rot == 'Hloc':
-        rot = compute_diag_basis(G0_iw)
-    else:
-        if not os.path.exists(basis_rot):
-            raise RuntimeError("Invalid basis_rot : {}".format(basis_rot))
-        if sol.use_spin_orbit:
-            rot = numpy.zeros((1, sol.n_flavors, sol.n_flavors), dtype=complex)
-            read_potential(basis_rot, rot)
-            rot = {'ud' : rot[0,:,:]}
-        else:
-            rot = numpy.zeros((2, sol.n_orb, sol.n_orb), dtype=complex)
-            read_potential(basis_rot, rot)
-            rot = {'up' : rot[0,:,:], 'down': rot[1,:,:]}
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
@@ -193,6 +177,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
         s_params['omega_min'], s_params['omega_max'], s_params['n_omega'] = mesh
 
     # Solve the model
+    rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     sol.solve(rot, mpirun_command, s_params)
 
     os.chdir(work_dir_org)

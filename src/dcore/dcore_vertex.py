@@ -49,7 +49,7 @@ def calc_Floc_impurity_model(solver_name, solver_params, mpirun_command, basis_r
     sol.set_G0_iw(G0_iw)
 
     # Compute rotation matrix to the diagonal basis if supported
-    rot = compute_diag_basis(G0_iw) if basis_rot else None
+    rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 

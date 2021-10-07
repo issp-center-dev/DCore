@@ -104,6 +104,9 @@ class SolverBase(object):
     def set_G0_iw(self, new_G0_iw):
         self._G0_iw << new_G0_iw.copy()
 
+    def get_G0_iw(self):
+        return self._G0w_iw.copy()
+
     def get_Sigma_iw(self):
         return self._Sigma_iw.copy()
 
@@ -400,3 +403,25 @@ class PytriqsMPISolver(SolverBase):
 
     def name(self):
         return "PytriqsMPISolver"
+
+
+def compute_basis_rot(basis_rot, solver):
+    """ Compute rotation matrix """
+    nflavors = solver.n_flavors
+
+    if basis_rot == 'None':
+        rot = None
+    elif basis_rot == 'Hloc':
+        rot = compute_diag_basis(solver.get_G0_iw())
+    else:
+        if not os.path.exists(basis_rot):
+            raise RuntimeError("Invalid basis_rot : {}".format(basis_rot))
+        if solver.use_spin_orbit:
+            rot = numpy.zeros((1, nflavors, nflavors), dtype=numpy.complex)
+            read_potential(basis_rot, rot)
+            rot = {'ud' : rot[0,:,:]}
+        else:
+            rot = numpy.zeros((2, nflavors//2, nflavors//2), dtype=numpy.complex)
+            read_potential(basis_rot, rot)
+            rot = {'up' : rot[0,:,:], 'down': rot[1,:,:]}
+    return rot
