@@ -8,6 +8,7 @@ from irbasis_x import bse_dmft as bse_dmft
 from mpi4py import MPI
 
 from h5 import HDFArchive
+import h5py
 
 from triqs.utility import mpi
 
@@ -47,7 +48,6 @@ def compute_glk(gk_file):
     glk = fit_iw(basis_f, gkw, axis=0)
     return glk, basis_f
 
-"""
 def compute_Floc_from_G2loc(g2loc_file, gloc_l, basis_f):
     # Read local two-particle Green's function and compute local full vertex (Floc)
     with HDFArchive(g2loc_file, 'r') as h:
@@ -61,7 +61,7 @@ def compute_Floc_from_G2loc(g2loc_file, gloc_l, basis_f):
         wb_sample = h['wb_sample']
         for ish in range(nsh): # inequivalent shell
             g2loc_sh.append(
-                float_to_complex_array(h['data'][f'sh{ish}'])
+                float_to_complex_array(h['G2loc'][f'sh{ish}'])
             )
 
     # Read Floc for each inequivalent shell
@@ -108,7 +108,6 @@ def compute_Floc_from_G2loc(g2loc_file, gloc_l, basis_f):
         )
 
     return Floc_sh, wb_sample, wsample_ph, basis, corr_to_inequiv
-"""
 
 
 def compute_Floc(Floc_file, basis_f):
@@ -124,7 +123,7 @@ def compute_Floc(Floc_file, basis_f):
         wb_sample = h['wb_sample']
         for ish in range(nsh): # inequivalent shell
             Floc_sh.append(
-                float_to_complex_array(h['data'][f'sh{ish}'])
+                float_to_complex_array(h['Floc'][f'sh{ish}'])
             )
         nfreqs = Floc_sh[0].shape[0]
         for ish in range(nsh): # inequivalent shell
@@ -145,7 +144,7 @@ def compute_Floc(Floc_file, basis_f):
     return Floc_sh, wb_sample, wsample_ph, basis, corr_to_inequiv
 
 
-def run(input_file, gk_file, g2loc_file, Floc_file, output_file):
+def run(input_file, gk_file, vertex_file, output_file):
     comm = MPI.COMM_WORLD
 
     # Input file
@@ -176,8 +175,19 @@ def run(input_file, gk_file, g2loc_file, Floc_file, output_file):
             #compute_Floc(Floc_file, basis_f)
     #else:
         #raise RuntimeError("Neigher g2loc_file or Floc_file is not provided!")
-    Floc_sh, wb_sample, wsample_Floc_ph, basis, corr_to_inequiv = \
-            compute_Floc(Floc_file, basis_f)
+    input_Floc = True
+    with h5py.File(vertex_file) as f:
+        if 'Floc' not in f:
+            input_Floc = False
+            if 'G2loc' not in f:
+                raise RuntimeError("Neither Floc and G2loc are not given!")
+
+    if input_Floc:
+        Floc_sh, wb_sample, wsample_Floc_ph, basis, corr_to_inequiv = \
+            compute_Floc(vertex_file, basis_f)
+    else:
+        Floc_sh, wb_sample, wsample_Floc_ph, basis, corr_to_inequiv = \
+            compute_Floc_from_G2loc(vertex_file, gloc_l, basis_f)
 
     nq = qsample[0].size
     num_wb = wb_sample.size
@@ -235,11 +245,10 @@ if __name__ == '__main__':
         parser.add_argument('input_file')
         parser.add_argument('gk_file')
         parser.add_argument('output_file')
-        parser.add_argument('--g2loc_file', default='')
-        parser.add_argument('--Floc_file', default='')
+        parser.add_argument('--vertex_file', default='')
         args = parser.parse_args()
 
-        run(args.input_file, args.gk_file, args.g2loc_file, args.Floc_file, args.output_file)
+        run(args.input_file, args.gk_file, args.vertex_file, args.output_file)
 
 
     except Exception as e:

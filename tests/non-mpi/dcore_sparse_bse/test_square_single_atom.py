@@ -158,11 +158,11 @@ def test_square(norb_inequiv_sh, spin_orbit, corr_to_inequiv, request):
         print(0, nk1//2, nk2//2, 0, file=f)
     dcore_vertex("square.ini")
 
-    with HDFArchive('square_g2loc.h5', 'r') as h:
+    with HDFArchive('square_vertex.h5', 'r') as h:
         wsample_ph_g2loc = h['wsample_ph']
         G2_loc_ref = G2loc(U, beta, wsample_ph_g2loc)
         nfreq = G2_loc_ref.shape[0]
-        G2_loc_read = float_to_complex_array(h['data/sh0'])
+        G2_loc_read = float_to_complex_array(h['G2loc/sh0'])
         assert G2_loc_read.shape == (nfreq,) + (2, 1) * 4
         G2_loc_ref = G2_loc_ref.reshape(G2_loc_read.shape)
         assert_allclose(G2_loc_ref, G2_loc_read)

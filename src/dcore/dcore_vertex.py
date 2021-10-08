@@ -38,8 +38,8 @@ def calc_Floc_impurity_model(solver_name, solver_params, mpirun_command, basis_r
 
     Solver = impurity_solvers.solver_classes[solver_name]
 
-    if not Solver.is_Floc_computable():
-        raise RuntimeError(f"Floc is not computable with {solver_name}!")
+    ##if not Solver.is_Floc_computable():
+        #raise RuntimeError(f"Floc is not computable with {solver_name}!")
 
     raise_if_mpi_imported()
 
@@ -60,11 +60,16 @@ def calc_Floc_impurity_model(solver_name, solver_params, mpirun_command, basis_r
     os.chdir(work_dir)
 
     # Solve the model
-    Floc = sol.calc_Floc_ph_sparse(rot, mpirun_command, wsample_ph, s_params)
+    if Solver.is_Floc_computable():
+        Floc = sol.calc_Floc_ph_sparse(rot, mpirun_command, wsample_ph, s_params)
+        G2loc = None
+    else:
+        Floc = None
+        G2loc = sol.calc_G2loc_ph_sparse(rot, mpirun_command, wsample_ph, s_params)
 
     os.chdir(work_dir_org)
 
-    return Floc
+    return Floc, G2loc
 
 
 class DMFTBSESolver(DMFTCoreSolver):
@@ -107,7 +112,7 @@ class DMFTBSESolver(DMFTCoreSolver):
                 wsample_ph[i].append(solver.wsample_Floc[i])
         wsample_ph = tuple(map(numpy.hstack, wsample_ph))
 
-        with h5py.File(self._seedname + '_Floc.h5', 'w') as h:
+        with h5py.File(self._seedname + '_vertex.h5', 'w') as h:
             h['wb_sample'] = wb_sample
             h['Lambda_IR'] = Lambda_IR
             h['cutoff_IR'] = cutoff_IR
@@ -121,18 +126,24 @@ class DMFTBSESolver(DMFTCoreSolver):
             for ish in range(self._n_inequiv_shells):
                 print("\nSolving impurity model for inequivalent shell " + str(ish) + " ...")
                 sys.stdout.flush()
-                Floc = calc_Floc_impurity_model(
+                Floc, G2loc = calc_Floc_impurity_model(
                     solver_name, self._solver_params, self._mpirun_command,
                     self._params["impurity_solver"]["basis_rotation"],
                     self._Umat[ish], self._gf_struct[ish],
                     self._beta, self._n_iw,
                     self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                     ish, wsample_ph)
-                Floc = numpy.moveaxis(Floc, -1, 0) # (nfreq, nf, nf, nf, nf)
-                nw, nf = Floc.shape[0], Floc.shape[1]
-                Floc = Floc.reshape((nw,) + (2, nf//2)* 4)
-
-                h[f'data/sh{ish}'] = complex_to_float_array(Floc)
+                if Floc is not None:
+                    Floc = numpy.moveaxis(Floc, -1, 0) # (nfreq, nf, nf, nf, nf)
+                    nw, nf = Floc.shape[0], Floc.shape[1]
+                    Floc = Floc.reshape((nw,) + (2, nf//2)* 4)
+                    h[f'Floc/sh{ish}'] = complex_to_float_array(Floc)
+                else:
+                    assert G2loc is not None
+                    G2loc = numpy.moveaxis(G2loc, -1, 0) # (nfreq, nf, nf, nf, nf)
+                    nw, nf = G2loc.shape[0], G2loc.shape[1]
+                    G2loc = G2loc.reshape((nw,) + (2, nf//2)* 4)
+                    h[f'G2loc/sh{ish}'] = complex_to_float_array(G2loc)
 
 
 def dcore_vertex(filename, np=1):

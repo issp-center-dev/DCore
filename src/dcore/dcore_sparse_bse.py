@@ -75,7 +75,7 @@ def dcore_sparse_bse(filename, np=1, prefix="./"):
     commands.append('input.h5')
     commands.append(f'{cwd_org}/{seedname}_gk.h5')
     commands.append(f'{output_dir}/{seedname}_chi.h5')
-    commands.append(f'--Floc_file={cwd_org}/{seedname}_Floc.h5')
+    commands.append(f'--vertex_file={cwd_org}/{seedname}_vertex.h5')
     #if p['sparse_bse']['input_vertex_format'].lower() == 'floc':
         #commands.append(f'--Floc_file={cwd_org}/{seedname}_Floc.h5')
     #elif p['sparse_bse']['input_vertex_format'].lower() == 'g2loc':
