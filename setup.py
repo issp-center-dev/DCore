@@ -2,14 +2,16 @@
 Setup script for irbasis_x
 """
 from setuptools import setup, find_packages
+import versioneer
 
-VERSION = '3.0.0'
+#VERSION = '3.0.0'
 REPO_URL = "https://github.com/issp-center-dev/DCore.git"
 LONG_DESCRIPTION = ""
 
 setup(
     name='dcore',
-    version=VERSION,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
 
     description='DMFT software for CORrelated Electrons',
     #long_description=LONG_DESCRIPTION,
@@ -44,7 +46,7 @@ setup(
         'h5py',
         ],
     extras_require={
-        'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme'],
+        'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],
         },
 
     setup_requires=[

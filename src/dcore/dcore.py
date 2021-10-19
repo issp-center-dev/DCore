@@ -51,7 +51,9 @@ def dcore(filename, np=1):
 def run():
     import argparse
     from dcore.option_tables import generate_all_description
-    from dcore.version import version
+    from dcore.version import version, print_header
+
+    print_header()
 
     parser = argparse.ArgumentParser(
         prog='dcore.py',

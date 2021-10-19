@@ -24,3 +24,5 @@ try:
     irbasis_x_available = True
 except ImportError:
     pass
+from . import _version
+__version__ = _version.get_versions()['version']
