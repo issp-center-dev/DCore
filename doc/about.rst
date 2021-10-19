@@ -36,6 +36,20 @@ please cite the following paper:
 
 - `Hiroshi Shinaoka, Junya Otsuki, Mitsuaki Kawamura, Nayuta Takemori, Kazuyoshi Yoshimi, SciPost Phys. 10, 117 (2021) <https://scipost.org/10.21468/SciPostPhys.10.5.117>`_
 
+- BiBTex::
+
+    @Article{10.21468/SciPostPhys.10.5.117,
+        title={{DCore: Integrated DMFT software for correlated electrons}},
+        author={Hiroshi Shinaoka and Junya Otsuki and Mitsuaki Kawamura and Nayuta Takemori and Kazuyoshi Yoshimi},
+        journal={SciPost Phys.},
+        volume={10},
+        issue={5},
+        pages={117},
+        year={2021},
+        publisher={SciPost},
+        doi={10.21468/SciPostPhys.10.5.117},
+        url={https://scipost.org/10.21468/SciPostPhys.10.5.117},
+     }
 
 Authors & Quotation
 -------------------
