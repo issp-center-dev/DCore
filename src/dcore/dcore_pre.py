@@ -394,7 +394,9 @@ def dcore_pre(filename):
 def run():
     from dcore.option_tables import generate_all_description
     import argparse
-    from dcore.version import version
+    from dcore.version import version, print_header
+
+    print_header()
 
     parser = argparse.ArgumentParser(
         prog='dcore_pre.py',

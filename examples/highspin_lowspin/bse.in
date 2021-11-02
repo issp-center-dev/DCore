@@ -1,0 +1,11 @@
+[bse_common]
+input = "dmft_bse.h5"
+type = ['chi0', 'bse']  # 'chi0', 'bse', 'scl', 'rpa', 'rrpa'
+omega_q = "q_path.dat"
+
+[bse_tool]
+solver = "BSE"
+
+[bse_post]
+mode = ['eigen']
+order = 'file'

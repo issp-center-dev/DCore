@@ -733,11 +733,16 @@ class DMFTCoreSolver(object):
 
         converge_count = 0
 
-        t0 = time.time()
+        t0 = [time.time()] * 2
+        def print_time(comment):
+            t_now = time.time()
+            print("\nWall Time : %.1f sec (%.1f sec for %s)" % (t_now - t0[0], t_now - t0[1], comment))
+            t0[1] = t_now
+
         for iteration_number in range(self._previous_runs+1, self._previous_runs+max_step+1):
             self._sanity_check()
 
-            print("\nWall Time : %.1f sec" % (time.time() - t0))
+            print_time("start iteration %d" % iteration_number)
             sys.stdout.flush()
             print("")
             print("#####################################################################")
@@ -762,12 +767,12 @@ class DMFTCoreSolver(object):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_loc'] = charge_loc
 
-            print("\nWall Time : %.1f sec" % (time.time() - t0))
+            print_time("calc_Gloc with chemical potential tuning")
             sys.stdout.flush()
 
             new_Sigma_iw, new_Gimp_iw = self.solve_impurity_models(Gloc_iw_sh, iteration_number)
 
-            print("\nWall Time : %.1f sec" % (time.time() - t0))
+            print_time("impurity problem")
             sys.stdout.flush()
 
             #

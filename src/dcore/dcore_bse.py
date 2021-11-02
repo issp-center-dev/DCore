@@ -93,10 +93,10 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
         xloc, chiloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, num_wb, s_params)
 
     # Check results for x_loc
-    print("\n checking x_loc...")
+    print("\n Checking x_loc...")
     assert isinstance(xloc, dict)
     for key, data in list(xloc.items()):
-        print("  ", key)
+        # print("  ", key)
         if flag_box:
             assert data.shape == (num_wb, 2*num_wf, 2*num_wf)
         else:
@@ -105,10 +105,10 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
 
     # Check results for chi_loc
     if chiloc is not None:
-        print("\n checking chi_loc...")
+        print("\n Checking chi_loc...")
         assert isinstance(chiloc, dict)
         for key, data in list(chiloc.items()):
-            print("  ", key)
+            # print("  ", key)
             assert data.shape == (num_wb, )
         print(" OK")
 
@@ -199,7 +199,7 @@ def gen_sparse_freqs_fix_boson(boson_freq, Lambda, sv_cutoff):
 
 def gen_sparse_freqs_3D(Lambda, sv_cutoff):
     """
-    Generate sparse frequency points (wb, wf1, wf2) 
+    Generate sparse frequency points (wb, wf1, wf2)
 
     Parameters
     ----------
@@ -565,7 +565,7 @@ class DMFTBSESolver(DMFTCoreSolver):
             t2 = time.time()
             print('Fit ran for {} seconds'.format(t2-t1))
             sys.stdout.flush()
-    
+
         # save interpolated data for BSE
         print('\n saving Xloc for BSE...')
         bse_args = SaveBSE.get_sparse_info(h5_path)
@@ -654,7 +654,9 @@ def dcore_bse(filename, np=1):
 def run():
     import argparse
     from dcore.option_tables import generate_all_description
-    from dcore.version import version
+    from dcore.version import version, print_header
+
+    print_header()
 
     parser = argparse.ArgumentParser(
         prog='dcore_bse.py',

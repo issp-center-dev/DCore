@@ -125,7 +125,7 @@ def create_parser(target_sections=None):
     )
 
     # [bse]
-    parser.add_option("bse", "num_wb", int, 0, "Number of bosonic frequencies (>=0)")
+    parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")
     parser.add_option("bse", "num_wf", int, 10, "Number of fermionic frequencies (>0)")
     parser.add_option("bse", "h5_output_file", str, 'dmft_bse.h5', "Output HDF5 file for bse data")
     parser.add_option("bse", "skip_X0q_if_exists", bool, False, "Skip X_0(q) calc if file already exists")
