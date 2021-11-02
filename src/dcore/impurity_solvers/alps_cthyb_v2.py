@@ -181,8 +181,8 @@ class ALPSCTHYBSolver_v2(SolverBase):
             'model.basis_input_file'          : './basis.txt',
             'model.n_tau_hyb'                 : self.n_tau - 1,
             'model.delta_input_file'          : './delta.txt',
-            'measurement.G1.n_tau'            : self.n_tau - 1,
-            'measurement.G1.n_matsubara'      : self.n_iw,
+            #'measurement.G1.n_tau'            : self.n_tau - 1,
+            #'measurement.G1.n_matsubara'      : self.n_iw,
         }
 
         if not wsample_ph is None:
@@ -238,14 +238,19 @@ class ALPSCTHYBSolver_v2(SolverBase):
             raise RuntimeError("Output HDF5 file of ALPS/CT-HYB does not exist. Something went wrong!")
 
         res = QMCResult('input', verbose=True)
-        if self._Gimp_iw.n_blocks > 1:
-            raise RuntimeError("Only single block is allowed when using ALPS/CT-HYBv2!")
         
-        niw = self._Gimp_iw['ud'].data.shape[0]
-        vsample = 2*numpy.arange(-niw//2, niw//2)+1
+        vsample = 2*numpy.arange(-self.n_iw, self.n_iw)+1
         giv = res.compute_giv_SIE(vsample)
-        self._Gimp_iw['ud'].data[...] = giv
-        self._Sigma_iw['ud'].data[...] = res.compute_sigma_iv(giv, vsample)
+        sigma_iv = res.compute_sigma_iv(giv, vsample)
+        if self._Gimp_iw.n_blocks == 1:
+            self._Gimp_iw['ud'].data[...] = giv
+            self._Sigma_iw['ud'].data[...] = sigma_iv
+        else:
+            def to_spin_diagonal(data, block_gf):
+                block_gf['up'].data[...] = data[:, 0:self.n_orb, 0:self.n_orb]
+                block_gf['down'].data[...] = data[:, self.n_orb:, self.n_orb:]
+            to_spin_diagonal(giv, self._Gimp_iw)
+            to_spin_diagonal(sigma_iv, self._Sigma_iw)
 
         # Two-particle GF
         if not wsample_ph is None:
