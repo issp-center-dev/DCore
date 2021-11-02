@@ -3,7 +3,7 @@ import numpy
 from numpy.testing import assert_allclose
 from itertools import product
 from triqs.gf import GfImFreq, BlockGf
-from h5 import HDFArchive
+from dcore.triqs_compat.h5 import HDFArchive
 
 from .tools import float_to_complex_array
 from .dcore_w90tool import Wannier90

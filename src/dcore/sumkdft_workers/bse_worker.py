@@ -1,6 +1,6 @@
 import numpy
 import triqs.utility.mpi as mpi
-from h5 import HDFArchive
+from dcore.triqs_compat.h5 import HDFArchive
 from .worker_base import SumkDFTWorkerBase, setup_sk
 
 class SumkDFTWorkerBSE(SumkDFTWorkerBase):

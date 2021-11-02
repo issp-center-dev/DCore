@@ -1,6 +1,6 @@
 import triqs.utility.mpi as mpi
 from triqs.gf import *
-from h5 import HDFArchive
+from dcore.triqs_compat.h5 import HDFArchive
 
 # Run SumkDFT using MPI
 

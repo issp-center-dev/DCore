@@ -26,3 +26,10 @@ except ImportError:
     pass
 from . import _version
 __version__ = _version.get_versions()['version']
+
+triqs_h5_available = False
+try:
+    import h5
+    triqs_h5_available = True
+except ImportError:
+    pass

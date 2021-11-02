@@ -17,7 +17,7 @@
 #
 
 from triqs.gf import *
-from h5 import HDFArchive
+from dcore.triqs_compat.h5 import HDFArchive
 from triqs.operators import *
 
 from itertools import *

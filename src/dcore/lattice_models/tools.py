@@ -21,7 +21,7 @@ import numpy
 import sys
 from collections import namedtuple
 
-from h5 import HDFArchive
+from dcore.triqs_compat.h5 import HDFArchive
 
 from ..tools import pauli_matrix
 from ..program_options import parse_knode, parse_bvec
