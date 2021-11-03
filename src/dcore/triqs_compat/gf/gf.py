@@ -100,38 +100,15 @@ class Gf(object):
         group[key].write_attr('Format', 'Gf')
         assert self.data.ndim == 3
 
+    @classmethod
+    def __factory_from_dict__(cls, key, dict) :
+        return cls(
+            data = dict['data'],
+            mesh = dict['mesh'],
+            beta = dict['mesh'].beta,
+            statistic = dict['mesh'].statistic,
+        )
+        #return cls([dict['left'], dict['right']])
 
 register_class(GfIndices)
-
-        #group[key].create_group('indices')
-        #group[key]['indices'].write_attr('Format', 'GfIndices')
-        #group[key]['indices']['left'] = np.array([str(i) for i in range(self.data.shape[1])], dtype=vls_dt)
-        #group[key]['indices']['right'] = np.array([str(i) for i in range(self.data.shape[2])], dtype=vls_dt)
-        ## Write Indices
-        #__h5_writers[type(self.mesh)](self, group, key)
-        #if isinstance(self.mesh, MeshImFreq):
-            #__write_hdf5__as_gfimfreq(g, group, key):
-        #else:
-            #raise RuntimeError(f"Mesh {type(self.mesh)} is not writable!")
-
-#def __write_hdf5__as_gfimfreq(g, group, key):
-    #pass
-
-#class GfImFreq(object): 
-    #"""
-    #Imaginary-frequency Green's function object
-    #"""
-    #def __init__(self, **kw): # enforce keyword only policy 
-        #super().__init__(**kw)
-    #
-    #def __write_hdf5__(self, group, key):
-        #""" Write to a HDF5 file"""
-        #pass
-#
-    #@property
-    #def n_points(self):
-        #return self.data.shape[0]//2
-
-#__h5_writers = {
-    #MeshImFreq:  __write_hdf5__as_gfimfreq
-#}
+register_class(Gf)

@@ -1,4 +1,5 @@
 import numpy as np
+from dcore.triqs_compat.h5.archive import register_class
 
 class Mesh(object):
    pass
@@ -38,7 +39,7 @@ class MeshImFreq(Mesh):
         """
         assert isinstance(statistic, str)
         self._beta = beta
-        self._statistic = statistic
+        self._statistic = {'F': 'Fermion', 'B': 'Boson'}[statistic[0]]
         self._points = np.arange(-n_points, n_points)
     
     @property
@@ -69,5 +70,16 @@ class MeshImFreq(Mesh):
         group[key]['domain']['beta'] = self.beta
         group[key]['domain']['statistic'] = self.statistic[0]
         group[key].write_attr('Format', 'MeshImFreq')
+    
+    @classmethod
+    def __factory_from_dict__(cls, key, dict) :
+        assert dict['positive_freq_only'] == False
+        return cls(
+            dict['domain']['beta'],
+            dict['domain']['statistic'],
+            dict['size']//2
+        )
 
 all_meshes = [MeshImFreq, MeshReFreq]
+
+register_class(MeshImFreq)

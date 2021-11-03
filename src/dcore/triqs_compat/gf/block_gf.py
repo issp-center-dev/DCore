@@ -1,3 +1,4 @@
+from dcore.triqs_compat.h5.archive import register_class
 from .gf import Gf
 from copy import deepcopy
 class BlockGf:
@@ -51,18 +52,22 @@ class BlockGf:
         """ Number of blocks"""
         return len(self.g_list)
     
-    #def __reduce_to_dict__(self):
-        #d = dict(self)
-        #d['block_names'] = list(self.indices)
-        #return d
 
     def __write_hdf5__(self, group, key):
         """ Write to a HDF5 file"""
-        group[key].write_attr('Format', 'BlockGf')
+        group.create_group(key)
         group[key]['block_names'] = self.block_names
         for name, g in self:
             group[key][name] = g
+        group[key].write_attr('Format', 'BlockGf')
+
+    @classmethod
+    def __factory_from_dict__(cls, key, dict) :
+        block_names = dict['block_names']
+        return cls(
+            name_list = block_names,
+            block_list = [dict[name] for name in block_names]
+        )
 
 
-from dcore.triqs_compat.h5.formats import register_class
 register_class (BlockGf)
