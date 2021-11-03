@@ -225,7 +225,7 @@ class HDFArchiveGroup(HDFArchiveGroupBasicLayer):
             hdf5_format = self.read_hdf5_format_from_key(key)
             if hdf5_format == "":
                 return bare_return()
-
+        
         try :
             fmt_info = get_format_info(hdf5_format)
         except KeyError:

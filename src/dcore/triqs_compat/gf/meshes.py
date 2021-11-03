@@ -63,11 +63,11 @@ class MeshImFreq(Mesh):
     def __write_hdf5__(self, group, key):
         """ Write to a HDF5 file"""
         group.create_group(key)
-        group[key].write_attr('Format', 'MeshImFreq')
         group[key]['positive_freq_only'] = False
         group[key]['size'] = self.size
         group[key].create_group('domain')
         group[key]['domain']['beta'] = self.beta
         group[key]['domain']['statistic'] = self.statistic[0]
+        group[key].write_attr('Format', 'MeshImFreq')
 
 all_meshes = [MeshImFreq, MeshReFreq]
