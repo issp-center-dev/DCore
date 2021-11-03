@@ -17,6 +17,9 @@ import sys,numpy
 from importlib import import_module
 from .archive_basic_layer import HDFArchiveGroupBasicLayer
 from .formats import register_class, register_backward_compatibility_method, get_format_info
+import h5py
+
+vls_dt = h5py.string_dtype(encoding='utf-8')
 
 # -------------------------------------------
 #
@@ -157,13 +160,8 @@ class HDFArchiveGroup(HDFArchiveGroupBasicLayer):
            g.write_attr("Format", ds)
 
         if hasattr(val,'__write_hdf5__') : # simplest protocol
-            raise RuntimeError("TRIQS object is not writable!")
-            #print("debug", val)
-            #val.__write_hdf5__(self._group,key)
-            #self.cached_keys.append(key) # I need to do this here
-            # Should be done in the __write_hdf5__ function
-            #SubGroup = HDFArchiveGroup(self,key)
-            #write_attributes(SubGroup)
+            val.__write_hdf5__(self, key)
+            self.cached_keys.append(key) # I need to do this here
         elif hasattr(val,'__reduce_to_dict__') : # Is it a HDF_compliant object
             self.create_group(key) # create a new group
             d = val.__reduce_to_dict__()

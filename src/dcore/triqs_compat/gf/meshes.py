@@ -5,18 +5,18 @@ class Mesh(object):
 
 class MeshReFreq(Mesh):
     """ Real frequency mesh """
-    def __init__(self, omega_min=None, omega_max=None, n_max=None):
+    def __init__(self, omega_min, omega_max, n_points):
         """
 
         Args:
             omega_min (float): min value of frequency
             omega_max (float): max value of frequency
-            n_max (int): Number of frequencies
+            n_points (int): Number of frequencies
         """
         self._omega_min = omega_min
         self._omega_max = omega_max
-        self._n_max = n_max
-        self._points = np.linspace(omega_min, omega_max, n_max)
+        self._n_max = n_points
+        self._points = np.linspace(omega_min, omega_max, n_points)
 
     @property
     def size(self):
@@ -27,24 +27,19 @@ class MeshReFreq(Mesh):
 
 class MeshImFreq(Mesh):
     """ Imaginary frequency mesh """
-    def __init__(self, beta, *kwargs):
+    def __init__(self, beta, statistic, n_points):
         """
 
         Args:
             beta (float): inverse temperature
-            S (str): 'Fermion' or 'Boson'
+            statistic (str): 'Fermion' or 'Boson'
             n_points (int):
                 Number of non-negative frequencies
-            points (ndarray):
-                integers representation of freqquencies
         """
+        assert isinstance(statistic, str)
         self._beta = beta
-        self._statistic = kwargs['S']
-        assert isinstance(self._statistic, str)
-        if 'n_points' in kwargs:
-            self._points = np.arange(-kwargs['n_points'], kwargs['n_points'])
-        else:
-            raise RuntimeError("points was not properly set.")
+        self._statistic = statistic
+        self._points = np.arange(-n_points, n_points)
     
     @property
     def beta(self):
@@ -64,5 +59,15 @@ class MeshImFreq(Mesh):
 
     def __iter__(self):
         yield from self._points
+
+    def __write_hdf5__(self, group, key):
+        """ Write to a HDF5 file"""
+        group.create_group(key)
+        group[key].write_attr('Format', 'MeshImFreq')
+        group[key]['positive_freq_only'] = False
+        group[key]['size'] = self.size
+        group[key].create_group('domain')
+        group[key]['domain']['beta'] = self.beta
+        group[key]['domain']['statistic'] = self.statistic[0]
 
 all_meshes = [MeshImFreq, MeshReFreq]
