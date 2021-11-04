@@ -1,14 +1,11 @@
 from copy import deepcopy, copy
 import numpy as np
 
-from triqs.gf.backwd_compat.gf_imfreq import GfImFreq
-from .meshes import MeshImFreq
-from dcore.triqs_compat.h5.archive import vls_dt, register_class
+from .meshes import MeshImFreq, MeshLegendre
+from dcore.triqs_compat.h5.archive import register_class
 import h5py
 
 def _to_fixed_length_utf8_array(str_list):
-    #str_list = [(s.decode(encoding='utf-8') if isinstance(s, bytes) else s) for s in str_list]
-    #print("debug", str_list)
     length = int(np.amax([len(x) for x in str_list]))
     dt = h5py.string_dtype(encoding='utf-8', length=length)
     return np.array(str_list, dtype=dt)
@@ -43,6 +40,9 @@ class GfIndices:
     @classmethod
     def __factory_from_dict__(cls, key, dict) :
         return cls([dict['left'], dict['right']])
+    
+    def __len__(self):
+        return len(self._data[0])
 
 
 def _is_list_of(objs, expected_elem_type):
@@ -81,7 +81,8 @@ class Gf(object):
              list of str/int: all indices are assumed to be the same for all dimensions.
     
     n_points: int
-        Number of points (frequencies/taus).
+        DEPRECATED:
+        Number of points (frequencies/taus/legendere polys).
         For imaginary-frequencies Green's funciton, the first dimension of `data' will be 2*n_points
         because the data includes both of positive and negative frequencies.
         If this option is given, data and mesh must be None.
@@ -89,7 +90,7 @@ class Gf(object):
     def __init__(self, **kw): # enforce keyword only policy 
         def delegate(self, data=None, name='', beta=None, statistic='Fermion', mesh=None, indices=None, n_points=None):
             # Check indices
-            if isinstance(indices, np.ndarray):
+            if isinstance(indices, np.ndarray) or isinstance(indices, list):
                 indices = list(map(str, indices))
             if indices is None:
                 pass
@@ -148,7 +149,7 @@ class Gf(object):
         elif isinstance(A, np.ndarray):
             self.data[...] = A
         else:
-            raise RuntimeError("Invalid type of A!")
+            raise RuntimeError(f"Invalid type of A! {type(A)}")
     
     @property
     def shape(self):
@@ -234,5 +235,10 @@ class Gf(object):
 
 GfImFreq = Gf
 
+class GfLegendre(Gf):
+    def __init__(self, data=None, indices=None, beta=None, n_points=None, name=""):
+        super().__init__(data=data, indices=indices, beta=beta, mesh=MeshLegendre(n_points), name=name)
+
 register_class(GfIndices)
 register_class(Gf)
+register_class(GfLegendre)

@@ -80,6 +80,26 @@ class MeshImFreq(Mesh):
             dict['size']//2
         )
 
-all_meshes = [MeshImFreq, MeshReFreq]
+class MeshLegendre(Mesh):
+    """ Legendre mesh """
+    def __init__(self, n_points):
+        """
+
+        Args:
+            n_points (int): Number of Legendre polys
+        """
+        self._nl = n_points
+        self._points = np.arange(n_points)
+
+    @property
+    def size(self):
+        return self._nl
+
+    def __iter__(self):
+        yield from self._points
+
+all_meshes = [MeshImFreq, MeshReFreq, MeshLegendre]
 
 register_class(MeshImFreq)
+register_class(MeshReFreq)
+register_class(MeshLegendre)

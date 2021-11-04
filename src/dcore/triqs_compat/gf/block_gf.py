@@ -19,11 +19,14 @@ class BlockGf:
         self.g_dict = {k: v for k, v in zip(self.block_names, self.g_list)}
         make_copies = kwargs.pop('make_copies', False)
 
+        if isinstance(self.block_names, tuple):
+            self.block_names = list(self.block_names)
+        if isinstance(self.g_list, tuple):
+            self.g_list = list(self.g_list)
         assert isinstance(self.block_names, list)
         for name in self.block_names:
             assert isinstance(name, str)
         assert isinstance(self.g_list, list)
-        print(self.g_list)
         for g in self.g_list:
             assert isinstance(g, Gf)
         
@@ -44,6 +47,11 @@ class BlockGf:
 
     def __len__(self):
         return len(self.g_list)
+
+    def __lshift__(self, other):
+        assert isinstance(other, BlockGf)
+        for name, g in self:
+            g << other[name]
     
     @property
     def beta(self):

@@ -17,11 +17,10 @@
 #
 
 
-from triqs.gf import *
-import triqs.operators.util as op
-
+from dcore.triqs_compat.gf import *
+import dcore.triqs_compat.operators.util as op
 from dcore.impurity_solvers.alps_cthyb import *
-from dcore.tools import *
+from dcore.tools import to_spin_full_U_matrix
 
 beta = 10.0
 n_iw = 1000
@@ -74,7 +73,9 @@ def test_solver_dry_run():
     Delta_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
 
     for name, b in Delta_iw:
-        b << (D/2.0)**2 * SemiCircular(D)
+        # We disabled this because triqs_compat does not support LazyExpression
+        #b << (D/2.0)**2 * SemiCircular(D)
+        b.data[...] = numpy.identity(b.data.shape[1])[None,:,:]
 
     # Random local transfer matrix
     H0 = [numpy.random.rand(2*n_orbs, 2*n_orbs) for name, b in Delta_iw]
@@ -83,8 +84,9 @@ def test_solver_dry_run():
     G0_iw = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
     G0_iw.zero()
     for ib, (name, g0) in enumerate(G0_iw):
-        dim = len(g0.indices)
-        g0 << inverse(iOmega_n - H0[ib] - Delta_iw[name])
+        # We disabled this because triqs_compat does not support LazyExpression
+        #g0 << inverse(iOmega_n - H0[ib] - Delta_iw[name])
+        pass
     s.set_G0_iw(G0_iw)
 
     #rot = compute_diag_basis(G0_iw)
