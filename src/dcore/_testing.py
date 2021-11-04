@@ -2,7 +2,7 @@ from datetime import datetime
 import numpy
 from numpy.testing import assert_allclose
 from itertools import product
-from triqs.gf import GfImFreq, BlockGf
+from dcore.triqs_compat.gf import GfImFreq, BlockGf
 from dcore.triqs_compat.h5 import HDFArchive
 
 from .tools import float_to_complex_array

@@ -16,12 +16,14 @@ class BlockGf:
         self.name = kwargs.pop('name', 'G')
         self.block_names = kwargs['name_list']
         self.g_list = kwargs['block_list']
+        self.g_dict = {k: v for k, v in zip(self.block_names, self.g_list)}
         make_copies = kwargs.pop('make_copies', False)
 
         assert isinstance(self.block_names, list)
         for name in self.block_names:
             assert isinstance(name, str)
         assert isinstance(self.g_list, list)
+        print(self.g_list)
         for g in self.g_list:
             assert isinstance(g, Gf)
         
@@ -32,10 +34,10 @@ class BlockGf:
         return zip(self.block_names, self.g_list)
 
     def __getitem__(self, key):
-        return self.g_list[key]
+        return self.g_dict[key]
 
     def __setitem__(self, key, val):
-        self.g_list[key] << val
+        self.g_dict[key] << val
 
     def _first(self):
         return self.g_list[0]
@@ -48,10 +50,22 @@ class BlockGf:
         return self._first().beta
 
     @property
+    def mesh(self):
+        return self._first().mesh
+
+    @property
     def n_blocks(self):
         """ Number of blocks"""
         return len(self.g_list)
+
+    def copy(self):
+        """ Return a deep copy of self """
+        return deepcopy(self)
     
+    def zero(self):
+        """ Return fill all blocks with zero """
+        for g in self.g_list:
+            g.zero()
 
     def __write_hdf5__(self, group, key):
         """ Write to a HDF5 file"""

@@ -87,9 +87,6 @@ class HDFArchiveGroupBasicLayer:
         elif isinstance(val, bool):
             self._group[key] = np.intc(val)
         else:
-            #if isinstance(val, bool):
-                #print("debug", val)
-                #raise RuntimeError("AAAA")
             self._group[key] = val
         self.cached_keys.append(key)
     

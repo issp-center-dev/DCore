@@ -25,16 +25,12 @@ import subprocess
 from itertools import *
 import ast
 import math
-import scipy
 from scipy import linalg as scipy_linalg
 
-from triqs.utility.h5diff import compare, failures
-from triqs.utility.h5diff import h5diff as h5diff_org
+from dcore.triqs_compat.utility.h5diff import compare, failures
+from dcore.triqs_compat.utility.h5diff import h5diff as h5diff_org
 from dcore.triqs_compat.h5 import HDFArchive
-from triqs.gf import *
-from triqs.operators import *
-
-from triqs import version
+from dcore.triqs_compat.gf import *
 
 """
 THIS MODULE MUST NOT DEPEND ON MPI!

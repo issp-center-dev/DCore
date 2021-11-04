@@ -160,7 +160,13 @@ class HDFArchiveGroup(HDFArchiveGroupBasicLayer):
            g.write_attr("Format", ds)
 
         if hasattr(val,'__write_hdf5__') : # simplest protocol
-            val.__write_hdf5__(self, key)
+            try:
+                val.__write_hdf5__(self, key)
+            except Exception as e:
+                raise RuntimeError(
+                    f"Error in writing a Python object of type {type(val)}! " +
+                    f"Thrown error was '{e}'"
+                )
             self.cached_keys.append(key) # I need to do this here
         elif hasattr(val,'__reduce_to_dict__') : # Is it a HDF_compliant object
             self.create_group(key) # create a new group
