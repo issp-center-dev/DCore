@@ -23,7 +23,7 @@ from warnings import warn
 
 from .base import LatticeModel
 from .tools import set_nk, XNode
-from dcore.triqs_compat.h5 import HDFArchive
+from dcore.backend import HDFArchive
 
 
 class ExternalModel(LatticeModel):

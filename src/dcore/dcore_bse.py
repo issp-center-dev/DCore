@@ -25,8 +25,7 @@ import h5py
 import ast
 import time
 
-from dcore.triqs_compat.h5 import HDFArchive
-
+from dcore.backend import HDFArchive
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import create_parser, parse_parameters
 from dcore.tools import *

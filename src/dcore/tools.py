@@ -27,10 +27,7 @@ import ast
 import math
 from scipy import linalg as scipy_linalg
 
-from dcore.triqs_compat.utility.h5diff import compare, failures
-from dcore.triqs_compat.utility.h5diff import h5diff as h5diff_org
-from dcore.triqs_compat.h5 import HDFArchive
-from dcore.triqs_compat.gf import *
+from dcore.backend import *
 
 """
 THIS MODULE MUST NOT DEPEND ON MPI!

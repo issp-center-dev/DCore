@@ -2,7 +2,7 @@ from copy import deepcopy, copy
 import numpy as np
 
 from .meshes import MeshImFreq, MeshLegendre
-from dcore.triqs_compat.h5.archive import register_class
+from ..h5.archive import register_class
 import h5py
 
 def _to_fixed_length_utf8_array(str_list):

@@ -17,8 +17,7 @@
 #
 
 
-from dcore.triqs_compat.gf import *
-import dcore.triqs_compat.operators.util as op
+from dcore.backend import *
 from dcore.impurity_solvers.alps_cthyb import *
 from dcore.tools import to_spin_full_U_matrix
 
@@ -60,13 +59,13 @@ def test_solver_dry_run():
     orb_names = [i for i in range(2*n_orbs)]
 
     # Block structure of Green's functions
-    gf_struct = op.set_operator_structure(spin_names, orb_names, off_diag=off_diag)
+    gf_struct = set_operator_structure(spin_names, orb_names, off_diag=off_diag)
     # Convert to dict
     if isinstance(gf_struct, list):
         gf_struct = {x[0]: x[1] for x in gf_struct}
 
     # Local interaction Hamiltonian
-    U_mat = to_spin_full_U_matrix(op.U_matrix(l=l, U_int=U, J_hund=J, basis='spherical'))
+    U_mat = to_spin_full_U_matrix(U_matrix(l=l, U_int=U, J_hund=J, basis='spherical'))
 
     s = ALPSCTHYBSolver(beta, gf_struct, U_mat, n_iw=n_iw)
 

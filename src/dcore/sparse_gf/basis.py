@@ -7,9 +7,11 @@ def _compute_sve(lambda_, eps):
         irbasis3.KernelFFlat(lambda_ = lambda_),
         eps = eps, work_dtype = numpy.float64)
 
+
 def _hash_array(x):
     """ Compute a hash of a ndarray object """
     return hash(x.data.tobytes())
+
 
 class Cache:
     """ Cache objects """
@@ -27,8 +29,10 @@ def sve(lambda_, eps, cache=_global_cache):
         cache.sve_results[key] = _compute_sve(*key)
     return cache.sve_results[key]
 
+
 def _tuple_key_basis(basis):
     return (basis.beta, basis.statistics, basis.kernel.lambda_, basis.size)
+
 
 def finite_temp_basis(beta, statistics, lambda_, eps, cache=_global_cache):
     """ Return a FiniteTempBasis object """

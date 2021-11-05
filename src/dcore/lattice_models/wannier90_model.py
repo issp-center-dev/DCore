@@ -18,7 +18,7 @@
 
 
 import numpy
-from dcore.triqs_compat.h5 import HDFArchive
+from dcore.backend import HDFArchive
 
 from .base import LatticeModel
 from .tools import set_nk

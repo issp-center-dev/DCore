@@ -22,14 +22,11 @@ import numpy
 import copy
 from itertools import product
 
-from triqs.gf import *
-from triqs.operators import *
-
+from dcore.backend import *
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import create_parser, parse_parameters, parse_bvec
 from dcore.tools import save_Sigma_w_sh_txt
 from dcore import impurity_solvers
-#from dcore import sumkdft
 from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import set_nk
 from .sumkdft_workers.launcher import run_sumkdft

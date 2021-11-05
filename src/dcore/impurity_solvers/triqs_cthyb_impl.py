@@ -23,7 +23,7 @@ import os
 from triqs_cthyb import Solver as TRIQSCTHYBSolver
 from .base import rotate_basis, make_h_int
 
-from dcore.triqs_compat.h5 import HDFArchive
+from dcore.backend import HDFArchive
 import triqs.utility.mpi as mpi
 
 from ..tools import convert_to_built_in_scalar_type

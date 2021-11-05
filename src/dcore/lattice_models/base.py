@@ -18,7 +18,7 @@
 
 
 from .tools import gen_kpath
-from dcore.triqs_compat.h5 import HDFArchive
+from dcore.backend import HDFArchive
 
 
 class LatticeModel(object):

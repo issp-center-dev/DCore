@@ -1,5 +1,5 @@
 import numpy as np
-from dcore.triqs_compat.h5.archive import register_class
+from ..h5.archive import register_class
 
 class Mesh(object):
    pass

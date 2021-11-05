@@ -22,9 +22,10 @@ import numpy
 import re
 import ast
 import h5py
-from dcore.triqs_compat.h5 import HDFArchive
+#from dcore.backend import HDFArchive
+#from triqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
+from dcore.backend import HDFArchive, U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 from dcore.program_options import create_parser
-from triqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 
 from dcore.converters.wannier90 import Wannier90Converter
 

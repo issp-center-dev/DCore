@@ -1,4 +1,4 @@
-from dcore.triqs_compat.h5.archive import register_class
+from ..h5.archive import register_class
 from .gf import Gf
 from copy import deepcopy
 class BlockGf:

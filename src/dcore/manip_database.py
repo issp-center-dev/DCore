@@ -21,7 +21,7 @@
 import numpy
 import os
 import copy
-from dcore.triqs_compat.h5 import HDFArchive
+from dcore.backend import HDFArchive
 
 
 def expand_block_diag_matrix(mat1, mat2):
