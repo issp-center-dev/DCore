@@ -24,7 +24,7 @@ import shutil
 from itertools import product
 
 from dcore.backend import *
-from dcore.backend import HDFArchive
+from dcore.backend.h5 import HDFArchive
 #from triqs.operators import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array, make_hermite_conjugate
