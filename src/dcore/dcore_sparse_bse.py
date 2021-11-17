@@ -63,6 +63,7 @@ def dcore_sparse_bse(filename, np=1, prefix="./"):
     # Make input.h5
     with HDFArchive('input.h5', 'w') as h:
         h['qsample'] = qsample
+        h['rcond'] = p["sparse_bse"]["rcond"]
     
     # make output directory
     output_dir = os.path.abspath(f'{cwd_org}/{prefix}')
@@ -82,6 +83,8 @@ def dcore_sparse_bse(filename, np=1, prefix="./"):
         #commands.append(f'--g2loc_file={cwd_org}/{seedname}_g2loc.h5')
     #else:
         #raise ValueError("Invalid input_vertex_format!")
+    print(mpirun_command, commands)
+    sys.stdout.flush()
     with open('./output', 'w') as stdout_file:
         launch_mpi_subprocesses(mpirun_command, commands, stdout_file)
 
