@@ -107,7 +107,8 @@ class DMFTBSESolver(DMFTCoreSolver):
         basis = irbasis_x.FourPointBasis(Lambda_IR, self._beta, cutoff_IR)
         wsample_ph = [], [], []
         for wb_ in wb_sample:
-            solver = bse_dmft.SparseSolver(basis, 2*wb_)
+            solver = bse_dmft.SparseSolver(basis, 2*wb_, oversampling=p["sparse_bse"]["oversampling"])
+            #print("Using",  p["sparse_bse"]["oversampling"])
             for i in range(3):
                 wsample_ph[i].append(solver.wsample_Floc[i])
         wsample_ph = tuple(map(numpy.hstack, wsample_ph))
@@ -162,7 +163,7 @@ def dcore_vertex(filename, np=1):
     #
     # Construct a parser with default values
     #
-    pars = create_parser(['model', 'system', 'impurity_solver', 'mpi', 'tool', 'vertex'])
+    pars = create_parser(['model', 'system', 'impurity_solver', 'mpi', 'tool', 'vertex', 'sparse_bse'])
 
     #
     # Parse keywords and store

@@ -64,6 +64,7 @@ def dcore_sparse_bse(filename, np=1, prefix="./"):
     with HDFArchive('input.h5', 'w') as h:
         h['qsample'] = qsample
         h['rcond'] = p["sparse_bse"]["rcond"]
+        h['oversampling'] = p["sparse_bse"]["oversampling"]
     
     # make output directory
     output_dir = os.path.abspath(f'{cwd_org}/{prefix}')

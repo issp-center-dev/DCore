@@ -142,6 +142,7 @@ def create_parser(target_sections=None):
         " and three integer numbers representing a bosonic mementum (mod nk0, nk1, nk2).")
     parser.add_option("sparse_bse", "input_vertex_format", str, "G2loc", "Floc or G2loc. For the latter case, local full vertex is computed on the fly.")
     parser.add_option("sparse_bse", "rcond", float, 1e-12, "rcond for SparseBSESolver.")
+    parser.add_option("sparse_bse", "oversampling", int, 4, "Oversampling factor for SparseBSESolver.")
 
     return parser
 
