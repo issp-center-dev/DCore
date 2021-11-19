@@ -12,6 +12,15 @@ def _hash_array(x):
     """ Compute a hash of a ndarray object """
     return hash(x.data.tobytes())
 
+class FiniteTempBasis(irbasis3.FiniteTempBasis):
+    """ Wrap around irbasis3.FiniteTempBasis with additional meta info """
+    def __init__(self, kernel, statistics, beta, eps=None, sve_result=None):
+        super().__init__(kernel, statistics, beta, eps=eps, sve_result=sve_result)
+        self._eps = eps
+    
+    @property
+    def eps(self):
+        return self._eps
 
 class Cache:
     """ Cache objects """
@@ -37,7 +46,7 @@ def _tuple_key_basis(basis):
 def finite_temp_basis(beta, statistics, lambda_, eps, cache=_global_cache):
     """ Return a FiniteTempBasis object """
     K = irbasis3.KernelFFlat(lambda_ = lambda_)
-    return irbasis3.FiniteTempBasis(K, statistics=statistics, beta=beta,
+    return FiniteTempBasis(K, statistics=statistics, beta=beta,
         sve_result = sve(lambda_, eps, cache))
 
 
