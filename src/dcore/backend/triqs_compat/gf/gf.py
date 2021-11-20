@@ -1,11 +1,14 @@
 from copy import deepcopy, copy
 import numpy as np
+import h5py
 
 from dcore.backend.sparse_gf.basis import matsubara_sampling, tau_sampling
 
 from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR
 from ..h5.archive import register_class
-import h5py
+from ...plot.protocol import clip_array
+from .. import plot
+from . import meshes
 
 def _to_fixed_length_utf8_array(str_list):
     length = int(np.amax([len(x) for x in str_list]))
@@ -14,6 +17,7 @@ def _to_fixed_length_utf8_array(str_list):
 
 def _to_utf8_strings(str_list):
     return [(s.decode(encoding='utf-8') if isinstance(s, bytes) else s) for s in str_list]
+
 class GfIndices:
     def __init__(self, indices):
         """GfIndices
@@ -256,6 +260,44 @@ class Gf(object):
             return NotImplemented
         self.data /= other
         return self
+
+    #-----------------------------plot protocol -----------------------------------
+
+    def _plot_(self, opt_dict):
+        """ Implement the plot protocol"""
+        return plot.dispatcher(self)(self, opt_dict)
+
+    def x_data_view(self, x_window=None, flatten_y=False):
+        """Helper method for getting a view of the data.
+
+        Parameters
+        ----------
+
+        x_window : optional
+            The window of x variable (omega/omega_n/t/tau) for which data is requested.
+        flatten_y: bool, optional
+            If the Greens function is of size (1, 1) flatten the array as a 1d array.
+
+        Returns
+        -------
+
+        (X, data) : tuple
+            X is a 1d numpy array of the x variable inside the window requested.
+            data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data.
+            If flatten_y is True and dim is (1, 1, *) it returns a 1d numpy array.
+        """
+
+        X = [x.imag for x in self.mesh] if isinstance(self.mesh, meshes.MeshImFreq) \
+            else [x for x in self.mesh]
+
+        X, data = np.array(X), self.data
+        if x_window:
+            # the slice due to clip option x_window
+            sl = clip_array(X, *x_window) if x_window else slice(len(X))
+            X, data = X[sl],  data[sl, :, :]
+        if flatten_y and data.shape[1:3] == (1, 1):
+            data = data[:, 0, 0]
+        return X, data
 
 
 class GfImFreq(Gf):
