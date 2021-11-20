@@ -83,10 +83,10 @@ def test_block_gf():
 
 def test_transform():
     beta = 10.0
-    #h0 = np.array([[1.0, 1j], [-1j, 0.0]])
+    h0 = np.array([[1.0, 1j], [-1j, 0.0]])
     #h0 = np.array([[1.0, 0], [0.0, 0.0]])
     #h0 = np.array([[1.0]])
-    h0 = np.array([[0.0]])
+    #h0 = np.array([[0.0]])
     nf = h0.shape[0]
     assert np.abs(h0-h0.T.conj()).max() < 1e-10
     nw = 1000
