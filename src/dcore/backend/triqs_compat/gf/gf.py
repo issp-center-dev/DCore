@@ -153,7 +153,12 @@ class Gf(object):
             for name in ['data', 'target_shape', 'name', 'beta', 'statistic']:
                 self.__setattr__(name, copy(A.__getattribute__(name)))
         elif isinstance(A, np.ndarray):
-            self.data[...] = A
+            if A.ndim == 3:
+                self.data[...] = A
+            elif A.ndim == 2:
+                self.data[...] = A[None,:,:]
+            else:
+                raise RuntimeError("Invalid ndarray A!")
         elif type(A) in [LinearExpression, InverseLinearExpression]:
             self.data[...] = A.evaluate(self).data
         else:
@@ -218,14 +223,26 @@ class Gf(object):
 
     def __add__(self, other):
         res = self.copy()
-        return res + other
+        if type(self) == type(other):
+            res.data += other.data
+        elif isinstance(other, np.ndarray):
+            if other.ndim == 3:
+                res.data += other.data
+            elif other.ndim == 2:
+                res.data += other.data[None,:,:]
+            else:
+                raise RuntimeError("Invalid ndarray!")
+        return res
 
+    
     def __mul__(self, other):
         if not np.isscalar(other):
             return NotImplemented
         res = self.copy()
         res.data *= other
         return res
+    
+    __rmul__ = __mul__
 
     def __truediv__(self, other):
         if not np.isscalar(other):
@@ -248,7 +265,7 @@ class GfImFreq(Gf):
             return super().__lshift__(g)
         smpl = matsubara_sampling(g.basis, sampling_points=self.mesh.points)
         self.data[...] = smpl.evaluate(g.data, axis=0)
-    
+
     def inverse(self):
         inv_g = self.copy()
         inv_g.data[...] = np.linalg.inv(self.data)
@@ -321,8 +338,8 @@ class LinearExpression(object):
         elif isinstance(other, np.ndarray):
             a0_ = self._a0 if isinstance(self._a0, np.ndarray) else self._a0 * np.identity(other.shape[0])
             return LinearExpression(a0_ + other, self._a1)
-        elif np.isinstance(other, GfImFreq):
-            return self.evaluate() + other
+        elif isinstance(other, GfImFreq):
+            return self.evaluate(other) + other
         else:
             return NotImplemented
 
@@ -333,18 +350,23 @@ class LinearExpression(object):
         res = g.copy()
         res.zero()
 
-        res.data[...] += self._a0[None,:,:]
-        if np.isscalar(self._a1):
-            nf = g.data.shape[1]
-            a1_ = self._a1 * np.identity(nf)
-        else:
-            a1_ = self._a1
+        a0_ = _convert_to_matrix(self._a0, g)
+        a1_ = _convert_to_matrix(self._a1, g)
+
+        res.data[...] += a0_[None,:,:]
         iv = 1J*g.mesh.points * np.pi/g.beta
         res.data[...] += iv[:,None,None] * a1_[None,:,:]
         return res
 
     def inverse(self):
         return InverseLinearExpression(self)
+
+def _convert_to_matrix(a, g):
+    if np.isscalar(a):
+        nf = g.data.shape[1]
+        return a * np.identity(nf)
+    else:
+        return a
 
 class InverseLinearExpression(object):
     """ Inverse of Linear Expression in frequency

@@ -138,5 +138,9 @@ def test_lazy():
     giv_from_lazy = giv_ref.copy()
     giv_from_lazy.zero()
     giv_from_lazy << inverse(iOmega_n - h0)
+    assert np.abs(giv_ref.data-giv_from_lazy.data).max() < eps
 
+    h0_ = giv_ref.copy()
+    h0_ << h0
+    giv_from_lazy << inverse(iOmega_n - h0_)
     assert np.abs(giv_ref.data-giv_from_lazy.data).max() < eps
