@@ -1,3 +1,3 @@
-from .gf import Gf, GfIndices, GfImFreq, GfLegendre
+from .gf import Gf, GfIndices, GfImFreq, GfImTime, GfLegendre, GfIR
 from .block_gf import BlockGf
-from .meshes import MeshImFreq, MeshLegendre
+from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR

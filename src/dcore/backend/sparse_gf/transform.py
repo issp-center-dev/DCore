@@ -1,13 +1,17 @@
 import irbasis3
 import numpy
+from numpy.lib.arraysetops import isin
 
-from dcore.backend.triqs_compat.gf import GfImFreq
+from dcore.backend.triqs_compat.gf import GfImFreq, GfImTime, GfIR
+from dcore.backend.triqs_compat.gf.gf import Gf
+from .basis import tau_sampling, matsubara_sampling, finite_temp_basis
 
-default_lambda = 1e+3 # Default value of lambda used for sparse sampling
 
-class Fourier:
-    """ Wrapper of """
-    pass
+def _basis(basis, beta, statistics):
+    if basis is not None:
+        return basis
+    return finite_temp_basis(beta, statistics[0])
+
 
 def fourier(g, basis=None):
     """ Fourier transform between imaginary-time/frequency domains
@@ -18,9 +22,16 @@ def fourier(g, basis=None):
             IR basis
     
     Return: 
-        Lazy-evaluation object
+        GfIR (fitted result by IR)
     """
-    pass
+    assert type(g) in [GfImFreq, GfImTime]
+    basis = _basis(basis, g.beta, g.statistic)
+    if isinstance(g, GfImFreq):
+        smpl = matsubara_sampling(basis, sampling_points=g.mesh.points)
+    else:
+        smpl = tau_sampling(basis, sampling_points=g.mesh.points)
+    return GfIR(smpl.fit(g.data, axis=0), basis)
+
 
 
 def delta(G0, H0=None, basis=None):

@@ -40,7 +40,8 @@ class MeshImFreq(Mesh):
         assert isinstance(statistic, str)
         self._beta = beta
         self._statistic = {'F': 'Fermion', 'B': 'Boson'}[statistic[0]]
-        self._points = np.arange(-n_points, n_points)
+        shift = 1 if self._statistic[0] == 'F' else 0
+        self._points = 2*np.arange(-n_points, n_points) + shift
     
     @property
     def beta(self):
@@ -80,6 +81,49 @@ class MeshImFreq(Mesh):
             dict['size']//2
         )
 
+class MeshImTime(Mesh):
+    """ Imaginary time mesh """
+    def __init__(self, beta, statistic, n_points):
+        """
+
+        Args:
+            beta (float): inverse temperature
+            statistic (str): 'Fermion' or 'Boson'
+            n_points (int):
+                Number of equidistant mesh points
+        """
+        assert isinstance(statistic, str)
+        self._beta = beta
+        self._statistic = {'F': 'Fermion', 'B': 'Boson'}[statistic[0]]
+        self._points = np.linspace(0, beta, n_points)
+    
+    @property
+    def beta(self):
+        return self._beta
+    
+    @property
+    def statistic(self):
+        return self._statistic
+    
+    @property
+    def points(self):
+        return self._points
+
+    @property
+    def size(self):
+        return self._points.size
+
+    def __iter__(self):
+        yield from self._points
+
+    def __write_hdf5__(self, group, key):
+        """ Write to a HDF5 file"""
+        pass
+    
+    @classmethod
+    def __factory_from_dict__(cls, key, dict) :
+        pass
+
 class MeshLegendre(Mesh):
     """ Legendre mesh """
     def __init__(self, n_points):
@@ -98,8 +142,34 @@ class MeshLegendre(Mesh):
     def __iter__(self):
         yield from self._points
 
-all_meshes = [MeshImFreq, MeshReFreq, MeshLegendre]
+class MeshIR(Mesh):
+    """ IR mesh """
+    def __init__(self, basis):
+        """
+
+        Args:
+            basis: IR basis 
+        """
+        self._points = np.arange(basis.size)
+        self._basis = basis
+
+    @property
+    def size(self):
+        return self._points.size
+
+    def __iter__(self):
+        yield from self._points
+
+    def __write_hdf5__(self, group, key):
+        """ Write to a HDF5 file"""
+        group.create_group(key)
+        group[key]['size'] = self.size
+        group[key]['basis'] = self.basis
+        group[key].write_attr('Format', 'MeshIR')
+
+all_meshes = [MeshImFreq, MeshReFreq, MeshLegendre, MeshIR]
 
 register_class(MeshImFreq)
 register_class(MeshReFreq)
 register_class(MeshLegendre)
+register_class(MeshIR)

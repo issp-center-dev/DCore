@@ -1,7 +1,9 @@
 from copy import deepcopy, copy
 import numpy as np
 
-from .meshes import MeshImFreq, MeshLegendre
+from dcore.backend.sparse_gf.basis import matsubara_sampling, tau_sampling
+
+from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR
 from ..h5.archive import register_class
 import h5py
 
@@ -88,7 +90,8 @@ class Gf(object):
         If this option is given, data and mesh must be None.
     """
     def __init__(self, **kw): # enforce keyword only policy 
-        def delegate(self, data=None, name='', beta=None, statistic='Fermion', mesh=None, indices=None, n_points=None):
+        def delegate(self, data=None, name='', beta=None, statistic='Fermion', mesh=None, indices=None, n_points=None,
+            mesh_type = MeshImFreq):
             # Check indices
             if isinstance(indices, np.ndarray) or isinstance(indices, list):
                 indices = list(map(str, indices))
@@ -108,7 +111,7 @@ class Gf(object):
             if n_points is not None:
                 assert data is None
                 assert mesh is None
-                mesh = MeshImFreq(beta, statistic=statistic, n_points=n_points)
+                mesh = mesh_type(beta, statistic=statistic, n_points=n_points)
             
             if data is None:
                 # Try to figure the shape of data for indices
@@ -123,7 +126,10 @@ class Gf(object):
             self.beta = beta
             self.statistic = statistic
             if mesh is None:
-                mesh = MeshImFreq(beta, statistic, self.data.shape[0]//2)
+                if mesh_type == MeshImFreq:
+                    mesh = mesh_type(beta, statistic, self.data.shape[0]//2)
+                else:
+                    mesh = mesh_type(beta, statistic, self.data.shape[0])
             self.mesh = mesh
             if indices is None:
                 left_indices = list(map(str, np.arange(self.data.shape[1])))
@@ -233,12 +239,40 @@ class Gf(object):
         return self
 
 
-GfImFreq = Gf
+class GfImFreq(Gf):
+    def __lshift__(self, g):
+        """Set from GfIR instance"""
+        if not isinstance(g, GfIR):
+            return super().__lshift__(g)
+        smpl = matsubara_sampling(g.basis, sampling_points=self.mesh.points)
+        self.data[...] = smpl.evaluate(g.data, axis=0)
+
+class GfImTime(Gf):
+    def __init__(self, **kw): # enforce keyword only policy 
+        if 'mesh' not in kw.keys() or kw['mesh'] is None:
+            mesh_type = MeshImTime
+        super().__init__(**kw, mesh_type=mesh_type)
+
+    def __lshift__(self, g):
+        """Set from GfIR instance"""
+        if not isinstance(g, GfIR):
+            return super().__lshift__(g)
+        smpl = tau_sampling(g.basis, sampling_points=self.mesh.points)
+        self.data[...] = smpl.evaluate(g.data, axis=0)
 
 class GfLegendre(Gf):
     def __init__(self, data=None, indices=None, beta=None, n_points=None, name=""):
         super().__init__(data=data, indices=indices, beta=beta, mesh=MeshLegendre(n_points), name=name)
 
+
+class GfIR(Gf):
+    def __init__(self, data, basis, beta=None, name=""):
+        super().__init__(data=data, indices=None, beta=beta, mesh=MeshIR(basis), name=name)
+        self.basis = basis
+
 register_class(GfIndices)
 register_class(Gf)
+register_class(GfImFreq)
+register_class(GfImTime)
 register_class(GfLegendre)
+register_class(GfIR)
