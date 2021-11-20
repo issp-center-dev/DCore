@@ -84,9 +84,6 @@ def test_block_gf():
 def test_transform():
     beta = 10.0
     h0 = np.array([[1.0, 1j], [-1j, 0.0]])
-    #h0 = np.array([[1.0, 0], [0.0, 0.0]])
-    #h0 = np.array([[1.0]])
-    #h0 = np.array([[0.0]])
     nf = h0.shape[0]
     assert np.abs(h0-h0.T.conj()).max() < 1e-10
     nw = 1000
@@ -122,3 +119,24 @@ def test_transform():
     giv_reconst2 = giv.copy()
     giv_reconst2 << ft2
     assert np.abs(giv.data-giv_reconst2.data).max() < eps
+
+def test_lazy():
+    beta = 10.0
+    eps = 1e-5
+
+    h0 = np.array([[1.0, 1j], [-1j, 0.0]])
+    nf = h0.shape[0]
+    assert np.abs(h0-h0.T.conj()).max() < 1e-10
+    nw = 1000
+
+    # Compute Matsubara Green's function
+    iv = 1J*(2*np.arange(-nw,nw)+1)*np.pi/beta
+    iv_mat = np.einsum('w,ij->wij', iv, np.identity(nf))
+    data = np.linalg.inv(iv_mat - h0[None,:,:])
+    giv_ref = GfImFreq(data=data, beta=beta)
+
+    giv_from_lazy = giv_ref.copy()
+    giv_from_lazy.zero()
+    giv_from_lazy << inverse(iOmega_n - h0)
+
+    assert np.abs(giv_ref.data-giv_from_lazy.data).max() < eps

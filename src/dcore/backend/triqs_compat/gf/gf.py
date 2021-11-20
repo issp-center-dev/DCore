@@ -154,6 +154,8 @@ class Gf(object):
                 self.__setattr__(name, copy(A.__getattribute__(name)))
         elif isinstance(A, np.ndarray):
             self.data[...] = A
+        elif type(A) in [LinearExpression, InverseLinearExpression]:
+            self.data[...] = A.evaluate(self).data
         else:
             raise RuntimeError(f"Invalid type of A! {type(A)}")
     
@@ -246,6 +248,11 @@ class GfImFreq(Gf):
             return super().__lshift__(g)
         smpl = matsubara_sampling(g.basis, sampling_points=self.mesh.points)
         self.data[...] = smpl.evaluate(g.data, axis=0)
+    
+    def inverse(self):
+        inv_g = self.copy()
+        inv_g.data[...] = np.linalg.inv(self.data)
+        return inv_g
 
 class GfImTime(Gf):
     def __init__(self, **kw): # enforce keyword only policy 
@@ -276,3 +283,89 @@ register_class(GfImFreq)
 register_class(GfImTime)
 register_class(GfLegendre)
 register_class(GfIR)
+
+class LazyExpression(object):
+    def __init__():
+       pass
+
+    def evaluate(g):
+        assert np.isinstance(g, GfImFreq)
+        return NotImplemented
+
+class LinearExpression(object):
+    """Linear Expression in frequency
+
+    a_0 + a_1 * z,
+        where z is a frequency.
+
+    a_i is a scalar or a matrix.
+    A scalar is interpreted as `scalar * identity matrix`.
+    """
+    def __init__(self, a0=0., a1=1.):
+        super().__init__()
+        self._a0 = a0
+        self._a1 = a1
+
+    def copy(self):
+        return LinearExpression(self._a0, self._a1)
+
+    def __mul__(self, other):
+        if np.isscalar(other):
+            return LinearExpression(other*self._a0, other*self._a1)
+        return NotImplemented
+
+    def __add__(self, other):
+        if np.isscalar(other):
+            assert np.isscalar(self._a0)
+            return LinearExpression(self._a0 + other, self._a1)
+        elif isinstance(other, np.ndarray):
+            a0_ = self._a0 if isinstance(self._a0, np.ndarray) else self._a0 * np.identity(other.shape[0])
+            return LinearExpression(a0_ + other, self._a1)
+        elif np.isinstance(other, GfImFreq):
+            return self.evaluate() + other
+        else:
+            return NotImplemented
+
+    def __sub__(self, other):
+        return self + (-1) * other
+
+    def evaluate(self, g):
+        res = g.copy()
+        res.zero()
+
+        res.data[...] += self._a0[None,:,:]
+        if np.isscalar(self._a1):
+            nf = g.data.shape[1]
+            a1_ = self._a1 * np.identity(nf)
+        else:
+            a1_ = self._a1
+        iv = 1J*g.mesh.points * np.pi/g.beta
+        res.data[...] += iv[:,None,None] * a1_[None,:,:]
+        return res
+
+    def inverse(self):
+        return InverseLinearExpression(self)
+
+class InverseLinearExpression(object):
+    """ Inverse of Linear Expression in frequency
+    """
+    def __init__(self, lin_exp):
+        super().__init__()
+        assert isinstance(lin_exp, LinearExpression)
+        self._lin_exp = lin_exp
+
+    def evaluate(self, g):
+        return inverse(self._lin_exp.evaluate(g))
+    
+    def inverse(self):
+        return self._lin_exp
+
+# Evalaute to iv (0 + 1*z)
+iOmega_n = LinearExpression(0., 1.)
+
+
+def inverse(g):
+    """
+    Compute inverse of imaginary-frequency Green's function
+    """
+    return g.inverse()
