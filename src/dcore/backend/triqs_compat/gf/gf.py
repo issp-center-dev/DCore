@@ -326,6 +326,9 @@ class GfImTime(Gf):
         smpl = tau_sampling(g.basis, sampling_points=self.mesh.points)
         self.data[...] = smpl.evaluate(g.data, axis=0)
 
+class GfReFreq(Gf):
+    pass
+
 class GfLegendre(Gf):
     def __init__(self, data=None, indices=None, beta=None, n_points=None, name=""):
         super().__init__(data=data, indices=indices, beta=beta, mesh=MeshLegendre(n_points), name=name)
