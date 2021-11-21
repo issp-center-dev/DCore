@@ -113,16 +113,16 @@ class Gf(object):
             # At this point, indices is None or an object of GfIndices
 
             # First determine n_points
-            if n_points is not None:
+            if n_points is not None and mesh is None:
                 assert data is None
-                assert mesh is None
                 mesh = mesh_type(beta, statistic=statistic, n_points=n_points)
             
             if data is None:
                 # Try to figure the shape of data for indices
                 assert indices is not None
                 N1, N2, = len(indices[0]), len(indices[1])
-                data = np.empty((mesh._points.size, N1, N2), dtype=np.complex128)
+                n_points_ = mesh._points.size
+                data = np.empty((n_points_, N1, N2), dtype=np.complex128)
 
             self.data = data
             self.target_shape = self.data.shape[1:]
@@ -316,6 +316,11 @@ class Gf(object):
 
 
 class GfImFreq(Gf):
+    def __init__(self, **kw):
+        if 'n_points' not in kw:
+            kw['n_points'] = 1025
+        super().__init__(**kw)
+
     def __lshift__(self, g):
         """Set from GfIR instance"""
         if not isinstance(g, GfIR):

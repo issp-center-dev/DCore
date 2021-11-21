@@ -77,6 +77,7 @@ def compare(key, a, b, level, precision):
         failures.append("Comparison of key '%s'  has failed:\n """%key + mess)
 
 def h5diff(f1, f2, precision= 1.e-6):
+    print("debug", precision)
     compare('', HDFArchive(f1,'r'), HDFArchive(f2,'r'), 0, precision)
     if failures :
         print ('-'*50, file=sys.stderr )

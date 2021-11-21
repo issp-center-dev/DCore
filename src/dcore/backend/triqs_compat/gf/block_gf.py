@@ -15,24 +15,32 @@ class BlockGf:
            * ``make_copies``: If True, it makes a copy of the blocks and build the Green's function from these copies.
            * ``gf_struct``: 
            * ``mesh``: 
+           * ``name_block_generator``: 
          """
         self.name = kwargs.pop('name', 'G')
 
-        if 'name_list' in kwargs:
-            self.block_names = kwargs['name_list']
+        if 'name_block_generator' in kwargs:
+            self.block_names = []
+            self.g_list = []
+            for name, block in kwargs['name_block_generator']:
+                self.block_names.append(name)
+                self.g_list.append(block)
         else:
-            self.block_names = [bl[0] for bl in kwargs['gf_struct']]
-
-        if 'block_list' in kwargs:
-            self.g_list = kwargs['block_list']
-        else:
-            mesh = kwargs['mesh']
-            indices = [bl[1] for bl in kwargs['gf_struct']]
-            self.g_list = [
-                Gf(beta=mesh.beta, statistic=mesh.statistic,
-                   mesh=mesh, indices=indices_)
-                for indices_ in indices
-            ]
+            if 'name_list' in kwargs:
+                self.block_names = kwargs['name_list']
+            else:
+                self.block_names = [bl[0] for bl in kwargs['gf_struct']]
+    
+            if 'block_list' in kwargs:
+                self.g_list = kwargs['block_list']
+            else:
+                mesh = kwargs['mesh']
+                indices = [bl[1] for bl in kwargs['gf_struct']]
+                self.g_list = [
+                    Gf(beta=mesh.beta, statistic=mesh.statistic,
+                       mesh=mesh, indices=indices_)
+                    for indices_ in indices
+                ]
 
 
         self.g_dict = {k: v for k, v in zip(self.block_names, self.g_list)}
@@ -80,11 +88,23 @@ class BlockGf:
                 g << other
         else:
             raise RuntimeError("Invalid other!")
+
+    def __iadd__(self, other):
+        assert type(other) in [BlockGf, list]
+        for bl, bl2 in zip(self.g_list, other):
+            bl2_ = bl2
+            if isinstance(bl2_, tuple) and len(bl2_) == 2:
+                bl2_ = bl2_[1]
+            bl += bl2_
+        return self
     
     def __isub__(self, other):
         assert type(other) in [BlockGf, list]
         for bl, bl2 in zip(self.g_list, other):
-            bl -= bl2
+            bl2_ = bl2
+            if isinstance(bl2_, tuple) and len(bl2_) == 2:
+                bl2_ = bl2_[1]
+            bl -= bl2_
         return self
 
     def __mul__(self, other):
