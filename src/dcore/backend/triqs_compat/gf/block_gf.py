@@ -1,6 +1,7 @@
 from ..h5.archive import register_class
-from .gf import Gf
+from .gf import Gf, LazyExpression
 from copy import deepcopy
+import numpy as np
 class BlockGf:
     """
     Generic Green's Function by Block.
@@ -71,10 +72,38 @@ class BlockGf:
         return len(self.g_list)
 
     def __lshift__(self, other):
-        assert isinstance(other, BlockGf)
-        for name, g in self:
-            g << other[name]
+        if isinstance(other, BlockGf):
+            for name, g in self:
+                g << other[name]
+        elif isinstance(other, LazyExpression):
+            for name, g in self:
+                g << other
+        else:
+            raise RuntimeError("Invalid other!")
     
+    def __isub__(self, other):
+        assert type(other) in [BlockGf, list]
+        for bl, bl2 in zip(self.g_list, other):
+            bl -= bl2
+        return self
+
+    def __mul__(self, other):
+        if not np.isscalar(other):
+            return NotImplemented
+        bg = self.copy()
+        for name, bl in bg:
+            bl.data *= other
+        return bg
+    
+    __rmul__ = __mul__
+
+    def __imul__(self, other):
+        if not np.isscalar(other):
+            return NotImplemented
+        for g in self.g_list:
+            g.data *= other
+        return self
+
     @property
     def beta(self):
         return self._first().beta
@@ -113,5 +142,12 @@ class BlockGf:
             block_list = [dict[name] for name in block_names]
         )
 
+    def invert(self):
+        """ Invert in place """
+        for g in self.g_list:
+            g.invert()
+
+    def density(self):
+        return {name: bl.density() for name, bl in self}
 
 register_class (BlockGf)

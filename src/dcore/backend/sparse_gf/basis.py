@@ -64,9 +64,11 @@ def _sampling(basis, cache_obj, compute_f, sampling_points):
 
 def tau_sampling(basis, sampling_points=None, cache=_global_cache):
     """ Return TauSampling object """
+    sampling_points = numpy.asarray(sampling_points)
     return _sampling(basis, cache.tau_sampling, irbasis3.TauSampling, sampling_points)
 
 
 def matsubara_sampling(basis, sampling_points=None, cache=_global_cache):
     """ Return MatsubaraSampling object """
+    sampling_points = numpy.asarray(sampling_points)
     return _sampling(basis, cache.matsubara_sampling, irbasis3.MatsubaraSampling, sampling_points)

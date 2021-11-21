@@ -1,4 +1,5 @@
 from copy import deepcopy, copy
+from irbasis3 import sampling
 import numpy as np
 import h5py
 
@@ -124,10 +125,14 @@ class Gf(object):
                 data = np.empty((mesh._points.size, N1, N2), dtype=np.complex128)
 
             self.data = data
-            self.target_shape = self.data[1:]
+            self.target_shape = self.data.shape[1:]
 
             self.name = name
-            self.beta = beta
+            if beta is None:
+                self.beta = mesh.beta
+            else:
+                self.beta = beta
+            assert self.beta is not None
             self.statistic = statistic
             if mesh is None:
                 if mesh_type == MeshImFreq:
@@ -244,6 +249,10 @@ class Gf(object):
                 raise RuntimeError("Invalid ndarray!")
         return res
 
+    def __isub__(self, other):
+        data_ = other.data if isinstance(other, Gf) else other
+        self.data -= data_
+        return self
     
     def __mul__(self, other):
         if not np.isscalar(other):
@@ -318,6 +327,17 @@ class GfImFreq(Gf):
         inv_g = self.copy()
         inv_g.data[...] = np.linalg.inv(self.data)
         return inv_g
+    
+    def invert(self):
+        self.data[...] = np.linalg.inv(self.data)
+
+    def density(self, basis=None):
+        if basis is None:
+            basis = finite_temp_basis(self.beta, self.statistic)
+        smpl = matsubara_sampling(basis, sampling_points=self.mesh.points)
+        gl = smpl.fit(self.data, axis=0)
+        gbeta = tau_sampling(basis, sampling_points=[self.beta]).evaluate(gl, axis=0)
+        return -gbeta[0,:,:].T
 
 class GfImTime(Gf):
     def __init__(self, **kw): # enforce keyword only policy 
@@ -331,6 +351,7 @@ class GfImTime(Gf):
             return super().__lshift__(g)
         smpl = tau_sampling(g.basis, sampling_points=self.mesh.points)
         self.data[...] = smpl.evaluate(g.data, axis=0)
+    
 
 class GfReFreq(Gf):
     pass
@@ -435,6 +456,7 @@ class InverseLinearExpression(object):
 
 # Evalaute to iv (0 + 1*z)
 iOmega_n = LinearExpression(0., 1.)
+Omega = LinearExpression(0., 1.)
 
 
 class SpectralModel(LazyExpression):
