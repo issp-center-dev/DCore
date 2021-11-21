@@ -12,10 +12,28 @@ class BlockGf:
            * ``name_list``: list of the names of the blocks, e.g. ["up","down"].
            * ``block_list``: list of blocks of Green's functions.
            * ``make_copies``: If True, it makes a copy of the blocks and build the Green's function from these copies.
+           * ``gf_struct``: 
+           * ``mesh``: 
          """
         self.name = kwargs.pop('name', 'G')
-        self.block_names = kwargs['name_list']
-        self.g_list = kwargs['block_list']
+
+        if 'name_list' in kwargs:
+            self.block_names = kwargs['name_list']
+        else:
+            self.block_names = [bl[0] for bl in kwargs['gf_struct']]
+
+        if 'block_list' in kwargs:
+            self.g_list = kwargs['block_list']
+        else:
+            mesh = kwargs['mesh']
+            indices = [bl[1] for bl in kwargs['gf_struct']]
+            self.g_list = [
+                Gf(beta=mesh.beta, statistic=mesh.statistic,
+                   mesh=mesh, indices=indices_)
+                for indices_ in indices
+            ]
+
+
         self.g_dict = {k: v for k, v in zip(self.block_names, self.g_list)}
         make_copies = kwargs.pop('make_copies', False)
 
@@ -32,6 +50,10 @@ class BlockGf:
         
         if make_copies:
             self.g_list = [deepcopy(b) for b in self.g_list]
+    
+    @property
+    def indices(self):
+        return self.block_names
     
     def __iter__(self):
         return zip(self.block_names, self.g_list)

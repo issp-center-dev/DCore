@@ -46,7 +46,7 @@ def _tuple_key_basis(basis):
 def finite_temp_basis(beta, statistics, lambda_=1e+3, eps=1e-5, cache=_global_cache):
     """ Return a FiniteTempBasis object """
     K = irbasis3.KernelFFlat(lambda_ = lambda_)
-    return FiniteTempBasis(K, statistics=statistics, beta=beta,
+    return FiniteTempBasis(K, statistics=statistics[0], beta=beta,
         sve_result = sve(lambda_, eps, cache))
 
 

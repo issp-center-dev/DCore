@@ -4,6 +4,9 @@ from ..h5.archive import register_class
 class Mesh(object):
    pass
 
+   def __eq__(self, other):
+       return type(self) == type(other) and self.hash == other.hash
+
 class MeshReFreq(Mesh):
     """ Real frequency mesh """
     def __init__(self, omega_min, omega_max, n_points):
@@ -42,6 +45,10 @@ class MeshImFreq(Mesh):
         self._statistic = {'F': 'Fermion', 'B': 'Boson'}[statistic[0]]
         shift = 1 if self._statistic[0] == 'F' else 0
         self._points = 2*np.arange(-n_points, n_points) + shift
+    
+    @property
+    def hash(self):
+        return hash(self._beta) + hash(self._statistic) + hash(self._points.tobytes())
     
     @property
     def beta(self):

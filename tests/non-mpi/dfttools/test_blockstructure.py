@@ -176,6 +176,7 @@ cmp(m2,
 full = BlockStructure.full_structure(
     [{'up_0': [0, 1], 'up_1': [0], 'down_1': [0], 'down_0': [0, 1]}], None)
 
+print("debug ", original_bs.gf_struct_sumk[0])
 G_sumk = BlockGf(mesh=G1.mesh, gf_struct=original_bs.gf_struct_sumk[0])
 for i in range(3):
     G_sumk['up'][i, i] << SemiCircular(1 if i < 2 else 2)
@@ -185,6 +186,7 @@ G3 = original_bs.convert_gf(G_sumk,
                             space_from='sumk',
                             beta=40,
                             n_points=3)
+print(G1.mesh.points, G3.mesh.points)
 assert_block_gfs_are_close(G1, G3)
 
 # check convert_gf with transformation
