@@ -28,6 +28,20 @@ def _has_subgroup(group, key):
     if key not in group:
         return False
     return isinstance(group[key], h5py.Group)
+
+def _from_numpy_type(s):
+    if isinstance(s, bytes):
+        return s.decode('utf-8')
+    elif isinstance(s, str):
+        return s
+    elif isinstance(s, np.integer):
+        return int(s)
+    elif isinstance(s, np.floating):
+        return float(s)
+    elif isinstance(s, np.complexfloating):
+        return complex(s)
+    else:
+        return s
  
 class HDFArchiveGroupBasicLayer:
     _class_version = 1
@@ -67,23 +81,24 @@ class HDFArchiveGroupBasicLayer:
     def write_attr (self, key, val) :
         self._group.attrs[key] = val
 
+    def read_attr (self, key) :
+        return _from_numpy_type(self._group.attrs[key])
+
     def _read (self, key):
         if '__complex__' in self._group[key].attrs and \
-            self._group[key].attrs['__complex__'] == '1':
+            int(self._group[key].attrs['__complex__']) == 1:
             # For compatibility with TRIQS
             val = self._group[key][()]
             assert val.shape[-1] == 2
             return val.view(np.complex128).reshape(val.shape[:-1])
-        val = self._group[key][()]
-        if isinstance(val, bytes):
-            val = val.decode('utf-8')
+        val = _from_numpy_type(self._group[key][()])
         return val
 
     def _write(self, key, val) :
         if isinstance(val, np.ndarray) and np.iscomplexobj(val):
             # For compatibility with TRIQS
             self._group[key] = val.view(float).reshape(val.shape +(2,))
-            self._group[key].attrs['__complex__'] = '1'
+            self._group[key].attrs['__complex__'] = 1
         elif isinstance(val, bool):
             self._group[key] = np.intc(val)
         else:
@@ -110,9 +125,9 @@ class HDFArchiveGroupBasicLayer:
 
     def read_hdf5_format_from_key(self, key):
         if 'Format' in self._group[key].attrs:
-            return self._group[key].attrs['Format']
+            return _from_numpy_type(self._group[key].attrs['Format'])
         elif 'TRIQS_HDF5_data_scheme' in self._group[key].attrs:
-            return self._group.attrs['TRIQS_HDF5_data_scheme']
+            return _from_numpy_type(self._group[key].attrs['TRIQS_HDF5_data_scheme'])
         else:
             return ''
 

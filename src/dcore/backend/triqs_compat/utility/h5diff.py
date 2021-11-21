@@ -18,7 +18,7 @@
 # Authors: Olivier Parcollet, Nils Wentzell, tayral
 
 from ..h5 import *
-#from triqs.utility.comparison_tests import *
+from .comparison_tests import *
 from ..gf import *
 import sys
 import numpy
@@ -49,12 +49,6 @@ def compare(key, a, b, level, precision):
         elif t in [BlockGf]:
             assert_block_gfs_are_close(a,b,precision)
 
-        elif t in [Block2Gf]:
-            assert_block2_gfs_are_close(a,b,precision)
-
-        elif t in [BlockMatrix]:
-            for i in range(len(a.matrix_vec)):
-             assert_arrays_are_close(a(i),b(i))
 
         # ... until here
         elif isinstance(a, numpy.ndarray):

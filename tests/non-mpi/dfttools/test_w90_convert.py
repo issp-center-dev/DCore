@@ -21,14 +21,11 @@
 ################################################################################
 
 
-from triqs_dft_tools.converters import *
-from h5 import *
-from triqs.utility.h5diff import h5diff
-import triqs.utility.mpi as mpi
+from dcore.backend.triqs_compat.dft_tools.converters import *
+from dcore.backend.triqs_compat.h5 import *
+from dcore.backend.triqs_compat.utility.h5diff import h5diff
 
-Converter = Wannier90Converter(seedname='LaVO3-Pnma',hdf_filename='w90_convert.out.h5')
-
-Converter.convert_dft_input()
-
-if mpi.is_master_node():
+def test_w90_convert():
+    Converter = Wannier90Converter(seedname='LaVO3-Pnma',hdf_filename='w90_convert.out.h5')
+    Converter.convert_dft_input()
     h5diff("w90_convert.out.h5","w90_convert.ref.h5") 

@@ -23,13 +23,11 @@
 
 from dcore.backend.triqs_compat.h5 import *
 from dcore.backend.triqs_compat.utility.h5diff import h5diff
-import dcore.backend.triqs_compat.mpi as mpi
 
 from dcore.backend.triqs_compat.dft_tools.converters import *
 
-Converter = HkConverter(filename='hk_convert_hamiltonian.hk',hdf_filename='hk_convert.out.h5')
 
-Converter.convert_dft_input()
-
-if mpi.is_master_node():
+def test_hk_convert():
+    Converter = HkConverter(filename='hk_convert_hamiltonian.hk',hdf_filename='hk_convert.out.h5')
+    Converter.convert_dft_input()
     h5diff("hk_convert.out.h5","hk_convert.ref.h5") 

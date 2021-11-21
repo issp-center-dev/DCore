@@ -6,7 +6,7 @@ from dcore.backend.sparse_gf.basis import matsubara_sampling, tau_sampling
 
 from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR
 from ..h5.archive import register_class
-from ...plot.protocol import clip_array
+from ..plot.protocol import clip_array
 from .. import plot
 from . import meshes
 
