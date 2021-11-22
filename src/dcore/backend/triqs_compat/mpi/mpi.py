@@ -20,16 +20,13 @@
 import os
   
 _mpi_imported = "OMPI_COMM_WORLD_RANK" in os.environ or "PMI_RANK" in os.environ
-print("BBB")
 
 def is_on():
     return _mpi_imported
 
 if _mpi_imported:
-    print("A")
     from ._mpi import *
 else:
-    print("B")
     from ._no_mpi import *
 
 import os,sys,datetime
