@@ -122,7 +122,7 @@ class Gf(object):
                 assert indices is not None
                 N1, N2, = len(indices[0]), len(indices[1])
                 n_points_ = mesh._points.size
-                data = np.empty((n_points_, N1, N2), dtype=np.complex128)
+                data = np.zeros((n_points_, N1, N2), dtype=np.complex128)
 
             self.data = data
             self.target_shape = self.data.shape[1:]

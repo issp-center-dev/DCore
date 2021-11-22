@@ -49,7 +49,7 @@ class MeshImFreq(Mesh):
         if n_max is not None:
             assert n_points is None
             n_points = n_max
-        assert isinstance(statistic, str)
+        assert isinstance(statistic, str), type(statistic)
         self._statistic = {'F': 'Fermion', 'B': 'Boson'}[statistic[0]]
         shift = 1 if self._statistic[0] == 'F' else 0
         self._points = 2*np.arange(-n_points, n_points) + shift
@@ -91,9 +91,9 @@ class MeshImFreq(Mesh):
     def __factory_from_dict__(cls, key, dict) :
         assert dict['positive_freq_only'] == False
         return cls(
-            dict['domain']['beta'],
-            dict['domain']['statistic'],
-            dict['size']//2
+            beta=dict['domain']['beta'],
+            statistic=dict['domain']['statistic'],
+            n_points=dict['size']//2
         )
 
 class MeshImTime(Mesh):

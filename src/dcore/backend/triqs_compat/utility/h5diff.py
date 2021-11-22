@@ -34,24 +34,32 @@ def compare(key, a, b, level, precision):
     try :
         t = type(a)
         assert t == type(b), "%s have different types"%key
+        print("AA")
 
         if t == dict or isinstance(a, HDFArchiveGroup) :
+            print("BB")
             if list(a.keys()) != list(b.keys()):
                 failures.append("Two archive groups '%s' with different keys \n %s \n vs\n %s"%(key,list(a.keys()), list(b.keys())))
+            print("keys", a.keys())
             for k in a.keys():
+                print("debug", key, ":", k)
                 compare(key + '/'+ k, a[k], b[k], level + 1, precision)
+                print("debug", key, k)
 
         # The TRIQS object which are comparable starts here ....
         #elif t in [GfImFreq, GfImTime, GfReFreq, GfReTime, GfLegendre, GfImFreq_x_ImFreqTv3] :
         elif t in [Gf] :
+            print("CC")
             assert_gfs_are_close(a,b,precision)
 
         elif t in [BlockGf]:
+            print("DD")
             assert_block_gfs_are_close(a,b,precision)
 
 
         # ... until here
         elif isinstance(a, numpy.ndarray):
+            print("EE")
             assert_arrays_are_close(a,b, precision)
 
         elif t in [int, float, complex]:

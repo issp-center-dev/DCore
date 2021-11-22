@@ -32,8 +32,6 @@ def _has_subgroup(group, key):
 def _from_numpy_type(s):
     if isinstance(s, bytes):
         return s.decode('utf-8')
-    elif isinstance(s, str):
-        return s
     elif isinstance(s, np.integer):
         return int(s)
     elif isinstance(s, np.floating):
