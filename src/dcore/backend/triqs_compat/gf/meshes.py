@@ -2,10 +2,31 @@ import numpy as np
 from ..h5.archive import register_class
 
 class Mesh(object):
-   pass
+    pass
 
-   def __eq__(self, other):
-       return type(self) == type(other) and self.hash == other.hash
+    def __eq__(self, other):
+        return type(self) == type(other) and self.hash == other.hash
+    
+    @property
+    def points(self):
+        return self._points
+
+    @classmethod
+    def n_points_fact(cls):
+        """
+        points.size/n_points
+        """
+        return 1
+    
+    @classmethod
+    def default_n_points(cls):
+        return -1
+
+    @property
+    def beta(self):
+        return self._beta
+    
+
 
 class MeshReFreq(Mesh):
     """ Real frequency mesh """
@@ -54,13 +75,13 @@ class MeshImFreq(Mesh):
         shift = 1 if self._statistic[0] == 'F' else 0
         self._points = 2*np.arange(-n_points, n_points) + shift
     
+    @classmethod
+    def n_points_fact(cls):
+        return 2
+
     @property
     def hash(self):
         return hash(self._beta) + hash(self._statistic) + hash(self._points.tobytes())
-    
-    @property
-    def beta(self):
-        return self._beta
     
     @property
     def statistic(self):
@@ -112,10 +133,7 @@ class MeshImTime(Mesh):
         self._statistic = {'F': 'Fermion', 'B': 'Boson'}[statistic[0]]
         self._points = np.linspace(0, beta, n_points)
     
-    @property
-    def beta(self):
-        return self._beta
-    
+
     @property
     def statistic(self):
         return self._statistic
@@ -167,6 +185,7 @@ class MeshIR(Mesh):
         """
         self._points = np.arange(basis.size)
         self._basis = basis
+        self._beta = basis.beta
 
     @property
     def size(self):

@@ -1,0 +1,1 @@
+from .h5diff import h5diff, compare, failures

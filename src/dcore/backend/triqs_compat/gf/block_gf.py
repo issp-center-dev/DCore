@@ -41,10 +41,15 @@ class BlockGf:
                        mesh=mesh, indices=indices_)
                     for indices_ in indices
                 ]
+        
+        if isinstance(self.g_list, Gf):
+            self.g_list = [self.g_list]
 
+        make_copies = kwargs.pop('make_copies', False)
+        if make_copies:
+            self.g_list = [deepcopy(b) for b in self.g_list]
 
         self.g_dict = {k: v for k, v in zip(self.block_names, self.g_list)}
-        make_copies = kwargs.pop('make_copies', False)
 
         if isinstance(self.block_names, tuple):
             self.block_names = list(self.block_names)
@@ -57,8 +62,6 @@ class BlockGf:
         for g in self.g_list:
             assert isinstance(g, Gf)
         
-        if make_copies:
-            self.g_list = [deepcopy(b) for b in self.g_list]
     
     @property
     def indices(self):
@@ -97,6 +100,16 @@ class BlockGf:
                 bl2_ = bl2_[1]
             bl += bl2_
         return self
+
+    def __sub__(self, other):
+        assert type(other) in [BlockGf, list], f"Invalid type{type(other)}"
+        res = self.copy()
+        for bl, bl2 in zip(res.g_list, other):
+            bl2_ = bl2
+            if isinstance(bl2_, tuple) and len(bl2_) == 2:
+                bl2_ = bl2_[1]
+            bl -= bl2_
+        return res
     
     def __isub__(self, other):
         assert type(other) in [BlockGf, list]

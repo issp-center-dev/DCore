@@ -96,7 +96,9 @@ class Gf(object):
     """
     def __init__(self, **kw): # enforce keyword only policy 
         def delegate(self, data=None, name='', beta=None, statistic='Fermion', mesh=None, indices=None, n_points=None,
-            mesh_type = MeshImFreq):
+            mesh_type = MeshImFreq, target_shape=None):
+            self.name = name
+
             # Check indices
             if isinstance(indices, np.ndarray) or isinstance(indices, list):
                 indices = list(map(str, indices))
@@ -112,37 +114,67 @@ class Gf(object):
                 raise ValueError("Invalid indices!")
             # At this point, indices is None or an object of GfIndices
 
-            # First determine n_points
-            if n_points is not None and mesh is None:
-                assert data is None
-                mesh = mesh_type(beta, statistic=statistic, n_points=n_points)
+            # Determine mesh_type
+            if mesh is not None:
+                mesh_type = type(mesh)
+
+            # Determine the number of points for freq/time
+            if n_points is None:
+                if mesh is not None:
+                    n_points = mesh.points.size//mesh_type.n_points_fact()
+                elif data is not None:
+                    n_points = data.shape[0]//mesh_type.n_points_fact()
+                elif mesh_type.default_n_points() > 0:
+                    n_points = mesh_type.default_n_points()
+                else:
+                    raise RuntimeError("Failed to determine n_points!")
             
+            # Then, dertermine target_shape
+            if target_shape is None:
+                if indices is not None:
+                    target_shape = (len(indices[0]), len(indices[1]))
+                elif data is not None:
+                    target_shape = data.shape[1:]
+                else:
+                    raise RuntimeError("Failed to determine target_shape!")
+            self.target_shape = tuple(target_shape)
+
+            # beta
+            if beta is None:
+                if mesh is not None:
+                    beta = mesh.beta
+                else:
+                    raise RuntimeError("Failed to determine beta!")
+            self.beta = beta
+            
+            if statistic is None:
+                if mesh is not None:
+                    statistic = mesh.statistic
+                else:
+                    raise RuntimeError("Failed to determine statistic!")
+            self.statistic = statistic
+            
+            # At this point, all necessary information must be set.
+
+            # Construct mesh
+            if mesh is None:
+                if isinstance(mesh_type, GfImFreq):
+                    mesh = mesh_type(beta, statistic=statistic, n_points=n_points//2)
+                else:
+                    mesh = mesh_type(beta, statistic=statistic, n_points=n_points)
+            self.mesh = mesh
+            
+            # Construct data
             if data is None:
                 # Try to figure the shape of data for indices
-                assert indices is not None
-                N1, N2, = len(indices[0]), len(indices[1])
-                n_points_ = mesh._points.size
-                data = np.zeros((n_points_, N1, N2), dtype=np.complex128)
-
+                data = np.zeros((n_points * mesh_type.n_points_fact(),) + target_shape, dtype=np.complex128)
             self.data = data
-            self.target_shape = self.data.shape[1:]
 
-            self.name = name
-            if beta is None:
-                self.beta = mesh.beta
-            else:
-                self.beta = beta
-            assert self.beta is not None
-            self.statistic = statistic
-            if mesh is None:
-                if mesh_type == MeshImFreq:
-                    mesh = mesh_type(beta, statistic, self.data.shape[0]//2)
-                else:
-                    mesh = mesh_type(beta, statistic, self.data.shape[0])
-            self.mesh = mesh
+
+            # Construct indices
             if indices is None:
-                left_indices = list(map(str, np.arange(self.data.shape[1])))
-                right_indices = list(map(str, np.arange(self.data.shape[2])))
+                left_indices = list(map(str, np.arange(self.target_shape[0])))
+                right_indices = list(map(str, np.arange(self.target_shape[1])))
                 indices = GfIndices([left_indices, right_indices])
             self.indices = indices
 
@@ -316,10 +348,10 @@ class Gf(object):
 
 
 class GfImFreq(Gf):
-    def __init__(self, **kw):
-        if 'n_points' not in kw:
-            kw['n_points'] = 1025
-        super().__init__(**kw)
+    #def __init__(self, **kw):
+        #if 'n_points' not in kw:
+            #kw['n_points'] = 1025
+        #super().__init__(**kw)
 
     def __lshift__(self, g):
         """Set from GfIR instance"""
@@ -445,7 +477,7 @@ def _convert_to_matrix(a, g):
     else:
         return a
 
-class InverseLinearExpression(object):
+class InverseLinearExpression(LazyExpression):
     """ Inverse of Linear Expression in frequency
     """
     def __init__(self, lin_exp):
@@ -496,17 +528,18 @@ class SemiCircular(SpectralModel):
     Diagonal Green's function generated by a model spectrum
     A(omega) = 2\sqrt(D^2-omega^2)/(pi D^2)
     """
-    def __init__(self, D):
+    def __init__(self, D, coeff=1):
         """
         Args:
             D (float): Half band width
         """
-        super().__init__(-D, D, lambda x: 2*np.sqrt(D**2-x**2)/(np.pi*D**2))
+        super().__init__(-D, D, lambda x: coeff*2*np.sqrt(D**2-x**2)/(np.pi*D**2))
+        self.D = D
+        self.coeff = coeff
+    
+    def __mul__(self, other):
+        if not np.isscalar(other):
+            return NotImplemented
+        return SemiCircular(self.D, other*self.coeff)
 
-
-# FIMXE: move to tools.py
-def inverse(g):
-    """
-    Compute inverse of imaginary-frequency Green's function
-    """
-    return g.inverse()
+    __rmul__ = __mul__

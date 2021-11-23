@@ -27,11 +27,13 @@ import ast
 import math
 from scipy import linalg as scipy_linalg
 
-from dcore.backend import *
+from dcore.backend import h5diff as h5diff_org, compare, BlockGf, HDFArchive, failures, MeshImFreq, fit_hermitian_tail, Gf
+from dcore.backend.triqs_compat.gf.gf import GfImFreq
 
 """
 THIS MODULE MUST NOT DEPEND ON MPI!
 """
+
 
 def h5diff(f1, f2, key=None, precision=1.e-6):
     """
@@ -120,10 +122,8 @@ def extract_H0_from_tail(G0_iw):
     if isinstance(G0_iw, BlockGf):
         return {name:extract_H0_from_tail(b) for name, b in G0_iw}
     elif isinstance(G0_iw.mesh, MeshImFreq):
-       import triqs.gf.gf_fnt as gf_fnt
        assert len(G0_iw.target_shape) in [0,2], "extract_H0_from_tail(G0_iw) requires a matrix or scalar_valued Green function"
-       assert gf_fnt.is_gf_hermitian(G0_iw), "extract_H0_from_tail(G0_iw) requires a Green function with the property G0_iw[iw][i,j] = conj(G0_iw[-iw][j,i])"
-       tail, err = gf_fnt.fit_hermitian_tail(G0_iw)
+       tail, err = fit_hermitian_tail(G0_iw)
        if err > 1e-5:
            print("WARNING: delta extraction encountered a sizeable tail-fit error: ", err)
        return tail[2]
@@ -687,7 +687,7 @@ def save_giw(h5file, path, g):
 
     """
 
-    assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
+    assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
 
     h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
     h5file[path + '/data'] = complex_to_float_array(g.data)

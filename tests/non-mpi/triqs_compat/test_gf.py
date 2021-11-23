@@ -1,8 +1,9 @@
 import numpy as np
-from dcore.backend.sparse_gf.transform import fourier
+from dcore.backend.sparse_gf.basis import finite_temp_basis
 
 from dcore.backend.triqs_compat.gf import *
 from dcore.backend.triqs_compat.gf.gf import GfImTime
+from dcore.backend.triqs_compat.gf.tools import *
 from dcore.backend.triqs_compat.h5 import HDFArchive as HDFArchive2
 
 import triqs.gf as tgf
@@ -38,22 +39,22 @@ def test_gf():
     npoints = 4
     data = np.zeros((2*npoints,) + shape)
 
-    gf = tgf.GfImFreq(beta=beta, data=data, n_points=npoints)
-    with HDFArchive('gf.h5', 'w') as f:
-        f['gf'] = gf
+    with HDFArchive('gf_triqs.h5', 'w') as f:
+        f['gf'] = tgf.GfImFreq(beta=beta, data=data, n_points=npoints)
 
-    gf2 = Gf(beta=beta, data=data)
-    with HDFArchive2('gf2.h5', 'w') as f:
-        f['gf'] = gf2
-
-    # TRIQS can read the HDF5 file created by triqs_compat?
-    with HDFArchive('gf2.h5', 'r') as f:
-        gf = f['gf']
+    with HDFArchive2('gf_triqs_compat.h5', 'w') as f:
+        f['gf'] = Gf(beta=beta, data=data)
 
     # triqs_compat can read the HDF5 file created by TRIQS?
-    with HDFArchive2('gf.h5', 'r') as f:
-        gf = f['gf']
+    with HDFArchive2('gf_triqs.h5', 'r') as f:
+        _ = f['gf']
     
+    # TRIQS can read the HDF5 file created by triqs_compat?
+    with HDFArchive('gf_triqs_compat.h5', 'r') as f:
+        _ = f['gf/mesh']
+        _ = f['gf/indices']
+        _ = f['gf']
+
 
 def test_block_gf():
     beta = 10.0
@@ -144,3 +145,34 @@ def test_lazy():
     h0_ << h0
     giv_from_lazy << inverse(iOmega_n - h0_)
     assert np.abs(giv_ref.data-giv_from_lazy.data).max() < eps
+
+
+def test_tail_fit():
+    beta = 10.0
+    eps = 1e-7
+    basis = finite_temp_basis(beta, 'F', eps=eps)
+
+    h0 = np.array([[1.0, 1j], [-1j, 0.0]])
+    nf = h0.shape[0]
+    nw = 10000
+
+    giv = GfImFreq(beta=beta, n_points=nw, target_shape=(nf,nf))
+    giv << inverse(iOmega_n - h0)
+
+    tail, _ = fit_hermitian_tail(giv, basis)
+    
+    assert np.abs(h0 - tail[2]).max() < 1e+3*eps
+
+def test_block_gf_iter():
+    beta = 10.0
+    nf = 2
+    nw = 10
+
+    bfg = BlockGf(name_list=['up', 'dn'], block_list=
+        2*[GfImFreq(beta=beta, n_points=nw, target_shape=(nf,nf))], make_copies=True)
+    for ib, (bl, g) in enumerate(bfg):
+        g.data[...] = 1.0
+
+    for bl, g in bfg:
+        assert (g.data[...] == 1.0).all()
+    
