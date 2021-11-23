@@ -273,7 +273,9 @@ class DMFTCoreTools:
             sigma_w_sh[ish] = BlockGf(name_list=block_names, block_list=glist(), make_copies=False)
             # Analytic continuation
             for bname, sig in Sigma_iw:
-                sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
+                #FIXME: use mpmath
+                #sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
+                pass
 
         print("\n#############  Print Self energy in the Real Frequency  ################\n")
         filename = self._prefix + self._seedname + '_sigmaw.dat'

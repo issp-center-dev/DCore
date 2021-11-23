@@ -2,10 +2,11 @@ from copy import deepcopy, copy
 from irbasis3 import sampling
 import numpy as np
 import h5py
+import operator
 
 from dcore.backend.sparse_gf.basis import matsubara_sampling, tau_sampling, finite_temp_basis
 
-from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR
+from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR, MeshReFreq
 from ..h5.archive import register_class
 from ..plot.protocol import clip_array
 from .. import plot
@@ -110,8 +111,8 @@ class Gf(object):
             elif isinstance(indices, list):
                 for x in indices:
                     assert _is_list_of(x, str)
-            else:
-                raise ValueError("Invalid indices!")
+            if indices is not None and not isinstance(indices, GfIndices):
+                raise ValueError("Invalid indices!"+str(indices))
             # At this point, indices is None or an object of GfIndices
 
             # Determine mesh_type
@@ -191,8 +192,9 @@ class Gf(object):
     def __lshift__(self, A):
         """ Substitute a new gf object (copy) """
         if isinstance(A, Gf):
-            for name in ['data', 'target_shape', 'name', 'beta', 'statistic']:
-                self.__setattr__(name, copy(A.__getattribute__(name)))
+            for name in ['target_shape', 'name', 'beta', 'statistic']:
+                self.__setattr__(name, A.__getattribute__(name))
+            self.data[...] = A.data
         elif isinstance(A, np.ndarray):
             if A.ndim == 3:
                 self.data[...] = A
@@ -211,9 +213,10 @@ class Gf(object):
 
     def __getitem__(self, idx):
         assert isinstance(idx, tuple) and len(idx) == 2
-
-        return Gf(beta=self.beta, statistic=self.statistic,
-            mesh=self.mesh, data=self.data[:, idx[0], idx[1]][:,None,None])
+        data_view = self.data[:, idx[0], idx[1]].reshape((-1,1,1))
+        g_view = Gf(beta=self.beta, statistic=self.statistic,
+            mesh=self.mesh, data=data_view)
+        return g_view
     
     def from_L_G_R(self, L, G, R):
         """Matrix transform of the target space of a matrix valued Greens function.
@@ -256,27 +259,32 @@ class Gf(object):
 
     @classmethod
     def __factory_from_dict__(cls, key, dict) :
-        return cls(
+        return gf_subclasses[type(dict['mesh'])](
             data = dict['data'],
             mesh = dict['mesh'],
             beta = dict['mesh'].beta,
             statistic = dict['mesh'].statistic,
         )
-        #return cls([dict['left'], dict['right']])
 
     def __iadd__(self, other):
         self.data[...] += other.data
         return self    
 
     def __add__(self, other):
+        return self.__add_sub__(other, operator.iadd)
+
+    def __sub__(self, other):
+        return self.__add_sub__(other, operator.isub)
+
+    def __add_sub__(self, other, op):
         res = self.copy()
         if type(self) == type(other):
-            res.data += other.data
+            op(res.data, other.data)
         elif isinstance(other, np.ndarray):
             if other.ndim == 3:
-                res.data += other.data
+                op(res.data, other.data)
             elif other.ndim == 2:
-                res.data += other.data[None,:,:]
+                op(res.data, other.data[None,:,:])
             else:
                 raise RuntimeError("Invalid ndarray!")
         return res
@@ -391,7 +399,11 @@ class GfImTime(Gf):
     
 
 class GfReFreq(Gf):
-    pass
+    def __init__(self, **kw): # enforce keyword only policy 
+        if 'window' in kw.keys():
+            kw['mesh'] = MeshReFreq(kw['window'][0], kw['window'][1], kw['n_points'])
+            del kw['window']
+        super().__init__(**kw)
 
 class GfLegendre(Gf):
     def __init__(self, data=None, indices=None, beta=None, n_points=None, name=""):
@@ -410,6 +422,14 @@ register_class(GfImTime)
 register_class(GfLegendre)
 register_class(GfIR)
 
+gf_subclasses = {
+    MeshImFreq: GfImFreq,
+    MeshReFreq: GfReFreq,
+    MeshImTime: GfImTime,
+    MeshLegendre: GfLegendre,
+    MeshIR: GfIR,
+}
+
 class LazyExpression(object):
     def __init__(self):
        pass
@@ -417,6 +437,7 @@ class LazyExpression(object):
     def evaluate(g):
         assert np.isinstance(g, GfImFreq)
         return NotImplemented
+
 
 class LinearExpression(LazyExpression):
     """Linear Expression in frequency
@@ -438,22 +459,34 @@ class LinearExpression(LazyExpression):
     def __mul__(self, other):
         if np.isscalar(other):
             return LinearExpression(other*self._a0, other*self._a1)
-        return NotImplemented
-
-    def __add__(self, other):
-        if np.isscalar(other):
-            assert np.isscalar(self._a0)
-            return LinearExpression(self._a0 + other, self._a1)
-        elif isinstance(other, np.ndarray):
-            a0_ = self._a0 if isinstance(self._a0, np.ndarray) else self._a0 * np.identity(other.shape[0])
-            return LinearExpression(a0_ + other, self._a1)
         elif isinstance(other, GfImFreq):
-            return self.evaluate(other) + other
+            val = self.evaluate(other)
+            res = other.copy()
+            res.data[...] = np.einsum('wij,wjk->wik', val.data, other.data, optimize=True)
+            return res
         else:
             return NotImplemented
 
+    def __add__(self, other):
+        return self.__add_sub__(other, operator.add)
+    
+    __radd__ = __add__
+
     def __sub__(self, other):
-        return self + (-1) * other
+        return self.__add_sub__(other, operator.sub)
+
+    def __add_sub__(self, other, op):
+        if np.isscalar(other):
+            assert np.isscalar(self._a0)
+            return LinearExpression(op(self._a0, other), self._a1)
+        elif isinstance(other, np.ndarray):
+            a0_ = self._a0 if isinstance(self._a0, np.ndarray) else self._a0 * np.identity(other.shape[0])
+            return LinearExpression(op(a0_, other), self._a1)
+        elif isinstance(other, GfImFreq):
+            return op(self.evaluate(other), other)
+        else:
+            return NotImplemented
+
 
     def evaluate(self, g):
         res = g.copy()
@@ -486,7 +519,8 @@ class InverseLinearExpression(LazyExpression):
         self._lin_exp = lin_exp
 
     def evaluate(self, g):
-        return inverse(self._lin_exp.evaluate(g))
+        return self._lin_exp.evaluate(g).inverse()
+    
     
     def inverse(self):
         return self._lin_exp
@@ -494,6 +528,8 @@ class InverseLinearExpression(LazyExpression):
 # Evalaute to iv (0 + 1*z)
 iOmega_n = LinearExpression(0., 1.)
 Omega = LinearExpression(0., 1.)
+
+Identity = LinearExpression(1., 0.)
 
 
 class SpectralModel(LazyExpression):

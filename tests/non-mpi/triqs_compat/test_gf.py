@@ -163,6 +163,16 @@ def test_tail_fit():
     
     assert np.abs(h0 - tail[2]).max() < 1e+3*eps
 
+def test_gf_view():
+    beta = 10.0
+    g = GfImFreq(beta=beta, statistic="F", target_shape=(2,2), n_points=1)
+    g1 = GfImFreq(beta=beta, statistic="F", target_shape=(1,1), n_points=1)
+    g1.data[...] = 1.0
+    g[0,0] << g1
+    ref = np.zeros((2,2,2))
+    ref[:,0,0] = 1
+    assert np.array_equal(g.data,  ref)
+
 def test_block_gf_iter():
     beta = 10.0
     nf = 2
@@ -176,3 +186,30 @@ def test_block_gf_iter():
     for bl, g in bfg:
         assert (g.data[...] == 1.0).all()
     
+
+def test_delta():
+    beta = 10.0
+    n_iw = 1000
+    D = 2.0 # Half band width
+    nso = 1
+    #basis = finite_temp_basis(beta, "F", eps=1e-7)
+    basis = None
+
+    Delta_iw = GfImFreq(beta=beta, n_points=n_iw, target_shape=(nso, nso))
+    Delta_iw << (D/2.0)**2 * SemiCircular(D)
+
+    # Random local transfer matrix
+    H0 = np.random.rand(nso, nso)
+    H0 = H0 + H0.conjugate().transpose()
+    H0[0, 0] = 0.1
+
+    G0_iw = Delta_iw.copy()
+    G0_iw << inverse(iOmega_n - H0 - Delta_iw)
+
+    Delta_iw_reconst = delta(G0_iw, basis)
+
+    # Check Delta(iwn)
+    diff = Delta_iw_reconst - Delta_iw
+
+    # FIXME: The precision is worse with sparse sampling. Why?
+    assert np.all(np.abs(diff.data) < 1e-6)

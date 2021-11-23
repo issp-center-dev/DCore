@@ -25,7 +25,7 @@ import numpy
 from types import *
 from ..gf import *
 from ..h5 import *
-from ... import mpi
+from .. import mpi
 
 
 class Symmetry:

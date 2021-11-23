@@ -30,18 +30,20 @@ class Mesh(object):
 
 class MeshReFreq(Mesh):
     """ Real frequency mesh """
-    def __init__(self, omega_min, omega_max, n_points):
+    def __init__(self, omega_min, omega_max, n_points, beta=None):
         """
 
         Args:
             omega_min (float): min value of frequency
             omega_max (float): max value of frequency
             n_points (int): Number of frequencies
+            beta (float): inverse temperature
         """
         self._omega_min = omega_min
         self._omega_max = omega_max
         self._n_max = n_points
         self._points = np.linspace(omega_min, omega_max, n_points)
+        self._beta = beta
 
     @property
     def size(self):
@@ -101,7 +103,7 @@ class MeshImFreq(Mesh):
     def __write_hdf5__(self, group, key):
         """ Write to a HDF5 file"""
         group.create_group(key)
-        group[key]['positive_freq_only'] = False
+        group[key]._raw_write('positive_freq_only', np.intc(0))
         group[key]['size'] = self.size
         group[key].create_group('domain')
         group[key]['domain']['beta'] = self.beta

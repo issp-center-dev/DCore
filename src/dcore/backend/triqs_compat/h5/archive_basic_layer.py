@@ -98,9 +98,15 @@ class HDFArchiveGroupBasicLayer:
             self._group[key] = val.view(float).reshape(val.shape +(2,))
             self._group[key].attrs['__complex__'] = 1
         elif isinstance(val, bool):
-            self._group[key] = np.intc(val)
+            self._group[key] = numpy.bool_(val)
+        elif isinstance(val, int) or issubclass(type(val), np.integer):
+            self._group[key] = np.int_(val)
         else:
             self._group[key] = val
+        self.cached_keys.append(key)
+
+    def _raw_write(self, key, val) :
+        self._group[key] = val
         self.cached_keys.append(key)
     
     def _flush(self):

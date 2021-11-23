@@ -2,6 +2,8 @@ from ..h5.archive import register_class
 from .gf import Gf, LazyExpression
 from copy import deepcopy
 import numpy as np
+import operator
+
 class BlockGf:
     """
     Generic Green's Function by Block.
@@ -62,6 +64,11 @@ class BlockGf:
         for g in self.g_list:
             assert isinstance(g, Gf)
         
+        self._sanity_check()
+    
+    def _sanity_check(self):
+        for ib, name in enumerate(self.block_names):
+            assert id(self.g_dict[name]) == id(self.g_list[ib])
     
     @property
     def indices(self):
@@ -101,14 +108,20 @@ class BlockGf:
             bl += bl2_
         return self
 
+    def __add__(self, other):
+        return self.__add_sub__(other, operator.iadd)
+
     def __sub__(self, other):
+        return self.__add_sub__(other, operator.isub)
+
+    def __add_sub__(self, other, op):
         assert type(other) in [BlockGf, list], f"Invalid type{type(other)}"
         res = self.copy()
         for bl, bl2 in zip(res.g_list, other):
             bl2_ = bl2
             if isinstance(bl2_, tuple) and len(bl2_) == 2:
                 bl2_ = bl2_[1]
-            bl -= bl2_
+            op(bl, bl2_)
         return res
     
     def __isub__(self, other):
@@ -179,8 +192,16 @@ class BlockGf:
         """ Invert in place """
         for g in self.g_list:
             g.invert()
+    
+    def inverse(self):
+        block_list = [g.inverse() for g in self.g_list]
+        return BlockGf(name_list=self.block_names, block_list=block_list)
 
     def density(self):
         return {name: bl.density() for name, bl in self}
+
+    def total_density(self):
+        dense_ = self.density()
+        return np.real(np.sum([np.trace(v) for k, v in dense_.items()]))
 
 register_class (BlockGf)

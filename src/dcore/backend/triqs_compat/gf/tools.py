@@ -1,7 +1,7 @@
 import numpy as np
 
 from .block_gf import BlockGf
-from .gf import GfImFreq, GfImTime, GfIR, iOmega_n
+from .gf import GfImFreq, GfImTime, GfIR, iOmega_n, Identity
 
 from dcore.backend.sparse_gf.high_freq import high_freq_moment
 from dcore.backend.sparse_gf.basis import tau_sampling, matsubara_sampling, finite_temp_basis
@@ -11,8 +11,16 @@ def fit_hermitian_tail(giw, basis=None):
     Fit the tail of a Green function using a least-squares fitting procedure
     imposing the symmetry  G_{ij}(iv) = G_{ji}^* (-iv).
     Reimplementation of the correponding triqs function.
+
     In this function, we use sparse modeling.
     Error is not estimated.
+    We asssume:
+       G(iv) = 1/iv + H/(iv)^2 + O((iv)^3).
+
+    In pratice, we fit
+       iv G(iv) - 1 = H/iv + O((iv)^2).
+
+    This works only if the error in G(iv) decays faster than 1/(iv)^2.
 
     Args:
         giw (GfImFreq): Green's function to be fitted.
@@ -20,12 +28,12 @@ def fit_hermitian_tail(giw, basis=None):
     assert isinstance(giw, GfImFreq)
     if basis is None:
         basis = finite_temp_basis(giw.beta, giw.statistic)
-
-    gl = fit_by_IR(giw, basis)
-    tail = high_freq_moment(gl.data, basis, 2)
+    
+    gl = fit_by_IR(iOmega_n * giw - Identity, basis)
+    tail = high_freq_moment(gl.data, basis, 1)
     tail = [0.5*(x + x.T.conjugate()) for x in tail]
     nso = gl.data.shape[1]
-    return [np.zeros((nso, nso), dtype=np.complex128)] + tail, 0.0
+    return [np.zeros((nso, nso), dtype=np.complex128), np.identity(nso, dtype=np.complex128)] + tail, 0.0
 
 def delta(giw, basis=None):
     if isinstance(giw, BlockGf):
@@ -82,7 +90,8 @@ def _delta(G0, H0=None, basis=None):
     """
     assert isinstance(G0, GfImFreq)
     if H0 is None:
-        _, H0 = moments(fit_by_IR(G0, basis), 2, basis=basis)
+        mom, _ = fit_hermitian_tail(G0, basis)
+        H0 = mom[2]
 
     delta_iw = G0.copy()
     delta_iw << iOmega_n - H0 - inverse(G0)
@@ -105,10 +114,15 @@ def moments(G, n_moments, basis=None):
 
 
 def dyson(Sigma_iw=None, G_iw=None, G0_iw=None):
+    """
+    G_iw^-1 = G0_iw^-1 - Sigma_iw
+    """
     if Sigma_iw is None:
         return G0_iw.inverse() - G_iw.inverse()
     elif G_iw is None:
         return (G0_iw.inverse() - Sigma_iw).inverse()
+    elif G0_iw is None:
+        return (G_iw.inverse() + Sigma_iw).inverse()
     else:
         raise RuntimeError("Invalid arguments!")
     

@@ -24,7 +24,7 @@
 from types import *
 import numpy
 from ..gf import *
-from ... import mpi
+from .. import mpi
 from ..utility.comparison_tests import assert_arrays_are_close
 from ..h5 import *
 from .symmetry import *

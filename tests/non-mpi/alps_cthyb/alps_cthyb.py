@@ -103,4 +103,4 @@ def test_solver_dry_run():
 
     for name, b in diff:
         # FIXME: The precision is worse with sparse sampling. Why?
-        assert numpy.all(numpy.abs(b.data) < 1e-2)
+        assert numpy.all(numpy.abs(b.data) < 1e-4)

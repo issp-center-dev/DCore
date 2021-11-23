@@ -27,7 +27,7 @@ import copy
 import numpy as np
 from ..gf import GfImFreq, BlockGf
 from ast import literal_eval
-from ... import mpi
+from .. import mpi
 from warnings import warn
 from collections import defaultdict
 
