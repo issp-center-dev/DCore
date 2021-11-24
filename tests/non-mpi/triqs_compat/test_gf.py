@@ -213,3 +213,16 @@ def test_delta():
 
     # FIXME: The precision is worse with sparse sampling. Why?
     assert np.all(np.abs(diff.data) < 1e-6)
+
+
+def test_conversion():
+    beta = 10.0
+    n_iw = 10
+    nso = 1
+    #for gclass in [GfImFreq]:
+    for gclass in [GfImFreq, GfReFreq]:
+        gf = gclass(beta=beta, n_points=n_iw, target_shape=(nso, nso))
+        gf2 = gf.to_triqs()
+        gf3 = Gf.from_triqs(gf2)
+        np.testing.assert_array_equal(gf.data, gf3.data)
+        np.testing.assert_array_equal(gf.mesh.points, gf3.mesh.points)

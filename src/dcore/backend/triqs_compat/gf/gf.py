@@ -5,6 +5,7 @@ import h5py
 import operator
 
 from dcore.backend.sparse_gf.basis import matsubara_sampling, tau_sampling, finite_temp_basis
+import triqs
 
 from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR, MeshReFreq
 from ..h5.archive import register_class
@@ -146,14 +147,14 @@ class Gf(object):
                     beta = mesh.beta
                 else:
                     raise RuntimeError("Failed to determine beta!")
-            self.beta = beta
+            self._beta = beta
             
             if statistic is None:
                 if mesh is not None:
                     statistic = mesh.statistic
                 else:
                     raise RuntimeError("Failed to determine statistic!")
-            self.statistic = statistic
+            self._statistic = statistic
             
             # At this point, all necessary information must be set.
 
@@ -188,6 +189,22 @@ class Gf(object):
     def copy(self):
         """ Return a deep copy of self """
         return deepcopy(self)
+    
+    def to_triqs(self):
+        """ Transform to a TRIQS Gf object (data is copied) """
+        return NotImplemented
+
+    @classmethod
+    def from_triqs(cls, triqs_gf):
+        """ Transform a TRIQS Gf object (data is copied) to an instance of the corresponding Gf subclass """
+        from triqs.gf import meshes as tmeshes
+        cls_ = {
+            tmeshes.MeshImFreq: GfImFreq,
+            tmeshes.MeshReFreq: GfReFreq,
+            tmeshes.MeshLegendre: GfLegendre
+        }[type(triqs_gf.mesh)]
+        return cls_.from_triqs(triqs_gf)
+
 
     def __lshift__(self, A):
         """ Substitute a new gf object (copy) """
@@ -214,7 +231,7 @@ class Gf(object):
     def __getitem__(self, idx):
         assert isinstance(idx, tuple) and len(idx) == 2
         data_view = self.data[:, idx[0], idx[1]].reshape((-1,1,1))
-        g_view = Gf(beta=self.beta, statistic=self.statistic,
+        g_view = Gf(beta=self._beta, statistic=self._statistic,
             mesh=self.mesh, data=data_view)
         return g_view
     
@@ -368,6 +385,24 @@ class GfImFreq(Gf):
         smpl = matsubara_sampling(g.basis, sampling_points=self.mesh.points)
         self.data[...] = smpl.evaluate(g.data, axis=0)
 
+    def to_triqs(self):
+        from triqs.gf import GfImFreq as _GfImFreq
+        return _GfImFreq(
+            beta=self.mesh.beta,
+            statistic=self.mesh.statistic,
+            n_points=self.data.shape[0]//2,
+            data=self.data.copy()
+            )
+    
+    @classmethod
+    def from_triqs(cls, other):
+        return cls(
+            beta=other.mesh.beta,
+            statistic=other.mesh.statistic,
+            n_points=other.data.shape[0]//2,
+            data=other.data.copy()
+        )
+
     def inverse(self):
         inv_g = self.copy()
         inv_g.data[...] = np.linalg.inv(self.data)
@@ -378,10 +413,10 @@ class GfImFreq(Gf):
 
     def density(self, basis=None):
         if basis is None:
-            basis = finite_temp_basis(self.beta, self.statistic)
+            basis = finite_temp_basis(self._beta, self._statistic)
         smpl = matsubara_sampling(basis, sampling_points=self.mesh.points)
         gl = smpl.fit(self.data, axis=0)
-        gbeta = tau_sampling(basis, sampling_points=[self.beta]).evaluate(gl, axis=0)
+        gbeta = tau_sampling(basis, sampling_points=[self._beta]).evaluate(gl, axis=0)
         return -gbeta[0,:,:].T
 
 class GfImTime(Gf):
@@ -404,6 +439,24 @@ class GfReFreq(Gf):
             kw['mesh'] = MeshReFreq(kw['window'][0], kw['window'][1], kw['n_points'])
             del kw['window']
         super().__init__(**kw)
+
+    def to_triqs(self):
+        from triqs.gf import GfReFreq as _Gf
+        from triqs.gf.meshes import MeshReFreq as _Mesh
+        return _Gf(
+            data=self.data.copy(),
+            mesh = _Mesh(
+                self.mesh.points[0], self.mesh.points[-1],
+                self.mesh.points.size)
+            )
+    
+    @classmethod
+    def from_triqs(cls, other):
+        points = np.array([p for p in other.mesh])
+        return cls(
+            data=other.data.copy(),
+            mesh = MeshReFreq(points[0], points[-1], points.size))
+
 
 class GfLegendre(Gf):
     def __init__(self, data=None, indices=None, beta=None, n_points=None, name=""):
