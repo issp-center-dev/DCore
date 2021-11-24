@@ -1,4 +1,3 @@
-import h5py
 import numpy as np
 from dcore.backend.triqs_compat.h5 import HDFArchive as HDFArchive2
 import pytest

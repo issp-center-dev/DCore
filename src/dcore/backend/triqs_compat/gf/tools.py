@@ -27,7 +27,7 @@ def fit_hermitian_tail(giw, basis=None):
     """
     assert isinstance(giw, GfImFreq)
     if basis is None:
-        basis = finite_temp_basis(giw.beta, giw.statistic)
+        basis = finite_temp_basis(giw.mesh.beta, giw.mesh.statistic)
     
     gl = fit_by_IR(iOmega_n * giw - Identity, basis)
     tail = high_freq_moment(gl.data, basis, 1)
@@ -43,7 +43,7 @@ def delta(giw, basis=None):
         return delta_iw
     assert isinstance(giw, GfImFreq), f"Invalid type {type(giw)}"
     if basis is None:
-        basis = finite_temp_basis(giw.beta, giw.statistic)
+        basis = finite_temp_basis(giw.mesh.beta, giw.mesh.statistic)
     return _delta(giw, basis=basis)
 
 def inverse(g):
@@ -70,7 +70,7 @@ def fourier(g, basis=None):
         GfIR (fitted result by IR)
     """
     assert type(g) in [GfImFreq, GfImTime]
-    basis = _basis(basis, g.beta, g.statistic)
+    basis = _basis(basis, g.mesh.beta, g.mesh.statistic)
     if isinstance(g, GfImFreq):
         smpl = matsubara_sampling(basis, sampling_points=g.mesh.points)
     else:

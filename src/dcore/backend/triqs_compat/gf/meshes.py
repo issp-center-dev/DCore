@@ -51,6 +51,21 @@ class MeshReFreq(Mesh):
 
     def __iter__(self):
         yield from self._points
+    
+    def values(self):
+        return self._points
+
+    def __write_hdf5__(self, group, key):
+        """ Write to a HDF5 file"""
+        group.create_group(key)
+        group[key]['max'] = self._omega_max
+        group[key]['min'] = self._omega_min
+        group[key]['size'] = self.size
+        group[key].write_attr('Format', 'MeshReFreq')
+
+    @classmethod
+    def __factory_from_dict__(cls, key, dict) :
+        return cls(dict['min'], dict['max'], dict['size'])
 
 class MeshImFreq(Mesh):
     """ Imaginary frequency mesh """
@@ -76,6 +91,8 @@ class MeshImFreq(Mesh):
         self._statistic = {'F': 'Fermion', 'B': 'Boson'}[statistic[0]]
         shift = 1 if self._statistic[0] == 'F' else 0
         self._points = 2*np.arange(-n_points, n_points) + shift
+        self._values = 1J * (np.pi/self.beta) * self._points
+
     
     @classmethod
     def n_points_fact(cls):
@@ -93,12 +110,15 @@ class MeshImFreq(Mesh):
     def points(self):
         return self._points
 
+    def values(self):
+        return self._values
+
     @property
     def size(self):
         return self._points.size
 
     def __iter__(self):
-        yield from self._points
+        yield from self._values
 
     def __write_hdf5__(self, group, key):
         """ Write to a HDF5 file"""

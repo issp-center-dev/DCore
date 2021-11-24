@@ -52,6 +52,8 @@ def finite_temp_basis(beta, statistics, lambda_=1e+3, eps=1e-5, cache=_global_ca
 
 def _sampling(basis, cache_obj, compute_f, sampling_points):
     """ Return sampling object """
+    if sampling_points is not None:
+        sampling_points = numpy.asarray(sampling_points)
     if sampling_points is None:
         key = _tuple_key_basis(basis)
     else:
@@ -64,11 +66,9 @@ def _sampling(basis, cache_obj, compute_f, sampling_points):
 
 def tau_sampling(basis, sampling_points=None, cache=_global_cache):
     """ Return TauSampling object """
-    sampling_points = numpy.asarray(sampling_points)
     return _sampling(basis, cache.tau_sampling, irbasis3.TauSampling, sampling_points)
 
 
 def matsubara_sampling(basis, sampling_points=None, cache=_global_cache):
     """ Return MatsubaraSampling object """
-    sampling_points = numpy.asarray(sampling_points)
     return _sampling(basis, cache.matsubara_sampling, irbasis3.MatsubaraSampling, sampling_points)

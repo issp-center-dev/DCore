@@ -1,4 +1,4 @@
-import triqs.utility.mpi as mpi
+from dcore.backend import mpi
 from .worker_base import SumkDFTWorkerBase, setup_sk
 
 class SumkDFTWorkerGloc(SumkDFTWorkerBase):
@@ -7,7 +7,6 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
         super().__init__(model_hdf5_file, input_file, output_file)
 
     def run(self):
-        #from triqs_dft_tools import SumkDFT
         from dcore.sumkdft_opt import SumkDFT_opt as SumkDFT
         beta = self.params['beta']
         with_dc = self.params['with_dc']

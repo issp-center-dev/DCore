@@ -1,16 +1,14 @@
-from copy import deepcopy, copy
-from irbasis3 import sampling
+from copy import deepcopy
 import numpy as np
 import h5py
 import operator
 
 from dcore.backend.sparse_gf.basis import matsubara_sampling, tau_sampling, finite_temp_basis
-import triqs
 
 from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR, MeshReFreq
 from ..h5.archive import register_class
 from ..plot.protocol import clip_array
-from .. import plot
+from . import plot
 from . import meshes
 
 def _to_fixed_length_utf8_array(str_list):
@@ -209,7 +207,7 @@ class Gf(object):
     def __lshift__(self, A):
         """ Substitute a new gf object (copy) """
         if isinstance(A, Gf):
-            for name in ['target_shape', 'name', 'beta', 'statistic']:
+            for name in ['target_shape', 'name', '_beta', '_statistic']:
                 self.__setattr__(name, A.__getattribute__(name))
             self.data[...] = A.data
         elif isinstance(A, np.ndarray):
@@ -264,6 +262,18 @@ class Gf(object):
 
         self.data[...] = np.einsum('ac,wcd,db->wab', L, G.data, R, optimize=True)
 
+    def invert(self):
+        self.data[...] = np.linalg.inv(self.data)
+
+    def conjugate(self):
+        g = self.copy()
+        g.data[...] = g.data.conjugate()
+        return g
+    
+    def transpose(self):
+        g = self.copy()
+        g.data[...] = g.data.transpose((0,2,1))
+        return g
 
     def __write_hdf5__(self, group, key):
         """ Write to a HDF5 file"""
@@ -280,7 +290,7 @@ class Gf(object):
             data = dict['data'],
             mesh = dict['mesh'],
             beta = dict['mesh'].beta,
-            statistic = dict['mesh'].statistic,
+            #statistic = dict['mesh'].statistic,
         )
 
     def __iadd__(self, other):
@@ -408,9 +418,6 @@ class GfImFreq(Gf):
         inv_g.data[...] = np.linalg.inv(self.data)
         return inv_g
     
-    def invert(self):
-        self.data[...] = np.linalg.inv(self.data)
-
     def density(self, basis=None):
         if basis is None:
             basis = finite_temp_basis(self._beta, self._statistic)
@@ -457,6 +464,13 @@ class GfReFreq(Gf):
             data=other.data.copy(),
             mesh = MeshReFreq(points[0], points[-1], points.size))
 
+    def set_from_pade(self, gm, n_points, freq_offset=0.0):
+        """ Set values using Pade approximant """
+        assert isinstance(gm, GfImFreq)
+        #FIXME: remove triqs dependence
+        gw = self.to_triqs()
+        gw.set_from_pade(gm.to_triqs(), n_points, freq_offset)
+        self << GfReFreq.from_triqs(gw)
 
 class GfLegendre(Gf):
     def __init__(self, data=None, indices=None, beta=None, n_points=None, name=""):
@@ -549,8 +563,8 @@ class LinearExpression(LazyExpression):
         a1_ = _convert_to_matrix(self._a1, g)
 
         res.data[...] += a0_[None,:,:]
-        iv = 1J*g.mesh.points * np.pi/g.beta
-        res.data[...] += iv[:,None,None] * a1_[None,:,:]
+        w = g.mesh.values()
+        res.data[...] += w[:,None,None] * a1_[None,:,:]
         return res
 
     def inverse(self):
@@ -603,10 +617,10 @@ class SpectralModel(LazyExpression):
 
     def evaluate(self, g):
         wmax = max(abs(self._omega_max), abs(self._omega_min))
-        beta = g.beta
+        beta = g.mesh.beta
         nf = g.data.shape[1]
         lambda_ = beta * wmax
-        basis = finite_temp_basis(beta, g.statistic, lambda_, eps=1e-7)
+        basis = finite_temp_basis(beta, g.mesh.statistic, lambda_, eps=1e-7)
         gl = -basis.v.overlap(self._rho_omega) * basis.s
         giv = matsubara_sampling(basis, sampling_points=g.mesh.points).evaluate(gl)
         return np.einsum('w,ij->wij', giv, np.identity(nf), optimize=True)

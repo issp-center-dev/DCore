@@ -72,7 +72,7 @@ def _call_Hk_converter(seedname, nelec, norb, Hk, weight):
     weight : [nkbz] or None
             weight for k
     """
-    from dcore.converters.hk import HkConverter
+    from dcore.backend.triqs_compat.dft_tools.converters.hk import HkConverter
 
     nkbz = Hk.shape[0]
     #assert nelec <= norb

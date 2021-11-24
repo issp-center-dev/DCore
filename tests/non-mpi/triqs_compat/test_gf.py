@@ -1,14 +1,20 @@
+import pytest
 import numpy as np
 from dcore.backend.sparse_gf.basis import finite_temp_basis
-
 from dcore.backend.triqs_compat.gf import *
 from dcore.backend.triqs_compat.gf.gf import GfImTime
 from dcore.backend.triqs_compat.gf.tools import *
 from dcore.backend.triqs_compat.h5 import HDFArchive as HDFArchive2
 
-import triqs.gf as tgf
-from h5 import HDFArchive
+triqs_available = False
+try:
+    import triqs.gf as tgf
+    from h5 import HDFArchive
+    triqs_available = True
+except ImportError:
+    pass
 
+@pytest.mark.skipif(not triqs_available, reason="TRIQS is not installed.")
 def test_gfindices():
     left = ['aaa', 'b']
     right = ['AA', 'B']
@@ -21,18 +27,15 @@ def test_gfindices():
     with HDFArchive2('gfindices_by_triqs_compat.h5', 'w') as f:
         f['data'] = gfindices_compat
 
-    # TRIQS can read the HDF5 file created by triqs_compat?
-    with HDFArchive('gfindices_by_triqs_compat.h5', 'r') as f:
-        idx = f['data']
-        assert list(idx[0]) == left
-        assert list(idx[1]) == right
+    for file in ['gfindices_by_triqs.h5', 'gfindices_by_triqs_compat.h5']:
+        for HA in [HDFArchive, HDFArchive2]:
+            with HA(file, 'r') as f:
+                idx = f['data']
+                assert list(idx[0]) == left
+                assert list(idx[1]) == right
 
-    # triqs_compat can read the HDF5 file created by TRIQS?
-    with HDFArchive2('gfindices_by_triqs.h5', 'r') as f:
-        idx = f['data']
-        assert list(idx[0]) == left
-        assert list(idx[1]) == right
 
+@pytest.mark.skipif(not triqs_available, reason="TRIQS is not installed.")
 def test_gf():
     beta = 10.0
     shape = (3,1)
@@ -56,31 +59,33 @@ def test_gf():
         _ = f['gf']
 
 
+@pytest.mark.skipif(not triqs_available, reason="TRIQS is not installed.")
 def test_block_gf():
     beta = 10.0
     shape = (2,1)
     npoints = 100
     data = np.zeros((2*npoints,) + shape)
 
-    tbgf = tgf.BlockGf(name_list=['up', 'dn'],
-        block_list = 2*[tgf.GfImFreq(beta=beta, data=data, n_points=npoints)],
-        make_copies = True)
-    with HDFArchive('bgf_by_triqs.h5', 'w') as f:
-        f['data'] = tbgf
+    for g in [tgf.GfReFreq(window=(-1,1), n_points=npoints, target_shape=(2,2)),
+              tgf.GfImFreq(beta=beta, data=data, n_points=npoints)]:
+        tbgf = tgf.BlockGf(name_list=['up', 'dn'], block_list = 2*[g], make_copies = True)
 
-    bgf = BlockGf(name_list=['up', 'dn'],
-        block_list = 2*[Gf(beta=beta, data=data)],
-        make_copies = True)
+        with HDFArchive('bgf_by_triqs.h5', 'w') as f:
+            f['data'] = tbgf
 
-    with HDFArchive2('bgf_by_compat.h5', 'w') as f:
-        f['data'] = bgf
+        bgf = BlockGf(name_list=['up', 'dn'],
+            block_list = 2*[Gf(beta=beta, data=data)],
+            make_copies = True)
 
-    with HDFArchive('bgf_by_compat.h5', 'r') as f:
-        f['data']
+        with HDFArchive2('bgf_by_compat.h5', 'w') as f:
+            f['data'] = bgf
 
-    with HDFArchive2('bgf_by_triqs.h5', 'r') as f:
-        f['data']
-        print(f['data'])
+        with HDFArchive('bgf_by_compat.h5', 'r') as f:
+            f['data']
+
+        with HDFArchive2('bgf_by_triqs.h5', 'r') as f:
+            f['data']
+            print(f['data'])
 
 def test_transform():
     beta = 10.0
@@ -215,11 +220,11 @@ def test_delta():
     assert np.all(np.abs(diff.data) < 1e-6)
 
 
+@pytest.mark.skipif(not triqs_available, reason="TRIQS is not installed.")
 def test_conversion():
     beta = 10.0
     n_iw = 10
     nso = 1
-    #for gclass in [GfImFreq]:
     for gclass in [GfImFreq, GfReFreq]:
         gf = gclass(beta=beta, n_points=n_iw, target_shape=(nso, nso))
         gf2 = gf.to_triqs()

@@ -2,8 +2,6 @@ import numpy
 import copy
 from warnings import warn
 from dcore.backend import *
-#import triqs.utility.mpi as mpi
-#from triqs_dft_tools import SumkDFT
 
 class SumkDFT_opt(SumkDFT):
 

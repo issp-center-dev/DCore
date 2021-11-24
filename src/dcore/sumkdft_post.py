@@ -16,12 +16,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-
 import numpy
-
-from triqs_dft_tools import SumkDFTTools
+from dcore.backend import SumkDFTTools
 from .sumkdft_opt import SumkDFT_opt
-import triqs.utility.mpi as mpi
+from dcore.backend import mpi
 
 class SumkDFTDCorePost(SumkDFTTools, SumkDFT_opt):
     """

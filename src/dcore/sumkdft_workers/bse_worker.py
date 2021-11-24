@@ -1,5 +1,5 @@
 import numpy
-import triqs.utility.mpi as mpi
+from dcore.backend import mpi
 from dcore.backend.h5 import HDFArchive
 from .worker_base import SumkDFTWorkerBase, setup_sk
 
