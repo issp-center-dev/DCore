@@ -12,6 +12,8 @@ before_script:
   - docker-compose up --build -d
 
 script:
+  - docker exec dcore_container pytest dcore_backend/tests/non-mpi/*/*.py
+  - docker exec dcore_container pytest dcore_backend/tests/mpi/*/*.py
   - docker exec dcore_container pytest tests/non-mpi/*/*.py
   - docker exec dcore_container pytest tests/mpi/*/*.py
 

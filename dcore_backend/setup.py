@@ -2,7 +2,6 @@
 Setup script for dcore_backend
 """
 from setuptools import setup, find_packages
-import versioneer
 
 REPO_URL = "https://github.com/issp-center-dev/DCore.git"
 LONG_DESCRIPTION = ""
