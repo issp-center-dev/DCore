@@ -29,7 +29,6 @@ from dcore_backend.triqs_compat.utility.comparison_tests import *
 from dcore_backend.triqs_compat.utility.h5diff import h5diff
 
 def test_Gloc(request):
-    org_dir = os.getcwd()
     os.chdir(request.fspath.dirname)
     # Basic input parameters
     beta = 40

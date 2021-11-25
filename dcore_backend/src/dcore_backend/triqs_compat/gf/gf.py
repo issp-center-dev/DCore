@@ -120,7 +120,6 @@ class Gf(object):
 
             # Determine the number of points for freq/time
             if n_points is None:
-                print("debug,,,, ", mesh_type, mesh_type.default_n_points())
                 if mesh is not None:
                     n_points = mesh.points.size//mesh_type.n_points_fact()
                 elif data is not None:
@@ -472,10 +471,16 @@ class GfReFreq(Gf):
     def set_from_pade(self, gm, n_points, freq_offset=0.0):
         """ Set values using Pade approximant """
         assert isinstance(gm, GfImFreq)
-        #FIXME: remove triqs dependence
-        gw = self.to_triqs()
-        gw.set_from_pade(gm.to_triqs(), n_points, freq_offset)
-        self << GfReFreq.from_triqs(gw)
+        from ..utility.pade_approximants import PadeApproximant
+        N = gm.data.shape[1]
+        nw = gm.data.shape[0]//2
+        idx = range(nw-n_points, nw+n_points)
+        z = gm.mesh.values()[idx]
+        for i in range(N):
+            for j in range(N):
+                pade = PadeApproximant(z, gm.data[idx,i,j])
+                self.data[:,i,j] = pade(self.mesh.values()+1j*freq_offset)
+
 
 class GfLegendre(Gf):
     def __init__(self, data=None, indices=None, beta=None, n_points=None, name=""):

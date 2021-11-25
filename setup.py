@@ -44,6 +44,7 @@ setup(
         'numpy',
         'scipy',
         'h5py',
+        'dcore_backend',
         ],
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],
