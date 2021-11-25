@@ -21,11 +21,11 @@
 ################################################################################
 
 import os
-from dcore_backend.triqs_compat.h5 import *
-from dcore_backend.triqs_compat.dft_tools.sumk_dft_tools import SumkDFTTools
-from dcore_backend.triqs_compat import mpi
-from dcore_backend.triqs_compat.utility.comparison_tests import *
-from dcore_backend.triqs_compat.utility.h5diff import h5diff
+from dcorelib.triqs_compat.h5 import *
+from dcorelib.triqs_compat.dft_tools.sumk_dft_tools import SumkDFTTools
+from dcorelib.triqs_compat import mpi
+from dcorelib.triqs_compat.utility.comparison_tests import *
+from dcorelib.triqs_compat.utility.h5diff import h5diff
 
 
 def test_svo(request):

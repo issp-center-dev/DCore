@@ -1,10 +1,10 @@
 import pytest
 import numpy as np
-from dcore_backend.sparse_gf.basis import finite_temp_basis
-from dcore_backend.triqs_compat.gf import *
-from dcore_backend.triqs_compat.gf.gf import GfImTime
-from dcore_backend.triqs_compat.gf.tools import *
-from dcore_backend.triqs_compat.h5 import HDFArchive as HDFArchive2
+from dcorelib.sparse_gf.basis import finite_temp_basis
+from dcorelib.triqs_compat.gf import *
+from dcorelib.triqs_compat.gf.gf import GfImTime
+from dcorelib.triqs_compat.gf.tools import *
+from dcorelib.triqs_compat.h5 import HDFArchive as HDFArchive2
 
 triqs_available = False
 try:

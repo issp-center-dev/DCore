@@ -22,7 +22,7 @@ RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3
 RUN pip3 install sphinx wild_sphinx_theme matplotlib pytest numpy -U --user
 
 # Install DCore-backend
-WORKDIR /home/triqs/src/DCore/dcore_backend
+WORKDIR /home/triqs/src/DCore/dcorelib
 RUN ls -la
 RUN python3 setup.py install --user
 

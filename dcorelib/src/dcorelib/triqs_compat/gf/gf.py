@@ -3,7 +3,7 @@ import numpy as np
 import h5py
 import operator
 
-from dcore_backend.sparse_gf.basis import matsubara_sampling, tau_sampling, finite_temp_basis
+from dcorelib.sparse_gf.basis import matsubara_sampling, tau_sampling, finite_temp_basis
 
 from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR, MeshReFreq
 from ..h5.archive import register_class

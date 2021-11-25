@@ -21,10 +21,10 @@
 ################################################################################
 
 
-from dcore_backend.triqs_compat.h5 import *
-from dcore_backend.triqs_compat.utility.h5diff import h5diff
+from dcorelib.triqs_compat.h5 import *
+from dcorelib.triqs_compat.utility.h5diff import h5diff
 
-from dcore_backend.triqs_compat.dft_tools.converters import *
+from dcorelib.triqs_compat.dft_tools.converters import *
 
 
 def test_hk_convert():

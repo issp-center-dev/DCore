@@ -1,12 +1,28 @@
 """
-Setup script for irbasis_x
+Setup script for DCore
 """
 from setuptools import setup, find_packages
 import versioneer
+import re, os, io
 
-#VERSION = '3.0.0'
 REPO_URL = "https://github.com/issp-center-dev/DCore.git"
 LONG_DESCRIPTION = ""
+
+def readfile(*parts):
+    """Return contents of file with path relative to script directory"""
+    herepath = os.path.abspath(os.path.dirname(__file__))
+    fullpath = os.path.join(herepath, *parts)
+    with io.open(fullpath, 'r') as f:
+        return f.read()
+
+def extract_version(*parts):
+    """Extract value of __version__ variable by parsing python script"""
+    initfile = readfile(*parts)
+    version_re = re.compile(r"(?m)^__version__\s*=\s*['\"]([^'\"]*)['\"]")
+    match = version_re.search(initfile)
+    return match.group(1)
+
+BACKEND_VERSION = extract_version('dcorelib', 'src', 'dcorelib', '__init__.py')
 
 setup(
     name='dcore',
@@ -44,7 +60,7 @@ setup(
         'numpy',
         'scipy',
         'h5py',
-        'dcore_backend',
+        f'dcorelib=={BACKEND_VERSION}',
         ],
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],

@@ -21,12 +21,12 @@
 
 import os
 from h5 import *
-from dcore_backend.triqs_compat.gf import *
-from dcore_backend.triqs_compat.dft_tools.sumk_dft import *
-import dcore_backend.triqs_compat.mpi
-from dcore_backend.triqs_compat.operators.util import set_operator_structure
-from dcore_backend.triqs_compat.utility.comparison_tests import *
-from dcore_backend.triqs_compat.utility.h5diff import h5diff
+from dcorelib.triqs_compat.gf import *
+from dcorelib.triqs_compat.dft_tools.sumk_dft import *
+import dcorelib.triqs_compat.mpi
+from dcorelib.triqs_compat.operators.util import set_operator_structure
+from dcorelib.triqs_compat.utility.comparison_tests import *
+from dcorelib.triqs_compat.utility.h5diff import h5diff
 
 def test_Gloc(request):
     os.chdir(request.fspath.dirname)

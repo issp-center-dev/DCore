@@ -1,7 +1,7 @@
 import numpy as np
 
 import irbasis3
-from dcore_backend.sparse_gf import high_freq
+from dcorelib.sparse_gf import high_freq
 import pytest
 
 

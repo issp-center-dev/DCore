@@ -1,4 +1,4 @@
-from dcore_backend.sparse_gf.basis import *
+from dcorelib.sparse_gf.basis import *
 import numpy
 import pytest
 

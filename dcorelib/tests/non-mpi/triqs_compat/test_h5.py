@@ -1,5 +1,5 @@
 import numpy as np
-from dcore_backend.triqs_compat.h5 import HDFArchive as HDFArchive2
+from dcorelib.triqs_compat.h5 import HDFArchive as HDFArchive2
 import pytest
 
 triqs_h5_available = False

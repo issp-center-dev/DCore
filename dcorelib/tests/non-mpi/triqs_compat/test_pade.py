@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from dcore_backend.triqs_compat.utility.pade_approximants import PadeApproximant
+from dcorelib.triqs_compat.utility.pade_approximants import PadeApproximant
 
 
 def test_pade():
