@@ -51,6 +51,7 @@ setup(
         'numpy',
         'scipy',
         'h5py',
+        'mpmath',
         'irbasis3'
         ],
     extras_require={
