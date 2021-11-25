@@ -1,6 +1,6 @@
-from dcore.backend import mpi
-#from dcore.backend import GfReFreq, GfImFreq
-from dcore.backend.h5 import HDFArchive
+from dcore._dispatcher import mpi
+#from dcore._dispatcher import GfReFreq, GfImFreq
+from dcore._dispatcher import HDFArchive
 
 # Run SumkDFT using MPI
 

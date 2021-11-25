@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 import sys
 import os
 import numpy
 import re
 import ast
 import h5py
-from dcore.backend import HDFArchive, U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
+from dcore._dispatcher import HDFArchive, U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 from dcore.program_options import create_parser
 
-from dcore.backend.triqs_compat.dft_tools.converters import Wannier90Converter
+from dcore.converters.wannier90 import Wannier90Converter
 
 from dcore.tools import *
 from dcore.sumkdft_compat import SumkDFTCompat

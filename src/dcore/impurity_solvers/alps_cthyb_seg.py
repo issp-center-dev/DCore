@@ -21,7 +21,7 @@ import shutil
 import sys
 from itertools import product
 from triqs.gf import *
-from dcore.backend.h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 from triqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size
 from .base import SolverBase

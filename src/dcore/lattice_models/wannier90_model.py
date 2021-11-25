@@ -18,11 +18,11 @@
 
 
 import numpy
-from dcore.backend.h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 
 from .base import LatticeModel
 from .tools import set_nk
-from dcore.backend.triqs_compat.dft_tools.converters import Wannier90Converter
+from dcore.converters.wannier90 import Wannier90Converter
 
 def _generate_w90_converter_input(nkdiv, params, f):
     """

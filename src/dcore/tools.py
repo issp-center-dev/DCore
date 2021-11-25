@@ -27,8 +27,8 @@ import ast
 import math
 from scipy import linalg as scipy_linalg
 
-from dcore.backend import h5diff as h5diff_org, compare, BlockGf, HDFArchive, failures, MeshImFreq, fit_hermitian_tail, Gf
-from dcore.backend.triqs_compat.gf.gf import GfImFreq
+from dcore._dispatcher import h5diff as h5diff_org, compare, \
+    BlockGf, HDFArchive, failures, MeshImFreq, fit_hermitian_tail, Gf, GfImFreq
 
 """
 THIS MODULE MUST NOT DEPEND ON MPI!
@@ -687,7 +687,7 @@ def save_giw(h5file, path, g):
 
     """
 
-    assert isinstance(g, GfImFreq), 'Type {} is not supported by save_giw'.format(type(g))
+    #assert type(g) not in [Gf, GfImFreq], 'Type {} is not supported by save_giw'.format(type(g))
 
     h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
     h5file[path + '/data'] = complex_to_float_array(g.data)

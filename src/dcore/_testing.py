@@ -2,7 +2,7 @@ from datetime import datetime
 import numpy
 from numpy.testing import assert_allclose
 from itertools import product
-from dcore.backend import GfImFreq, BlockGf, HDFArchive
+from dcore._dispatcher import GfImFreq, BlockGf, HDFArchive
 
 from .tools import float_to_complex_array
 from .dcore_w90tool import Wannier90

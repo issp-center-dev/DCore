@@ -22,7 +22,7 @@ import os
 import numpy
 import scipy
 from itertools import product
-from dcore.backend.h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 
 from .base import LatticeModel
 
@@ -72,7 +72,7 @@ def _call_Hk_converter(seedname, nelec, norb, Hk, weight):
     weight : [nkbz] or None
             weight for k
     """
-    from dcore.backend.triqs_compat.dft_tools.converters.hk import HkConverter
+    from dcore.converters.hk import HkConverter
 
     nkbz = Hk.shape[0]
     #assert nelec <= norb

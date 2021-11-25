@@ -22,7 +22,7 @@ import numpy
 import copy
 from itertools import product
 
-from dcore.backend import *
+from dcore._dispatcher import *
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import create_parser, parse_parameters, parse_bvec
 from dcore.tools import save_Sigma_w_sh_txt

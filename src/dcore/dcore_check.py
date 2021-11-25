@@ -20,7 +20,7 @@ from matplotlib.gridspec import GridSpec
 import numpy
 import math
 
-from dcore.backend import *
+from dcore._dispatcher import *
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import *
 

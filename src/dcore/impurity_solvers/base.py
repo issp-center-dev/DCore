@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from dcore.backend import *
+from dcore._dispatcher import *
 from itertools import *
 import numpy
 import os

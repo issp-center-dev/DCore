@@ -1,7 +1,7 @@
 import numpy
 import copy
 from warnings import warn
-from dcore.backend import *
+from dcore._dispatcher import *
 
 class SumkDFT_opt(SumkDFT):
 

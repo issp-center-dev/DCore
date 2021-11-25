@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from dcore.backend import h5diff
+from dcore._dispatcher import h5diff
 from dcore.dcore_pre import dcore_pre
 import os
 

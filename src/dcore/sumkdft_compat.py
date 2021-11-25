@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from dcore.backend.h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 
 def read_dft_input_data(file, subgrp, things_to_read):
     """

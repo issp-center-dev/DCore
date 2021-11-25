@@ -17,7 +17,7 @@
 #
 
 from dcore.dcore_pre import dcore_pre
-from dcore.backend import h5diff
+from dcore._dispatcher import h5diff
 import shutil, os
 
 #

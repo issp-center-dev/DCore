@@ -17,9 +17,9 @@
 #
 
 import numpy
-from dcore.backend import SumkDFTTools
+from dcore._dispatcher import SumkDFTTools
 from .sumkdft_opt import SumkDFT_opt
-from dcore.backend import mpi
+from dcore._dispatcher import mpi
 
 class SumkDFTDCorePost(SumkDFTTools, SumkDFT_opt):
     """

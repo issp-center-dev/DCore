@@ -28,7 +28,7 @@ import ast
 import h5py
 import builtins
 
-from .backend import dyson
+from ._dispatcher import dyson
 from .program_options import *
 from .sumkdft_workers.launcher import run_sumkdft
 

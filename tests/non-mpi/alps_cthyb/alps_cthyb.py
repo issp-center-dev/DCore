@@ -17,7 +17,7 @@
 #
 
 
-from dcore.backend import *
+from dcore._dispatcher import *
 from dcore.impurity_solvers.alps_cthyb import *
 from dcore.tools import to_spin_full_U_matrix
 

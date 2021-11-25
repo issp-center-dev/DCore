@@ -1,6 +1,6 @@
 import numpy
-from dcore.backend import mpi
-from dcore.backend.h5 import HDFArchive
+from dcore._dispatcher import mpi
+from dcore._dispatcher import HDFArchive
 from .worker_base import SumkDFTWorkerBase, setup_sk
 
 class SumkDFTWorkerBSE(SumkDFTWorkerBase):
