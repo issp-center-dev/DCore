@@ -20,14 +20,16 @@
 #
 ################################################################################
 
-from dcore.backend.triqs_compat.h5 import *
-from dcore.backend.triqs_compat.dft_tools.sumk_dft_tools import SumkDFTTools
-from dcore.backend.triqs_compat import mpi
-from dcore.backend.triqs_compat.utility.comparison_tests import *
-from dcore.backend.triqs_compat.utility.h5diff import h5diff
+import os
+from dcore_backend.triqs_compat.h5 import *
+from dcore_backend.triqs_compat.dft_tools.sumk_dft_tools import SumkDFTTools
+from dcore_backend.triqs_compat import mpi
+from dcore_backend.triqs_compat.utility.comparison_tests import *
+from dcore_backend.triqs_compat.utility.h5diff import h5diff
 
 
-def test_svo():
+def test_svo(request):
+    os.chdir(request.fspath.dirname)
     SK = SumkDFTTools(hdf_file = 'SrVO3.ref.h5')
     dm = SK.density_matrix(method = 'using_gf', beta = 40)
     dm_pc = SK.partial_charges(beta=40,with_Sigma=False,with_dc=False)

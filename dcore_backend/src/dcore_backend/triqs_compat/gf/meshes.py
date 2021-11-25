@@ -98,6 +98,10 @@ class MeshImFreq(Mesh):
     def n_points_fact(cls):
         return 2
 
+    @classmethod
+    def default_n_points(cls):
+        return 1025
+
     @property
     def hash(self):
         return hash(self._beta) + hash(self._statistic) + hash(self._points.tobytes())

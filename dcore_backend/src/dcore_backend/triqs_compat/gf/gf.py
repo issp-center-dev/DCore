@@ -3,7 +3,7 @@ import numpy as np
 import h5py
 import operator
 
-from dcore.backend.sparse_gf.basis import matsubara_sampling, tau_sampling, finite_temp_basis
+from dcore_backend.sparse_gf.basis import matsubara_sampling, tau_sampling, finite_temp_basis
 
 from .meshes import MeshImFreq, MeshImTime, MeshLegendre, MeshIR, MeshReFreq
 from ..h5.archive import register_class
@@ -120,6 +120,7 @@ class Gf(object):
 
             # Determine the number of points for freq/time
             if n_points is None:
+                print("debug,,,, ", mesh_type, mesh_type.default_n_points())
                 if mesh is not None:
                     n_points = mesh.points.size//mesh_type.n_points_fact()
                 elif data is not None:
@@ -191,6 +192,10 @@ class Gf(object):
     def to_triqs(self):
         """ Transform to a TRIQS Gf object (data is copied) """
         return NotImplemented
+
+    @classmethod
+    def default_n_points():
+        return -1
 
     @classmethod
     def from_triqs(cls, triqs_gf):

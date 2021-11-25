@@ -3,8 +3,8 @@ import numpy as np
 from .block_gf import BlockGf
 from .gf import GfImFreq, GfImTime, GfIR, iOmega_n, Identity
 
-from dcore.backend.sparse_gf.high_freq import high_freq_moment
-from dcore.backend.sparse_gf.basis import tau_sampling, matsubara_sampling, finite_temp_basis
+from dcore_backend.sparse_gf.high_freq import high_freq_moment
+from dcore_backend.sparse_gf.basis import tau_sampling, matsubara_sampling, finite_temp_basis
 
 def fit_hermitian_tail(giw, basis=None):
     """ 

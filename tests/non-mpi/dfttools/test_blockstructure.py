@@ -1,9 +1,9 @@
-from dcore.backend.triqs_compat.dft_tools.sumk_dft import *
-from dcore.backend.triqs_compat.utility.h5diff import h5diff, compare, failures
-from dcore.backend.triqs_compat.gf import *
-from dcore.backend.triqs_compat.utility.comparison_tests import assert_block_gfs_are_close
+from dcore_backend.triqs_compat.dft_tools.sumk_dft import *
+from dcore_backend.triqs_compat.utility.h5diff import h5diff, compare, failures
+from dcore_backend.triqs_compat.gf import *
+from dcore_backend.triqs_compat.utility.comparison_tests import assert_block_gfs_are_close
 from scipy.linalg import expm
-from dcore.backend.triqs_compat.dft_tools.block_structure import BlockStructure
+from dcore_backend.triqs_compat.dft_tools.block_structure import BlockStructure
 import numpy as np
 import os
 

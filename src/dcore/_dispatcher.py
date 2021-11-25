@@ -4,15 +4,15 @@ if 'triqs.utility.mpi' in sys.modules:
     raise RuntimeError("Error: MPI must not be imported in a non-MPI module! This indicates a bug in DCore.")
 
 if 'DCORE_TRIQS_COMPAT' in os.environ and int(os.environ['DCORE_TRIQS_COMPAT']) == 1:
-    from dcore.backend.triqs_compat import *
-    from dcore.backend.triqs_compat import h5
-    from dcore.backend.triqs_compat.gf import *
-    from dcore.backend.triqs_compat.gf.tools import *
-    from dcore.backend.triqs_compat.h5 import HDFArchive
-    from dcore.backend.triqs_compat.utility import *
-    from dcore.backend.triqs_compat.operators import *
-    from dcore.backend.triqs_compat import mpi
-    from dcore.backend.triqs_compat.dft_tools import SumkDFT, SumkDFTTools
+    from dcore_backend.triqs_compat import *
+    from dcore_backend.triqs_compat import h5
+    from dcore_backend.triqs_compat.gf import *
+    from dcore_backend.triqs_compat.gf.tools import *
+    from dcore_backend.triqs_compat.h5 import HDFArchive
+    from dcore_backend.triqs_compat.utility import *
+    from dcore_backend.triqs_compat.operators import *
+    from dcore_backend.triqs_compat import mpi
+    from dcore_backend.triqs_compat.dft_tools import SumkDFT, SumkDFTTools
 else:
     from triqs.gf.gf import *
     from triqs.gf import *
