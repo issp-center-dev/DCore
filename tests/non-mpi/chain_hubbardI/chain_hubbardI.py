@@ -22,6 +22,7 @@ import re
 import os
 from dcore.tools import h5diff
 from dcore.numdiff import numdiff
+from dcore.dcore_mpicheck import dcore_mpicheck
 from dcore.dcore_pre import dcore_pre
 from dcore.dcore import dcore
 from dcore.dcore_check import dcore_check
@@ -33,6 +34,7 @@ def test_chain_hubbardI(request):
     os.chdir(request.fspath.dirname)
 
     seedname = 'test'
+    dcore_mpicheck('dmft.ini')
     dcore_pre('dmft.ini')
     dcore('dmft.ini')
     dcore_check('dmft.ini', './check', 'eps', 10000)

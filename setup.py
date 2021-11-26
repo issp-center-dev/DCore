@@ -22,8 +22,6 @@ def extract_version(*parts):
     match = version_re.search(initfile)
     return match.group(1)
 
-BACKEND_VERSION = extract_version('dcorelib', 'src', 'dcorelib', '__init__.py')
-
 setup(
     name='dcore',
     version=versioneer.get_version(),
@@ -60,7 +58,7 @@ setup(
         'numpy',
         'scipy',
         'h5py',
-        f'dcorelib=={BACKEND_VERSION}',
+        'dcorelib',
         ],
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],
@@ -81,6 +79,7 @@ setup(
             "dcore_check = dcore.dcore_check:run",
             "dcore_bse = dcore.dcore_bse:run",
             "dcore_gk = dcore.dcore_gk:run",
+            "dcore_mpicheck = dcore.dcore_mpicheck:run",
         ]
     },
 
