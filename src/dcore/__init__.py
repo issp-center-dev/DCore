@@ -17,6 +17,6 @@
 #
 
 from .version import version as __version__
-
 from . import _version
+
 __version__ = _version.get_versions()['version']
