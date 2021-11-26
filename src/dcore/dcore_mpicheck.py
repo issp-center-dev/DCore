@@ -20,20 +20,6 @@ from dcore.program_options import create_parser, parse_parameters
 from dcore.tools import launch_mpi_subprocesses
 import os
 
-def __print_paramter(p, param_name):
-    """
-    Print parameters.
-
-    Parameters
-    ----------
-    p : dictionary
-        Dictionary for parameters
-    param_name : string
-        key for p
-    """
-    print(param_name + " = " + str(p[param_name]))
-
-
 def dcore_mpicheck(filename, np=1):
     """
     Main routine for the dcore_mpicheck
