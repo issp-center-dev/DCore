@@ -20,9 +20,7 @@ import os
 import shutil
 import sys
 from itertools import product
-from triqs.gf import *
-from h5 import HDFArchive
-from triqs.operators import *
+from dcore._dispatcher import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size
 from .base import SolverBase
 

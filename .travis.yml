@@ -12,8 +12,10 @@ before_script:
   - docker-compose up --build -d
 
 script:
+  - docker exec dcore_container pytest dcorelib/tests/non-mpi/*/*.py
+  - docker exec dcore_container mpirun -np 2 pytest dcorelib/tests/mpi/*/*.py
   - docker exec dcore_container pytest tests/non-mpi/*/*.py
-  - docker exec dcore_container pytest tests/mpi/*/*.py
+  - docker exec dcore_container mpirun -np 2 pytest tests/mpi/*/*.py
 
 after_script:
   - cd ${ROOTDIR}

@@ -15,16 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 import sys
 import os
 import numpy
 import re
 import ast
 import h5py
-from h5 import HDFArchive
+from dcore._dispatcher import HDFArchive, U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 from dcore.program_options import create_parser
-from triqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 
 from dcore.converters.wannier90 import Wannier90Converter
 

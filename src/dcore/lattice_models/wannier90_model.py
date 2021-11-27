@@ -18,7 +18,7 @@
 
 
 import numpy
-from h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 
 from .base import LatticeModel
 from .tools import set_nk

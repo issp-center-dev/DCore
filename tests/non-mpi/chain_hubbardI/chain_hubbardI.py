@@ -22,8 +22,10 @@ import re
 import os
 from dcore.tools import h5diff
 from dcore.numdiff import numdiff
+from dcore.dcore_mpicheck import dcore_mpicheck
 from dcore.dcore_pre import dcore_pre
 from dcore.dcore import dcore
+from dcore.dcore_check import dcore_check
 from dcore.dcore_post import dcore_post
 
 
@@ -32,8 +34,10 @@ def test_chain_hubbardI(request):
     os.chdir(request.fspath.dirname)
 
     seedname = 'test'
+    dcore_mpicheck('dmft.ini')
     dcore_pre('dmft.ini')
     dcore('dmft.ini')
+    dcore_check('dmft.ini', './check', 'eps', 10000)
     dcore_post('dmft.ini')
     
     data_files = glob.glob('./ref/*')
@@ -44,9 +48,9 @@ def test_chain_hubbardI(request):
         if base_name == seedname + '.h5':
             h5diff(base_name, path)
         elif base_name == seedname + '.out.h5':
-            h5diff(base_name, path, "dmft_out/Sigma_iw")
+            h5diff(base_name, path, "dmft_out/Sigma_iw", precision=1e-2)
         elif not re.search('.dat$', base_name) is None:
-            numdiff(base_name, path)
+            numdiff(base_name, path, 1e-2)
         else:
             raise RuntimeError("Uknown how to check " + base_name)
 

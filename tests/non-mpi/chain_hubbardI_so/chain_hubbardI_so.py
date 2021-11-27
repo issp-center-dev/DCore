@@ -42,9 +42,9 @@ def test_chain_hubbardI_so(request):
         if base_name == seedname + '.h5':
             h5diff(base_name, path)
         elif base_name == seedname + '.out.h5':
-            h5diff(base_name, path, "dmft_out/Sigma_iw")
+            h5diff(base_name, path, "dmft_out/Sigma_iw", precision=1e-2)
         elif not re.search('.dat$', base_name) is None:
-            numdiff(base_name, path)
+            numdiff(base_name, path, 1e-2)
         else:
             raise RuntimeError("Uknown how to check " + base_name)
 

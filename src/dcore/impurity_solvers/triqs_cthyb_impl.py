@@ -21,7 +21,8 @@ import sys
 import os
 
 from triqs_cthyb import Solver as TRIQSCTHYBSolver
-from .base import rotate_basis, make_h_int
+from .base import rotate_basis
+from .triqs_dep_tools import *
 
 from h5 import HDFArchive
 import triqs.utility.mpi as mpi
