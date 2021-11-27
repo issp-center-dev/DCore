@@ -57,7 +57,9 @@ setup(
     install_requires=[
         'numpy',
         'scipy',
-        'h5py',
+        # h5py 2.10.0 has a bug.
+        # Import h5py imports mpi4py automatically.
+        'h5py!=2.10.0',
         'dcorelib',
         ],
     extras_require={

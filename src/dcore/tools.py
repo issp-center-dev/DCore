@@ -151,7 +151,7 @@ def gf_block_names(use_spin_orbit):
         return ['up', 'down']
 
 def raise_if_mpi_imported():
-    if 'triqs.utility.mpi' in sys.modules:
+    if 'triqs.utility.mpi' in sys.modules or 'mpi4py' in sys.modules:
         raise RuntimeError("Error: MPI must not be imported in a non-MPI module! This indicates a bug in DCore.")
 
 def convert_to_built_in_scalar_type(data):
@@ -191,6 +191,7 @@ def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
     """
     commands = shlex.split(mpirun_command)
     commands.extend(rest_commands)
+    raise_if_mpi_imported()
     return_code = subprocess.call(commands, stdout=output_file, stderr=output_file)
     output_file.flush()
     if return_code:

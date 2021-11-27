@@ -1,11 +1,11 @@
 version: '3'
 services:
-  dcorelib:
+  dcoretest:
     build:
       context: .
-    env_file:
-     - ./.env
+      #env_file:
+      #- ./.env
     tty: true
-    volumes:
-    - ./:/var/tmp
-    working_dir: /var/tmp
+    #volumes:
+    #- ./:/var/dcoretest
+    working_dir: /var/dcoretest
