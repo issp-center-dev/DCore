@@ -14,6 +14,7 @@ if 'DCORE_TRIQS_COMPAT' in os.environ and int(os.environ['DCORE_TRIQS_COMPAT']) 
     from dcorelib.triqs_compat.h5 import HDFArchive
     from dcorelib.triqs_compat.utility import *
     from dcorelib.triqs_compat.operators import *
+    print("IMPORTING MPI")
     from dcorelib.triqs_compat import mpi
     from dcorelib.triqs_compat.dft_tools import SumkDFT, SumkDFTTools
 else:
@@ -35,3 +36,5 @@ else:
     if "OMPI_COMM_WORLD_RANK" in os.environ or "PMI_RANK" in os.environ:
         from triqs.utility import mpi
         from triqs_dft_tools import SumkDFT, SumkDFTTools
+    else:
+        from .backend import _triqs_mpi as mpi

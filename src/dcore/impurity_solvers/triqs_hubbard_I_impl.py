@@ -19,8 +19,6 @@
 import argparse
 import sys
 import os
-from itertools import product
-
 from triqs_hubbardI import Solver
 
 from h5 import HDFArchive

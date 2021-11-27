@@ -8,20 +8,6 @@ import re, os, io
 REPO_URL = "https://github.com/issp-center-dev/DCore.git"
 LONG_DESCRIPTION = ""
 
-def readfile(*parts):
-    """Return contents of file with path relative to script directory"""
-    herepath = os.path.abspath(os.path.dirname(__file__))
-    fullpath = os.path.join(herepath, *parts)
-    with io.open(fullpath, 'r') as f:
-        return f.read()
-
-def extract_version(*parts):
-    """Extract value of __version__ variable by parsing python script"""
-    initfile = readfile(*parts)
-    version_re = re.compile(r"(?m)^__version__\s*=\s*['\"]([^'\"]*)['\"]")
-    match = version_re.search(initfile)
-    return match.group(1)
-
 setup(
     name='dcore',
     version=versioneer.get_version(),

@@ -19,7 +19,7 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ##########################################################################
-from . import _mpi as mpi
+from dcore._dispatcher import mpi
 
 class ConverterTools:
 
