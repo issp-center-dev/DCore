@@ -847,6 +847,7 @@ def symmetrize(Sigma_iw, generators):
         Symmetrized self-energy.
 
     """
+    assert isinstance(generators, list)
 
     Sigma_iw_symm = Sigma_iw.copy()
 
