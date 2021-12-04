@@ -22,19 +22,30 @@ import numpy
 import copy
 from itertools import product
 
-from triqs.gf import *
-from triqs.operators import *
-
+from dcore._dispatcher import *
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import create_parser, parse_parameters, parse_bvec
 from dcore.tools import save_Sigma_w_sh_txt
 from dcore import impurity_solvers
-#from dcore import sumkdft
 from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import set_nk
 from .sumkdft_workers.launcher import run_sumkdft
 
 
+def _set_from_pade(sigma_w, sigma_iw, n_points, freq_offset):
+    from dcorelib.triqs_compat.gf.gf import GfImFreq as GfImFreq_compat
+    if isinstance(sigma_iw, GfImFreq_compat):
+        #print("DEBUG...")
+        sigma_iw_ = sigma_iw.to_triqs()
+        sigma_w_ = sigma_w.to_triqs()
+        #print([v for v in sigma_iw_.mesh.values()])
+        sigma_w_.set_from_pade(sigma_iw_, n_points, freq_offset)
+        #print(sigma_w_.data[0,:,:])
+        sigma_w << GfReFreq.from_triqs(sigma_w_) 
+    else:
+        #print([v for v in sigma_iw.mesh.values()])
+        sigma_w.set_from_pade(sigma_iw, n_points, freq_offset)
+        #print(sigma_w.data[0,:,:])
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
 
@@ -276,7 +287,9 @@ class DMFTCoreTools:
             sigma_w_sh[ish] = BlockGf(name_list=block_names, block_list=glist(), make_copies=False)
             # Analytic continuation
             for bname, sig in Sigma_iw:
-                sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
+                #def _set_from_pade(sigma_w, sigma_iw, n_points, freq_offset):
+                #sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
+                _set_from_pade(sigma_w_sh[ish][bname], sig, n_points=self._n_pade, freq_offset=self._eta)
 
         print("\n#############  Print Self energy in the Real Frequency  ################\n")
         filename = self._prefix + self._seedname + '_sigmaw.dat'

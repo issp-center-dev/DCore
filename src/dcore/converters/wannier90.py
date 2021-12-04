@@ -47,11 +47,11 @@
 from types import *
 import numpy
 import math
-from h5 import *
+from dcore._dispatcher import h5, HDFArchive
 from .converter_tools import *
 from itertools import product
 import os.path
-from . import _mpi as mpi
+from dcore._dispatcher import mpi
 
 
 class Wannier90Converter(ConverterTools):

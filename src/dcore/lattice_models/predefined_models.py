@@ -22,7 +22,7 @@ import os
 import numpy
 import scipy
 from itertools import product
-from h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 
 from .base import LatticeModel
 

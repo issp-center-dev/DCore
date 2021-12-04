@@ -21,7 +21,7 @@
 import numpy
 import os
 import copy
-from h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 
 
 def expand_block_diag_matrix(mat1, mat2):

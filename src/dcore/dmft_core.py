@@ -28,6 +28,7 @@ import ast
 import h5py
 import builtins
 
+from ._dispatcher import dyson
 from .program_options import *
 from .sumkdft_workers.launcher import run_sumkdft
 
@@ -36,6 +37,7 @@ from .sumkdft_compat import SumkDFTCompat
 from .tools import *
 
 from . import impurity_solvers
+from .symmetrizer import pm_symmetrizer
 
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
@@ -363,6 +365,13 @@ class DMFTCoreSolver(object):
         # physical quantities to save
         self._quant_to_save_latest = {}  # only the latest results are saved (overwritten)
         self._quant_to_save_history = {}  # histories are retained
+
+        if not self._read_only:
+            if self._params["control"]["time_reversal"]:
+                norb_sh = self._dim_corr_sh//2 if self.use_spin_orbit else self._dim_corr_sh
+                self._spin_symm = [pm_symmetrizer(norb, self.use_spin_orbit) for norb in norb_sh]
+            else:
+                self._spin_symm = None
 
         self._sanity_check()
 
@@ -786,16 +795,11 @@ class DMFTCoreSolver(object):
             self._quant_to_save_history['total_charge_imp'] = charge_imp
 
             # Symmetrize over spin components
-            if self._params["control"]["time_reversal"]:
+            if self._spin_symm is not None:
                 print("Averaging self-energy and impurity Green's function over spin components...")
-
-                if self._params["model"]["spin_orbit"]:
-                    # TODO
-                    raise Exception("Spin-symmetrization in the case with the spin-orbit coupling is not implemented")
-
                 for ish in range(self._n_inequiv_shells):
-                    symmetrize_spin(new_Gimp_iw[ish])
-                    symmetrize_spin(new_Sigma_iw[ish])
+                    new_Gimp_iw[ish] << self._spin_symm[ish](new_Gimp_iw[ish])
+                    new_Sigma_iw[ish] << self._spin_symm[ish](new_Sigma_iw[ish])
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.

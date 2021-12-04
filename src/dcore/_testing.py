@@ -2,8 +2,7 @@ from datetime import datetime
 import numpy
 from numpy.testing import assert_allclose
 from itertools import product
-from triqs.gf import GfImFreq, BlockGf
-from h5 import HDFArchive
+from dcore._dispatcher import GfImFreq, BlockGf, HDFArchive
 
 from .tools import float_to_complex_array, get_block_size
 from .dcore_w90tool import Wannier90

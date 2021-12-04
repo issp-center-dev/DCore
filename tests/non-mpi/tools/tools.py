@@ -45,7 +45,7 @@ def test_spin_moments_sh():
 def test_save_load_Sigma_iw():
     from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt
     from dcore.tools import make_block_gf, save_giw, load_giw
-    from triqs.gf import GfImFreq
+    from dcore._dispatcher import GfImFreq
 
     nsh = 2
     norb = 2
@@ -99,7 +99,7 @@ def test_symmetrization_Sigma_iw():
     Consider two-orbital system and symmetrize Sigma over orbitals
     """
     from dcore.tools import make_block_gf, symmetrize, _to_numpy_array
-    from triqs.gf import GfImFreq
+    from dcore._dispatcher import GfImFreq
 
     norb = 2
     beta = 10.0

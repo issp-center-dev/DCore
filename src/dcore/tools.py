@@ -25,20 +25,15 @@ import subprocess
 from itertools import *
 import ast
 import math
-import scipy
 from scipy import linalg as scipy_linalg
 
-from triqs.utility.h5diff import compare, failures
-from triqs.utility.h5diff import h5diff as h5diff_org
-from h5 import HDFArchive
-from triqs.gf import *
-from triqs.operators import *
-
-from triqs import version
+from dcore._dispatcher import h5diff as h5diff_org, compare, \
+    BlockGf, HDFArchive, failures, MeshImFreq, fit_hermitian_tail, Gf, GfImFreq
 
 """
 THIS MODULE MUST NOT DEPEND ON MPI!
 """
+
 
 def h5diff(f1, f2, key=None, precision=1.e-6):
     """
@@ -127,10 +122,8 @@ def extract_H0_from_tail(G0_iw):
     if isinstance(G0_iw, BlockGf):
         return {name:extract_H0_from_tail(b) for name, b in G0_iw}
     elif isinstance(G0_iw.mesh, MeshImFreq):
-       import triqs.gf.gf_fnt as gf_fnt
        assert len(G0_iw.target_shape) in [0,2], "extract_H0_from_tail(G0_iw) requires a matrix or scalar_valued Green function"
-       assert gf_fnt.is_gf_hermitian(G0_iw), "extract_H0_from_tail(G0_iw) requires a Green function with the property G0_iw[iw][i,j] = conj(G0_iw[-iw][j,i])"
-       tail, err = gf_fnt.fit_hermitian_tail(G0_iw)
+       tail, err = fit_hermitian_tail(G0_iw)
        if err > 1e-5:
            print("WARNING: delta extraction encountered a sizeable tail-fit error: ", err)
        return tail[2]
@@ -158,7 +151,7 @@ def gf_block_names(use_spin_orbit):
         return ['up', 'down']
 
 def raise_if_mpi_imported():
-    if 'triqs.utility.mpi' in sys.modules:
+    if 'triqs.utility.mpi' in sys.modules or 'mpi4py' in sys.modules:
         raise RuntimeError("Error: MPI must not be imported in a non-MPI module! This indicates a bug in DCore.")
 
 def convert_to_built_in_scalar_type(data):
@@ -198,6 +191,7 @@ def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
     """
     commands = shlex.split(mpirun_command)
     commands.extend(rest_commands)
+    raise_if_mpi_imported()
     return_code = subprocess.call(commands, stdout=output_file, stderr=output_file)
     output_file.flush()
     if return_code:
@@ -709,7 +703,7 @@ def save_giw(h5file, path, g):
 
     """
 
-    assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
+    #assert type(g) not in [Gf, GfImFreq], 'Type {} is not supported by save_giw'.format(type(g))
 
     h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
     h5file[path + '/data'] = complex_to_float_array(g.data)
@@ -868,6 +862,7 @@ def symmetrize(Sigma_iw, generators):
         Symmetrized self-energy.
 
     """
+    assert isinstance(generators, list)
 
     Sigma_iw_symm = Sigma_iw.copy()
 
