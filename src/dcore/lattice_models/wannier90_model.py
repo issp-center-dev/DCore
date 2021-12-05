@@ -111,17 +111,6 @@ class Wannier90Model(LatticeModel):
                     corr_shells[icor]["SO"] = 1
                 f["dft_input"]["corr_shells"] = corr_shells
 
-                # Make projectors compatible with DCore's block structure
-                # proj_mat (n_k, nb, n_corr, max_dim_sh, max_n_orb)
-                proj_mat = f['dft_input']['proj_mat']
-                n_k, nb, n_corr, max_dim_sh, max_n_orb = proj_mat.shape
-                assert nb == 1
-                # (n_k, nb, n_corr, nso, orb, spin) => (n_k, nb, n_corr, nso, spin, orb)
-                assert max_dim_sh//2 > 0
-                proj_mat = proj_mat.reshape((n_k, nb, n_corr, max_dim_sh, max_n_orb//2, 2))
-                proj_mat = proj_mat.transpose((0, 1, 2, 3, 5, 4))
-                proj_mat = proj_mat.reshape((n_k, 1, n_corr, max_dim_sh, max_n_orb))
-                f['dft_input']['proj_mat'] = proj_mat
 
 
     def write_dft_band_input_data(self, params, kvec, bands_data='dft_bands_input'):
