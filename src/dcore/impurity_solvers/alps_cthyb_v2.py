@@ -67,21 +67,6 @@ def to_numpy_array(g, block_names):
     return data
 
 
-def assign_from_numpy_array_legendre(g, data, block_names):
-    """
-    Set numpy data to BlockGf of legendre
-    """
-    if g.n_blocks > 2:
-        raise RuntimeError("n_blocks must be 1 or 2.")
-
-    assert data.shape[-1] == g[block_names[0]].data.shape[0]
-    offset = 0
-    for name in block_names:
-        block = g[name]
-        block_dim = get_block_size(block)
-        block.data[:,:,:] = data[:, offset:offset + block_dim, offset:offset + block_dim]
-        offset += block_dim
-
 
 class ALPSCTHYBSolver_v2(SolverBase):
 
@@ -143,7 +128,6 @@ class ALPSCTHYBSolver_v2(SolverBase):
 
         # Non-interacting part of the local Hamiltonian including chemical potential
         # Make sure H0 is hermite.
-        # Ordering of index in H0 is spin1, spin2, spin1, spin2, ...
         H0 = extract_H0(self._G0_iw, self.block_names)
 
         # Compute the hybridization function from G0:
@@ -166,7 +150,6 @@ class ALPSCTHYBSolver_v2(SolverBase):
                 U_nonzeros.append((indices, self.u_mat[i,j,k,l]))
 
         if rot is not None and not numpy.allclose(rot['ud'], numpy.identity(rot['ud'].shape[0])):
-            print("rot ", rot)
             raise RuntimeError("Basis rotation matrix is not supported by ALPS/CT-HYBv2!")
 
         # Set up input parameters for ALPS/CT-HYB
