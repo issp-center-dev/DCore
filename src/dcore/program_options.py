@@ -143,6 +143,7 @@ def create_parser(target_sections=None):
     parser.add_option("sparse_bse", "input_vertex_format", str, "G2loc", "Floc or G2loc. For the latter case, local full vertex is computed on the fly.")
     parser.add_option("sparse_bse", "rcond", float, 1e-12, "rcond for SparseBSESolver.")
     parser.add_option("sparse_bse", "oversampling", int, 4, "Oversampling factor for SparseBSESolver.")
+    parser.add_option("sparse_bse", "regularize", bool, False, "Regularization for SparseBSESolver.")
 
     return parser
 

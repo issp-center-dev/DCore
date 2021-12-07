@@ -27,6 +27,7 @@ from .tools import *
 import h5py
 from .irbasis_util import construct_basis
 from . import impurity_solvers
+from ._dispatcher import dyson
 
 def calc_Floc_impurity_model(solver_name, solver_params, mpirun_command, basis_rot,
                               Umat, gf_struct, beta, n_iw,

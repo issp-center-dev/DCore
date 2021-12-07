@@ -16,8 +16,6 @@ from dcore._testing import mk_hr_square_2x2, gk_tail, check_self_energy, gk_from
 
 import pytest
 
-from dcore import irbasis_x_available
-
 np = 1
 if 'DCORE_TEST_NUM_PROC' in os.environ:
     np = int(os.environ['DCORE_TEST_NUM_PROC'])

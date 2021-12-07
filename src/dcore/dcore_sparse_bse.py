@@ -65,6 +65,7 @@ def dcore_sparse_bse(filename, np=1, prefix="./"):
         h['qsample'] = qsample
         h['rcond'] = p["sparse_bse"]["rcond"]
         h['oversampling'] = p["sparse_bse"]["oversampling"]
+        h['regularize'] = p["sparse_bse"]["regularize"]
     
     # make output directory
     output_dir = os.path.abspath(f'{cwd_org}/{prefix}')

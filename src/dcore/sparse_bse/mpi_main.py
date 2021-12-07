@@ -152,6 +152,7 @@ def run(input_file, gk_file, vertex_file, output_file):
         qsample = h['qsample']
         rcond = h['rcond']
         oversampling = h['oversampling']
+        regularize = h['regularize']
 
     # Distribute q points over MPI processes
     slice_local = get_slice(qsample[0].size)
@@ -202,7 +203,7 @@ def run(input_file, gk_file, vertex_file, output_file):
     offset = 0
     for idx_wb, wb in enumerate(wb_sample):
         # Solver
-        solver = bse_dmft.SparseSolver(basis, 2*wb, oversampling=oversampling, rcond=rcond)
+        solver = bse_dmft.SparseSolver(basis, 2*wb, oversampling=oversampling, rcond=rcond, regularize=regularize)
         nsmpl_freqs_  = solver.wsample_Floc[0].size
         offset_next = offset + nsmpl_freqs_
         for i in range(3):

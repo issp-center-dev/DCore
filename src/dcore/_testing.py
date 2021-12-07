@@ -37,12 +37,11 @@ def mk_hr_square_2x2(nspin, t, seedname):
         irvec[ir, :] = (X, Y, Z)
     
         # <0 |H| R>
-        for i_lsite, i_rsite in product(range(num_sites), repeat=2):
-            pos_lsite = pos_in_unit_cell[i_lsite]
-            pos_rsite = pos_in_unit_cell[i_rsite] + X * primitive_vecs[0] + Y * primitive_vecs[1] + Z * primitive_vecs[2]
-
-            if numpy.sum((pos_lsite - pos_rsite)**2) == 1:
-                for isp in range(nspin):
+        for isp in range(nspin):
+            for i_lsite, i_rsite in product(range(num_sites), repeat=2):
+                pos_lsite = pos_in_unit_cell[i_lsite]
+                pos_rsite = pos_in_unit_cell[i_rsite] + X * primitive_vecs[0] + Y * primitive_vecs[1] + Z * primitive_vecs[2]
+                if numpy.sum((pos_lsite - pos_rsite)**2) == 1:
                     HamR_full[ir, isp, i_lsite, isp, i_rsite] = - t
     HamR_full = HamR_full.reshape((nrpts, nspin*num_sites, nspin*num_sites))
 

@@ -30,10 +30,6 @@ from scipy import linalg as scipy_linalg
 from dcore._dispatcher import h5diff as h5diff_org, compare, \
     BlockGf, HDFArchive, failures, MeshImFreq, fit_hermitian_tail, Gf, GfImFreq
 
-"""
-THIS MODULE MUST NOT DEPEND ON MPI!
-"""
-
 
 def h5diff(f1, f2, key=None, precision=1.e-6):
     """

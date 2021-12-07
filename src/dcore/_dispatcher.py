@@ -2,9 +2,6 @@ import os, sys
 import importlib
 
 
-if 'triqs.utility.mpi' in sys.modules:
-    raise RuntimeError("Error: MPI must not be imported in a non-MPI module! This indicates a bug in DCore.")
-
 if 'DCORE_TRIQS_COMPAT' in os.environ and int(os.environ['DCORE_TRIQS_COMPAT']) == 1:
     TRIQS_COMPAT = True
     from dcorelib.triqs_compat import *
