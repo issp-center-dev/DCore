@@ -29,6 +29,10 @@ class LatticeModel(object):
         self._nkdiv = (1, 1, 1)
         self._params = params
 
+        self.ncor = params['model']['ncor']
+        self.corr_to_inequiv = params['model']['corr_to_inequiv']
+        self.norb_corr_sh = params['model']['norb_corr_sh']
+
     @classmethod
     def name(cls):
         return 'lattice_base_model'
