@@ -303,8 +303,8 @@ class DMFTCoreSolver(object):
         # Dimension of an inequivalent shell or a correlated shell
         # 'dim' is the dimension of either 'ud', 'up' or 'down' sectors for a correlated shell
         # For 'ud', dim is the size of spin times orbital.
-        self._dim_corr_sh = [sk.corr_shells[icrsh]['dim'] for icrsh in range(self._n_corr_shells)]
-        self._dim_sh = [self._dim_corr_sh[sk.inequiv_to_corr[ish]] for ish in range(self._n_inequiv_shells)]
+        self._dim_corr_sh = numpy.array([sk.corr_shells[icrsh]['dim'] for icrsh in range(self._n_corr_shells)])
+        self._dim_sh = numpy.array([self._dim_corr_sh[sk.inequiv_to_corr[ish]] for ish in range(self._n_inequiv_shells)])
 
         if self._use_spin_orbit:
             self._spin_block_names = ['ud']

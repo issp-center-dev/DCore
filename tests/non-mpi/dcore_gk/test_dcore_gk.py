@@ -68,7 +68,7 @@ test_square_params = [
     ([1],    False, 'gk_smpl_freqs.txt', [0, 0]),
     ([1, 2], False, 'gk_smpl_freqs.txt', [0, 1]),
     # spin_orbit = True
-    ([1],    True,  'gk_smpl_freqs.txt', [0]),
+    #([1],    True,  'gk_smpl_freqs.txt', [0]),
     ([1, 1], True,  'gk_smpl_freqs.txt', [0, 1]),
     ([1, 2], True,  'gk_smpl_freqs.txt', [0, 1]),
     ([1],    True,  'dense', [0]),
