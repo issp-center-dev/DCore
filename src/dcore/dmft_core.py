@@ -28,7 +28,7 @@ import ast
 import h5py
 import builtins
 
-from ._dispatcher import dyson
+from ._dispatcher import dyson, make_zero_tail
 from .program_options import *
 from .sumkdft_workers.launcher import run_sumkdft
 
@@ -42,6 +42,16 @@ from .symmetrizer import pm_symmetrizer
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
+def _total_density(bgf):
+    """Compute total density of a BlockGf instance assuming 1/iw"""
+    assert isinstance(bgf, BlockGf)
+    total_density = 0
+    for _, g_iw in bgf:
+        km = make_zero_tail(g_iw, 2)
+        km[1] = numpy.eye(g_iw.target_shape[0])
+        total_density += g_iw.total_density(km).real
+    return total_density
 
 def __gettype(name):
     t = getattr(builtins, name)
@@ -771,7 +781,9 @@ class DMFTCoreSolver(object):
             self._quant_to_save_history['spin_moment'] = smoment_sh
 
             # Compute Total charge from G_loc
-            charge_loc = [Gloc_iw_sh[ish].total_density().real for ish in range(self._n_inequiv_shells)]
+            charge_loc = []
+            for ish in range(self._n_inequiv_shells):
+                charge_loc.append(_total_density(Gloc_iw_sh[ish]))
             for ish, charge in enumerate(charge_loc):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_loc'] = charge_loc
