@@ -1,6 +1,0 @@
-&BANDS
-prefix = "srvo3",
-outdir = "./",
-!filband = "band.dat"
-!lsym = .true.
-/
