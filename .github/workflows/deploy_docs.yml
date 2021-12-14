@@ -6,6 +6,7 @@ on:
       - master
       - develop
       - gh_actions  # test branch
+      - '*-autodoc'
       - '!gh-pages'
     tags: '*'
 
@@ -54,9 +55,15 @@ jobs:
       env:
         GIT_USER: "DCore Developers"
         GIT_EMAIL: "dcore-dev@issp.u-tokyo.ac.jp"
-        TARGET_NAME: ${{ env.GITHUB_REF_SLUG }}
+        REF_SLUG: ${{ env.GITHUB_REF_SLUG }}
       run: |
           cd ${GITHUB_WORKSPACE}
+          feature_branch=${REF_SLUG%-autodoc}
+          if [ "_${REF_SLUG}" != "_${feature_branch}"  ]; then
+            TARGET_NAME=${feature_branch}
+          else
+            TARGET_NAME=${REF_SLUG}
+          fi
           rm -rf "gh-pages/doc/${TARGET_NAME}"
           mkdir -p "gh-pages/doc/${TARGET_NAME}"
           cp -r "main/built_doc" "gh-pages/${TARGET_NAME}"
