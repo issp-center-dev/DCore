@@ -59,13 +59,12 @@ jobs:
       run: |
           cd ${GITHUB_WORKSPACE}
           feature_branch=${REF_SLUG%-autodoc}
-          if [ "_${REF_SLUG}" != "_${feature_branch}"  ]; then
+          if [ "_${REF_SLUG}" != "_${feature_branch}" ]; then
             TARGET_NAME=${feature_branch}
           else
             TARGET_NAME=${REF_SLUG}
           fi
-          rm -rf "gh-pages/doc/${TARGET_NAME}"
-          mkdir -p "gh-pages/doc/${TARGET_NAME}"
+          rm -rf "gh-pages/${TARGET_NAME}"
           cp -r "main/built_doc" "gh-pages/${TARGET_NAME}"
           cd gh-pages
           git config --local user.name "${GIT_USER}"
