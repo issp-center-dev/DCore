@@ -32,6 +32,21 @@ from dcore.lattice_models.tools import set_nk
 from .sumkdft_workers.launcher import run_sumkdft
 
 
+def _read_sigma_w(npz_file, nsh, mesh, block_names):
+    npz = np.load(npz_file)
+    Sigma_iw = []
+    idx = 0
+    for _ in range(nsh):
+        block_list = []
+        for _ in range(len(block_names)):
+            block_list.append(GfReFreq(data=npz[f'arr_{idx}'], mesh=mesh))
+            idx += 1
+        G = BlockGf(
+            name_list = block_names,
+            block_list = block_list, make_copies = False)
+        Sigma_iw.append(G)
+    return Sigma_iw
+
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
 
@@ -264,16 +279,22 @@ class DMFTCoreTools:
             if not sigma_w_sh[ish] is None:
                 continue
 
-            # set BlockGf sigma_w
-            Sigma_iw = Sigma_iw_sh[ish]
-            block_names = self._solver.spin_block_names
-            def glist():
-                return [GfReFreq(indices=sigma.indices, window=(self._omega_min, self._omega_max),
-                                 n_points=self._Nomega, name="sig_pade") for block, sigma in Sigma_iw]
-            sigma_w_sh[ish] = BlockGf(name_list=block_names, block_list=glist(), make_copies=False)
-            # Analytic continuation
-            for bname, sig in Sigma_iw:
-                sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
+            filename = self._seedname + '_sigmaw.npz'
+            if os.path.exists(filename):
+                print(f"Reading sigma_w from {filename}...")
+                sigma_w_sh = _read_sigma_w(filename, len(sigma_w_sh), mesh, self._solver.spin_block_names)
+            else:
+                # This is deprecated.
+                # set BlockGf sigma_w
+                Sigma_iw = Sigma_iw_sh[ish]
+                block_names = self._solver.spin_block_names
+                def glist():
+                    return [GfReFreq(indices=sigma.indices, window=(self._omega_min, self._omega_max),
+                                     n_points=self._Nomega, name="sig_pade") for block, sigma in Sigma_iw]
+                sigma_w_sh[ish] = BlockGf(name_list=block_names, block_list=glist(), make_copies=False)
+                # Analytic continuation
+                for bname, sig in Sigma_iw:
+                    sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
 
         print("\n#############  Print Self energy in the Real Frequency  ################\n")
         filename = self._prefix + self._seedname + '_sigmaw.dat'

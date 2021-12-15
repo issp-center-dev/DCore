@@ -19,7 +19,7 @@
 import sys
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import *
-
+import toml
 
 def dcore(filename, np=1):
     """
@@ -31,7 +31,7 @@ def dcore(filename, np=1):
         Input-file name
     """
     # Set Default value
-    pars = create_parser(['model', 'system', 'impurity_solver', 'control', 'mpi'])
+    pars = create_parser(['model', 'system', 'impurity_solver', 'control', 'mpi', 'tool'])
     #
     # Parse keywords and store
     #
@@ -44,6 +44,21 @@ def dcore(filename, np=1):
     solver = DMFTCoreSolver(params["model"]["seedname"], params, restart=params['control']['restart'])
 
     solver.do_steps(max_step=params["control"]["max_step"])
+
+    # Write information for analytic continuation of the self-energy
+    with open(params["model"]["seedname"] + "_anacont.toml", "w") as f:
+        toml.dump(
+            {
+              "beta":       params["system"]["beta"],
+              "Nomega":     params["tool"]["Nomega"],
+              "omega_min":  params["tool"]["omega_min"],
+              "omega_max":  params["tool"]["omega_max"],
+              "n_pade_min": params["tool"]["n_pade_min"],
+              "n_pade_max": params["tool"]["n_pade_max"],
+              "omega_pade": params["tool"]["omega_pade"],
+              "eta_pade"  : params["tool"]["eta"],
+            },
+        f)
 
     print("\n########################  Done  ########################\n")
 
