@@ -28,7 +28,12 @@ from triqs.operators import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array, make_hermite_conjugate
 from .base import SolverBase
-from alpscthyb.post_proc import QMCResult
+import warnings
+
+try:
+    from alpscthyb.post_proc import QMCResult
+except:
+    warnings.warn("ALPS/CT-HYBv2 is not available.")
 
 
 def remove_positive_eigenvalues(Delta_tau):

@@ -781,9 +781,7 @@ class DMFTCoreSolver(object):
             self._quant_to_save_history['spin_moment'] = smoment_sh
 
             # Compute Total charge from G_loc
-            charge_loc = []
-            for ish in range(self._n_inequiv_shells):
-                charge_loc.append(_total_density(Gloc_iw_sh[ish]))
+            charge_loc = [_total_density(Gloc_iw_sh[ish]) for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_loc):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_loc'] = charge_loc
