@@ -71,6 +71,7 @@ setup(
             "dcore_vertex = dcore.dcore_vertex:run",
             "dcore_sparse_bse = dcore.dcore_sparse_bse:run",
             "dcore_mpicheck = dcore.dcore_mpicheck:run",
+            "dcore_pade = dcore.dcore_pade:run",
         ]
     },
 

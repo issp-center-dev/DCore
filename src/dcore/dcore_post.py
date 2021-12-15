@@ -279,10 +279,11 @@ class DMFTCoreTools:
             if not sigma_w_sh[ish] is None:
                 continue
 
-            filename = self._seedname + '_sigmaw.npz'
+            filename = self._seedname + '_sigma_w.npz'
             if os.path.exists(filename):
                 print(f"Reading sigma_w from {filename}...")
-                sigma_w_sh = _read_sigma_w(filename, len(sigma_w_sh), mesh, self._solver.spin_block_names)
+                sigma_w_sh = _read_sigma_w(filename, len(sigma_w_sh),
+                    MeshReFreq(*mesh), self._solver.spin_block_names)
             else:
                 # This is deprecated.
                 # set BlockGf sigma_w

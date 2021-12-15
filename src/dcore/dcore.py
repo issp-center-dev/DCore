@@ -49,14 +49,16 @@ def dcore(filename, np=1):
     with open(params["model"]["seedname"] + "_anacont.toml", "w") as f:
         toml.dump(
             {
-              "beta":       params["system"]["beta"],
-              "Nomega":     params["tool"]["Nomega"],
-              "omega_min":  params["tool"]["omega_min"],
-              "omega_max":  params["tool"]["omega_max"],
-              "n_pade_min": params["tool"]["n_pade_min"],
-              "n_pade_max": params["tool"]["n_pade_max"],
-              "omega_pade": params["tool"]["omega_pade"],
-              "eta_pade"  : params["tool"]["eta"],
+                "beta":       params["system"]["beta"],
+                "Nomega":     params["tool"]["Nomega"],
+                "omega_min":  params["tool"]["omega_min"],
+                "omega_max":  params["tool"]["omega_max"],
+                "pade" : {
+                    "n_min"    : params["tool"]["n_pade_min"],
+                    "n_max"    : params["tool"]["n_pade_max"],
+                    "omega_max": params["tool"]["omega_pade"],
+                    "eta"      : params["tool"]["eta"],
+                }
             },
         f)
 

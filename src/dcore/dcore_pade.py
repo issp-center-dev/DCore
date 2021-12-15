@@ -17,7 +17,7 @@
 #
 
 import argparse
-from dcore._dispatcher import MeshReFreq, GfReFreq, GfImFreq
+from dcore._dispatcher import MeshReFreq, MeshImFreq, GfReFreq, GfImFreq
 from dcore.version import version, print_header
 import numpy
 import toml
@@ -33,6 +33,30 @@ def _set_n_pade(omega_cutoff, beta, n_min, n_max):
     n_pade = min(n_pade, n_max)
     print("n_pade = {}".format(n_pade))
     return n_pade
+
+def dcore_pade(seedname):
+    print("Reading ", seedname + "_anacont.toml...")
+    with open(seedname + "_anacont.toml", "r") as f:
+        params = toml.load(f)
+    
+    print("Reading ", seedname + "_sigma_iw.npz...")
+    npz = numpy.load(seedname + "_sigma_iw.npz")
+
+    assert params["omega_min"] < params["omega_max"]
+    mesh_w = MeshReFreq(params["omega_min"], params["omega_max"], params["Nomega"])
+
+    n_pade = _set_n_pade(params["pade"]["omega_max"], params['beta'], n_min=params["pade"]["n_min"], n_max=params["pade"]["n_max"])
+
+    data_w = []
+    for idata in range(len(npz)):
+        data = npz[f"arr_{idata}"]
+        mesh_iw = MeshImFreq(params["beta"], "Fermion", data.shape[0]//2)
+        sigma_iw = GfImFreq(data=data, beta=params["beta"], mesh=mesh_iw)
+        sigma_w = GfReFreq(mesh=mesh_w, target_shape=data.shape[1:])
+        sigma_w.set_from_pade(sigma_iw, n_points=n_pade, freq_offset=params["pade"]["eta"])
+        data_w.append(sigma_w.data)
+    print("Writing to", seedname + "_sigma_w.npz...")
+    numpy.savez(seedname + "_sigma_w.npz", *data_w)
 
 def run():
 
@@ -55,23 +79,3 @@ def run():
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
-
-    print("Reading ", args.seedname + "_anacont.toml...")
-    with open(args.seedname + "_anacont.toml", "r") as f:
-        params = toml.load(f)
-    
-    print("Reading ", args.seedname + "_sigma_iw.npz...")
-    npz = numpy.loadz(args.seedname + "_sigma_iw.npz")
-
-    assert params["omega_min"] < params["omega_max"]
-    mesh_w = MeshReFreq(params["omega_min"], params["omega_max"], params["Nomega"])
-
-    n_pade = _set_n_pade(params['omega_pade'], params['beta'], n_min=params['n_pade_min'], n_max=params['n_pade_max'])
-
-    data_w = []
-    for data in npz:
-        giw = GfImFreq(data=data, beta=params["beta"])
-        gw = GfReFreq(mesh=mesh_w, target_shape=data.shape[1:])
-        gw.set_from_pade(giw, n_points=n_pade, freq_offset=params["pade_eta"])
-        data_w.append(gw.data)
-    numpy.savez(data_w)

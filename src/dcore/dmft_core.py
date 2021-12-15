@@ -857,8 +857,8 @@ class DMFTCoreSolver(object):
                         save_giw(ar, path, g)
             
             # Save Sigma in *.npz file
-            numpy.savez(self._seedname + "sigma_iw.npz",
-                [g.data for ish in range(self._n_inequiv_shells) for _, g in self._sh_quant[ish].Sigma_iw]
+            numpy.savez(self._seedname + "_sigma_iw.npz",
+                *[g.data for ish in range(self._n_inequiv_shells) for _, g in self._sh_quant[ish].Sigma_iw]
             )
 
             # convergence check

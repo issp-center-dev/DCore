@@ -27,6 +27,7 @@ from dcore.dcore_pre import dcore_pre
 from dcore.dcore import dcore
 from dcore.dcore_check import dcore_check
 from dcore.dcore_post import dcore_post
+from dcore.dcore_pade import dcore_pade
 
 
 def test_chain_hubbardI(request):
@@ -38,6 +39,7 @@ def test_chain_hubbardI(request):
     dcore_pre('dmft.ini')
     dcore('dmft.ini')
     dcore_check('dmft.ini', './check', 'eps', 10000)
+    dcore_pade(seedname)
     dcore_post('dmft.ini')
     
     data_files = glob.glob('./ref/*')
