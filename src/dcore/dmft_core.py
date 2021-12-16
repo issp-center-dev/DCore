@@ -799,7 +799,7 @@ class DMFTCoreSolver(object):
             #
 
             # Compute Total charge from G_imp
-            charge_imp = [new_Gimp_iw[ish].total_density().real for ish in range(self._n_inequiv_shells)]
+            charge_imp = [_total_density(new_Gimp_iw[ish]) for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_imp):
                 print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_imp'] = charge_imp
@@ -855,7 +855,7 @@ class DMFTCoreSolver(object):
                     for bname, g in self._sh_quant[ish].Sigma_iw:
                         path = output_group + '/Sigma_iw/ite{}/sh{}/{}'.format(iteration_number, ish, bname)
                         save_giw(ar, path, g)
-            
+
             # Save Sigma in *.npz file
             numpy.savez(self._seedname + "_sigma_iw.npz",
                 *[g.data for ish in range(self._n_inequiv_shells) for _, g in self._sh_quant[ish].Sigma_iw]
