@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-from __future__ import print_function
-
 import numpy
 from itertools import product
 import os
@@ -32,7 +30,7 @@ from triqs.operators import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
 from .base import SolverBase
 from .hphi_spectrum import CalcSpectrum
-from .pomerol import assign_from_numpy_array, set_tail
+from .pomerol import assign_from_numpy_array
 
 
 namelist_def = """\
@@ -302,14 +300,14 @@ class HPhiSolver(SolverBase):
 
         #
         # output_dir = "./output"
-        prefix = "TEST"
+        # prefix = "TEST"
         header = "zvo"
         T_list = [1./self.beta]
         # exct = 2
         eta = 1e-4
 
         print("Check Energy")
-        calcspectrum = CalcSpectrum(prefix, T_list, mpirun_command=mpirun_command_power4, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
+        calcspectrum = CalcSpectrum(T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
         energy_list = calcspectrum.get_energies()
         one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
 
@@ -338,8 +336,8 @@ class HPhiSolver(SolverBase):
 
         assign_from_numpy_array(self._Gimp_iw, gf, self.block_names)
 
-        if triqs_major_version == 1:
-            set_tail(self._Gimp_iw)
+        # if triqs_major_version == 1:
+        #     set_tail(self._Gimp_iw)
 
         if self.use_spin_orbit:
             print("Sigma is not implemented for SOC")
@@ -354,7 +352,7 @@ class HPhiSolver(SolverBase):
         # TODO: move into a function -- begin
         # Cut H0 into block structure
         n_block = len(self.gf_struct)
-        n_inner = h0_full.shape[0] / n_block
+        n_inner = h0_full.shape[0] // n_block
         h0_block = [h0_full[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
 
         # Construct G0 including bath sites
@@ -370,7 +368,7 @@ class HPhiSolver(SolverBase):
         g0_imp = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
         for block in self.block_names:
             for o1, o2 in product(self.gf_struct[block], repeat=2):
-                g0_imp[block][o1, o2] << g0_full[block][o1, o2]
+                g0_imp[block].data[:, o1, o2] = g0_full[block].data[:, o1, o2]
         # TODO: move into a function -- end
 
         self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)
