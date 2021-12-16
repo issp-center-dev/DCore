@@ -22,6 +22,8 @@ The complete input file is shown below:
 .. literalinclude:: square_afm.ini
    :language: ini
 
+Note that ``/path/to/alps_cthyb`` for ``[impurity_solver] exec_path{str}`` parameter needs to be replaced with a full path to ``alps_cthyb`` executable in your environment.
+
 Define lattice model
 ---------------------------
 

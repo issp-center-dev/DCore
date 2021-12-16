@@ -3,18 +3,16 @@
 
 DCore is aimed at model calculations and ab-initio calculations by the dynamical mean-field theory (DMFT). This package consists of programs with text-based and hdf5-based interface. These programs enable users to perform DMFT calculations and analyze results without writing computer code. ALPS and TRIQS impurity solvers are supported.
 
-## Web page
+## Documentation
 
 https://issp-center-dev.github.io/DCore/index.html
 
-## Installation guide
+See the the link above for documentations including installation, tutorial, reference manual, and FAQ/Troubleshooting.
 
-https://issp-center-dev.github.io/DCore/install.html
+## Related paper
 
-## Documentation
+Technical details are described in the following paper:
 
-https://issp-center-dev.github.io/DCore/documentation.html
-
-### Input file format
-
-https://issp-center-dev.github.io/DCore/reference/input.html
+- *"DCore: Integrated DMFT software for correlated electrons"*,  
+  H. Shinaoka, J. Otsuki, M. Kawamura, N. Takemori, K. Yoshimi,  
+  [SciPost Phys. 10, 117 (2021)](https://scipost.org/10.21468/SciPostPhys.10.5.117)

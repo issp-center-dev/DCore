@@ -3,17 +3,13 @@
 CT-QMC: ``TRIQS/cthyb``
 =======================
 
-.. include:: ../../warning_compatibility.rst
 
 Install
 -------
 
-Follow the installation guide in `TRIQS/cthyb <https://triqs.github.io/cthyb/1.4/>`_.
+Follow the installation guide in `TRIQS/cthyb <https://triqs.github.io/cthyb/latest/>`_.
 
 .. note::
-
-    - Checkout tag **1.4.2** on master branch, or download the released package
-      from `here <https://github.com/TRIQS/cthyb/releases/tag/1.4.2>`_.
 
     - Be sure to use the same C++ compiler as the one used to build the ``TRIQS`` library.
 
@@ -22,7 +18,7 @@ Follow the installation guide in `TRIQS/cthyb <https://triqs.github.io/cthyb/1.4
 
       ::
 
-        -DHYBRIDISATION_IS_COMPLEX=ON -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON
+        -DLocal_hamiltonian_is_complex=ON -DHybridisation_is_complex=ON
 
 Basic parameters for QMC
 ------------------------

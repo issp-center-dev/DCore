@@ -1,0 +1,2 @@
+Test funtions that are run without using mpirun
+mpi4py can be imported in a subprocess.

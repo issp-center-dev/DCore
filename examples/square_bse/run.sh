@@ -73,25 +73,17 @@ echo ""
 $BSE_DIR/bin/misc/print_latest_commit.sh
 
 # Generate q_path.dat
-python $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
-check_status
-
-# Plot input to BSE
-$BSE_DIR/python/plot/plot_bse_input.py
+python3 $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
 check_status
 
 # BSE
-python $BSE_DIR/python/bse_tools/bse_tool.py -s BSE -i dmft_bse.h5 -q q_path.dat
+mpirun -np $NUM_PROC python3 $BSE_DIR/python/bse_tools/bse_tool.py ../bse.in
 check_status
-python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chiq_eigen.dat
-python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi0q_eigen.dat --mode='chi0'
+python3 $BSE_DIR/python/bse_tools/bse_post.py ../bse.in
+check_status
 
-# RPA
-python $BSE_DIR/python/bse_tools/bse_tool.py -s BSE -i dmft_bse.h5 -q q_path.dat -t 'rpa'
-check_status
-python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chiq_rpa_eigen.dat --mode='rpa'
-
-# RRPA
-python $BSE_DIR/python/bse_tools/bse_tool.py -s BSE -i dmft_bse.h5 -q q_path.dat -t 'rrpa'
-check_status
-python $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chiq_rrpa_eigen.dat --mode='rrpa'
+# Plot BSE results
+python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi_q_eigen.dat
+python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi0_q_eigen.dat --mode='chi0'
+python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi_q_rpa_eigen.dat --mode='rpa'
+python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi_q_rrpa_eigen.dat --mode='rrpa'

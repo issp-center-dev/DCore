@@ -1,6 +1,5 @@
-from __future__ import print_function
 try:
-    from pytriqs import version
+    from triqs import version
 except ImportError:
     print('NOT_FOUND', end='')
 else:

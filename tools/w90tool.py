@@ -1,9 +1,9 @@
-from __future__ import print_function
+
 import numpy
 from itertools import product
-import sympy
-import pytransform3d
-import re
+#import sympy
+#import pytransform3d
+#import re
 
 class Wannier90( object ):
     def __init__(self, file_name, spin_orbital_order='up_up_down_down', verbose=0):
@@ -75,7 +75,7 @@ class Wannier90( object ):
         return Hk
 
     def save(self, filename):
-        f = file(filename, 'w')
+        f = open(filename, 'w')
         print('DUMMY', file=f)
         print(2*self.norb, file=f)
         print(self.nrpts, file=f)
@@ -85,7 +85,7 @@ class Wannier90( object ):
                 print('', file=f)
 
         for k in range(self.nrpts):
-            for j, i in product(range(2 * self.norb), repeat=2):
+            for j, i in product(list(range(2 * self.norb)), repeat=2):
                 print("{} {} {}  {} {}  {} {}".format(
                     self.irvec[k, 0], self.irvec[k, 1], self.irvec[k, 2],
                     i + 1, j + 1,
@@ -106,9 +106,9 @@ def _read_local_coordinate(filename):
     ncor_sh = int(_readline())
     for ish in range(ncor_sh):
         print("ish = {}".format(ish))
-        x_axis = numpy.array(map(float, _readline().split()))
-        y_axis = numpy.array(map(float, _readline().split()))
-        z_axis = numpy.array(map(float, _readline().split()))
+        x_axis = numpy.array(list(map(float, _readline().split())))
+        y_axis = numpy.array(list(map(float, _readline().split())))
+        z_axis = numpy.array(list(map(float, _readline().split())))
         print(" x_axis = ", x_axis)
         print(" y_axis = ", y_axis)
         print(" z_axis = ", z_axis)
@@ -124,7 +124,7 @@ def _read_local_coordinate(filename):
     f.close()
 
 
-if __name__ == '__main__':
+def run():
     import argparse
     import os
     import sys

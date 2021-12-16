@@ -4,12 +4,12 @@ How to integrate your own solver
 You can use your own impurity solver from DCore by wrapping the executable as appropriate.
 The null solver serves as a template of wrapper code.
 
-    :download:`null_solver.py <../../python/dcore/impurity_solvers/null_solver.py>`
+    :download:`null_solver.py <../../src/dcore/impurity_solvers/null_solver.py>`
 
 Follow the instructions below.
 
 ..
-    .. literalinclude:: ../../python/dcore/impurity_solvers/null_solver.py
+    .. literalinclude:: ../../src/dcore/impurity_solvers/null_solver.py
        :language: python
 
 Copy the template
@@ -69,7 +69,7 @@ Edit the template
         self._Delta_iw = delta(self._G0_iw)
         Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         for name, block in self._Delta_iw:
-            Delta_tau[name] << InverseFourier(self._Delta_iw[name])
+            Delta_tau[name] << Fourier(self._Delta_iw[name])
 
         # (1c) Set U_{ijkl} for the solver
         # for i, j, k, l in product(range(self.n_flavors), repeat=4):
