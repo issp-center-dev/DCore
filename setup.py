@@ -46,7 +46,7 @@ setup(
         # h5py 2.10.0 has a bug.
         # Import h5py imports mpi4py automatically.
         'h5py!=2.10.0',
-        #'dcorelib',
+        'dcorelib>=0.2',
         ],
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],

@@ -50,7 +50,12 @@ def _total_density(bgf):
     for _, g_iw in bgf:
         km = make_zero_tail(g_iw, 2)
         km[1] = numpy.eye(g_iw.target_shape[0])
-        total_density += g_iw.total_density(km).real
+        try:
+            total_density += g_iw.total_density(km).real
+        except RuntimeError:
+            from dcorelib.triqs_compat.gf import GfImFreq
+            g_iw_ = GfImFreq.from_triqs(g_iw)
+            total_density += g_iw_.total_density().real
     return total_density
 
 def __gettype(name):
