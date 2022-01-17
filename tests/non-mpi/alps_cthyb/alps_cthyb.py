@@ -17,6 +17,7 @@
 #
 
 
+import os
 from dcore._dispatcher import *
 from dcore.impurity_solvers.alps_cthyb import *
 from dcore.tools import to_spin_full_U_matrix
@@ -42,7 +43,10 @@ def test_copy_between_numpy_blockgf():
     for name, g in G:
         numpy.allclose(G[name].data, G_reconst[name].data, 1e-10)
 
-def test_solver_dry_run():
+def test_solver_dry_run(request):
+    org_dir = os.getcwd()
+    os.chdir(request.fspath.dirname)
+
     # Half band width
     D = 2.0
     mu = 1.0
@@ -104,3 +108,5 @@ def test_solver_dry_run():
     for name, b in diff:
         # FIXME: The precision is worse with sparse sampling. Why?
         assert numpy.all(numpy.abs(b.data) < 1e-4)
+
+    os.chdir(org_dir)
