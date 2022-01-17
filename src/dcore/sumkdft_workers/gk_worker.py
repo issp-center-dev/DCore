@@ -18,7 +18,7 @@
 
 import numpy
 
-from triqs.utility import mpi
+from .._dispatcher import mpi
 
 from ..mpi import split_idx, gatherv
 from ..sumkdft_opt import SumkDFT_opt

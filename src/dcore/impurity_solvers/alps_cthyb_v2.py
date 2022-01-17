@@ -22,9 +22,10 @@ import os
 import shutil
 from itertools import product
 
-from triqs.gf import *
-from h5 import HDFArchive
-from triqs.operators import *
+#from dcorelib.triqs.gf import *
+#from h5 import HDFArchive
+#from triqs.operators import *
+from dcore._dispatcher import GfImFreq, GfImTime, delta, Fourier
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array, make_hermite_conjugate
 from .base import SolverBase

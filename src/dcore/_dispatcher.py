@@ -10,6 +10,7 @@ if 'DCORE_TRIQS_COMPAT' in os.environ and int(os.environ['DCORE_TRIQS_COMPAT']) 
     from dcorelib.triqs_compat import *
     from dcorelib.triqs_compat import h5
     from dcorelib.triqs_compat.gf import *
+    from dcorelib.triqs_compat.gf.gf import make_zero_tail
     from dcorelib.triqs_compat.gf.tools import *
     from dcorelib.triqs_compat.h5 import HDFArchive
     from dcorelib.triqs_compat.utility import *

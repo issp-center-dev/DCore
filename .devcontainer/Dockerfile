@@ -13,6 +13,7 @@ RUN apt-get update && \
     gosu \
     libopenblas-base libopenblas-dev libhdf5-103 libhdf5-dev \
     cmake pkg-config gfortran \
+    openmpi-bin libopenmpi-dev \
     && \
     apt-get clean && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/* # clean up
 
@@ -22,6 +23,7 @@ WORKDIR /tmp/dcore_work
 COPY ./ .
 
 RUN pip3 install --upgrade pip setuptools
+RUN pip3 install git+https://github.com/shinaoka/dcorelib.git
 RUN python3 setup.py egg_info
 RUN pip3 install `grep -v '^\[' src/dcore.egg-info/requires.txt`
 
@@ -39,3 +41,4 @@ RUN mkdir /home/${NB_USER}/work
 
 # For DCore
 ENV DCORE_TRIQS_COMPAT 1
+#test
