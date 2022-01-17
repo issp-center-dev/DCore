@@ -22,7 +22,7 @@ from itertools import *
 
 from typing import Dict
 
-def hatree_fock_term(dm: numpy.ndarray, u_mat: numpy.ndarray) -> numpy.ndarray:
+def hartree_fock_term(dm: numpy.ndarray, u_mat: numpy.ndarray) -> numpy.ndarray:
     """Compute Hartree-Fock term
 
     dm: density matrix
@@ -54,9 +54,12 @@ def hf_dc(dm: Dict, u_mat: numpy.ndarray, use_spin_orbit: bool) -> numpy.ndarray
     """
     Compute HF_DFT or HF_imp from density matrix
     """
+    assert isinstance(dm, dict)
+    assert isinstance(u_mat, numpy.ndarray)
+
     if use_spin_orbit:
         assert "ud" in dm.keys()
-        return {"ud": hatree_fock_term(dm["ud"], u_mat)}
+        return {"ud": hartree_fock_term(dm["ud"], u_mat)}
     else:
         assert "up" in dm.keys() and "down" in dm.keys()
         norb = dm["up"].shape[0]
@@ -64,5 +67,6 @@ def hf_dc(dm: Dict, u_mat: numpy.ndarray, use_spin_orbit: bool) -> numpy.ndarray
         dm_mat = numpy.zeros((2, nso//2, 2, nso//2), dtype=numpy.complex128)
         dm_mat[0,:,0,:] = dm["up"]
         dm_mat[1,:,1,:] = dm["down"]
-        hf = hatree_fock_term(dm_mat, u_mat).reshape((2,norb,2,norb))
+        dm_mat = dm_mat.reshape(nso, nso)
+        hf = hartree_fock_term(dm_mat, u_mat).reshape((2,norb,2,norb))
         return {"up": hf[0,:,0,:], "down": hf[1,:,1,:]}

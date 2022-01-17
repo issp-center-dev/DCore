@@ -888,11 +888,13 @@ class DMFTCoreSolver(object):
     def _save_sigma_iw(self, dm_sh: List[numpy.ndarray]) -> None:
         """ Save Sigma(iw) for post processing/restart """ 
         data = {}
+        idata = 0
         for ish in range(self._n_inequiv_shells):
-            hf = hf_dc(dm_sh[ish], self._Umat, self._use_spin_orbit)
+            hf = hf_dc(dm_sh[ish], self._Umat[ish], self._use_spin_orbit)
             for bname, g in self._sh_quant[ish].Sigma_iw:
-                data[f"data_sh{ish}_{bname}"] = g.data
-                data[f"hartree_fock_sh{ish}_{bname}"] = hf[bname]
+                data[f"data{idata}"] = g.data
+                data[f"hartree_fock{idata}"] = hf[bname]
+                idata += 1
         numpy.savez(self._seedname + "_sigma_iw.npz", **data)
 
     def chemical_potential(self, iteration_number):

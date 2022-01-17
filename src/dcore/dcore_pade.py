@@ -47,16 +47,19 @@ def dcore_pade(seedname):
 
     n_pade = _set_n_pade(params["pade"]["omega_max"], params['beta'], n_min=params["pade"]["n_min"], n_max=params["pade"]["n_max"])
 
-    data_w = []
-    for idata in range(len(npz)):
-        data = npz[f"arr_{idata}"]
+    data_w = {}
+
+    num_data = numpy.sum([key.startswith("data") for key in npz.keys()])
+    for idata in range(num_data):
+        key = f"data{idata}"
+        data = npz[key]
         mesh_iw = MeshImFreq(params["beta"], "Fermion", data.shape[0]//2)
         sigma_iw = GfImFreq(data=data, beta=params["beta"], mesh=mesh_iw)
         sigma_w = GfReFreq(mesh=mesh_w, target_shape=data.shape[1:])
         sigma_w.set_from_pade(sigma_iw, n_points=n_pade, freq_offset=params["pade"]["eta"])
-        data_w.append(sigma_w.data)
+        data_w[key] = sigma_w.data
     print("Writing to", seedname + "_sigma_w.npz...")
-    numpy.savez(seedname + "_sigma_w.npz", *data_w)
+    numpy.savez(seedname + "_sigma_w.npz", **data_w)
 
 def run():
 

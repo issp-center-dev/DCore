@@ -39,7 +39,7 @@ def _read_sigma_w(npz_file, nsh, mesh, block_names):
     for _ in range(nsh):
         block_list = []
         for _ in range(len(block_names)):
-            block_list.append(GfReFreq(data=npz[f'arr_{idx}'], mesh=mesh))
+            block_list.append(GfReFreq(data=npz[f'data{idx}'], mesh=mesh))
             idx += 1
         G = BlockGf(
             name_list = block_names,
