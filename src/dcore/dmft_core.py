@@ -27,6 +27,7 @@ import copy
 import ast
 import h5py
 import builtins
+from typing import List
 
 from ._dispatcher import dyson, make_zero_tail
 from .program_options import *
@@ -35,6 +36,7 @@ from .sumkdft_workers.launcher import run_sumkdft
 from .sumkdft_compat import SumkDFTCompat
 
 from .tools import *
+from .dc import hf_dc
 
 from . import impurity_solvers
 from .symmetrizer import pm_symmetrizer
@@ -857,9 +859,7 @@ class DMFTCoreSolver(object):
                         save_giw(ar, path, g)
             
             # Save Sigma in *.npz file
-            numpy.savez(self._seedname + "_sigma_iw.npz",
-                *[g.data for ish in range(self._n_inequiv_shells) for _, g in self._sh_quant[ish].Sigma_iw]
-            )
+            self._save_sigma_iw(dm_sh)
 
             # convergence check
             tol = self._params["control"]["converge_tol"]
@@ -884,6 +884,16 @@ class DMFTCoreSolver(object):
             sys.stdout.flush()
 
         self._previous_runs += max_step
+    
+    def _save_sigma_iw(self, dm_sh: List[numpy.ndarray]) -> None:
+        """ Save Sigma(iw) for post processing/restart """ 
+        data = {}
+        for ish in range(self._n_inequiv_shells):
+            hf = hf_dc(dm_sh[ish], self._Umat, self._use_spin_orbit)
+            for bname, g in self._sh_quant[ish].Sigma_iw:
+                data[f"data_sh{ish}_{bname}"] = g.data
+                data[f"hartree_fock_sh{ish}_{bname}"] = hf[bname]
+        numpy.savez(self._seedname + "_sigma_iw.npz", **data)
 
     def chemical_potential(self, iteration_number):
         with HDFArchive(self._output_file, 'r') as ar:
