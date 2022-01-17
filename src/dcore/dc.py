@@ -43,10 +43,16 @@ def hartree_fock_term(dm: numpy.ndarray, u_mat: numpy.ndarray) -> numpy.ndarray:
     nso = dm.shape[0]
     assert dm.shape == (nso, nso)
     assert u_mat.shape == 4*(nso,)
+
     asymm_u = u_mat.copy()
-    asymm_u = 0.5*(asymm_u - u_mat.transpose((0,1,3,2)))
-    asymm_u = 0.5*(asymm_u - u_mat.transpose((1,0,2,3)))
+    asymm_u = 0.5*(asymm_u - asymm_u.transpose((0,1,3,2)))
+    asymm_u = 0.5*(asymm_u - asymm_u.transpose((1,0,2,3)))
     asymm_u *= 2
+    #for i in range(2):
+        #for j in range(2):
+            #for k in range(2):
+                #for l in range(2):
+                    #print(i, j, k, l, asymm_u[i,j,k,l])
     return numpy.einsum('ikjl,kl->ij', asymm_u, dm)
 
 

@@ -19,6 +19,7 @@ pip3 install .
 chown -R user /var/dcoretest
 chgrp -R user /var/dcoretest
 gosu user bash -c 'source /opt/triqs/share/triqsvars.sh;pytest tests/non-mpi/*/*.py'
+gosu user bash -c 'source /opt/triqs/share/triqsvars.sh;pytest tests/non-mpi/test*.py'
 gosu user bash -c 'source /opt/triqs/share/triqsvars.sh;mpirun -np 2 pytest tests/mpi/*/*.py'
 echo "TEST DONE"
 #echo "Use Ctrl+C to stop the container!"
