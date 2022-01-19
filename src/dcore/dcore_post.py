@@ -285,6 +285,7 @@ class DMFTCoreTools:
                 sigma_w_sh = _read_sigma_w(filename, len(sigma_w_sh),
                     MeshReFreq(*mesh), self._solver.spin_block_names)
             else:
+                print(f"Not found {filename}. Falling back to pade approximant...")
                 # This is deprecated.
                 # set BlockGf sigma_w
                 Sigma_iw = Sigma_iw_sh[ish]
