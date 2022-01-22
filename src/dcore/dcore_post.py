@@ -275,18 +275,18 @@ class DMFTCoreTools:
         mesh = [self._omega_min, self._omega_max, self._Nomega]
         sigma_w_sh = self._solver.calc_Sigma_w(mesh)
         Sigma_iw_sh = self._solver.Sigma_iw_sh(self._solver.iteration_number)
-        for ish in range(self._solver.n_inequiv_shells):
-            if not sigma_w_sh[ish] is None:
-                continue
 
-            filename = self._seedname + '_sigma_w.npz'
-            if os.path.exists(filename):
-                print(f"Reading sigma_w from {filename}...")
-                sigma_w_sh = _read_sigma_w(filename, len(sigma_w_sh),
-                    MeshReFreq(*mesh), self._solver.spin_block_names)
-            else:
-                print(f"Not found {filename}. Falling back to pade approximant...")
-                # This is deprecated.
+        filename = self._seedname + '_sigma_w.npz'
+        if os.path.exists(filename):
+            print(f"Reading sigma_w from {filename}...")
+            sigma_w_sh = _read_sigma_w(filename, len(sigma_w_sh),
+                MeshReFreq(*mesh), self._solver.spin_block_names)
+        else:
+            # Backward compatibility
+            print(f"Not found {filename}. Falling back to pade approximant...")
+            for ish in range(self._solver.n_inequiv_shells):
+                if not sigma_w_sh[ish] is None:
+                    continue
                 # set BlockGf sigma_w
                 Sigma_iw = Sigma_iw_sh[ish]
                 block_names = self._solver.spin_block_names
@@ -297,7 +297,7 @@ class DMFTCoreTools:
                 # Analytic continuation
                 for bname, sig in Sigma_iw:
                     sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
-
+    
         print("\n#############  Print Self energy in the Real Frequency  ################\n")
         filename = self._prefix + self._seedname + '_sigmaw.dat'
         print("\n Writing real-freqnecy self-energy into ", filename)
@@ -438,7 +438,7 @@ def gen_script_gnuplot(xnode, seedname, prefix, spin_orbit):
         print("unset key", file=f)
         print("set ylabel \"Energy\"", file=f)
         print("set cblabel \"A(k,w)\"", file=f)
-        print("splot \"{0}_akw.dat\"".format(seedname), file=f)
+        print("splot \"{0}_akw.dat\" u 1:2:(abs($3))".format(seedname), file=f)
         print("pause -1", file=f)
 
         print("    Usage:")
