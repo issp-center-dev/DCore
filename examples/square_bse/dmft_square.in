@@ -5,7 +5,9 @@ norb = 1
 nelec = 1.0
 t = -1.0
 kanamori = [(8.0, 0.0, 0.0)]
-nk = 32
+nk0 = 32
+nk1 = 32
+nk2 = 1
 
 #[mpi]
 #command = "mpirun -n #"
