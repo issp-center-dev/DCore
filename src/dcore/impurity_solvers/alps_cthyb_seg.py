@@ -23,7 +23,7 @@ from itertools import product
 from triqs.gf import *
 from h5 import HDFArchive
 from triqs.operators import *
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size, expand_path
 from .base import SolverBase
 
 
@@ -38,7 +38,7 @@ def to_numpy_array(g, names):
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
 
-    n_spin_orbital = numpy.sum([get_block_size(block) for name, block in g])
+    n_spin_orbital = numpy.sum([get_block_size(block) for _, block in g])
 
     # FIXME: Bit ugly
     n_data = g[names[0]].data.shape[0]
@@ -304,7 +304,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
                 print("--> continue. To stop calculation, set neglect_offdiagonal{bool}=False", file=sys.stderr)
             else:
                 print("--> exit. To neglect this warning, set neglect_offdiagonal{bool}=True", file=sys.stderr)
-                exit(1)
+                sys.exit(1)
 
         # TODO: check Delta_tau_data
         #    Delta_{ab}(tau) should be diagonal, real, negative
@@ -377,11 +377,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             return
 
         # Invoke subprocess
-        exec_path = os.path.expandvars(_read('exec_path'))
-        if exec_path == '':
-            raise RuntimeError("Please set exec_path!")
-        if not os.path.exists(exec_path):
-            raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
+        exec_path = expand_path(_read('exec_path'))
 
         # (2) Run a working horse
         with open('./output', 'w') as output_f:

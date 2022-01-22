@@ -880,7 +880,7 @@ def mpi_split(work_size, comm_size):
 
 def expand_path(exec_path):
     """
-    Expand exec_path
+    Expand relative path and command into full path
 
     Parameters
     ----------
@@ -889,14 +889,14 @@ def expand_path(exec_path):
 
     Returns
     -------
-    Full path
+    full_path: str
+        Full path of exec_path
 
     """
 
     full_path = os.path.expandvars(exec_path)  # expand environment variables
     full_path = shutil.which(full_path)  # return full path
     if full_path is None:
-        # raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
         print(f"ERROR: {exec_path} does not exist. Set exec_path properly!", file=sys.stderr)
         sys.exit(1)
 
