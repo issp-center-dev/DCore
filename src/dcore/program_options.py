@@ -26,6 +26,19 @@ from collections import namedtuple
 
 from .mpi_command import default_mpi_command
 
+def _set_nk(nk, nk0, nk1, nk2):
+    if abs(nk0) + abs(nk1) + abs(nk2) == 0:
+        # If one of nk0, nk1 and nk2 are set, use nk.
+        nk0 = nk
+        nk1 = nk
+        nk2 = nk
+    elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
+        # if any of nk0, nk1 and nk2 are set, use them.
+        if nk0 * nk1 * nk2 == 0:
+            raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
+    return nk0, nk1, nk2
+
+
 
 def create_parser(target_sections=None):
     """
@@ -203,6 +216,11 @@ def parse_parameters(params):
         # Set [model][norb_corr_sh]
         corr_to_inequiv = params['model']['corr_to_inequiv']
         params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][corr_to_inequiv[icrsh]] for icrsh in range(ncor)])
+
+        # Set nk
+        params['model']['nk0'], params['model']['nk1'], params['model']['nk2'] = \
+            _set_nk(params['model']['nk'], params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
+
 
     if 'mpi' in params:
         # Expand enviroment variables

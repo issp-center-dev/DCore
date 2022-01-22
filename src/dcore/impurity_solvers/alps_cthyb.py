@@ -25,7 +25,7 @@ from itertools import product
 
 from dcore._dispatcher import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array, make_hermite_conjugate
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array, make_hermite_conjugate, expand_path
 from .base import SolverBase
 
 
@@ -272,12 +272,7 @@ class ALPSCTHYBSolver(SolverBase):
             return
 
         # Invoke subprocess
-        exec_path = os.path.expandvars(_read('exec_path'))
-        if exec_path == '':
-            raise RuntimeError("Please set exec_path!")
-        # TODO: Use shutil.which (from Python 3.3) to check the existence of the command.
-        #if not os.path.exists(exec_path):
-            #raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
+        exec_path = expand_path(_read('exec_path'))
 
         # Run a working horse
         with open('./output', 'w') as output_f:
