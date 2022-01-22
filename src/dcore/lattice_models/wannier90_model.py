@@ -21,7 +21,6 @@ import numpy
 from h5 import HDFArchive
 
 from .base import LatticeModel
-from .tools import set_nk
 from dcore.converters.wannier90 import Wannier90Converter
 
 def _generate_w90_converter_input(nkdiv, params, f):
@@ -75,10 +74,7 @@ class Wannier90Model(LatticeModel):
     def __init__(self, params):
         super(Wannier90Model, self).__init__(params)
 
-        self._nkdiv = set_nk(params["model"]["nk"],
-                             params["model"]["nk0"],
-                             params["model"]["nk1"],
-                             params["model"]["nk2"])
+        self._nkdiv = params["model"]["nk0"], params["model"]["nk1"], params["model"]["nk2"]
         self._spin_orbit = params['model']['spin_orbit']
 
 

@@ -26,12 +26,11 @@ from triqs.gf import *
 from triqs.operators import *
 
 from dcore.dmft_core import DMFTCoreSolver
-from dcore.program_options import create_parser, parse_parameters, parse_bvec
+from dcore.program_options import create_parser, parse_parameters, parse_bvec, _set_nk
 from dcore.tools import save_Sigma_w_sh_txt
 from dcore import impurity_solvers
 #from dcore import sumkdft
 from dcore.lattice_models import create_lattice_model
-from dcore.lattice_models.tools import set_nk
 from .sumkdft_workers.launcher import run_sumkdft
 
 
@@ -488,7 +487,7 @@ def dcore_post(filename, np=1, prefix="./"):
     #
     # Generate k mesh and compute H(k) on the mesh
     #
-    nk_div = set_nk(p["tool"]["nk_mesh"], p["tool"]["nk0_mesh"], p["tool"]["nk1_mesh"], p["tool"]["nk2_mesh"])
+    nk_div = _set_nk(p["tool"]["nk_mesh"], p["tool"]["nk0_mesh"], p["tool"]["nk1_mesh"], p["tool"]["nk2_mesh"])
     kvec_mesh = None
     if all(div != 0 for div in nk_div):
         print("\n################  Constructing H(k) for compute A(k, omega) on a mesh  ##################")
