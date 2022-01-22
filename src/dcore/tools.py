@@ -25,6 +25,7 @@ import subprocess
 from itertools import *
 import ast
 import math
+import shutil
 import scipy
 from scipy import linalg as scipy_linalg
 
@@ -426,7 +427,7 @@ def spin_moments_sh(dm_sh):
         assert dm.shape[0] == dm.shape[1]
 
         norb = dm.shape[0]//2
- 
+
         dm = dm.reshape((2, norb, 2, norb))
 
         s = numpy.array([0.5*numpy.einsum('st, sntn', pauli_mat[i], dm).real for i in range(3)])
@@ -876,3 +877,27 @@ def mpi_split(work_size, comm_size):
     offsets[1:] = numpy.cumsum(sizes)[:-1]
 
     return sizes, offsets
+
+def expand_path(exec_path):
+    """
+    Expand relative path and command into full path
+
+    Parameters
+    ----------
+    exec_path: str
+        path or command
+
+    Returns
+    -------
+    full_path: str
+        Full path of exec_path
+
+    """
+
+    full_path = os.path.expandvars(exec_path)  # expand environment variables
+    full_path = shutil.which(full_path)  # return full path
+    if full_path is None:
+        print(f"ERROR: {exec_path} does not exist. Set exec_path properly!", file=sys.stderr)
+        sys.exit(1)
+
+    return full_path

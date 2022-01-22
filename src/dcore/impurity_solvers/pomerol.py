@@ -25,7 +25,7 @@ import subprocess
 from triqs.gf import *
 from triqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params, expand_path
 from .base import SolverBase
 
 VERSION_REQUIRED = 1.5
@@ -124,7 +124,7 @@ class PomerolSolver(SolverBase):
         #   self.use_spin_orbit
 
         # print("params_kw =", params_kw)
-        exec_path = os.path.expandvars(params_kw['exec_path'])
+        exec_path = expand_path(params_kw['exec_path'])
         check_version(mpirun_command, exec_path)
 
         # bath fitting
