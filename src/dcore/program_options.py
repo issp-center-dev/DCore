@@ -146,17 +146,6 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
 
-    # [vertex]
-    parser.add_option("vertex", "wb_ph", str, "", "sparse, or a list of indices of bosonic frequencies separated by commas or spaces.")
-
-    # [sparse bse]
-    parser.add_option("sparse_bse", "qsample", str, "", "Path to a file that contains bosonic momenta"
-        " The first line is the number of momenta. From the second line, each line must contain an sequential index (start from 0) and "
-        " and three integer numbers representing a bosonic mementum (mod nk0, nk1, nk2).")
-    parser.add_option("sparse_bse", "input_vertex_format", str, "G2loc", "Floc or G2loc. For the latter case, local full vertex is computed on the fly.")
-    parser.add_option("sparse_bse", "rcond", float, 1e-12, "rcond for SparseBSESolver.")
-    parser.add_option("sparse_bse", "oversampling", int, 4, "Oversampling factor for SparseBSESolver.")
-
     return parser
 
 def _cast_to_bool(p):
