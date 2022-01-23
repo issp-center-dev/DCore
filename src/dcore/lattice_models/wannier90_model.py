@@ -21,7 +21,6 @@ import numpy
 from dcore._dispatcher import HDFArchive
 
 from .base import LatticeModel
-from .tools import set_nk
 from ._wannier90 import Wannier90
 from dcore.converters.wannier90 import Wannier90Converter
 

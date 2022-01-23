@@ -22,7 +22,7 @@ import numpy
 from warnings import warn
 
 from .base import LatticeModel
-from .tools import set_nk, XNode
+from .tools import XNode
 from dcore._dispatcher import HDFArchive
 
 class ExternalModel(LatticeModel):

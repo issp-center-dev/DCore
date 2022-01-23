@@ -268,7 +268,7 @@ class Wannier90Converter(ConverterTools):
                 # we assume spin up and spin down always have same total number
                 # of WFs
                 n_orbitals = numpy.ones(
-                    [self.n_k, n_spin], numpy.int) * self.nwfs
+                    [self.n_k, n_spin], numpy.int64) * self.nwfs
 
             else:
                 # consistency check between the _up and _down file contents
