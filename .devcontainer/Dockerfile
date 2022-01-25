@@ -18,4 +18,5 @@ RUN mkdir /home/${NB_USER}/work
 ENV DCORE_TRIQS_COMPAT 1
 
 RUN pip3 install --upgrade pip
-RUN pip3 install scipy h5py!=2.10.0 toml dcorelib mpi4py matplotlib mypy pytest
+RUN pip3 install numpy scipy h5py!=2.10.0 toml dcorelib mpi4py matplotlib mypy pytest -U
+RUN pip3 install sphinx wild_sphinx_theme versioneer -U

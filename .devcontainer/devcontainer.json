@@ -30,9 +30,11 @@
       "usernamehw.errorlens",
       "ms-vscode.live-server",
       "christian-kohler.path-intellisense",
-    "ms-python.python",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "lextudio.restructuredtext"
     ],
-   "remoteUser": "vscode",
-   "workspaceFolder": "/home/vscode/work",
-   "workspaceMount": "src=${localWorkspaceFolder},dst=/home/vscode/work,type=bind",
+    "remoteUser": "vscode",
+    "workspaceFolder": "/home/vscode/work",
+    "workspaceMount": "src=${localWorkspaceFolder},dst=/home/vscode/work,type=bind",
   }
