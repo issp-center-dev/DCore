@@ -21,7 +21,7 @@ import shutil
 import sys
 from itertools import product
 from dcore._dispatcher import *
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size, expand_path
 from .base import SolverBase
 
 

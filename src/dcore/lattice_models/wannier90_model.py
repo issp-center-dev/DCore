@@ -88,11 +88,10 @@ class Wannier90Model(LatticeModel):
     def nkdiv(self):
         return self._nkdiv
 
-    def _mk_proj_mat(self):
+    def _mk_proj_mat(self, n_k: int):
         """ Make correct proj_mat """
         nblock = 1
         nwan = self._w90.Nwann
-        n_k = numpy.prod(self._nkdiv)
         if self._spin_orbit:
             max_dim_sh = 2*numpy.max(self.norb_corr_sh)
             nspin = 2
@@ -109,6 +108,7 @@ class Wannier90Model(LatticeModel):
         else:
             max_dim_sh = numpy.max(self.norb_corr_sh)
             proj_mat = numpy.zeros((n_k, nblock, self.ncor, max_dim_sh, nwan), dtype=numpy.complex128)
+            offset = 0
             for icrsh in range(self.ncor):
                 norb_crsh = self.norb_corr_sh[icrsh]
                 proj_mat[:, 0, icrsh, 0:norb_crsh, offset:offset+norb_crsh] = numpy.identity(norb_crsh)[None,:,:]
@@ -148,7 +148,7 @@ class Wannier90Model(LatticeModel):
                 #proj_mat = proj_mat.reshape((n_k, nb, n_corr, max_dim_sh, max_n_orb//2, 2))
                 #proj_mat = proj_mat.transpose((0, 1, 2, 3, 5, 4))
                 #proj_mat = proj_mat.reshape((n_k, 1, n_corr, max_dim_sh, max_n_orb))
-                f['dft_input']['proj_mat'] = self._mk_proj_mat()
+                f['dft_input']['proj_mat'] = self._mk_proj_mat(numpy.prod(self._nkdiv))
 
 
     def write_dft_band_input_data(self, params, kvec, bands_data='dft_bands_input'):
@@ -227,5 +227,5 @@ class Wannier90Model(LatticeModel):
             f[bands_data]['hopping'] = hopping
             f[bands_data]['n_k'] = n_k
             f[bands_data]['n_orbitals'] = numpy.full((n_k, nblock), nwan, dtype=int)
-            f[bands_data]['proj_mat'] = self._mk_proj_mat()
+            f[bands_data]['proj_mat'] = self._mk_proj_mat(n_k)
         print('    Done')

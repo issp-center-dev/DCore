@@ -1,3 +1,4 @@
+# Dockerfile for GitHub Actions (unit test)
 FROM shinaoka/triqs3_all
 COPY .github_scripts/entrypoint.sh /
 COPY . /var/dcoretest
