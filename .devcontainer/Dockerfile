@@ -11,6 +11,7 @@ RUN apt-get update && \
     zip \
     vim \
     gosu \
+    hdf5-tools \
     libopenblas-base libopenblas-dev libhdf5-103 libhdf5-dev \
     cmake pkg-config gfortran \
     openmpi-bin libopenmpi-dev \

@@ -21,19 +21,32 @@ class Wannier90(object):
             ndgen.extend(f.readline().split())
         self.ndgen = numpy.array(ndgen, dtype=int)
 
+        lines = f.readlines()
+
+        # Cound how many R points are defined
+        rmap = {} # (int,int,int) -> index of R point
+        rvec = []
+        ir = 0
+        for line in lines:
+            i1, i2, i3, _, _, _, _ = line.split()
+            i1, i2, i3 = map(int, (i1, i2, i3))
+            r = (i1, i2, i3)
+            if r in rmap:
+                continue
+            rvec.append(r)
+            rmap[r] = ir
+            ir += 1
+        assert ir == self.nrpts
+
+        self.irvec = numpy.array(rvec, dtype=numpy.int64)
         self.HamR = numpy.zeros((self.nrpts, self.Nwann, self.Nwann), dtype=complex)
-        self.irvec = numpy.zeros((self.nrpts, 3), dtype=int)
-        for ir in range(self.nrpts):
-            for j in range(self.Nwann):
-                for i in range(self.Nwann):
-                    i1, i2, i3, i_in, j_in, hr_real,hr_imag = f.readline().split()
-                    if i==0 and j==0:
-                        self.irvec[ir,0] = i1
-                        self.irvec[ir,1] = i2
-                        self.irvec[ir,2] = i3
-                    assert i == int(i_in)-1
-                    assert j == int(j_in)-1
-                    self.HamR[ir, i, j] = complex(float(hr_real), float(hr_imag))
+
+        for line in lines:
+            i1, i2, i3, i, j, hr_real, hr_imag = line.split()
+            i1, i2, i3, i, j = map(int, (i1, i2, i3, i, j))
+            ir = rmap[(i1,i2,i3)]
+            self.HamR[ir, i-1, j-1] = complex(float(hr_real), float(hr_imag))
+
 
     def get_Hk(self, kvec):
         """
@@ -42,8 +55,8 @@ class Wannier90(object):
         :return: matrix of H(k)
         """
 
-        Hk = numpy.zeros((2*self.norb, 2*self.norb),dtype=complex)
+        Hk = numpy.zeros((self.Nwann, self.Nwann),dtype=numpy.complex128)
         for iR in range(self.nrpts):
             factor = numpy.exp(2J*numpy.pi*(self.irvec[iR,0]*kvec[0]+self.irvec[iR,1]*kvec[1]+self.irvec[iR,2]*kvec[2]))
-            Hk += self.HamR_full[iR,:,:] * factor / self.ndgen[iR]
+            Hk += self.HamR[iR,:,:] * factor / self.ndgen[iR]
         return Hk
