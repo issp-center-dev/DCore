@@ -65,7 +65,7 @@ def create_parser(target_sections=None):
     parser.add_option("model", "corr_to_inequiv", str, "None",
                       "Mapping from correlated shells to equivalent shells (for lattice = wannier90)")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
-    parser.add_option("model", "nk", int, 8, "Number of *k* along each line")
+    parser.add_option("model", "nk", int, 8, "Number of *k* along each line. This automatically sets nk0=nk1=nk2=nk. This parameter and (nk0, nk1, nk2) are mutually exclusive.")
     parser.add_option("model", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
     parser.add_option("model", "nk1", int, 0, "Number of *k* along b_1 (for lattice = wannier90, external)")
     parser.add_option("model", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
@@ -209,6 +209,10 @@ def parse_parameters(params):
         # Set nk
         params['model']['nk0'], params['model']['nk1'], params['model']['nk2'] = \
             _set_nk(params['model']['nk'], params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
+        print("debug", params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
+        params['model']['nkdiv'] = (params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
+        print("debug", params['model']['nkdiv'])
+        del params['model']['nk']
 
 
     if 'mpi' in params:

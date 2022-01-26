@@ -23,10 +23,13 @@ import numpy
 import scipy
 from itertools import product
 from dcore._dispatcher import HDFArchive
+from dcore._typing import isfloating
 
 from .base import LatticeModel
 
-def _generate_bethe_lattice_model(norb, t, nk):
+from typing import Union, Tuple, Sequence
+
+def _generate_bethe_lattice_model(norb: int, t: float, nk: int):
     """
     Compute a list of H(k) and weights for bethe lattice model with t
 
@@ -39,6 +42,9 @@ def _generate_bethe_lattice_model(norb, t, nk):
     nk : int
             Number of k divisions along each axis
     """
+    assert isinstance(norb, int)
+    assert isinstance(t, float)
+    assert isinstance(nk, int)
 
     #
     # If Bethe lattice, set k-weight manually to generate semi-circular DOS
@@ -118,7 +124,7 @@ class BetheModel(LatticeModel):
     """
     def __init__(self, params):
         super(BetheModel, self).__init__(params)
-        self._nk = params["model"]["nk"]
+        self._nk = params["model"]["nk0"]
 
     @classmethod
     def name(cls):
@@ -141,7 +147,7 @@ class BetheModel(LatticeModel):
     def generate_model_file(self):
         p = self._params
         seedname = p["model"]["seedname"]
-        Hk, weight = _generate_bethe_lattice_model(int(p['model']['norb']), p['model']['t'], p['model']['nk'])
+        Hk, weight = _generate_bethe_lattice_model(int(p['model']['norb']), p['model']['t'], self._nk)
         _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, weight)
 
         if p['model']['spin_orbit']:
@@ -159,25 +165,33 @@ class NNNHoppingModel(LatticeModel):
     def __init__(self, params):
         super(NNNHoppingModel, self).__init__(params)
 
-        self._nk = params["model"]["nk"]
+        self._nkdiv = numpy.asarray(params["model"]["nkdiv"]) # type: numpy.ndarray
+        self._nkdiv[self.__class__.spatial_dim():] = 1 # Bit hacky...
+        assert len(self._nkdiv) == 3, f"self._nkdiv is invalid: {self._nkdiv}"
 
     @classmethod
-    def name(cls):
+    def name(cls) -> str:
         if cls.spatial_dim() == 1:
             return 'chain'
         elif cls.spatial_dim() == 2:
             return 'square'
         elif cls.spatial_dim() == 3:
             return 'cubic'
+        else:
+            raise RuntimeError("Unknown cls!")
 
-    def nkdiv(self):
-        return (self._nk,) * self.__class__.spatial_dim() + (1,) * (3-self.__class__.spatial_dim())
+    def nkdiv(self) -> numpy.ndarray:
+        return self._nkdiv
 
     @classmethod
-    def spatial_dim(cls):
-        raise RuntimeError("spatial_dim must be inherited in a subclass.")
+    def spatial_dim(cls) -> int:
+        return -1
 
-    def Hk(self, kvec):
+    def Hk(
+            self, kvec: Union[Sequence[float], numpy.ndarray]
+        )->Union[numpy.ndarray, Tuple[numpy.ndarray,numpy.ndarray]]:
+        assert len(kvec) == 3 and all(map(isfloating, kvec))
+
         spatial_dim = self.__class__.spatial_dim()
         t = self._params['model']['t']
         tp = self._params['model']["t'"]
@@ -189,43 +203,43 @@ class NNNHoppingModel(LatticeModel):
             for iorb in range(norb):
                 Hk[iorb, iorb] = ek
         elif spatial_dim == 2:
-           ek = 2.0*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
+            ek = 2.0*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1])) \
                 + 2.0*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1]))
-           for iorb in range(norb):
-               Hk[iorb, iorb] = ek
+            for iorb in range(norb):
+                Hk[iorb, iorb] = ek
         elif spatial_dim == 3:
-           ek = 2*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
+            ek = 2*t*(numpy.cos(kvec[0]) + numpy.cos(kvec[1]) + numpy.cos(kvec[2])) \
                 + 2*tp*(numpy.cos(kvec[0] + kvec[1]) + numpy.cos(kvec[0] - kvec[1])
                         + numpy.cos(kvec[1] + kvec[2]) + numpy.cos(kvec[1] - kvec[2])
                         + numpy.cos(kvec[2] + kvec[0]) + numpy.cos(kvec[2] - kvec[0]))
-           for iorb in range(norb):
-               Hk[iorb, iorb] = ek
+            for iorb in range(norb):
+                Hk[iorb, iorb] = ek
 
         if self._params['model']['spin_orbit']:
             return scipy.linalg.block_diag(Hk, Hk)
         else:
             return (Hk, Hk)
 
-    def generate_model_file(self):
-        p = self._params
-        seedname = p['model']['seedname']
-        spin_orbit = p['model']['spin_orbit']
-        spatial_dim = self.__class__.spatial_dim()
-        norb = int(p['model']['norb'])
-        nk = p['model']['nk']
-        nkbz = nk**spatial_dim
+    def generate_model_file(self) -> None:
+        p = self._params # type: dict
+        seedname = p['model']['seedname'] # type: str
+        spin_orbit = p['model']['spin_orbit'] # type: bool
+        norb = int(p['model']['norb']) # type: int
+        nkbz = int(numpy.prod(self._nkdiv)) # type: int
         Hk = numpy.zeros((nkbz, norb, norb), dtype=complex)
         nkdiv = self.nkdiv()
 
         # Since Hk_converter does support SO=1, we create a model file for a spinless model.
         if spin_orbit:
             for ik, (ik0, ik1, ik2) in enumerate(product(list(range(nkdiv[0])), list(range(nkdiv[1])), list(range(nkdiv[2])))):
-                Hk_ud = self.Hk( 2*numpy.pi*numpy.array((ik0, ik1, ik2))/float(nk))
+                kvec = numpy.array((ik0, ik1, ik2))/self._nkdiv
+                Hk_ud = self.Hk(2*numpy.pi*kvec)
                 assert numpy.allclose(Hk_ud[0:norb, 0:norb], Hk_ud[norb:2*norb, norb:2*norb])
                 Hk[ik, :, :] = Hk_ud[0:norb, 0:norb]
         else:
             for ik, (ik0, ik1, ik2) in enumerate(product(list(range(nkdiv[0])), list(range(nkdiv[1])), list(range(nkdiv[2])))):
-                Hk_up_down = self.Hk( 2*numpy.pi*numpy.array((ik0, ik1, ik2))/float(nk))
+                kvec = numpy.array((ik0, ik1, ik2))/self._nkdiv
+                Hk_up_down = self.Hk(2*numpy.pi*kvec)
                 assert numpy.allclose(Hk_up_down[0], Hk_up_down[1])
                 Hk[ik, :, :] = Hk_up_down[0]
         _call_Hk_converter(seedname, p['model']['nelec'], int(p['model']['norb']), Hk, None)
