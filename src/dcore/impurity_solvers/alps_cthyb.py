@@ -23,9 +23,7 @@ import os
 import shutil
 from itertools import product
 
-from triqs.gf import *
-from h5 import HDFArchive
-from triqs.operators import *
+from dcore._dispatcher import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, get_block_size, float_to_complex_array, make_hermite_conjugate, expand_path
 from .base import SolverBase
@@ -45,6 +43,9 @@ def to_numpy_array(g, block_names):
     Rearrange spins and orbitals so that up and down spins appear alternatingly.
     If there is a single block, we assume that spin and down spins appear alternatignly.
     If there are two blocks, we assume that they are spin1 and spin2 sectors.
+    
+    Note by HS: The comment above may be wrong. The correct one may be
+       If there is a single block, we assume that a up-spin block is followed by a down-spin block.
     """
 
     if g.n_blocks > 2:
@@ -130,7 +131,7 @@ class ALPSCTHYBSolver(SolverBase):
     def calc_G2loc_ph_sparse(self, rot, mpirun_command, wsample_ph, params_kw):
         self._solve_impl(rot, mpirun_command, wsample_ph, params_kw)
 
-        return self._G2loc_ph_sparse, None
+        return self._G2loc_ph_sparse
 
     def _solve_impl(self, rot, mpirun_command, wsample_ph, params_kw):
         """

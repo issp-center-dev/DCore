@@ -2,7 +2,7 @@ import os
 import numpy
 from numpy.testing import assert_allclose
 
-from h5 import HDFArchive
+from dcorelib.triqs_compat.h5 import HDFArchive
 
 from dcore.dcore_pre import dcore_pre
 from dcore.dcore import dcore

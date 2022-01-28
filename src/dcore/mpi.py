@@ -34,13 +34,13 @@ def gatherv(send_buf, root=0):
     send_buf = numpy.ascontiguousarray(send_buf).ravel()
     sizes = comm.allgather(send_buf.size)
     offsets = numpy.hstack([0, numpy.cumsum(sizes)])[0:comm.Get_size()]
-    recv_buf = numpy.empty(numpy.sum(sizes), dtype=send_buf.dtype)
     MPI_TYPE = MPI_TYPE_MAP[str(send_buf.dtype)]
     if comm.Get_rank() == root:
-        comm.Gatherv([send_buf, MPI_TYPE], [recv_buf, sizes, offsets, MPI_TYPE])
-        return recv_buf
+        recv_buf = numpy.empty(numpy.sum(sizes), dtype=send_buf.dtype)
     else:
-        return None
+        recv_buf = None
+    comm.Gatherv([send_buf, MPI_TYPE], [recv_buf, sizes, offsets, MPI_TYPE])
+    return recv_buf
 
 def split_idx(size, comm_size):
     """Compute sizes and offsets for splitting a 1D array

@@ -18,9 +18,10 @@
 
 
 import numpy
-from h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 
 from .base import LatticeModel
+from ._wannier90 import Wannier90
 from dcore.converters.wannier90 import Wannier90Converter
 
 def _generate_w90_converter_input(nkdiv, params, f):
@@ -76,6 +77,8 @@ class Wannier90Model(LatticeModel):
 
         self._nkdiv = params["model"]["nk0"], params["model"]["nk1"], params["model"]["nk2"]
         self._spin_orbit = params['model']['spin_orbit']
+        
+        self._w90 = Wannier90(self._params["model"]["seedname"])
 
 
     @classmethod
@@ -84,6 +87,34 @@ class Wannier90Model(LatticeModel):
 
     def nkdiv(self):
         return self._nkdiv
+
+    def _mk_proj_mat(self, n_k: int):
+        """ Make correct proj_mat """
+        nblock = 1
+        nwan = self._w90.Nwann
+        if self._spin_orbit:
+            max_dim_sh = 2*numpy.max(self.norb_corr_sh)
+            nspin = 2
+            proj_mat = numpy.zeros((n_k, nblock, self.ncor, max_dim_sh, nspin, nwan//nspin), dtype=numpy.complex128)
+            offset = 0
+            for icrsh in range(self.ncor):
+                norb_crsh = self.norb_corr_sh[icrsh]
+                # up
+                proj_mat[:, 0, icrsh, 0:norb_crsh, 0, offset:offset+norb_crsh] = numpy.identity(norb_crsh)[None,:,:]
+                # dn
+                proj_mat[:, 0, icrsh, norb_crsh:2*norb_crsh, 1, offset:offset+norb_crsh] = numpy.identity(norb_crsh)[None,:,:]
+                offset += norb_crsh
+            return proj_mat.reshape((n_k, nblock, self.ncor, max_dim_sh, nwan))
+        else:
+            max_dim_sh = numpy.max(self.norb_corr_sh)
+            proj_mat = numpy.zeros((n_k, nblock, self.ncor, max_dim_sh, nwan), dtype=numpy.complex128)
+            offset = 0
+            for icrsh in range(self.ncor):
+                norb_crsh = self.norb_corr_sh[icrsh]
+                proj_mat[:, 0, icrsh, 0:norb_crsh, offset:offset+norb_crsh] = numpy.identity(norb_crsh)[None,:,:]
+                offset += norb_crsh
+            return proj_mat.reshape((n_k, nblock, self.ncor, max_dim_sh, nwan))
+
 
     def generate_model_file(self):
         #
@@ -109,15 +140,15 @@ class Wannier90Model(LatticeModel):
 
                 # Make projectors compatible with DCore's block structure
                 # proj_mat (n_k, nb, n_corr, max_dim_sh, max_n_orb)
-                proj_mat = f['dft_input']['proj_mat']
-                n_k, nb, n_corr, max_dim_sh, max_n_orb = proj_mat.shape
-                assert nb == 1
-                # (n_k, nb, n_corr, nso, orb, spin) => (n_k, nb, n_corr, nso, spin, orb)
-                assert max_dim_sh//2 > 0
-                proj_mat = proj_mat.reshape((n_k, nb, n_corr, max_dim_sh, max_n_orb//2, 2))
-                proj_mat = proj_mat.transpose((0, 1, 2, 3, 5, 4))
-                proj_mat = proj_mat.reshape((n_k, 1, n_corr, max_dim_sh, max_n_orb))
-                f['dft_input']['proj_mat'] = proj_mat
+                #proj_mat = f['dft_input']['proj_mat']
+                #n_k, nb, n_corr, max_dim_sh, max_n_orb = proj_mat.shape
+                #assert nb == 1
+                ## (n_k, nb, n_corr, nso, orb, spin) => (n_k, nb, n_corr, nso, spin, orb)
+                #assert max_dim_sh//2 > 0
+                #proj_mat = proj_mat.reshape((n_k, nb, n_corr, max_dim_sh, max_n_orb//2, 2))
+                #proj_mat = proj_mat.transpose((0, 1, 2, 3, 5, 4))
+                #proj_mat = proj_mat.reshape((n_k, 1, n_corr, max_dim_sh, max_n_orb))
+                f['dft_input']['proj_mat'] = self._mk_proj_mat(numpy.prod(self._nkdiv))
 
 
     def write_dft_band_input_data(self, params, kvec, bands_data='dft_bands_input'):
@@ -174,18 +205,18 @@ class Wannier90Model(LatticeModel):
         #
         # proj_mat is (norb*norb) identities at each correlation shell
         #
-        offset = 0
-        dim_Hk = n_spin_orb_sh if spin_orbit else norb_sh
-        proj_mat = numpy.zeros([n_k, nblock, ncor, numpy.max(dim_Hk), nwan], complex)
-        for icor in range(ncor):
-            proj_mat[:, :, icor, 0:dim_Hk[icor], offset:offset+dim_Hk[icor]] = numpy.identity(dim_Hk[icor])
-            offset += dim_Hk[icor]
+        #offset = 0
+        #dim_Hk = n_spin_orb_sh if spin_orbit else norb_sh
+        #proj_mat = numpy.zeros([n_k, nblock, ncor, numpy.max(dim_Hk), nwan], complex)
+        #for icor in range(ncor):
+            #proj_mat[:, :, icor, 0:dim_Hk[icor], offset:offset+dim_Hk[icor]] = numpy.identity(dim_Hk[icor])
+            #offset += dim_Hk[icor]
 
         # Make proj_mat compatible with DCore's block structure
-        if spin_orbit:
-            proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk)//2, 2, nwan//2, 2))
-            proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
-            proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk), nwan))
+        #if spin_orbit:
+            #proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk)//2, 2, nwan//2, 2))
+            #proj_mat = proj_mat.transpose((0, 1, 2, 4, 3, 6, 5))
+            #proj_mat = proj_mat.reshape((n_k, nblock, ncor, numpy.max(dim_Hk), nwan))
 
         #
         # Output them into seedname.h5
@@ -196,5 +227,5 @@ class Wannier90Model(LatticeModel):
             f[bands_data]['hopping'] = hopping
             f[bands_data]['n_k'] = n_k
             f[bands_data]['n_orbitals'] = numpy.full((n_k, nblock), nwan, dtype=int)
-            f[bands_data]['proj_mat'] = proj_mat
+            f[bands_data]['proj_mat'] = self._mk_proj_mat(n_k)
         print('    Done')

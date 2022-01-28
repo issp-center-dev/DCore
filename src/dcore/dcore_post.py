@@ -22,17 +22,29 @@ import numpy
 import copy
 from itertools import product
 
-from triqs.gf import *
-from triqs.operators import *
-
+from dcore._dispatcher import *
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import create_parser, parse_parameters, parse_bvec, _set_nk
 from dcore.tools import save_Sigma_w_sh_txt
 from dcore import impurity_solvers
-#from dcore import sumkdft
 from dcore.lattice_models import create_lattice_model
 from .sumkdft_workers.launcher import run_sumkdft
 
+
+def _read_sigma_w(npz_file, nsh, mesh, block_names):
+    npz = np.load(npz_file)
+    Sigma_iw = []
+    idx = 0
+    for _ in range(nsh):
+        block_list = []
+        for _ in range(len(block_names)):
+            block_list.append(GfReFreq(data=npz[f'data{idx}'], mesh=mesh))
+            idx += 1
+        G = BlockGf(
+            name_list = block_names,
+            block_list = block_list, make_copies = False)
+        Sigma_iw.append(G)
+    return Sigma_iw
 
 class DMFTPostSolver(DMFTCoreSolver):
     def __init__(self, seedname, params, output_file='', output_group='dmft_out'):
@@ -262,21 +274,29 @@ class DMFTCoreTools:
         mesh = [self._omega_min, self._omega_max, self._Nomega]
         sigma_w_sh = self._solver.calc_Sigma_w(mesh)
         Sigma_iw_sh = self._solver.Sigma_iw_sh(self._solver.iteration_number)
-        for ish in range(self._solver.n_inequiv_shells):
-            if not sigma_w_sh[ish] is None:
-                continue
 
-            # set BlockGf sigma_w
-            Sigma_iw = Sigma_iw_sh[ish]
-            block_names = self._solver.spin_block_names
-            def glist():
-                return [GfReFreq(indices=sigma.indices, window=(self._omega_min, self._omega_max),
-                                 n_points=self._Nomega, name="sig_pade") for block, sigma in Sigma_iw]
-            sigma_w_sh[ish] = BlockGf(name_list=block_names, block_list=glist(), make_copies=False)
-            # Analytic continuation
-            for bname, sig in Sigma_iw:
-                sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
-
+        filename = self._seedname + '_sigma_w.npz'
+        if os.path.exists(filename):
+            print(f"Reading sigma_w from {filename}...")
+            sigma_w_sh = _read_sigma_w(filename, len(sigma_w_sh),
+                MeshReFreq(*mesh), self._solver.spin_block_names)
+        else:
+            # Backward compatibility
+            print(f"Not found {filename}. Falling back to pade approximant...")
+            for ish in range(self._solver.n_inequiv_shells):
+                if not sigma_w_sh[ish] is None:
+                    continue
+                # set BlockGf sigma_w
+                Sigma_iw = Sigma_iw_sh[ish]
+                block_names = self._solver.spin_block_names
+                def glist():
+                    return [GfReFreq(indices=sigma.indices, window=(self._omega_min, self._omega_max),
+                                     n_points=self._Nomega, name="sig_pade") for block, sigma in Sigma_iw]
+                sigma_w_sh[ish] = BlockGf(name_list=block_names, block_list=glist(), make_copies=False)
+                # Analytic continuation
+                for bname, sig in Sigma_iw:
+                    sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
+    
         print("\n#############  Print Self energy in the Real Frequency  ################\n")
         filename = self._prefix + self._seedname + '_sigmaw.dat'
         print("\n Writing real-freqnecy self-energy into ", filename)
@@ -417,7 +437,7 @@ def gen_script_gnuplot(xnode, seedname, prefix, spin_orbit):
         print("unset key", file=f)
         print("set ylabel \"Energy\"", file=f)
         print("set cblabel \"A(k,w)\"", file=f)
-        print("splot \"{0}_akw.dat\"".format(seedname), file=f)
+        print("splot \"{0}_akw.dat\" u 1:2:(abs($3))".format(seedname), file=f)
         print("pause -1", file=f)
 
         print("    Usage:")

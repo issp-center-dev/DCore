@@ -19,12 +19,11 @@
 import argparse
 import sys
 import os
-
 from triqs_hubbardI import Solver
-from .base import make_h_int
 
 from h5 import HDFArchive
 import triqs.utility.mpi as mpi
+from .triqs_dep_tools import *
 
 from ..tools import convert_to_built_in_scalar_type
 

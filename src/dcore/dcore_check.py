@@ -20,11 +20,9 @@ from matplotlib.gridspec import GridSpec
 import numpy
 import math
 
-from triqs.gf import *
-
+from dcore._dispatcher import *
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import *
-
 
 class DMFTCoreCheck(object):
 
@@ -100,10 +98,10 @@ class DMFTCoreCheck(object):
         import matplotlib
         matplotlib.use('Agg')  # do not plot on x11
 
-        from triqs.plot.mpl_interface import oplot, plt
+        from ._dispatcher import mpl_interface
 
-        self.plt = plt
-        self.oplot = oplot
+        self.plt = mpl_interface.plt
+        self.oplot = mpl_interface.oplot
 
 
     def plot_sigma_ave(self, basename, fig_ext):

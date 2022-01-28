@@ -45,7 +45,7 @@ def create_parser(target_sections=None):
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'bse'])
+        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
 
@@ -65,7 +65,7 @@ def create_parser(target_sections=None):
     parser.add_option("model", "corr_to_inequiv", str, "None",
                       "Mapping from correlated shells to equivalent shells (for lattice = wannier90)")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
-    parser.add_option("model", "nk", int, 8, "Number of *k* along each line")
+    parser.add_option("model", "nk", int, 8, "Number of *k* along each line. This automatically sets nk0=nk1=nk2=nk. This parameter and (nk0, nk1, nk2) are mutually exclusive.")
     parser.add_option("model", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
     parser.add_option("model", "nk1", int, 0, "Number of *k* along b_1 (for lattice = wannier90, external)")
     parser.add_option("model", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
@@ -129,6 +129,13 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "nk0_mesh", int, 0, "Number of k points along b_0 for computation of A(k,omega) on a 3D mesh")
     parser.add_option("tool", "nk1_mesh", int, 0, "Number of k points along b_1 for computation of A(k,omega) on a 3D mesh")
     parser.add_option("tool", "nk2_mesh", int, 0, "Number of k points along b_2 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("tool", "Lambda_IR", float, 1e+4, "IR parameter for computing G(k,iw)")
+    parser.add_option("tool", "cutoff_IR", float, 1e-5, "IR cutoff parameter for computing G(k,iw)")
+    parser.add_option("tool", "cutoff_IR_2P", float, 1e-5, "IR cutoff parameter for computing two-particle quantities")
+    parser.add_option("tool", "gk_smpl_freqs", str, "dense", "Sampling fermionic frequencies for dcore_gk. dense or the name of a text file that contains sampling frequencies."
+        "For gk_smpl_freqs = dense, all fermionic frequencies in the range of [-n_iw, n_iw] are used. A valid text file must contain the number of sampling frequencies in its first line."
+        "Each line after the first line must contain two integer numbers: The first one is an sequential index of a sampling frequency (start from 0), and the second one is a fermionic sampling frequency (i.e, -1, 0, 1)."
+    )
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")
@@ -138,7 +145,6 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
-
 
     return parser
 
@@ -203,6 +209,8 @@ def parse_parameters(params):
         # Set nk
         params['model']['nk0'], params['model']['nk1'], params['model']['nk2'] = \
             _set_nk(params['model']['nk'], params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
+        params['model']['nkdiv'] = (params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
+        del params['model']['nk']
 
 
     if 'mpi' in params:
