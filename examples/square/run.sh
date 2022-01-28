@@ -19,7 +19,7 @@ set_num_proc
 
 rm -rf results
 mkdir results
-cd results
+cd results || exit
 
 # ---------------------------------
 # DCore
@@ -27,17 +27,13 @@ cd results
 ini=../dmft_square.ini
 
 echo "running dcore_pre..."
-dcore_pre $ini
-check_status
+dcore_pre $ini || exit
 
 echo "running dcore..."
-dcore --np $NUM_PROC $ini
-check_status
+dcore --np $NUM_PROC $ini || exit
 
 echo "running dcore_check..."
-dcore_check $ini
-check_status
+dcore_check $ini || exit
 
 echo "running dcore_post..."
-dcore_post --np $NUM_PROC $ini
-check_status
+dcore_post --np $NUM_PROC $ini || exit
