@@ -49,8 +49,8 @@ def to_numpy_array(g, names):
         data[:, offset:offset + block_dim, offset:offset + block_dim] = block.data
         offset += block_dim
 
-    # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
-    # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
+    # from (spin, orb) : (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
+    # to (orb, spin)   : (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
     norb = n_spin_orbital//2
     index = numpy.zeros(n_spin_orbital, dtype=int)
     index[0::2] = numpy.arange(norb)
@@ -109,18 +109,20 @@ def assign_from_numpy_array(g, data, names):
     niw = data.shape[1]
 
     # array which data are assigned from
-    data_from = data.reshape(n_inner, n_sp, niw)
+    # (orb, spin, iw) -> (spin, orb, iw) -> (spin, orb, iw)  w/o SO
+    #                                       (1, inner, iw)   w/  SO
+    data_from = data.reshape((-1, 2, niw)).transpose((1, 0, 2)).reshape(n_sp, n_inner, niw)
 
     # assign data_from to g
-    for sp in range(n_sp):
+    for sp, name in enumerate(names):
         # array which data are assigned to
-        data_to = g[names[sp]].data
+        data_to = g[name].data
         assert data_to.shape == (2*niw, n_inner, n_inner)
         for i in range(n_inner):
             # positive frequency
-            data_to[niw:, i, i] = data_from[i, sp, :]
+            data_to[niw:, i, i] = data_from[sp, i, :]
             # negative frequency
-            data_to[:niw, i, i] = numpy.conj(data_from[i, sp, ::-1])
+            data_to[:niw, i, i] = numpy.conj(data_from[sp, i, ::-1])
 
 
 def dcore2alpscore(dcore_U):
