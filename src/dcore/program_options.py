@@ -209,9 +209,7 @@ def parse_parameters(params):
         # Set nk
         params['model']['nk0'], params['model']['nk1'], params['model']['nk2'] = \
             _set_nk(params['model']['nk'], params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
-        print("debug", params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
         params['model']['nkdiv'] = (params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
-        print("debug", params['model']['nkdiv'])
         del params['model']['nk']
 
 

@@ -2,6 +2,7 @@ FROM --platform=linux/x86_64 shinaoka/dcore_dev_triqs3
 
 ENV PYTHONUNBUFFERED=1
 
+
 # Install requirement
 RUN mkdir /tmp/setup
 WORKDIR /tmp/setup
@@ -24,4 +25,5 @@ RUN mkdir /home/${NB_USER}/work
 
 # For DCore
 #ENV DCORE_TRIQS_COMPAT 0
+
 RUN echo "source /opt/triqs/share/triqsvars.sh" >> /home/${NB_USER}/.bashrc
