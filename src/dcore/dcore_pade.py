@@ -38,7 +38,7 @@ def dcore_pade(seedname):
     print("Reading ", seedname + "_anacont.toml...")
     with open(seedname + "_anacont.toml", "r") as f:
         params = toml.load(f)
-    
+ 
     print("Reading ", seedname + "_sigma_iw.npz...")
     npz = numpy.load(seedname + "_sigma_iw.npz")
 
@@ -82,3 +82,5 @@ def run():
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
+
+    dcore_pade(args.seedname)
