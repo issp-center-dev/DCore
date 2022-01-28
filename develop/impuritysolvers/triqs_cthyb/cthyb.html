@@ -136,13 +136,13 @@ n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span
 </pre></div>
 </div>
 <p>Then, we use gnuplot as</p>
-<div class="highlight-gnuplot notranslate"><div class="highlight"><pre><span></span><span class="k">plot</span> <span class="p">[</span><span class="mi">0</span><span class="o">:</span><span class="mi">10</span><span class="p">][</span><span class="mi">-0</span><span class="mf">.6</span><span class="o">:</span><span class="mi">0</span><span class="p">]</span> \
-<span class="s">&quot;cyc3000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc10000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc30000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc100000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc300000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc300000_warm5000_len100.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span>
+<div class="highlight-gnuplot notranslate"><div class="highlight"><pre><span></span><span class="k">plot</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="o">:</span><span class="mi">10</span><span class="p">][</span><span class="mi">-0</span><span class="mf">.6</span><span class="o">:</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span>\<span class="w"></span>
+<span class="s">&quot;cyc3000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\<span class="w"></span>
+<span class="s">&quot;cyc10000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\<span class="w"></span>
+<span class="s">&quot;cyc30000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\<span class="w"></span>
+<span class="s">&quot;cyc100000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\<span class="w"></span>
+<span class="s">&quot;cyc300000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\<span class="w"></span>
+<span class="s">&quot;cyc300000_warm5000_len100.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
 </pre></div>
 </div>
 <p>and obtain</p>
@@ -160,29 +160,29 @@ This high-frequency tail can be fitted by using the following function:</p>
 \frac{a_3}{\omega^3} + \cdots\]</div>
 <p>We show the procedure for using this technique.
 The original input file (without tail-fit) is as follows (dmft.ini):</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
-<span class="na">seedname</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">lattice</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">norb</span> <span class="o">=</span> <span class="s">1</span>
-<span class="na">nelec</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">t</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(4.0, 0.0, 0.0)]</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span><span class="w"></span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span><span class="w"></span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span><span class="w"></span>
 
-<span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
+<span class="k">[system]</span><span class="w"></span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
 
-<span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
-<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
-<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">100000</span>
-<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">50</span>
+<span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span><span class="w"></span>
+<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span><span class="w"></span>
+<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000</span><span class="w"></span>
+<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span><span class="w"></span>
 
-<span class="k">[control]</span>
-<span class="na">max_step</span> <span class="o">=</span> <span class="s">1</span>
+<span class="k">[control]</span><span class="w"></span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
 
-<span class="k">[tool]</span>
-<span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
+<span class="k">[tool]</span><span class="w"></span>
+<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span><span class="w"></span>
 </pre></div>
 </div>
 <p>We first execute the ordinary DMFT calculation:</p>
@@ -199,13 +199,13 @@ add the following parameters at the <code class="docutils literal notranslate"><
 (not the
 <a class="reference external" href="https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html">solver parameter</a>
 for the tail fit):</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
-<span class="na">perform_tail_fit</span> <span class="o">=</span> <span class="s">True</span>
-<span class="na">fit_max_moment</span> <span class="o">=</span> <span class="s">2</span>
-<span class="na">fit_min_w</span> <span class="o">=</span> <span class="s">6.0</span>
-<span class="na">fit_max_w</span> <span class="o">=</span> <span class="s">15.0</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[system]</span><span class="w"></span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
+<span class="na">perform_tail_fit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
+<span class="na">fit_max_moment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span><span class="w"></span>
+<span class="na">fit_min_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span><span class="w"></span>
+<span class="na">fit_max_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">15.0</span><span class="w"></span>
 </pre></div>
 </div>
 <p>We run <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> again, and obtain the result as (b) in the above figure.
@@ -217,9 +217,9 @@ above figure.</p>
 <h2>Multi-band system<a class="headerlink" href="#multi-band-system" title="Permalink to this headline">¶</a></h2>
 <p>For the multi-band systems, <strong>we have to include the two-pairs insertion/removal move</strong>
 in the QMC cycles as</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
-<span class="na">move_double{bool}</span> <span class="o">=</span> <span class="s">True</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span><span class="w"></span>
+<span class="na">move_double{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
 </pre></div>
 </div>
 <p>because these moves are disabled in the default setting.</p>
@@ -244,10 +244,10 @@ In this method, we expand the Green’s function at the imaginary time with a se
 the Legendre polynomials, and ignore the higher order polynomials.</p>
 <p>This scheme is activated when we specify the input parameter <code class="docutils literal notranslate"><span class="pre">n_l</span></code>
 (the number of polynomial included) in the <code class="docutils literal notranslate"><span class="pre">[system]</span></code> block as</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
-<span class="na">n_l</span> <span class="o">=</span> <span class="s">30</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[system]</span><span class="w"></span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
+<span class="na">n_l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span><span class="w"></span>
 </pre></div>
 </div>
 <p>When we use the Legendre filter, we should check that how many polynomials
@@ -318,30 +318,30 @@ plot \
 <p>and obtain</p>
 <a class="reference internal image-reference" href="../../_images/legendre.png"><img alt="../../_images/legendre.png" class="align-center" src="../../_images/legendre.png" style="width: 500px;" /></a>
 <p>Finally, we choose the following setting:</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
-<span class="na">seedname</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">lattice</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">norb</span> <span class="o">=</span> <span class="s">1</span>
-<span class="na">nelec</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">t</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(4.0, 0.0, 0.0)]</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span><span class="w"></span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span><span class="w"></span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span><span class="w"></span>
 
-<span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
-<span class="na">n_l</span> <span class="o">=</span> <span class="s">30</span>
+<span class="k">[system]</span><span class="w"></span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
+<span class="na">n_l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span><span class="w"></span>
 
-<span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
-<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">5000</span>
-<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">300000</span>
-<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">100</span>
+<span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span><span class="w"></span>
+<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5000</span><span class="w"></span>
+<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300000</span><span class="w"></span>
+<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
 
-<span class="k">[control]</span>
-<span class="na">max_step</span> <span class="o">=</span> <span class="s">1</span>
+<span class="k">[control]</span><span class="w"></span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
 
-<span class="k">[tool]</span>
-<span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
+<span class="k">[tool]</span><span class="w"></span>
+<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span><span class="w"></span>
 </pre></div>
 </div>
 <p>and obtain</p>
@@ -372,17 +372,21 @@ plot \
 <li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../alpscore_cthyb/cthyb.html"
-                        title="previous chapter">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../alpscore_ctseg/ctseg.html"
-                        title="next chapter">CT-QMC with segment implementation: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB-SEGMENT</span></code></a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../alpscore_cthyb/cthyb.html"
+                          title="previous chapter">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../alpscore_ctseg/ctseg.html"
+                          title="next chapter">CT-QMC with segment implementation: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB-SEGMENT</span></code></a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>

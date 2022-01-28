@@ -56,46 +56,46 @@ This means that the parameter set used in [<a class="reference internal" href=".
 In this tutorial, we compute the antiferromagetic solution below <span class="math notranslate nohighlight">\(T_\mathrm{c}\)</span> using a CT-HYB solver.</p>
 <p>The complete input file is shown below:</p>
 <p><a class="reference download internal" download="" href="../../_downloads/d0c992f2d92d0de470cae6f92934f461/square_afm.ini"><code class="xref download docutils literal notranslate"><span class="pre">square_afm.ini</span></code></a></p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
-<span class="na">seedname</span> <span class="o">=</span> <span class="s">afm_dim2</span>
-<span class="na">lattice</span> <span class="o">=</span> <span class="s">wannier90</span>
-<span class="na">ncor</span> <span class="o">=</span> <span class="s">4</span>
-<span class="na">norb</span> <span class="o">=</span> <span class="s">1, 1</span>
-<span class="na">nelec</span> <span class="o">=</span> <span class="s">4.0</span>
-<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(4.0, 0.0, 0.0), (4.0, 0.0, 0.0)]</span>
-<span class="na">corr_to_inequiv</span> <span class="o">=</span> <span class="s">0, 1, 1, 0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">8</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">afm_dim2</span><span class="w"></span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span><span class="w"></span>
+<span class="na">ncor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4</span><span class="w"></span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1, 1</span><span class="w"></span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4.0</span><span class="w"></span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0), (4.0, 0.0, 0.0)]</span><span class="w"></span>
+<span class="na">corr_to_inequiv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0, 1, 1, 0</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
 
-<span class="k">[system]</span>
-<span class="na">T</span> <span class="o">=</span> <span class="s">0.1</span>
-<span class="na">n_iw</span> <span class="o">=</span> <span class="s">1000</span>
-<span class="na">mu</span> <span class="o">=</span> <span class="s">2.0</span>
-<span class="na">fix_mu</span> <span class="o">=</span> <span class="s">True</span>
+<span class="k">[system]</span><span class="w"></span>
+<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span><span class="w"></span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span><span class="w"></span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span><span class="w"></span>
+<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
 
-<span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">ALPS/cthyb-seg</span>
-<span class="na">exec_path{str}</span> <span class="o">=</span> <span class="s">/path/to/alps_cthyb</span>
-<span class="na">cthyb.TEXT_OUTPUT{int}</span> <span class="o">=</span> <span class="s">1</span>
-<span class="na">cthyb.MEASUREMENT_freq{int}</span> <span class="o">=</span> <span class="s">1</span>
-<span class="na">MEASURE_gw{int}</span> <span class="o">=</span> <span class="s">1</span>
-<span class="na">MAX_TIME{int}</span> <span class="o">=</span> <span class="s">60</span>
-<span class="na">cthyb.N_MEAS{int}</span> <span class="o">=</span> <span class="s">50</span>
-<span class="na">cthyb.THERMALIZATION{int}</span> <span class="o">=</span> <span class="s">100000</span>
-<span class="na">cthyb.SWEEPS{int}</span> <span class="o">=</span> <span class="s">100000000</span>
+<span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb-seg</span><span class="w"></span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/path/to/alps_cthyb</span><span class="w"></span>
+<span class="na">cthyb.TEXT_OUTPUT{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">cthyb.MEASUREMENT_freq{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">MEASURE_gw{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">MAX_TIME{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">60</span><span class="w"></span>
+<span class="na">cthyb.N_MEAS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span><span class="w"></span>
+<span class="na">cthyb.THERMALIZATION{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000</span><span class="w"></span>
+<span class="na">cthyb.SWEEPS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000000</span><span class="w"></span>
 
-<span class="k">[control]</span>
-<span class="na">max_step</span> <span class="o">=</span> <span class="s">30</span>
-<span class="na">sigma_mix</span> <span class="o">=</span> <span class="s">0.5</span>
-<span class="na">initial_static_self_energy</span> <span class="o">=</span> <span class="s">{0: &#39;init_se_up.txt&#39;, 1: &#39;init_se_down.txt&#39;}</span>
+<span class="k">[control]</span><span class="w"></span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span><span class="w"></span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span><span class="w"></span>
+<span class="na">initial_static_self_energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">{0: &#39;init_se_up.txt&#39;, 1: &#39;init_se_down.txt&#39;}</span><span class="w"></span>
 
-<span class="k">[tool]</span>
-<span class="na">broadening</span> <span class="o">=</span> <span class="s">0.0</span>
-<span class="na">knode</span> <span class="o">=</span> <span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span>
-<span class="c1"># knode = [(G,0,0,0),(X,1,0,0),(M,1,1,0),(G,0,0,0)]</span>
-<span class="na">nk_line</span> <span class="o">=</span> <span class="s">100</span>
-<span class="na">omega_max</span> <span class="o">=</span> <span class="s">6.0</span>
-<span class="na">omega_min</span> <span class="o">=</span> <span class="s">-6.0</span>
-<span class="na">Nomega</span> <span class="o">=</span> <span class="s">401</span>
+<span class="k">[tool]</span><span class="w"></span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span><span class="w"></span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span><span class="w"></span>
+<span class="c1"># knode = [(G,0,0,0),(X,1,0,0),(M,1,1,0),(G,0,0,0)]</span><span class="w"></span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span><span class="w"></span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span><span class="w"></span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span><span class="w"></span>
 </pre></div>
 </div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">/path/to/alps_cthyb</span></code> for <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span> <span class="pre">exec_path{str}</span></code> parameter needs to be replaced with a full path to <code class="docutils literal notranslate"><span class="pre">alps_cthyb</span></code> executable in your environment.</p>
@@ -195,17 +195,21 @@ dcore_post cubic.ini --np <span class="m">48</span> &gt; output-post
 <li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../bethe-t2g/bethe.html"
-                        title="previous chapter">Multiorbital model by a QMC solver</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../srvo3/srvo3.html"
-                        title="next chapter">SrVO<sub>3</sub></a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../bethe-t2g/bethe.html"
+                          title="previous chapter">Multiorbital model by a QMC solver</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../srvo3/srvo3.html"
+                          title="next chapter">SrVO<sub>3</sub></a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
