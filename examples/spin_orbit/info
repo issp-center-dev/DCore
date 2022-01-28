@@ -1,0 +1,5 @@
+[info]
+author = Junya Otsuki
+version = 3.1.0
+date = 2022/01/28/
+description = Check consistency between spin_orbit=False and spin_orbit=True
