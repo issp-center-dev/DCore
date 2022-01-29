@@ -81,19 +81,19 @@ def _generate_umat_kanamori(p):
     # print Kanamori parameters
     print("\n Kanamori parameters")
     print("  ish :  U,  U',  J")
-    for ish, (u, up, j) in enumerate(kanamori_sh):
-        print(f"    {ish} : {u!r}, {up!r}, {j!r}")
+    for ish, (_u, _up, _j) in enumerate(kanamori_sh):
+        print(f"    {ish} : {_u!r}, {_up!r}, {_j!r}")
 
     # Generate U-matrix
     norb = p['model']['norb_inequiv_sh']
     u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
-    for ish in range(nsh):
+    for ish, (_u, _up, _j) in enumerate(kanamori_sh):
         for iorb, jorb in product(range(norb[ish]), repeat=2):
-            u_mat[ish][iorb, jorb, iorb, jorb] = kanamori_sh[ish][1]
-            u_mat[ish][iorb, jorb, jorb, iorb] = kanamori_sh[ish][2]
-            u_mat[ish][iorb, iorb, jorb, jorb] = kanamori_sh[ish][2]
+            u_mat[ish][iorb, jorb, iorb, jorb] = _up
+            u_mat[ish][iorb, jorb, jorb, iorb] = _j
+            u_mat[ish][iorb, iorb, jorb, jorb] = _j
         for iorb in range(norb[ish]):
-            u_mat[ish][iorb, iorb, iorb, iorb] = kanamori_sh[ish][0]
+            u_mat[ish][iorb, iorb, iorb, iorb] = _u
     return u_mat
 
 
