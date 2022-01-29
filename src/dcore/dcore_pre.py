@@ -150,8 +150,7 @@ def _generate_umat_slater_f(p):
     # parse kanamori parameters
     slater_sh = _parse_interaction_parameters(p["model"]["slater_f"], name='slater_f', nsh=nsh, n_inner=5)
     slater_l = [int(slater[0]) for slater in slater_sh]
-    slater_f = [numpy.array(slater[:], dtype=numpy.float_) for slater in slater_sh]  # THIS IS A BUG
-    # slater_f = [numpy.array(slater[1:], dtype=numpy.float_) for slater in slater_sh]
+    slater_f = [numpy.array(slater[1:], dtype=numpy.float_) for slater in slater_sh]
     print(slater_f)
     print(slater_l)
 
