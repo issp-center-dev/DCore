@@ -49,6 +49,176 @@ def _check_parameters(p, required, unused):
             sys.exit(-1)
 
 
+def _generate_umat_kanamori(p):
+    # Read parameters
+    _check_parameters(p, required=['kanamori'], unused=['slater_f', 'slater_uj'])
+
+    nsh = p['model']['n_inequiv_shells']
+
+    kanamori = numpy.zeros((nsh, 3), numpy.float_)
+
+    kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
+    if len(kanamori_list) != nsh:
+        print("\nError! The length of \"kanamori\" is wrong.")
+        sys.exit(-1)
+
+    try:
+        for i, _list in enumerate(kanamori_list):
+            _kanamori = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
+            for j in range(3):
+                kanamori[i, j] = float(_kanamori[j])
+    except RuntimeError:
+        raise RuntimeError("Error ! Format of u_j is wrong.")
+
+    # Generate U-matrix
+    norb = p['model']['norb_inequiv_sh']
+
+    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
+    for ish in range(nsh):
+        for iorb in range(norb[ish]):
+            for jorb in range(norb[ish]):
+                u_mat[ish][iorb, jorb, iorb, jorb] = kanamori[ish, 1]
+                u_mat[ish][iorb, jorb, jorb, iorb] = kanamori[ish, 2]
+                u_mat[ish][iorb, iorb, jorb, jorb] = kanamori[ish, 2]
+        for iorb in range(norb[ish]):
+            u_mat[ish][iorb, iorb, iorb, iorb] = kanamori[ish, 0]
+
+    return u_mat
+
+
+def _generate_umat_slater(slater_l, slater_f, nsh, norb):
+    # Generate U-matrix
+    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
+    for ish in range(nsh):
+        if slater_l[ish] == 0:
+            umat_full = numpy.zeros((1, 1, 1, 1), numpy.complex_)
+            umat_full[0, 0, 0, 0] = slater_f[ish, 0]
+        else:
+            umat_full = U_matrix(l=slater_l[ish], radial_integrals=slater_f[ish, :], basis='cubic')
+        #
+        # For t2g or eg, compute submatrix
+        #
+        if slater_l[ish]*2+1 != norb[ish]:
+            if slater_l[ish] == 2 and norb[ish] == 2:
+                u_mat[ish] = eg_submatrix(umat_full)
+            elif slater_l[ish] == 2 and norb[ish] == 3:
+                u_mat[ish] = t2g_submatrix(umat_full)
+            else:
+                print("Error ! Unsupported pair of l and norb : ", slater_l[ish], norb[ish])
+                sys.exit(-1)
+        else:
+            u_mat[ish] = umat_full
+    return u_mat
+
+
+def _generate_umat_slater_uj(p):
+    # Read parameters
+    _check_parameters(p, required=['slater_uj'], unused=['slater_f', 'kanamori'])
+
+    nsh = p['model']['n_inequiv_shells']
+
+    f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
+                        p["model"]["slater_uj"])
+    if len(f_list) != nsh:
+        print("\nError! The length of \"slater_uj\" is wrong.")
+        sys.exit(-1)
+
+    slater_l = numpy.zeros(nsh, numpy.int_)
+    slater_f = numpy.zeros((nsh, 4), numpy.float_)
+
+    try:
+        for i, _list in enumerate(f_list):
+            _slater = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
+            slater_l[i] = int(_slater[0])
+            slater_u = float(_slater[1])
+            slater_j = float(_slater[2])
+            if slater_l[i] == 0:
+                slater_f[i, 0] = slater_u
+            else:
+                slater_f[i, 0:slater_l[i]+1] = U_J_to_radial_integrals(slater_l[i], slater_u, slater_j)
+    except RuntimeError:
+        raise RuntimeError("Error ! Format of u_j is wrong.")
+
+    # Generate U-matrix
+    norb = p['model']['norb_inequiv_sh']
+    return _generate_umat_slater(slater_l, slater_f, nsh, norb)
+
+
+def _generate_umat_slater_f(p):
+    # Read parameters
+    _check_parameters(p, required=['slater_f'], unused=['slater_uj', 'kanamori'])
+
+    nsh = p['model']['n_inequiv_shells']
+
+    f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
+                        p["model"]["slater_f"])
+    slater_f = numpy.zeros((nsh, 4), numpy.float_)
+    slater_l = numpy.zeros(nsh, numpy.int_)
+    if len(f_list) != nsh:
+        print("\nError! The length of \"slater_f\" is wrong.")
+        sys.exit(-1)
+
+    try:
+        for i, _list in enumerate(f_list):
+            _slater = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
+            slater_l[i] = int(_slater[0])
+            for j in range(4):
+                slater_f[i, j] = float(_slater[j])
+    except RuntimeError:
+        raise RuntimeError("Error ! Format of u_j is wrong.")
+
+    # Generate U-matrix
+    norb = p['model']['norb_inequiv_sh']
+    return _generate_umat_slater(slater_l, slater_f, nsh, norb)
+
+
+def _generate_umat_respack(p):
+    # Read parameters
+    _check_parameters(p, required=[], unused=['kanamori', 'slater_f', 'slater_uj'])
+
+    nsh = p['model']['n_inequiv_shells']
+    norb = p['model']['norb_inequiv_sh']
+
+    # Read U-matrix
+
+    w90u = Wannier90Converter(seedname=p["model"]["seedname"])
+    w90u.convert_dft_input()
+    nr_u, rvec_u, rdeg_u, nwan_u, hamr_u = w90u.read_wannier90hr(p["model"]["seedname"] + "_ur.dat")
+    w90j = Wannier90Converter(seedname=p["model"]["seedname"])
+    w90j.convert_dft_input()
+    nr_j, rvec_j, rdeg_j, nwan_j, hamr_j = w90j.read_wannier90hr(p["model"]["seedname"] + "_jr.dat")
+    #
+    # Read 2-index U-matrix
+    #
+    umat2 = numpy.zeros((nwan_u, nwan_u), numpy.complex_)
+    for ir in range(nr_u):
+        if rvec_u[ir, 0] == 0 and rvec_u[ir, 1] == 0 and rvec_u[ir, 2] == 0:
+            umat2 = hamr_u[ir]
+    #
+    # Read 2-index J-matrix
+    #
+    jmat2 = numpy.zeros((nwan_j, nwan_j), numpy.complex_)
+    for ir in range(nr_j):
+        if rvec_j[ir, 0] == 0 and rvec_j[ir, 1] == 0 and rvec_j[ir, 2] == 0:
+            jmat2 = hamr_j[ir]
+    #
+    # Map into 4-index U at each correlated shell
+    #
+    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
+    start = 0
+    for ish in range(nsh):
+        for iorb in range(norb[ish]):
+            for jorb in range(norb[ish]):
+                u_mat[ish][iorb, jorb, iorb, jorb] = umat2[start+iorb, start+jorb]
+                u_mat[ish][iorb, jorb, jorb, iorb] = jmat2[start+iorb, start+jorb]
+                u_mat[ish][iorb, iorb, jorb, jorb] = jmat2[start+iorb, start+jorb]
+        for iorb in range(norb[ish]):
+            u_mat[ish][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
+        start += norb[ish]
+
+    return u_mat
+
+
 def __generate_umat(p):
     """
     Add U-matrix block (Tentative)
@@ -58,144 +228,26 @@ def __generate_umat(p):
     """
     # Add U-matrix block (Tentative)
     # ####  The format of this block is not fixed  ####
-    #
+
     nsh = p['model']['n_inequiv_shells']
-    kanamori = numpy.zeros((nsh, 3), numpy.float_)
-    slater_f = numpy.zeros((nsh, 4), numpy.float_)
-    slater_l = numpy.zeros(nsh, numpy.int_)
-    #
-    # Read interaction from input file
-    #
-    if p["model"]["interaction"] == 'kanamori':
-        _check_parameters(p, required=['kanamori'], unused=['slater_f', 'slater_uj'])
-
-        kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
-        if len(kanamori_list) != nsh:
-            print("\nError! The length of \"kanamori\" is wrong.")
-            sys.exit(-1)
-
-        try:
-            for i, _list in enumerate(kanamori_list):
-                _kanamori = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
-                for j in range(3):
-                    kanamori[i, j] = float(_kanamori[j])
-        except RuntimeError:
-            raise RuntimeError("Error ! Format of u_j is wrong.")
-    elif p["model"]["interaction"] == 'slater_uj':
-        _check_parameters(p, required=['slater_uj'], unused=['slater_f', 'kanamori'])
-
-        f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
-                            p["model"]["slater_uj"])
-        if len(f_list) != nsh:
-            print("\nError! The length of \"slater_uj\" is wrong.")
-            sys.exit(-1)
-
-        try:
-            for i, _list in enumerate(f_list):
-                _slater = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
-                slater_l[i] = int(_slater[0])
-                slater_u = float(_slater[1])
-                slater_j = float(_slater[2])
-                if slater_l[i] == 0:
-                    slater_f[i, 0] = slater_u
-                else:
-                    slater_f[i, 0:slater_l[i]+1] = U_J_to_radial_integrals(slater_l[i], slater_u, slater_j)
-        except RuntimeError:
-            raise RuntimeError("Error ! Format of u_j is wrong.")
-    elif p["model"]["interaction"] == 'slater_f':
-        _check_parameters(p, required=['slater_f'], unused=['slater_uj', 'kanamori'])
-
-        f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
-                            p["model"]["slater_f"])
-        slater_f = numpy.zeros((nsh, 4), numpy.float_)
-        slater_l = numpy.zeros(nsh, numpy.int_)
-        if len(f_list) != nsh:
-            print("\nError! The length of \"slater_f\" is wrong.")
-            sys.exit(-1)
-
-        try:
-            for i, _list in enumerate(f_list):
-                _slater = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
-                slater_l[i] = int(_slater[0])
-                for j in range(4):
-                    slater_f[i, j] = float(_slater[j])
-        except RuntimeError:
-            raise RuntimeError("Error ! Format of u_j is wrong.")
-    elif p["model"]["interaction"] == 'respack':
-        _check_parameters(p, required=[], unused=['kanamori', 'slater_f', 'slater_uj'])
-    else:
-        print("Error ! Invalid interaction : ", p["model"]["interaction"])
-        sys.exit(-1)
-
+    norb = p['model']['norb_inequiv_sh']
     #
     # Generate U-matrix
     #
-    norb = p['model']['norb_inequiv_sh']
+    interaction = p["model"]["interaction"]
+    if interaction == 'kanamori':
+        u_mat = _generate_umat_kanamori(p)
+    elif interaction == 'slater_uj':
+        u_mat = _generate_umat_slater_uj(p)
+    elif interaction == 'slater_f':
+        u_mat = _generate_umat_slater_f(p)
+    elif interaction == 'respack':
+        u_mat = _generate_umat_respack(p)
+    else:
+        print(f"Error ! Invalid interaction : {interaction}")
+        sys.exit(-1)
 
-    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
-    if p["model"]["interaction"] == 'kanamori':
-        for ish in range(nsh):
-            for iorb in range(norb[ish]):
-                for jorb in range(norb[ish]):
-                    u_mat[ish][iorb, jorb, iorb, jorb] = kanamori[ish, 1]
-                    u_mat[ish][iorb, jorb, jorb, iorb] = kanamori[ish, 2]
-                    u_mat[ish][iorb, iorb, jorb, jorb] = kanamori[ish, 2]
-            for iorb in range(norb[ish]):
-                u_mat[ish][iorb, iorb, iorb, iorb] = kanamori[ish, 0]
-    elif p["model"]["interaction"] == 'slater_uj' or p["model"]["interaction"] == 'slater_f':
-        for ish in range(nsh):
-            if slater_l[ish] == 0:
-                umat_full = numpy.zeros((1, 1, 1, 1), numpy.complex_)
-                umat_full[0, 0, 0, 0] = slater_f[ish, 0]
-            else:
-                umat_full = U_matrix(l=slater_l[ish], radial_integrals=slater_f[ish, :], basis='cubic')
-            #
-            # For t2g or eg, compute submatrix
-            #
-            if slater_l[ish]*2+1 != norb[ish]:
-                if slater_l[ish] == 2 and norb[ish] == 2:
-                    u_mat[ish] = eg_submatrix(umat_full)
-                elif slater_l[ish] == 2 and norb[ish] == 3:
-                    u_mat[ish] = t2g_submatrix(umat_full)
-                else:
-                    print("Error ! Unsupported pair of l and norb : ", slater_l[ish], norb[ish])
-                    sys.exit(-1)
-            else:
-                u_mat[ish] = umat_full
-    elif p["model"]["interaction"] == 'respack':
-        w90u = Wannier90Converter(seedname=p["model"]["seedname"])
-        w90u.convert_dft_input()
-        nr_u, rvec_u, rdeg_u, nwan_u, hamr_u = w90u.read_wannier90hr(p["model"]["seedname"] + "_ur.dat")
-        w90j = Wannier90Converter(seedname=p["model"]["seedname"])
-        w90j.convert_dft_input()
-        nr_j, rvec_j, rdeg_j, nwan_j, hamr_j = w90j.read_wannier90hr(p["model"]["seedname"] + "_jr.dat")
-        #
-        # Read 2-index U-matrix
-        #
-        umat2 = numpy.zeros((nwan_u, nwan_u), numpy.complex_)
-        for ir in range(nr_u):
-            if rvec_u[ir, 0] == 0 and rvec_u[ir, 1] == 0 and rvec_u[ir, 2] == 0:
-                umat2 = hamr_u[ir]
-        #
-        # Read 2-index J-matrix
-        #
-        jmat2 = numpy.zeros((nwan_j, nwan_j), numpy.complex_)
-        for ir in range(nr_j):
-            if rvec_j[ir, 0] == 0 and rvec_j[ir, 1] == 0 and rvec_j[ir, 2] == 0:
-                jmat2 = hamr_j[ir]
-        #
-        # Map into 4-index U at each correlated shell
-        #
-        start = 0
-        for ish in range(nsh):
-            for iorb in range(norb[ish]):
-                for jorb in range(norb[ish]):
-                    u_mat[ish][iorb, jorb, iorb, jorb] = umat2[start+iorb, start+jorb]
-                    u_mat[ish][iorb, jorb, jorb, iorb] = jmat2[start+iorb, start+jorb]
-                    u_mat[ish][iorb, iorb, jorb, jorb] = jmat2[start+iorb, start+jorb]
-            for iorb in range(norb[ish]):
-                u_mat[ish][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
-            start += norb[ish]
+    # CHECK
     for ish in range(nsh):
         u_mat[ish][:, :, :, :].imag = 0.0
     #
@@ -210,7 +262,6 @@ def __generate_umat(p):
         for ish in range(nsh):
             umat = umat2dd(u_mat2[ish][:])
             u_mat2[ish][:] = umat
-
     #
     # Write U-matrix
     #
