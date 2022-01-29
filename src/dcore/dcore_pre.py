@@ -53,32 +53,39 @@ def _parse_interaction_parameters(input_str, name, nsh, n_inner):
     # parse interaction parameters
     # return list of list
     try:
-        uvalues_sh = ast.literal_eval(input_str)
-        assert isinstance(uvalues_sh, (list, tuple)), f"type({name}) must be list or tuple but {type(uvalues_sh)}"
-        assert len(uvalues_sh) == nsh, f"len({name}) must be {nsh} but {len(uvalues_sh)}"
-        for uvalues in uvalues_sh:
-            assert isinstance(uvalues, (list, tuple)), f"type({uvalues!r}) must be list or tuple but {type(uvalues)}"
-            assert len(uvalues) == n_inner, f"len({uvalues!r}) must be {n_inner} but {len(uvalues)}"
+        list_of_list = ast.literal_eval(input_str)
+        if not isinstance(list_of_list, (list, tuple)):
+            raise Exception(f"type({name}) must be list or tuple but is {type(list_of_list)}")
+        if len(list_of_list) != nsh:
+            raise Exception(f"len({name}) must be {nsh} but is {len(list_of_list)}")
+        for uvalues in list_of_list:
+            if not isinstance(uvalues, (list, tuple)):
+                raise Exception(f"type({uvalues!r}) must be list or tuple but is {type(uvalues)}")
+            if len(uvalues) != n_inner:
+                raise Exception(f"len({uvalues!r}) must be {n_inner} but is {len(uvalues)}")
     except Exception as e:
         print(f"\nERROR in parsing {name} = {input_str!r}", file=sys.stderr)
         print(e, file=sys.stderr)
         sys.exit(-1)
-    print(f"{name} = {uvalues_sh!r}")
-    return uvalues_sh
+    print(f" {name} = {list_of_list!r}")
+    return list_of_list
 
 
 def _generate_umat_kanamori(p):
-    # Read parameters
     _check_parameters(p['model'], required=['kanamori'], unused=['slater_f', 'slater_uj'])
 
-    nsh = p['model']['n_inequiv_shells']
-
     # parse kanamori parameters
+    nsh = p['model']['n_inequiv_shells']
     kanamori_sh = _parse_interaction_parameters(p["model"]["kanamori"], name='kanamori', nsh=nsh, n_inner=3)
+
+    # print Kanamori parameters
+    print("\n Kanamori parameters")
+    print("  ish :  U,  U',  J")
+    for ish, (u, up, j) in enumerate(kanamori_sh):
+        print(f"    {ish} : {u!r}, {up!r}, {j!r}")
 
     # Generate U-matrix
     norb = p['model']['norb_inequiv_sh']
-
     u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
     for ish in range(nsh):
         for iorb, jorb in product(range(norb[ish]), repeat=2):
@@ -91,8 +98,14 @@ def _generate_umat_kanamori(p):
 
 
 def _generate_umat_slater(slater_l, slater_f, nsh, norb):
+    # print F values
+    print("\n Slater integrals F")
+    print("  ish : l,  [F0 F2 F4 F6]")
+    for ish in range(nsh):
+        print(f"    {ish} : {slater_l[ish]},  {slater_f[ish]}")
+
     # Generate U-matrix
-    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
+    u_mat = []
     for ish in range(nsh):
         if slater_l[ish] == 0:
             umat_full = numpy.zeros((1, 1, 1, 1), numpy.complex_)
@@ -104,22 +117,20 @@ def _generate_umat_slater(slater_l, slater_f, nsh, norb):
         #
         if slater_l[ish]*2+1 != norb[ish]:
             if slater_l[ish] == 2 and norb[ish] == 2:
-                u_mat[ish] = eg_submatrix(umat_full)
+                umat_sub = eg_submatrix(umat_full)
             elif slater_l[ish] == 2 and norb[ish] == 3:
-                u_mat[ish] = t2g_submatrix(umat_full)
+                umat_sub = t2g_submatrix(umat_full)
             else:
                 print("Error ! Unsupported pair of l and norb : ", slater_l[ish], norb[ish])
                 sys.exit(-1)
+            u_mat.append(umat_sub)
         else:
-            u_mat[ish] = umat_full
+            u_mat.append(umat_full)
     return u_mat
 
 
 def _generate_umat_slater_uj(p):
-    # Read parameters
     _check_parameters(p['model'], required=['slater_uj'], unused=['slater_f', 'kanamori'])
-
-    nsh = p['model']['n_inequiv_shells']
 
     def _U_J_to_F(_l, _u, _j):
         _slater_f = numpy.zeros(4, numpy.float_)
@@ -130,11 +141,10 @@ def _generate_umat_slater_uj(p):
         return _slater_f
 
     # parse kanamori parameters
+    nsh = p['model']['n_inequiv_shells']
     slater_sh = _parse_interaction_parameters(p["model"]["slater_uj"], name='slater_uj', nsh=nsh, n_inner=3)
     slater_l = [int(l) for l, _, _ in slater_sh]
     slater_f = [_U_J_to_F(int(l), u, j) for l, u, j in slater_sh]
-    print(slater_f)
-    print(slater_l)
 
     # Generate U-matrix
     norb = p['model']['norb_inequiv_sh']
@@ -142,17 +152,13 @@ def _generate_umat_slater_uj(p):
 
 
 def _generate_umat_slater_f(p):
-    # Read parameters
     _check_parameters(p['model'], required=['slater_f'], unused=['slater_uj', 'kanamori'])
 
-    nsh = p['model']['n_inequiv_shells']
-
     # parse kanamori parameters
+    nsh = p['model']['n_inequiv_shells']
     slater_sh = _parse_interaction_parameters(p["model"]["slater_f"], name='slater_f', nsh=nsh, n_inner=5)
     slater_l = [int(slater[0]) for slater in slater_sh]
     slater_f = [numpy.array(slater[1:], dtype=numpy.float_) for slater in slater_sh]
-    print(slater_f)
-    print(slater_l)
 
     # Generate U-matrix
     norb = p['model']['norb_inequiv_sh']
@@ -160,14 +166,13 @@ def _generate_umat_slater_f(p):
 
 
 def _generate_umat_respack(p):
-    # Read parameters
     _check_parameters(p['model'], required=[], unused=['kanamori', 'slater_f', 'slater_uj'])
 
     nsh = p['model']['n_inequiv_shells']
     norb = p['model']['norb_inequiv_sh']
-
+    #
     # Read U-matrix
-
+    #
     w90u = Wannier90Converter(seedname=p["model"]["seedname"])
     w90u.convert_dft_input()
     nr_u, rvec_u, rdeg_u, nwan_u, hamr_u = w90u.read_wannier90hr(p["model"]["seedname"] + "_ur.dat")
@@ -203,6 +208,11 @@ def _generate_umat_respack(p):
             u_mat[ish][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
         start += norb[ish]
 
+    # Make U real
+    # TODO: warn if U-matrix is not real
+    for ish in range(nsh):
+        u_mat[ish][:, :, :, :].imag = 0.0
+
     return u_mat
 
 
@@ -215,8 +225,6 @@ def __generate_umat(p):
     """
     # Add U-matrix block (Tentative)
     # ####  The format of this block is not fixed  ####
-
-    nsh = p['model']['n_inequiv_shells']
     #
     # Generate U-matrix
     #
@@ -232,17 +240,20 @@ def __generate_umat(p):
     else:
         print(f"Error ! Invalid interaction : {interaction}")
         sys.exit(-1)
-
-    # TODO: chekc dtype of u_mat[ish]
-
-    # CHECK
-    for ish in range(nsh):
-        u_mat[ish][:, :, :, :].imag = 0.0
     #
-    # Spin & Orb
+    # Check U-matrix
+    #
+    nsh = p['model']['n_inequiv_shells']
+    assert len(u_mat) == nsh
+    for ish in range(nsh):
+        assert u_mat[ish].dtype == numpy.complex  # U-matrix is complex
+    #
+    # Convert to spin-full U-matrix
     #
     u_mat2 = [to_spin_full_U_matrix(u_mat[ish]) for ish in range(nsh)]
-
+    #
+    # Extract only density-density interactions if specified
+    #
     if p["model"]["density_density"]:
         for ish in range(nsh):
             umat = umat2dd(u_mat2[ish][:])
@@ -361,7 +372,7 @@ def dcore_pre(filename):
     print("\n  @ Parameter summary")
     print("\n    [model] block")
     for k, v in list(p["model"].items()):
-        print("      {0} = {1}".format(k, v))
+        print(f"      {k} = {v!r}")
 
     #
     # remove HDF5 file if exists

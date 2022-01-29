@@ -402,7 +402,7 @@ def umat2dd(dcore_U):
     dcore_U_len = len(dcore_U)
     Uout = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb), dtype=complex)
 
-    for i, j, k, l in product(list(range(dcore_U_len)), list(range(dcore_U_len)), list(range(dcore_U_len)), list(range(dcore_U_len))):
+    for i, j, k, l in product(list(range(dcore_U_len)), repeat=4):
         if (i == k and j == l) or (i == l and j == k):
             Uout[i, j, k, l] = dcore_U[i, j, k, l]
 
