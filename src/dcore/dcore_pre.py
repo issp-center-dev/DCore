@@ -33,8 +33,21 @@ from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import print_local_fields
 from dcore.program_options import parse_parameters
 
+
 def __print_paramter(p, param_name):
     print(param_name + " = " + str(p[param_name]))
+
+
+def _check_parameters(p, required, unused):
+    for key in required:
+        if p["model"][key] == "None":
+            print(f"Error ! Parameter '{key}' is not specified.")
+            sys.exit(-1)
+    for key in unused:
+        if p["model"][key] != "None":
+            print(f"Error ! Parameter '{key}' is specified but is not used.")
+            sys.exit(-1)
+
 
 def __generate_umat(p):
     """
@@ -54,15 +67,7 @@ def __generate_umat(p):
     # Read interaction from input file
     #
     if p["model"]["interaction"] == 'kanamori':
-        if p["model"]["kanamori"] == "None":
-            print("Error ! Parameter \"kanamori\" is not specified.")
-            sys.exit(-1)
-        if p["model"]["slater_f"] != "None":
-            print("Error ! Parameter \"slater_f\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["slater_uj"] != "None":
-            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
-            sys.exit(-1)
+        _check_parameters(p, required=['kanamori'], unused=['slater_f', 'slater_uj'])
 
         kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
         if len(kanamori_list) != nsh:
@@ -77,15 +82,7 @@ def __generate_umat(p):
         except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
     elif p["model"]["interaction"] == 'slater_uj':
-        if p["model"]["slater_uj"] == "None":
-            print("Error ! Parameter \"slater_uj\" is not specified.")
-            sys.exit(-1)
-        if p["model"]["slater_f"] != "None":
-            print("Error ! Parameter \"slater_f\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["kanamori"] != "None":
-            print("Error ! Parameter \"kanamori\" is specified but is not used.")
-            sys.exit(-1)
+        _check_parameters(p, required=['slater_uj'], unused=['slater_f', 'kanamori'])
 
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_uj"])
@@ -106,15 +103,7 @@ def __generate_umat(p):
         except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
     elif p["model"]["interaction"] == 'slater_f':
-        if p["model"]["slater_f"] == "None":
-            print("Error ! Parameter \"slater_f\" is not specified.")
-            sys.exit(-1)
-        if p["model"]["kanamori"] != "None":
-            print("Error ! Parameter \"kanamori\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["slater_uj"] != "None":
-            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
-            sys.exit(-1)
+        _check_parameters(p, required=['slater_f'], unused=['slater_uj', 'kanamori'])
 
         f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
                             p["model"]["slater_f"])
@@ -133,30 +122,16 @@ def __generate_umat(p):
         except RuntimeError:
             raise RuntimeError("Error ! Format of u_j is wrong.")
     elif p["model"]["interaction"] == 'respack':
-        if p["model"]["kanamori"] != "None":
-            print("Error ! Parameter \"kanamori\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["slater_uj"] != "None":
-            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["slater_f"] != "None":
-            print("Error ! Parameter \"slater_f\" is specified but is not used.")
-            sys.exit(-1)
+        _check_parameters(p, required=[], unused=['kanamori', 'slater_f', 'slater_uj'])
     else:
         print("Error ! Invalid interaction : ", p["model"]["interaction"])
         sys.exit(-1)
 
     #
-    # Generate and Write U-matrix
+    # Generate U-matrix
     #
-    print("\n  @ Write the information of interactions")
-    f = HDFArchive(p["model"]["seedname"]+'.h5', 'a')
-
     norb = p['model']['norb_inequiv_sh']
 
-    if not ("DCore" in f):
-        f.create_group("DCore")
-    #
     u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
     if p["model"]["interaction"] == 'kanamori':
         for ish in range(nsh):
@@ -235,9 +210,17 @@ def __generate_umat(p):
         for ish in range(nsh):
             umat = umat2dd(u_mat2[ish][:])
             u_mat2[ish][:] = umat
-    f["DCore"]["Umat"] = u_mat2
-    print("\n    Written to {0}".format(p["model"]["seedname"]+'.h5'))
-    del f
+
+    #
+    # Write U-matrix
+    #
+    print("\n  @ Write the information of interactions")
+    with HDFArchive(p["model"]["seedname"]+'.h5', 'a') as f:
+        if not ("DCore" in f):
+            f.create_group("DCore")
+
+        f["DCore"]["Umat"] = u_mat2
+        print("\n    Written to {0}".format(p["model"]["seedname"]+'.h5'))
 
 
 def __generate_local_potential(p):
