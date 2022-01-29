@@ -28,7 +28,7 @@ import os
 
 def _uvals(interaction, l):
     if interaction == 'kanamori':
-        return "kanamori = [(4.0, 0.9, 2.2)]"
+        return "kanamori = [(4.0, 2.2, 0.9)]"
     elif interaction == 'slater_uj':
         return f"slater_uj = [({l}, 4.0, 0.9)]"
     elif interaction == 'slater_f':
