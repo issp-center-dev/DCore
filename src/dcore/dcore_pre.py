@@ -21,7 +21,7 @@ import numpy
 import ast
 import h5py
 from itertools import product
-from dcore._dispatcher import HDFArchive, U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
+from dcore._dispatcher import HDFArchive, U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix, cubic_names
 from dcore.program_options import create_parser
 
 from dcore.converters.wannier90 import Wannier90Converter
@@ -78,11 +78,13 @@ def _generate_umat_kanamori(p):
     nsh = p['model']['n_inequiv_shells']
     kanamori_sh = _parse_interaction_parameters(p["model"]["kanamori"], name='kanamori', nsh=nsh, n_inner=3)
 
-    # print Kanamori parameters
-    print("\n Kanamori parameters")
-    print("  ish :  U,  U',  J")
+    # print summary
+    print("\n Kanamori interactions")
     for ish, (_u, _up, _j) in enumerate(kanamori_sh):
-        print(f"    {ish} : {_u!r}, {_up!r}, {_j!r}")
+        print(f"  ish = {ish}")
+        print(f"    | U = {_u!r}")
+        print(f"    | U' = {_up!r}")
+        print(f"    | J = {_j!r}")
 
     # Generate U-matrix
     norb = p['model']['norb_inequiv_sh']
@@ -98,20 +100,17 @@ def _generate_umat_kanamori(p):
 
 
 def _generate_umat_slater(slater_l, slater_f, nsh, norb):
-    # print F values
-    print("\n Slater integrals F")
-    print("  ish : l,  [F0 F2 F4 F6]")
-    for ish in range(nsh):
-        print(f"    {ish} : {slater_l[ish]},  {slater_f[ish]}")
-
     # Generate U-matrix
     u_mat = []
+    basis_names = []
     for ish in range(nsh):
         if slater_l[ish] == 0:
             umat_full = numpy.zeros((1, 1, 1, 1), numpy.complex_)
             umat_full[0, 0, 0, 0] = slater_f[ish][0]
+            basis_names.append(('s',))
         else:
             umat_full = U_matrix(l=slater_l[ish], radial_integrals=slater_f[ish], basis='cubic')
+            basis_names.append(cubic_names(l=slater_l[ish]))
         #
         # For t2g or eg, compute submatrix
         #
@@ -126,6 +125,15 @@ def _generate_umat_slater(slater_l, slater_f, nsh, norb):
             u_mat.append(umat_sub)
         else:
             u_mat.append(umat_full)
+
+    # print summary
+    print("\n Slater interactions")
+    for ish in range(nsh):
+        print(f"  ish = {ish}")
+        print(f"    | l = {slater_l[ish]}")
+        print(f"    | F_2m = {slater_f[ish]}")
+        print(f"    | basis = {basis_names[ish]!r}")
+
     return u_mat
 
 
@@ -133,12 +141,10 @@ def _generate_umat_slater_uj(p):
     _check_parameters(p['model'], required=['slater_uj'], unused=['slater_f', 'kanamori'])
 
     def _U_J_to_F(_l, _u, _j):
-        _slater_f = numpy.zeros(4, numpy.float_)
         if _l == 0:
-            _slater_f[0] = _u
+            return numpy.array([_u,], dtype=numpy.float_)
         else:
-            _slater_f[0:_l+1] = U_J_to_radial_integrals(_l, _u, _j)
-        return _slater_f
+            return U_J_to_radial_integrals(_l, _u, _j)
 
     # parse kanamori parameters
     nsh = p['model']['n_inequiv_shells']
@@ -154,11 +160,16 @@ def _generate_umat_slater_uj(p):
 def _generate_umat_slater_f(p):
     _check_parameters(p['model'], required=['slater_f'], unused=['slater_uj', 'kanamori'])
 
-    # parse kanamori parameters
+    # parse slater parameters
     nsh = p['model']['n_inequiv_shells']
     slater_sh = _parse_interaction_parameters(p["model"]["slater_f"], name='slater_f', nsh=nsh, n_inner=5)
-    slater_l = [int(slater[0]) for slater in slater_sh]
-    slater_f = [numpy.array(slater[1:], dtype=numpy.float_) for slater in slater_sh]
+    slater_l = [int(l) for l, *_ in slater_sh]
+    slater_f = [numpy.array(slater[0:l+1], dtype=numpy.float_) for l, *slater in slater_sh]
+
+    # Warn if non-zero values are neglected from slater_f
+    slater_f_neglected = [numpy.any(numpy.array(slater[l+1:]) != 0) for l, *slater in slater_sh]
+    if numpy.any(numpy.array(slater_f_neglected)):
+        print(f"Warning: Some non-zero values are neglected from slater_f={p['model']['slater_f']}. Only F_0, ..., F_2l are used.", file=sys.stderr)
 
     # Generate U-matrix
     norb = p['model']['norb_inequiv_sh']
