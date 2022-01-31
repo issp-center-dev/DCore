@@ -87,54 +87,90 @@ def _generate_umat_kanamori(p):
         print(f"    | J = {_j!r}")
 
     # Generate U-matrix
-    norb = p['model']['norb_inequiv_sh']
-    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
-    for ish, (_u, _up, _j) in enumerate(kanamori_sh):
-        for iorb, jorb in product(range(norb[ish]), repeat=2):
-            u_mat[ish][iorb, jorb, iorb, jorb] = _up
-            u_mat[ish][iorb, jorb, jorb, iorb] = _j
-            u_mat[ish][iorb, iorb, jorb, jorb] = _j
-        for iorb in range(norb[ish]):
-            u_mat[ish][iorb, iorb, iorb, iorb] = _u
-    return u_mat
+    u_mat_sh = []
+    norb_sh = p['model']['norb_inequiv_sh']
+    for norb, (_u, _up, _j) in zip(norb_sh, kanamori_sh):
+        u_mat = numpy.zeros((norb, norb, norb, norb), numpy.complex_)
+        for iorb, jorb in product(range(norb), repeat=2):
+            u_mat[iorb, jorb, iorb, jorb] = _up
+            u_mat[iorb, jorb, jorb, iorb] = _j
+            u_mat[iorb, iorb, jorb, jorb] = _j
+        for iorb in range(norb):
+            u_mat[iorb, iorb, iorb, iorb] = _u
+        u_mat_sh.append(u_mat)
+    return u_mat_sh
 
 
-def _generate_umat_slater(slater_l, slater_f, nsh, norb):
-    # Generate U-matrix
-    u_mat = []
-    basis_names = []
-    for ish in range(nsh):
-        if slater_l[ish] == 0:
-            umat_full = numpy.zeros((1, 1, 1, 1), numpy.complex_)
-            umat_full[0, 0, 0, 0] = slater_f[ish][0]
-            basis_names.append(('s',))
+def _from_ls_to_j(umat_ls, l, order=None):
+    print(" transform basis from LS to J")
+    umat_j = umat_ls
+    return umat_j
+
+
+def _basis_names(l, basis):
+    if basis == 'spherical':
+        spdf = ['s', 'p', 'd', 'f']
+        return numpy.array([f"{spdf[l]}{m:+d}" for m in range(-l, l+1)])
+    elif basis == 'cubic':
+        if l == 0:
+            return numpy.array(('s',))
         else:
-            umat_full = U_matrix(l=slater_l[ish], radial_integrals=slater_f[ish], basis='cubic')
-            basis_names.append(cubic_names(l=slater_l[ish]))
+            return numpy.array(cubic_names(l))
+
+
+def _generate_umat_slater(l_sh, f_sh, norb_sh, basis='cubic', order_sh=None):
+    # Generate U-matrix
+    u_mat_sh = []
+    basis_names = []
+    for l, f in zip(l_sh, f_sh):
+        if l == 0:
+            umat_full = numpy.full((1, 1, 1, 1), f[0], numpy.complex_)
+        else:
+            umat_full = U_matrix(l=l, radial_integrals=f, basis=basis)
+        names_full = _basis_names(l=l, basis=basis)
         #
         # For t2g or eg, compute submatrix
         #
-        if slater_l[ish]*2+1 != norb[ish]:
-            if slater_l[ish] == 2 and norb[ish] == 2:
-                umat_sub = eg_submatrix(umat_full)
-            elif slater_l[ish] == 2 and norb[ish] == 3:
-                umat_sub = t2g_submatrix(umat_full)
-            else:
-                print("Error ! Unsupported pair of l and norb : ", slater_l[ish], norb[ish])
-                sys.exit(-1)
-            u_mat.append(umat_sub)
+        # if slater_l[ish]*2+1 != norb[ish]:
+        #     if slater_l[ish] == 2 and norb[ish] == 2:
+        #         umat_sub = eg_submatrix(umat_full)
+        #     elif slater_l[ish] == 2 and norb[ish] == 3:
+        #         umat_sub = t2g_submatrix(umat_full)
+        #     else:
+        #         print("Error ! Unsupported pair of l and norb : ", slater_l[ish], norb[ish])
+        #         sys.exit(-1)
+        #     u_mat.append(umat_sub)
+        # else:
+        #     u_mat.append(umat_full)
+
+        order = None
+        # order = [2, 4]  # eg
+        # order = [0, 1, 3]  # t2g
+        if order is None:
+            u_mat = umat_full
+            names = names_full
         else:
-            u_mat.append(umat_full)
+            u_mat = umat_full[numpy.ix_(order, order, order, order)]
+            names = names_full[order]
+        # print(u_mat.shape)
+        # print(names.shape)
+
+        # TODO: check if len(names) == norb
+        # assert u_mat.shape == (norb, norb, norb, norb)
+
+        u_mat_sh.append(u_mat)
+        basis_names.append(names)
 
     # print summary
     print("\n Slater interactions")
-    for ish in range(nsh):
+    # for ish in range(nsh):
+    for ish, (l, f, names) in enumerate(zip(l_sh, f_sh, basis_names)):
         print(f"  ish = {ish}")
-        print(f"    | l = {slater_l[ish]}")
-        print(f"    | F_2m = {slater_f[ish]}")
-        print(f"    | basis = {basis_names[ish]!r}")
+        print(f"    | l = {l}")
+        print(f"    | F_2m = {f}")
+        print(f"    | basis = {names}")
 
-    return u_mat
+    return u_mat_sh
 
 
 def _generate_umat_slater_uj(p):
@@ -149,12 +185,12 @@ def _generate_umat_slater_uj(p):
     # parse kanamori parameters
     nsh = p['model']['n_inequiv_shells']
     slater_sh = _parse_interaction_parameters(p["model"]["slater_uj"], name='slater_uj', nsh=nsh, n_inner=3)
-    slater_l = [int(l) for l, _, _ in slater_sh]
-    slater_f = [_U_J_to_F(int(l), u, j) for l, u, j in slater_sh]
+    l_sh = [int(l) for l, _, _ in slater_sh]
+    f_sh = [_U_J_to_F(int(l), u, j) for l, u, j in slater_sh]
 
     # Generate U-matrix
-    norb = p['model']['norb_inequiv_sh']
-    return _generate_umat_slater(slater_l, slater_f, nsh, norb)
+    norb_sh = p['model']['norb_inequiv_sh']
+    return _generate_umat_slater(l_sh, f_sh, norb_sh)
 
 
 def _generate_umat_slater_f(p):
@@ -163,17 +199,17 @@ def _generate_umat_slater_f(p):
     # parse slater parameters
     nsh = p['model']['n_inequiv_shells']
     slater_sh = _parse_interaction_parameters(p["model"]["slater_f"], name='slater_f', nsh=nsh, n_inner=5)
-    slater_l = [int(l) for l, *_ in slater_sh]
-    slater_f = [numpy.array(slater[0:l+1], dtype=numpy.float_) for l, *slater in slater_sh]
+    l_sh = [int(l) for l, *_ in slater_sh]
+    f_sh = [numpy.array(f[0:l+1], dtype=numpy.float_) for l, *f in slater_sh]
 
     # Warn if non-zero values are neglected from slater_f
-    slater_f_neglected = [numpy.any(numpy.array(slater[l+1:]) != 0) for l, *slater in slater_sh]
+    slater_f_neglected = [numpy.any(numpy.array(f[l+1:]) != 0) for l, *f in slater_sh]
     if numpy.any(numpy.array(slater_f_neglected)):
         print(f"Warning: Some non-zero values are neglected from slater_f={p['model']['slater_f']}. Only F_0, ..., F_2l are used.", file=sys.stderr)
 
     # Generate U-matrix
-    norb = p['model']['norb_inequiv_sh']
-    return _generate_umat_slater(slater_l, slater_f, nsh, norb)
+    norb_sh = p['model']['norb_inequiv_sh']
+    return _generate_umat_slater(l_sh, f_sh, norb_sh)
 
 
 def _generate_umat_respack(p):
@@ -240,35 +276,40 @@ def __generate_umat(p):
     # Generate U-matrix
     #
     interaction = p["model"]["interaction"]
-    if interaction == 'kanamori':
-        u_mat = _generate_umat_kanamori(p)
-    elif interaction == 'slater_uj':
-        u_mat = _generate_umat_slater_uj(p)
-    elif interaction == 'slater_f':
-        u_mat = _generate_umat_slater_f(p)
-    elif interaction == 'respack':
-        u_mat = _generate_umat_respack(p)
-    else:
+    func_umat = {
+        'kanamori': _generate_umat_kanamori,
+        'slater_uj': _generate_umat_slater_uj,
+        'slater_f': _generate_umat_slater_f,
+        'respack': _generate_umat_respack,
+    }.get(interaction)
+    if func_umat is None:
         print(f"Error ! Invalid interaction : {interaction}")
         sys.exit(-1)
+    u_mat_sh = func_umat(p)
     #
     # Check U-matrix
     #
     nsh = p['model']['n_inequiv_shells']
-    assert len(u_mat) == nsh
-    for ish in range(nsh):
-        assert u_mat[ish].dtype == numpy.complex  # U-matrix is complex
+    norb_sh = p['model']['norb_inequiv_sh']
+    assert len(u_mat_sh) == nsh
+    for u_mat, norb in zip(u_mat_sh, norb_sh):
+        assert u_mat.dtype == numpy.complex  # U-matrix is complex
+        assert u_mat.shape == (norb, norb, norb, norb)
     #
     # Convert to spin-full U-matrix
     #
-    u_mat2 = [to_spin_full_U_matrix(u_mat[ish]) for ish in range(nsh)]
+    u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
+    #
+    # Transform LS basis to J
+    #
+    # if basis == 'spherical_j':
+    if False:
+        u_mat_so_sh = [_from_ls_to_j(u_mat_so, l) for u_mat_so, l in zip(u_mat_so_sh, l_sh)]
     #
     # Extract only density-density interactions if specified
     #
     if p["model"]["density_density"]:
-        for ish in range(nsh):
-            umat = umat2dd(u_mat2[ish][:])
-            u_mat2[ish][:] = umat
+        u_mat_so_sh = [umat2dd(u_mat_so) for u_mat_so in u_mat_so_sh]
     #
     # Write U-matrix
     #
@@ -277,7 +318,7 @@ def __generate_umat(p):
         if "DCore" not in f:
             f.create_group("DCore")
 
-        f["DCore"]["Umat"] = u_mat2
+        f["DCore"]["Umat"] = u_mat_so_sh
         print("\n    Written to {0}".format(p["model"]["seedname"]+'.h5'))
 
 
