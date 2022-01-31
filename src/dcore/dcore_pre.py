@@ -21,7 +21,7 @@ import numpy
 import ast
 import h5py
 from itertools import product
-from dcore._dispatcher import HDFArchive, U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix, cubic_names
+from dcore._dispatcher import HDFArchive, U_J_to_radial_integrals, U_matrix, cubic_names
 from dcore.program_options import create_parser
 
 from dcore.converters.wannier90 import Wannier90Converter
@@ -49,7 +49,7 @@ def _check_parameters(p, required, unused):
             sys.exit(-1)
 
 
-def _parse_interaction_parameters(input_str, name, nsh, n_inner):
+def _parse_interaction_parameters(input_str, name, nsh, n_inner=None):
     # parse interaction parameters
     # return list of list
     try:
@@ -61,8 +61,9 @@ def _parse_interaction_parameters(input_str, name, nsh, n_inner):
         for uvalues in list_of_list:
             if not isinstance(uvalues, (list, tuple)):
                 raise Exception(f"type({uvalues!r}) must be list or tuple but is {type(uvalues)}")
-            if len(uvalues) != n_inner:
-                raise Exception(f"len({uvalues!r}) must be {n_inner} but is {len(uvalues)}")
+            if n_inner is not None:
+                if len(uvalues) != n_inner:
+                    raise Exception(f"len({uvalues!r}) must be {n_inner} but is {len(uvalues)}")
     except Exception as e:
         print(f"\nERROR in parsing {name} = {input_str!r}", file=sys.stderr)
         print(e, file=sys.stderr)
@@ -104,6 +105,26 @@ def _generate_umat_kanamori(p):
 def _from_ls_to_j(umat_ls, l, order=None):
     print(" transform basis from LS to J")
     umat_j = umat_ls
+
+    names = [f"j{2*l-1}/2{jz:+d}/2" for jz in range(-2*l+1, 0, 2)] \
+          + [f"j{2*l+1}/2{jz:+d}/2" for jz in range(-2*l-1, 0, 2)] \
+          + [f"j{2*l-1}/2{jz:+d}/2" for jz in range(2*l-1, 0, -2)] \
+          + [f"j{2*l+1}/2{jz:+d}/2" for jz in range(2*l+1, 0, -2)]
+    # names_l = [
+    #     ['j1/2-1/2',
+    #      'j1/2+1/2'], # l=0
+    #     ['j1/2-1/2', 'j3/2-3/2', 'j3/2-1/2',
+    #      'j1/2+1/2', 'j3/2+3/2', 'j3/2+1/2'], # l=1
+    #     ['j3/2-3/2', 'j3/2-1/2', 'j5/2-5/2', 'j5/2-3/2', 'j5/2-1/2',
+    #      'j3/2+3/2', 'j3/2+1/2', 'j5/2+5/2', 'j5/2+3/2', 'j5/2+1/2'], # l=2
+    #     ['j5/2-5/2', 'j5/2-3/2', 'j5/2-1/2', 'j7/2-7/2', 'j7/2-5/2', 'j7/2-3/2', 'j7/2-1/2',
+    #      'j5/2-5/2', 'j5/2-3/2', 'j5/2-1/2', 'j7/2-7/2', 'j7/2-5/2', 'j7/2-3/2', 'j7/2-1/2'] # l=3
+    # ]
+    # names = names_l[l]
+    print(names)
+
+    umat_j = numpy.einsum('mi,nj,ijkl,ko,lp', tmat.conj(), tmat.conj(), umat_ls, umat.T, tmat.T)
+
     return umat_j
 
 
@@ -116,59 +137,96 @@ def _basis_names(l, basis):
             return numpy.array(('s',))
         else:
             return numpy.array(cubic_names(l))
+    else:
+        raise Exception("Here should not be arrived")
 
 
-def _generate_umat_slater(l_sh, f_sh, norb_sh, basis='cubic', order_sh=None):
+def _generate_umat_slater(l_sh, f_sh, norb_sh, p_slater_basis):
+    #
+    # Parse slater_basis
+    #
+    nsh = len(l_sh)
+    if p_slater_basis in ('cubic', 'spherical', 'spherical_j'):
+        basis_sh = [p_slater_basis] * nsh
+        order_sh = [None] * nsh
+    else:
+        slater_basis = _parse_interaction_parameters(p_slater_basis, "slater_basis", nsh)
+        basis_sh = [basis for basis, *_ in slater_basis]
+        order_sh = [order for _, *order in slater_basis]
+    # print(f"basis_sh = {basis_sh!r}")
+    # print(f"order_sh = {order_sh!r}")
+
+    # check basis
+    for basis in basis_sh:
+        if basis not in ('cubic', 'spherical', 'spherical_j'):
+            print(f"ERROR: basis={basis!r} not supported", file=sys.stderr)
+            exit(1)
+
+    # special treatment for basis='spherical_j'
+    spherical_j = [False for _ in range(nsh)]
+    for ish, basis in enumerate(basis_sh):
+        if basis == 'spherical_j':
+            basis_sh[ish] = 'spherical'  # replace
+            spherical_j[ish] = True
+
+    # Support special symbols like order='eg', 't2g'
+    for ish, (l, basis, order) in enumerate(zip(l_sh, basis_sh, order_sh)):
+        if not order:  # None or []
+            continue
+        order_str = order[0]
+        if isinstance(order_str, str):
+            order = {
+                (2, 'cubic', 'eg') : [2, 4],
+                (2, 'cubic', 't2g') : [0, 1, 3],
+            }.get((l, basis, order_str))
+            if order is None:
+                print(f"Error ! Unsupported pair of (l, basis, order) = ({l}, {basis}, {order_str})", file=sys.stderr)
+                sys.exit(-1)
+            order_sh[ish] = order  # replace
+    # print(f"order_sh = {order_sh!r}")
+
+    #
     # Generate U-matrix
+    #
     u_mat_sh = []
     basis_names = []
-    for l, f in zip(l_sh, f_sh):
+    for l, f, basis, order in zip(l_sh, f_sh, basis_sh, order_sh):
+        # basis names
+        names_full = _basis_names(l=l, basis=basis)
+
+        # U-matrix
         if l == 0:
             umat_full = numpy.full((1, 1, 1, 1), f[0], numpy.complex_)
         else:
             umat_full = U_matrix(l=l, radial_integrals=f, basis=basis)
-        names_full = _basis_names(l=l, basis=basis)
-        #
-        # For t2g or eg, compute submatrix
-        #
-        # if slater_l[ish]*2+1 != norb[ish]:
-        #     if slater_l[ish] == 2 and norb[ish] == 2:
-        #         umat_sub = eg_submatrix(umat_full)
-        #     elif slater_l[ish] == 2 and norb[ish] == 3:
-        #         umat_sub = t2g_submatrix(umat_full)
-        #     else:
-        #         print("Error ! Unsupported pair of l and norb : ", slater_l[ish], norb[ish])
-        #         sys.exit(-1)
-        #     u_mat.append(umat_sub)
-        # else:
-        #     u_mat.append(umat_full)
+        assert umat_full.shape == (len(names_full),) * 4
 
-        order = None
-        # order = [2, 4]  # eg
-        # order = [0, 1, 3]  # t2g
-        if order is None:
+        # Reordering the basis
+        if not order:  # None or []
             u_mat = umat_full
             names = names_full
         else:
             u_mat = umat_full[numpy.ix_(order, order, order, order)]
             names = names_full[order]
-        # print(u_mat.shape)
-        # print(names.shape)
-
-        # TODO: check if len(names) == norb
-        # assert u_mat.shape == (norb, norb, norb, norb)
 
         u_mat_sh.append(u_mat)
         basis_names.append(names)
 
     # print summary
     print("\n Slater interactions")
-    # for ish in range(nsh):
     for ish, (l, f, names) in enumerate(zip(l_sh, f_sh, basis_names)):
         print(f"  ish = {ish}")
         print(f"    | l = {l}")
         print(f"    | F_2m = {f}")
         print(f"    | basis = {names}")
+
+    # Check the number of bases
+    for ish, (norb, names) in enumerate(zip(norb_sh, basis_names)):
+        if len(names) != norb:
+            print(f"Error ! len(basis)={len(names)} is inconsistent with norb={norb} for ish={ish}")
+            exit(1)
+
+    # TODO: from LS to J
 
     return u_mat_sh
 
@@ -190,7 +248,8 @@ def _generate_umat_slater_uj(p):
 
     # Generate U-matrix
     norb_sh = p['model']['norb_inequiv_sh']
-    return _generate_umat_slater(l_sh, f_sh, norb_sh)
+    slater_basis = p['model']['slater_basis']
+    return _generate_umat_slater(l_sh, f_sh, norb_sh, slater_basis)
 
 
 def _generate_umat_slater_f(p):
@@ -209,7 +268,8 @@ def _generate_umat_slater_f(p):
 
     # Generate U-matrix
     norb_sh = p['model']['norb_inequiv_sh']
-    return _generate_umat_slater(l_sh, f_sh, norb_sh)
+    slater_basis = p['model']['slater_basis']
+    return _generate_umat_slater(l_sh, f_sh, norb_sh, slater_basis)
 
 
 def _generate_umat_respack(p):
