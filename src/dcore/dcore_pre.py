@@ -99,33 +99,82 @@ def _generate_umat_kanamori(p):
         for iorb in range(norb):
             u_mat[iorb, iorb, iorb, iorb] = _u
         u_mat_sh.append(u_mat)
-    return u_mat_sh
+
+    # Convert to spin-full U-matrix
+    u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
+
+    return u_mat_so_sh
+
+
+def _matrix_element_bw_ls_j(l, verbose=False, prefix=''):
+    from sympy.physics.quantum.cg import CG
+    from sympy import S
+
+    s = S(1)/2
+
+    # Lz, Sz
+    m_s = numpy.array([[m, sz] for sz in [S(1)/2, -S(1)/2] for m in numpy.arange(-l, l+1)])
+
+    # J, Jz
+    # j_jz = numpy.array([[j, -j + _jz] for j in [l-s, l+s] for _jz in range(2*j+1)])
+    j_jz = [[j, -j + _jz] for j in [l-s, l+s] for _jz in range((2*j+1)//2)]  # Jz<0
+    j_jz = numpy.array(j_jz + [[j, -jz] for j, jz in j_jz])
+
+    # matrix elements < L Lz S Sz | J Jz >
+    mat_ls_j = numpy.zeros((len(j_jz), len(j_jz)), dtype=numpy.float)
+    mat_for_print = []
+    for i1, (m, ss) in enumerate(m_s):
+        for i2, (j, jz) in enumerate(j_jz):
+            cg = CG(l, m, s, ss, j, jz)
+            me = cg.doit()
+            # print(me)
+            if me != 0:
+                mat_ls_j[i1, i2] = me.evalf()
+                mat_for_print.append((i1, i2, me))
+
+    if verbose:
+        print(f"{prefix}L = {l}")
+        print(f"{prefix}S = {s}")
+        print(f"{prefix}")
+        print(f"{prefix}    Lz, Sz")
+        for i, (m, sz) in enumerate(m_s):
+            print(f"{prefix}{i:2d}: {m}, {sz}")
+        print(f"{prefix}")
+        print(f"{prefix}    J, Jz")
+        for i, (j, jz) in enumerate(j_jz):
+            print(f"{prefix}{i:2d}: {j}, {jz}")
+        print(f"{prefix}")
+        print(f"{prefix}(Lz, Sz)  (J, Jz)  < L Lz S Sz | J Jz >")
+        for i1, i2, me in mat_for_print:
+            print(f"{prefix}{i1:2d} {i2:2d}  {me}")
+
+    # ls_basis = [f"l{m:+d},s{sz}" for m, sz in m_s]
+    # j_basis = [f"j{j}{'+' if jz>0 else ''}{jz}" for j, jz in j_jz]
+    # return mat_ls_j, ls_basis, j_basis
+
+    return mat_ls_j, m_s, j_jz
 
 
 def _from_ls_to_j(umat_ls, l, order=None):
-    print(" transform basis from LS to J")
-    umat_j = umat_ls
+    # print("\n Transform basis from LS to J")
 
-    names = [f"j{2*l-1}/2{jz:+d}/2" for jz in range(-2*l+1, 0, 2)] \
-          + [f"j{2*l+1}/2{jz:+d}/2" for jz in range(-2*l-1, 0, 2)] \
-          + [f"j{2*l-1}/2{jz:+d}/2" for jz in range(2*l-1, 0, -2)] \
-          + [f"j{2*l+1}/2{jz:+d}/2" for jz in range(2*l+1, 0, -2)]
-    # names_l = [
-    #     ['j1/2-1/2',
-    #      'j1/2+1/2'], # l=0
-    #     ['j1/2-1/2', 'j3/2-3/2', 'j3/2-1/2',
-    #      'j1/2+1/2', 'j3/2+3/2', 'j3/2+1/2'], # l=1
-    #     ['j3/2-3/2', 'j3/2-1/2', 'j5/2-5/2', 'j5/2-3/2', 'j5/2-1/2',
-    #      'j3/2+3/2', 'j3/2+1/2', 'j5/2+5/2', 'j5/2+3/2', 'j5/2+1/2'], # l=2
-    #     ['j5/2-5/2', 'j5/2-3/2', 'j5/2-1/2', 'j7/2-7/2', 'j7/2-5/2', 'j7/2-3/2', 'j7/2-1/2',
-    #      'j5/2-5/2', 'j5/2-3/2', 'j5/2-1/2', 'j7/2-7/2', 'j7/2-5/2', 'j7/2-3/2', 'j7/2-1/2'] # l=3
-    # ]
-    # names = names_l[l]
-    print(names)
+    dim = 2*(2*l+1)
+    assert umat_ls.shape == (dim, dim, dim, dim)
 
-    umat_j = numpy.einsum('mi,nj,ijkl,ko,lp', tmat.conj(), tmat.conj(), umat_ls, umat.T, tmat.T)
+    # Get transformation matrix T
+    tmat, basis_ls, basis_j = _matrix_element_bw_ls_j(l, verbose=False)
+    # tmat, basis_ls, basis_j = _matrix_element_bw_ls_j(l, verbose=True, prefix='    ')
 
-    return umat_j
+    assert tmat.shape == (dim, dim)
+    assert basis_j.shape == (dim, 2)
+    assert basis_ls.shape == (dim, 2)
+
+    # Transform basis of U-matrix
+    umat_j = numpy.einsum('mi,nj,ijkl,ko,lp', tmat.T.conj(), tmat.T.conj(), umat_ls, tmat, tmat)
+
+    assert umat_j.shape == (dim, dim, dim, dim)
+
+    return umat_j, basis_ls, basis_j
 
 
 def _basis_names(l, basis):
@@ -141,33 +190,36 @@ def _basis_names(l, basis):
         raise Exception("Here should not be arrived")
 
 
-def _generate_umat_slater(l_sh, f_sh, norb_sh, p_slater_basis):
+def _generate_umat_slater(p, l_sh, f_sh):
     #
     # Parse slater_basis
     #
-    nsh = len(l_sh)
-    if p_slater_basis in ('cubic', 'spherical', 'spherical_j'):
-        basis_sh = [p_slater_basis] * nsh
+    slater_basis = p['model']['slater_basis']
+    nsh = p['model']['n_inequiv_shells']
+    if slater_basis in ('cubic', 'spherical', 'spherical_j'):
+        basis_sh = [slater_basis] * nsh
         order_sh = [None] * nsh
     else:
-        slater_basis = _parse_interaction_parameters(p_slater_basis, "slater_basis", nsh)
-        basis_sh = [basis for basis, *_ in slater_basis]
-        order_sh = [order for _, *order in slater_basis]
-    # print(f"basis_sh = {basis_sh!r}")
-    # print(f"order_sh = {order_sh!r}")
+        slater_basis_sh = _parse_interaction_parameters(slater_basis, "slater_basis", nsh)
+        basis_sh = [basis for basis, *_ in slater_basis_sh]
+        order_sh = [order for _, *order in slater_basis_sh]
+    print(f" slater_basis(basis) = {basis_sh!r}")
+    print(f" slater_basis(order) = {order_sh!r}")
 
-    # check basis
+    # Check basis
     for basis in basis_sh:
         if basis not in ('cubic', 'spherical', 'spherical_j'):
             print(f"ERROR: basis={basis!r} not supported", file=sys.stderr)
             exit(1)
 
     # special treatment for basis='spherical_j'
-    spherical_j = [False for _ in range(nsh)]
+    jbasis_sh = [False for _ in range(nsh)]
     for ish, basis in enumerate(basis_sh):
         if basis == 'spherical_j':
             basis_sh[ish] = 'spherical'  # replace
-            spherical_j[ish] = True
+            jbasis_sh[ish] = True
+    if numpy.any(numpy.array(jbasis_sh)) and p['model']['spin_orbit'] == False:
+        print("Warning: 'spherical_j' in slater_basis should be used with spin_orbit=True", file=sys.stderr)
 
     # Support special symbols like order='eg', 't2g'
     for ish, (l, basis, order) in enumerate(zip(l_sh, basis_sh, order_sh)):
@@ -189,7 +241,7 @@ def _generate_umat_slater(l_sh, f_sh, norb_sh, p_slater_basis):
     # Generate U-matrix
     #
     u_mat_sh = []
-    basis_names = []
+    basis_names_sh = []
     for l, f, basis, order in zip(l_sh, f_sh, basis_sh, order_sh):
         # basis names
         names_full = _basis_names(l=l, basis=basis)
@@ -208,27 +260,48 @@ def _generate_umat_slater(l_sh, f_sh, norb_sh, p_slater_basis):
         else:
             u_mat = umat_full[numpy.ix_(order, order, order, order)]
             names = names_full[order]
+        # TODO: order when basis='slater_j'
 
         u_mat_sh.append(u_mat)
-        basis_names.append(names)
+        basis_names_sh.append(names)
 
     # print summary
     print("\n Slater interactions")
-    for ish, (l, f, names) in enumerate(zip(l_sh, f_sh, basis_names)):
+    for ish, (l, f, names) in enumerate(zip(l_sh, f_sh, basis_names_sh)):
         print(f"  ish = {ish}")
         print(f"    | l = {l}")
         print(f"    | F_2m = {f}")
         print(f"    | basis = {names}")
 
     # Check the number of bases
-    for ish, (norb, names) in enumerate(zip(norb_sh, basis_names)):
+    norb_sh = p['model']['norb_inequiv_sh']
+    for ish, (names, norb) in enumerate(zip(basis_names_sh, norb_sh)):
         if len(names) != norb:
             print(f"Error ! len(basis)={len(names)} is inconsistent with norb={norb} for ish={ish}")
             exit(1)
 
-    # TODO: from LS to J
+    # Convert to spin-full U-matrix
+    u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
 
-    return u_mat_sh
+    # Transform the basis from LS to J
+    if numpy.any(numpy.array(jbasis_sh)):
+        print("\n Transform basis from LS to J")
+    for ish, (jbasis, u_mat_so, l) in enumerate(zip(jbasis_sh, u_mat_so_sh, l_sh)):
+        if jbasis:
+            u_mat_so_sh[ish], basis_ls, basis_j = _from_ls_to_j(u_mat_so, l)
+            # TODO: order
+            names_ls = [f"lz{m:+d},sz{'+' if s>0 else ''}{s}" for m, s in basis_ls]
+            names_j = [f"j{j}{'+' if jz>0 else ''}{jz}" for j, jz in basis_j]
+            print(f"  ish = {ish}")
+            # print(f"    | from")
+            # print(f"    | basis(up) = {names_ls[:2*l+1]}")
+            # print(f"    | basis(dn) = {names_ls[2*l+1:]}")
+            # print(f"    | to")
+            print(f"    | basis(up) = {names_j[:2*l+1]}")
+            print(f"    | basis(dn) = {names_j[2*l+1:]}")
+
+    # return u_mat_sh
+    return u_mat_so_sh
 
 
 def _generate_umat_slater_uj(p):
@@ -247,9 +320,7 @@ def _generate_umat_slater_uj(p):
     f_sh = [_U_J_to_F(int(l), u, j) for l, u, j in slater_sh]
 
     # Generate U-matrix
-    norb_sh = p['model']['norb_inequiv_sh']
-    slater_basis = p['model']['slater_basis']
-    return _generate_umat_slater(l_sh, f_sh, norb_sh, slater_basis)
+    return _generate_umat_slater(p, l_sh, f_sh)
 
 
 def _generate_umat_slater_f(p):
@@ -267,9 +338,7 @@ def _generate_umat_slater_f(p):
         print(f"Warning: Some non-zero values are neglected from slater_f={p['model']['slater_f']}. Only F_0, ..., F_2l are used.", file=sys.stderr)
 
     # Generate U-matrix
-    norb_sh = p['model']['norb_inequiv_sh']
-    slater_basis = p['model']['slater_basis']
-    return _generate_umat_slater(l_sh, f_sh, norb_sh, slater_basis)
+    return _generate_umat_slater(p, l_sh, f_sh)
 
 
 def _generate_umat_respack(p):
@@ -303,24 +372,27 @@ def _generate_umat_respack(p):
     #
     # Map into 4-index U at each correlated shell
     #
-    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
+    u_mat_sh = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
     start = 0
     for ish in range(nsh):
         for iorb in range(norb[ish]):
             for jorb in range(norb[ish]):
-                u_mat[ish][iorb, jorb, iorb, jorb] = umat2[start+iorb, start+jorb]
-                u_mat[ish][iorb, jorb, jorb, iorb] = jmat2[start+iorb, start+jorb]
-                u_mat[ish][iorb, iorb, jorb, jorb] = jmat2[start+iorb, start+jorb]
+                u_mat_sh[ish][iorb, jorb, iorb, jorb] = umat2[start+iorb, start+jorb]
+                u_mat_sh[ish][iorb, jorb, jorb, iorb] = jmat2[start+iorb, start+jorb]
+                u_mat_sh[ish][iorb, iorb, jorb, jorb] = jmat2[start+iorb, start+jorb]
         for iorb in range(norb[ish]):
-            u_mat[ish][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
+            u_mat_sh[ish][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
         start += norb[ish]
 
     # Make U real
     # TODO: warn if U-matrix is not real
     for ish in range(nsh):
-        u_mat[ish][:, :, :, :].imag = 0.0
+        u_mat_sh[ish][:, :, :, :].imag = 0.0
 
-    return u_mat
+    # Convert to spin-full U-matrix
+    u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
+
+    return u_mat_so_sh
 
 
 def __generate_umat(p):
@@ -345,20 +417,20 @@ def __generate_umat(p):
     if func_umat is None:
         print(f"Error ! Invalid interaction : {interaction}")
         sys.exit(-1)
-    u_mat_sh = func_umat(p)
+    u_mat_so_sh = func_umat(p)
     #
     # Check U-matrix
     #
     nsh = p['model']['n_inequiv_shells']
     norb_sh = p['model']['norb_inequiv_sh']
-    assert len(u_mat_sh) == nsh
-    for u_mat, norb in zip(u_mat_sh, norb_sh):
-        assert u_mat.dtype == numpy.complex  # U-matrix is complex
-        assert u_mat.shape == (norb, norb, norb, norb)
+    assert len(u_mat_so_sh) == nsh
+    for u_mat, norb in zip(u_mat_so_sh, norb_sh):
+        # assert u_mat.dtype == numpy.complex  # U-matrix is complex
+        assert u_mat.shape == (2*norb, 2*norb, 2*norb, 2*norb)
     #
     # Convert to spin-full U-matrix
     #
-    u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
+    # u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
     #
     # Transform LS basis to J
     #
