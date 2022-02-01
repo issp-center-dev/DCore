@@ -84,3 +84,50 @@ def test_slater_basis(request):
             h5diff(seedname+".h5", seedname_ref+".h5", key='DCore/Umat')
 
     os.chdir(org_dir)
+
+
+# d-eg
+_ini_eg = """\
+norb = 2
+interaction = slater_uj
+slater_uj = [(2, 4.0, 0.9)]
+slater_basis = [('cubic', 'eg')]
+"""
+
+# d-t2g
+_ini_t2g = """\
+norb = 3
+interaction = slater_uj
+slater_uj = [(2, 4.0, 0.9)]
+slater_basis = [('cubic', 't2g')]
+"""
+
+# f-j5/2
+_ini_j52 ="""\
+norb = 3
+interaction = slater_uj
+slater_uj = [(3, 4.0, 0.9)]
+slater_basis = [('spherical_j', 0, 1, 2),]
+spin_orbit=True
+"""
+
+# Sweep combinations of (slater_basis, l)
+def test_slater_basis_2(request):
+    org_dir = os.getcwd()
+    os.chdir(request.fspath.dirname)
+
+    for key, ini in {'eg': _ini_eg, 't2g': _ini_t2g, 'j52': _ini_j52}.items():
+        input_fname = f"slater_basis_{key}.in"
+        seedname = f"slater_basis_{key}_test"
+        seedname_ref = f"slater_basis_{key}_ref"
+
+        with open(input_fname, 'w') as f:
+            print("[model]", file=f)
+            print(f"seedname = {seedname}", file=f)
+            print(ini, file=f)
+
+        dcore_pre(input_fname)
+
+        h5diff(seedname+".h5", seedname_ref+".h5", key='DCore/Umat')
+
+    os.chdir(org_dir)
