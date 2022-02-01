@@ -199,94 +199,87 @@ def _generate_umat_slater(p, l_sh, f_sh):
     print(f" slater_basis(basis) = {basis_sh!r}")
     print(f" slater_basis(order) = {order_sh!r}")
 
-    # Check basis
-    for basis in basis_sh:
+    if 'spherical_j' in basis_sh and p['model']['spin_orbit'] == False:
+        print("Warning: 'spherical_j' in slater_basis should be used with spin_orbit=True", file=sys.stderr)
+
+    #
+    # Generate U-matrix
+    #
+    u_mat_so_sh = []  # to be returned
+    norb_sh = p['model']['norb_inequiv_sh']
+    print("\n Slater interactions")
+    for ish, (l, f, basis, order, norb) in enumerate(zip(l_sh, f_sh, basis_sh, order_sh, norb_sh)):
+        print(f"  ish = {ish}")
+        print(f"    | l = {l}")
+        print(f"    | F_2m = {f}")
+
+        # Check basis
         if basis not in ('cubic', 'spherical', 'spherical_j'):
             print(f"ERROR: basis={basis!r} not supported", file=sys.stderr)
             exit(1)
 
-    # special treatment for basis='spherical_j'
-    jbasis_sh = [False for _ in range(nsh)]
-    for ish, basis in enumerate(basis_sh):
+        # special treatment for basis='spherical_j'
+        jbasis = False
         if basis == 'spherical_j':
-            basis_sh[ish] = 'spherical'  # replace
-            jbasis_sh[ish] = True
-    if numpy.any(numpy.array(jbasis_sh)) and p['model']['spin_orbit'] == False:
-        print("Warning: 'spherical_j' in slater_basis should be used with spin_orbit=True", file=sys.stderr)
+            basis = 'spherical'  # replace
+            jbasis = True
 
-    # Support special symbols like order='eg', 't2g'
-    for ish, (l, basis, order) in enumerate(zip(l_sh, basis_sh, order_sh)):
-        if not order:  # None or []
-            continue
-        order_str = order[0]
-        if isinstance(order_str, str):
-            order = {
-                (2, 'cubic', 'eg') : [2, 4],
-                (2, 'cubic', 't2g') : [0, 1, 3],
-            }.get((l, basis, order_str))
-            if order is None:
-                print(f"Error ! Unsupported pair of (l, basis, order) = ({l}, {basis}, {order_str})", file=sys.stderr)
-                sys.exit(-1)
-            order_sh[ish] = order  # replace
-    #
-    # Generate U-matrix
-    #
-    u_mat_sh = []
-    names_sh = []
-    for l, f, basis in zip(l_sh, f_sh, basis_sh):
-        # basis names
-        names = _basis_names(l=l, basis=basis)
+        # Support special symbols like order='eg', 't2g'
+        if order:  # exclude None, []
+            order_str = order[0]
+            if isinstance(order_str, str):
+                order = {
+                    (2, 'cubic', 'eg') : [2, 4],
+                    (2, 'cubic', 't2g') : [0, 1, 3],
+                }.get((l, basis, order_str))
+                if order is None:
+                    print(f"Error ! Unsupported pair of (l, basis, order) = ({l!r}, {basis!r}, {order_str!r})", file=sys.stderr)
+                    sys.exit(-1)
+            _norb = len(order)
+        else:
+            _norb = 2*l + 1
 
-        # U-matrix
+        # Check the number of bases
+        if norb != _norb:
+            print(f"Error ! norb={norb} is inconsistent with (# of basis/sp)={_norb}")
+            exit(1)
+
+        # Generate U-matrix
         if l == 0:
             u_mat = numpy.full((1, 1, 1, 1), f[0], numpy.complex_)
         else:
             u_mat = U_matrix(l=l, radial_integrals=f, basis=basis)
+
+        # basis names
+        names = _basis_names(l=l, basis=basis)
         assert u_mat.shape == (len(names),) * 4
+        print(f"    | basis/sp = {names}")
 
-        u_mat_sh.append(u_mat)
-        names_sh.append(names)
+        # Convert to spin-full U-matrix
+        u_mat_so = to_spin_full_U_matrix(u_mat)
+        names_so = numpy.append(names, names)
 
-    # print summary
-    print("\n Slater interactions")
-    for ish, (l, f, names) in enumerate(zip(l_sh, f_sh, names_sh)):
-        print(f"  ish = {ish}")
-        print(f"    | l = {l}")
-        print(f"    | F_2m = {f}")
-        print(f"    | basis = {names}")
-    #
-    # Convert to spin-full U-matrix
-    #
-    u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
-    names_so_sh = [numpy.append(names, names) for names in names_sh]
-
-    # Transform the basis from LS to J
-    for ish, (jbasis, u_mat_so, l) in enumerate(zip(jbasis_sh, u_mat_so_sh, l_sh)):
+        # Transform the basis from LS to J
         if jbasis:
-            u_mat_so_sh[ish], _, basis_j = _from_ls_to_j(u_mat_so, l)
-            names_so_sh[ish] = numpy.array([f"j{j}{'+' if jz>0 else ''}{jz}" for j, jz in basis_j])  # convert to str
+            u_mat_so, _, basis_j = _from_ls_to_j(u_mat_so, l)
+            names_so = numpy.array([f"j{j}{'+' if jz>0 else ''}{jz}" for j, jz in basis_j])  # convert to str
 
-    # Change the order of bases
-    for ish, (u_mat_so, names_so, order) in enumerate(zip(u_mat_so_sh, names_so_sh, order_sh)):
+        # Change the order of bases
         if order:  # exclude None, []
-            dim = len(names_so)//2
-            order_so = order + [i + dim for i in order]
-            u_mat_so_sh[ish] = u_mat_so[numpy.ix_(order_so, order_so, order_so, order_so)]
-            names_so_sh[ish] = names_so[order_so]
+            order_so = order + [i + (2*l + 1) for i in order]
+            u_mat_so = u_mat_so[numpy.ix_(order_so, order_so, order_so, order_so)]
+            names_so = names_so[order_so]
 
-    # print summary
-    print("\n Basis in SO reps (after transformed, reordered, or trancated)")
-    for ish, (jbasis, u_mat_so, names_so) in enumerate(zip(jbasis_sh, u_mat_so_sh, names_so_sh)):
-        print(f"  ish = {ish}")
+        # Print summary in SO rep
+        print(f"    |")
+        print(f"    | in SO rep (after transformed, reordered, or trancated)")
         print(f"    | basis(up) = {names_so[:len(names_so)//2]}")
         print(f"    | basis(dn) = {names_so[len(names_so)//2:]}")
 
-    # Check the number of bases
-    norb_sh = p['model']['norb_inequiv_sh']
-    for ish, (names_so, norb) in enumerate(zip(names_so_sh, norb_sh)):
-        if len(names_so) != 2*norb:
-            print(f"Error ! len(basis)={len(names_so)//2} is inconsistent with norb={norb} for ish={ish}")
-            exit(1)
+        assert len(names_so) == 2*norb
+        assert u_mat_so.shape == (2*norb,) * 4
+
+        u_mat_so_sh.append(u_mat_so)
 
     return u_mat_so_sh
 
