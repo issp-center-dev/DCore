@@ -110,9 +110,8 @@ def _coefficients_ls_j(l, verbose=False, prefix=''):
     from sympy.physics.quantum.cg import CG
     from sympy import S
 
-    s = S(1)/2
-
     # Lz, Sz
+    s = S(1)/2
     m_s = numpy.array([[m, sz] for sz in [S(1)/2, -S(1)/2] for m in numpy.arange(-l, l+1)])
 
     # J, Jz
@@ -126,11 +125,11 @@ def _coefficients_ls_j(l, verbose=False, prefix=''):
     for i1, (m, ss) in enumerate(m_s):
         for i2, (j, jz) in enumerate(j_jz):
             cg = CG(l, m, s, ss, j, jz)
-            me = cg.doit()
-            # print(me)
-            if me != 0:
-                mat_ls_j[i1, i2] = me.evalf()
-                mat_for_print.append((i1, i2, me))
+            coef = cg.doit()
+            # print(coef)
+            if coef != 0:
+                mat_ls_j[i1, i2] = coef.evalf()
+                mat_for_print.append((i1, i2, coef))
 
     if verbose:
         print(f"{prefix}L = {l}")
@@ -145,8 +144,8 @@ def _coefficients_ls_j(l, verbose=False, prefix=''):
             print(f"{prefix}{i:2d}: {j}, {jz}")
         print(f"{prefix}")
         print(f"{prefix}(Lz, Sz)  (J, Jz)  < L Lz S Sz | J Jz >")
-        for i1, i2, me in mat_for_print:
-            print(f"{prefix}{i1:2d} {i2:2d}  {me}")
+        for i1, i2, coef in mat_for_print:
+            print(f"{prefix}{i1:2d} {i2:2d}  {coef}")
 
     return mat_ls_j, m_s, j_jz
 
@@ -201,7 +200,6 @@ def _generate_umat_slater(p, l_sh, f_sh):
 
     if 'spherical_j' in basis_sh and p['model']['spin_orbit'] == False:
         print("Warning: 'spherical_j' in slater_basis should be used with spin_orbit=True", file=sys.stderr)
-
     #
     # Generate U-matrix
     #
@@ -405,18 +403,9 @@ def __generate_umat(p):
     norb_sh = p['model']['norb_inequiv_sh']
     assert len(u_mat_so_sh) == nsh
     for u_mat, norb in zip(u_mat_so_sh, norb_sh):
+        # TODO: what to do if U-matrix is real
         # assert u_mat.dtype == numpy.complex  # U-matrix is complex
         assert u_mat.shape == (2*norb, 2*norb, 2*norb, 2*norb)
-    #
-    # Convert to spin-full U-matrix
-    #
-    # u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
-    #
-    # Transform LS basis to J
-    #
-    # if basis == 'spherical_j':
-    if False:
-        u_mat_so_sh = [_from_ls_to_j(u_mat_so, l) for u_mat_so, l in zip(u_mat_so_sh, l_sh)]
     #
     # Extract only density-density interactions if specified
     #
