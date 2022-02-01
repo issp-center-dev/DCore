@@ -106,7 +106,7 @@ def _generate_umat_kanamori(p):
     return u_mat_so_sh
 
 
-def _matrix_element_bw_ls_j(l, verbose=False, prefix=''):
+def _coefficients_ls_j(l, verbose=False, prefix=''):
     from sympy.physics.quantum.cg import CG
     from sympy import S
 
@@ -162,8 +162,8 @@ def _from_ls_to_j(umat_ls, l, order=None):
     assert umat_ls.shape == (dim, dim, dim, dim)
 
     # Get transformation matrix T
-    tmat, basis_ls, basis_j = _matrix_element_bw_ls_j(l, verbose=False)
-    # tmat, basis_ls, basis_j = _matrix_element_bw_ls_j(l, verbose=True, prefix='    ')
+    tmat, basis_ls, basis_j = _coefficients_ls_j(l, verbose=False)
+    # tmat, basis_ls, basis_j = _coefficients_ls_j(l, verbose=True, prefix='    ')
 
     assert tmat.shape == (dim, dim)
     assert basis_j.shape == (dim, 2)
@@ -236,71 +236,89 @@ def _generate_umat_slater(p, l_sh, f_sh):
                 sys.exit(-1)
             order_sh[ish] = order  # replace
     # print(f"order_sh = {order_sh!r}")
-
     #
     # Generate U-matrix
     #
     u_mat_sh = []
-    basis_names_sh = []
+    names_sh = []
     for l, f, basis, order in zip(l_sh, f_sh, basis_sh, order_sh):
         # basis names
-        names_full = _basis_names(l=l, basis=basis)
+        names = _basis_names(l=l, basis=basis)
 
         # U-matrix
         if l == 0:
-            umat_full = numpy.full((1, 1, 1, 1), f[0], numpy.complex_)
+            u_mat = numpy.full((1, 1, 1, 1), f[0], numpy.complex_)
         else:
-            umat_full = U_matrix(l=l, radial_integrals=f, basis=basis)
-        assert umat_full.shape == (len(names_full),) * 4
-
-        # Reordering the basis
-        if not order:  # None or []
-            u_mat = umat_full
-            names = names_full
-        else:
-            u_mat = umat_full[numpy.ix_(order, order, order, order)]
-            names = names_full[order]
-        # TODO: order when basis='slater_j'
+            u_mat = U_matrix(l=l, radial_integrals=f, basis=basis)
+        assert u_mat.shape == (len(names),) * 4
 
         u_mat_sh.append(u_mat)
-        basis_names_sh.append(names)
+        names_sh.append(names)
+
+    # Change the order of bases
+    # for ish, (u_mat, names, order, jbasis) in enumerate(zip(u_mat_sh, names_sh, order_sh, jbasis_sh)):
+    #     if jbasis==False and order:  # exclude None, []
+    #         u_mat_sh[ish] = u_mat[numpy.ix_(order, order, order, order)]
+    #         names_sh[ish] = names[order]
 
     # print summary
     print("\n Slater interactions")
-    for ish, (l, f, names) in enumerate(zip(l_sh, f_sh, basis_names_sh)):
+    for ish, (l, f, names) in enumerate(zip(l_sh, f_sh, names_sh)):
         print(f"  ish = {ish}")
         print(f"    | l = {l}")
         print(f"    | F_2m = {f}")
         print(f"    | basis = {names}")
 
     # Check the number of bases
-    norb_sh = p['model']['norb_inequiv_sh']
-    for ish, (names, norb) in enumerate(zip(basis_names_sh, norb_sh)):
-        if len(names) != norb:
-            print(f"Error ! len(basis)={len(names)} is inconsistent with norb={norb} for ish={ish}")
-            exit(1)
-
+    # norb_sh = p['model']['norb_inequiv_sh']
+    # for ish, (names, norb) in enumerate(zip(names_sh, norb_sh)):
+    #     if len(names) != norb:
+    #         print(f"Error ! len(basis)={len(names)} is inconsistent with norb={norb} for ish={ish}")
+    #         exit(1)
+    #
     # Convert to spin-full U-matrix
+    #
     u_mat_so_sh = [to_spin_full_U_matrix(u_mat) for u_mat in u_mat_sh]
+    # print(names_sh)
+    names_so_sh = [numpy.append(names, names) for names in names_sh]
+    # print(names_so_sh)
 
     # Transform the basis from LS to J
-    if numpy.any(numpy.array(jbasis_sh)):
-        print("\n Transform basis from LS to J")
+    # names_so_sh = []
     for ish, (jbasis, u_mat_so, l) in enumerate(zip(jbasis_sh, u_mat_so_sh, l_sh)):
         if jbasis:
-            u_mat_so_sh[ish], basis_ls, basis_j = _from_ls_to_j(u_mat_so, l)
-            # TODO: order
-            names_ls = [f"lz{m:+d},sz{'+' if s>0 else ''}{s}" for m, s in basis_ls]
-            names_j = [f"j{j}{'+' if jz>0 else ''}{jz}" for j, jz in basis_j]
-            print(f"  ish = {ish}")
-            # print(f"    | from")
-            # print(f"    | basis(up) = {names_ls[:2*l+1]}")
-            # print(f"    | basis(dn) = {names_ls[2*l+1:]}")
-            # print(f"    | to")
-            print(f"    | basis(up) = {names_j[:2*l+1]}")
-            print(f"    | basis(dn) = {names_j[2*l+1:]}")
+            # print(f"\n ish={ish} : Transform basis from LS to J")
+            u_mat_so_sh[ish], _, basis_j = _from_ls_to_j(u_mat_so, l)
+            # names_so_sh.append(names_so)
+            # names_so_sh[ish] = names_so
+            names_so_sh[ish] = numpy.array([f"j{j}{'+' if jz>0 else ''}{jz}" for j, jz in basis_j])  # convert to str
 
-    # return u_mat_sh
+    # Change the order of bases
+    for ish, (u_mat_so, names_so, order) in enumerate(zip(u_mat_so_sh, names_so_sh, order_sh)):
+        # if jbasis and order:  # exclude None, []
+        if order:  # exclude None, []
+            dim = len(names_so)//2
+            order_so = order + [i + dim for i in order]
+            u_mat_so_sh[ish] = u_mat_so[numpy.ix_(order_so, order_so, order_so, order_so)]
+            # print(names_so.shape)
+            names_so_sh[ish] = names_so[order_so]
+
+    # print summary
+    # if numpy.any(numpy.array(jbasis_sh)):
+    print("\n Basis in SO reps (after transformed, reordered, or trancated)")
+    for ish, (jbasis, u_mat_so, names_so) in enumerate(zip(jbasis_sh, u_mat_so_sh, names_so_sh)):
+        # names_j = [f"j{j}{'+' if jz>0 else ''}{jz}" for j, jz in names_so]
+        print(f"  ish = {ish}")
+        print(f"    | basis(up) = {names_so[:len(names_so)//2]}")
+        print(f"    | basis(dn) = {names_so[len(names_so)//2:]}")
+
+    # Check the number of bases
+    norb_sh = p['model']['norb_inequiv_sh']
+    for ish, (names_so, norb) in enumerate(zip(names_so_sh, norb_sh)):
+        if len(names_so) != 2*norb:
+            print(f"Error ! len(basis)={len(names_so)//2} is inconsistent with norb={norb} for ish={ish}")
+            exit(1)
+
     return u_mat_so_sh
 
 
