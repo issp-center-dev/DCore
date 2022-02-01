@@ -48,6 +48,7 @@ setup(
         'h5py!=2.10.0',
         'toml>=0.10',
         'dcorelib>=0.5',
+        'sympy',
         ],
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],
