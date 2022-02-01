@@ -35,15 +35,16 @@ def _uvals(interaction, l):
         return f"slater_f = [({l}, 4.0, 0.9, 0.1, 0.02)]"
 
 
-def test_umat(request):
+# Sweep combinations of (interaction, l)
+def test_interaction(request):
     org_dir = os.getcwd()
     os.chdir(request.fspath.dirname)
 
     for interaction in ['kanamori', 'slater_uj', 'slater_f']:
         for l in range(4):
-            input_fname = f"umat_{interaction}_{l}.in"
-            seedname = f"umat_test_{interaction}_{l}"
-            seedname_ref = f"umat_ref_{interaction}_{l}"
+            input_fname = f"interaction_{interaction}_{l}.in"
+            seedname = f"interaction_{interaction}_{l}_test"
+            seedname_ref = f"interaction_{interaction}_{l}_ref"
 
             with open(input_fname, 'w') as f:
                 print("[model]", file=f)
@@ -51,6 +52,32 @@ def test_umat(request):
                 print(f"norb = {2*l+1}", file=f)
                 print(f"interaction = {interaction}", file=f)
                 print(_uvals(interaction, l), file=f)
+
+            dcore_pre(input_fname)
+
+            h5diff(seedname+".h5", seedname_ref+".h5", key='DCore/Umat')
+
+    os.chdir(org_dir)
+
+
+# Sweep combinations of (slater_basis, l)
+def test_slater_basis(request):
+    org_dir = os.getcwd()
+    os.chdir(request.fspath.dirname)
+
+    for slater_basis in ['spherical', 'spherical_j']:
+        for l in range(4):
+            input_fname = f"slater_basis_{slater_basis}_{l}.in"
+            seedname = f"slater_basis_{slater_basis}_{l}_test"
+            seedname_ref = f"slater_basis_{slater_basis}_{l}_ref"
+
+            with open(input_fname, 'w') as f:
+                print("[model]", file=f)
+                print(f"seedname = {seedname}", file=f)
+                print(f"norb = {2*l+1}", file=f)
+                print(f"interaction = slater_uj", file=f)
+                print(f"slater_uj = [({l}, 4.0, 0.9)]", file=f)
+                print(f"slater_basis = {slater_basis}", file=f)
 
             dcore_pre(input_fname)
 
