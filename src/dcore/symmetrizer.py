@@ -42,18 +42,22 @@ class PMSymmSpinOrbitOff(LocalSymmetrizer):
         return gf_copy
 
 
-def _pm_symm_gen(norb):
+def _pm_symm_gen(norb, transverse: bool):
     theta = numpy.pi
     sx, sy, sz = pauli_matrix()
     _gen = lambda s: numpy.einsum('pq,ST->SpTq', numpy.identity(norb), expm(-0.5j*theta*s)).reshape(2*norb, 2*norb)
-    gen_z = _gen(sx)
-    gen_x = _gen(sy)
-    gen_y = _gen(sz)
-    return [{"ud": gen_x}, {"ud": gen_y}, {"ud": gen_z}]
+    if transverse:
+        gen_z = _gen(sx)
+        gen_x = _gen(sy)
+        gen_y = _gen(sz)
+        return [{"ud": gen_x}, {"ud": gen_y}, {"ud": gen_z}]
+    else:
+        gen_z = _gen(sx)
+        return [{"ud": gen_z}]
 
 
-def pm_symmetrizer(norb, spin_orbit):
+def pm_symmetrizer(norb: int, spin_orbit: bool, transverse: bool):
     if spin_orbit:
-        return LocalSymmetrizerFromGenerators(_pm_symm_gen(norb))
+        return LocalSymmetrizerFromGenerators(_pm_symm_gen(norb, transverse))
     else:
         return PMSymmSpinOrbitOff()

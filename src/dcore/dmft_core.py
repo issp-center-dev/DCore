@@ -386,7 +386,8 @@ class DMFTCoreSolver(object):
         if not self._read_only:
             if self._params["control"]["time_reversal"]:
                 norb_sh = self._dim_corr_sh//2 if self.use_spin_orbit else self._dim_corr_sh
-                self._spin_symm = [pm_symmetrizer(norb, self.use_spin_orbit) for norb in norb_sh]
+                self._spin_symm = [
+                    pm_symmetrizer(norb, self.use_spin_orbit, self._params["control"]["time_reversal_transverse"]) for norb in norb_sh]
             else:
                 self._spin_symm = None
 
