@@ -22,7 +22,7 @@ set_num_proc
 
 rm -rf results
 mkdir results
-cd results
+cd results || exit
 cp ../eigenvec.in .
 
 # ---------------------------------
@@ -31,10 +31,7 @@ cp ../eigenvec.in .
 export PYTHONPATH=$BSE_DIR/python:$PYTHONPATH
 echo "PYTHONPATH = $PYTHONPATH"
 
-dir_script=`dirname $0`
-
 ini=../dmft_square.in
-seedname=square
 
 # ---------------------------------
 # DCore
@@ -46,20 +43,16 @@ echo "##################"
 echo ""
 
 echo "running dcore_pre..."
-dcore_pre $ini
-check_status
+dcore_pre $ini || exit
 
 echo "running dcore..."
-dcore --np $NUM_PROC $ini
-check_status
+dcore --np $NUM_PROC $ini || exit
 
 echo "running dcore_check..."
-dcore_check $ini
-check_status
+dcore_check $ini || exit
 
 echo "running dcore_bse..."
-dcore_bse --np $NUM_PROC $ini
-check_status
+dcore_bse --np $NUM_PROC $ini || exit
 
 # ---------------------------------
 # BSE
@@ -74,14 +67,11 @@ echo ""
 $BSE_DIR/bin/misc/print_latest_commit.sh
 
 # Generate q_path.dat
-python3 $BSE_DIR/python/bse_tools/gen_qpath.py ${seedname}.h5 ../qpath.in
-check_status
+python3 $BSE_DIR/python/bse_tools/gen_qpath.py $ini ../qpath.in || exit
 
 # BSE
-mpirun -np $NUM_PROC python3 $BSE_DIR/python/bse_tools/bse_tool.py ../bse.in
-check_status
-python3 $BSE_DIR/python/bse_tools/bse_post.py ../bse.in
-check_status
+mpirun -np $NUM_PROC python3 $BSE_DIR/python/bse_tools/bse_tool.py ../bse.in || exit
+python3 $BSE_DIR/python/bse_tools/bse_post.py ../bse.in || exit
 
 # Plot BSE results
 python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi_q_eigen.dat
