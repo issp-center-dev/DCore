@@ -41,6 +41,9 @@ dcore_check $ini || exit
 echo "running dcore_post..."
 dcore_post --np $NUM_PROC $ini || exit
 
+echo "plotting sigma..."
+gnuplot ../sigma.plt
+
 cd ..
 
 # ---------------------------------
@@ -69,3 +72,8 @@ dcore_check $ini || exit
 
 echo "running dcore_post..."
 dcore_post --np $NUM_PROC $ini || exit
+
+echo "plotting sigma..."
+gnuplot ../sigma_so.plt
+
+cd ..
