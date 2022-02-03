@@ -78,6 +78,7 @@ def create_parser(target_sections=None):
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
     parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
+    parser.add_option("model", "slater_basis", str, "cubic", "Basis of the Slater interaction (See below).")
     parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: 'filename'} to specify local potential matrix of ish-th shell")
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 

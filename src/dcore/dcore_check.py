@@ -193,7 +193,9 @@ class DMFTCoreCheck(object):
         # set linestyles
         linestyles = ['-', ':', '--', '-.', '-', ':']
         markers = ['v', 'x']
-        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  # basic colors
+        cmap = self.plt.get_cmap('Set2')
+        colors += [cmap(i) for i in range(8)]  # extend colors
 
         def get_ls(idx):
             return linestyles[idx % len(linestyles)]

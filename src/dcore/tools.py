@@ -402,7 +402,7 @@ def umat2dd(dcore_U):
     dcore_U_len = len(dcore_U)
     Uout = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb), dtype=complex)
 
-    for i, j, k, l in product(list(range(dcore_U_len)), list(range(dcore_U_len)), list(range(dcore_U_len)), list(range(dcore_U_len))):
+    for i, j, k, l in product(list(range(dcore_U_len)), repeat=4):
         if (i == k and j == l) or (i == l and j == k):
             Uout[i, j, k, l] = dcore_U[i, j, k, l]
 
@@ -448,7 +448,7 @@ def spin_moments_sh(dm_sh):
 
 def read_potential(filename, mat):
     if not os.path.exists(filename):
-        print("Error: file '{}' not found".format(filename))
+        print("Error: file '{}' not found".format(filename), file=sys.stderr)
         exit(1)
     print("Reading '{}'...".format(filename))
 
@@ -456,12 +456,12 @@ def read_potential(filename, mat):
     try:
         with open(filename, 'r') as f:
             for line in f:
-                # skip comment line
-                if line[0] == '#':
+                line_comment_removed = line.split('#')[0]  # remove comment
+                array = line_comment_removed.split()
+                if len(array) == 0:  # skip an empty line
                     continue
-
-                array = line.split()
-                assert len(array) == 5
+                if len(array) != 5:
+                    raise Exception(f"expect 5 columns, but {len(array)} columns entered")
                 sp = int(array[0])
                 o1 = int(array[1])
                 o2 = int(array[2])
@@ -471,8 +471,8 @@ def read_potential(filename, mat):
                 mat[sp, o1, o2] = val
                 filled[sp, o1, o2] = True
     except Exception as e:
-        print("Error:", e)
-        print(line, end="")
+        print("Error:", e, file=sys.stderr)
+        print(line, end="", file=sys.stderr)
         exit(1)
 
 
@@ -511,8 +511,8 @@ def set_potential(input_str, name, n_inequiv_shells, dim_sh, spin_orbit):
             assert isinstance(files, dict), "should be dictionary"
             assert all([ish < n_inequiv_shells for ish in list(files.keys())]), "The keys must fulfill: key < n_inequiv_shells"
         except Exception as e:
-            print("Error: %s =" % name, input_str)
-            print(e)
+            print("Error: %s =" % name, input_str, file=sys.stderr)
+            print(e, file=sys.stderr)
             exit(1)
 
         for ish, file in list(files.items()):
