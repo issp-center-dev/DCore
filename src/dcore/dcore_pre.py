@@ -41,11 +41,11 @@ def __print_paramter(p, param_name):
 def _check_parameters(p, required, unused):
     for key in required:
         if p[key] == "None":
-            print(f"Error ! Parameter '{key}' is not specified.")
+            print(f"Error ! Parameter '{key}' is not specified.", file=sys.stderr)
             sys.exit(-1)
     for key in unused:
         if p[key] != "None":
-            print(f"Error ! Parameter '{key}' is specified but is not used.")
+            print(f"Error ! Parameter '{key}' is specified but is not used.", file=sys.stderr)
             sys.exit(-1)
 
 
@@ -239,7 +239,7 @@ def _generate_umat_slater(p, l_sh, f_sh):
 
         # Check the number of bases
         if norb != _norb:
-            print(f"Error ! norb={norb} is inconsistent with (# of basis/sp)={_norb}")
+            print(f"Error ! norb={norb} is inconsistent with (# of basis/sp)={_norb}", file=sys.stderr)
             exit(1)
 
         # Generate U-matrix
@@ -393,7 +393,7 @@ def __generate_umat(p):
         'respack': _generate_umat_respack,
     }.get(interaction)
     if func_umat is None:
-        print(f"Error ! Invalid interaction : {interaction}")
+        print(f"Error ! Invalid interaction : {interaction}", file=sys.stderr)
         sys.exit(-1)
     u_mat_so_sh = func_umat(p)
     #
@@ -451,8 +451,8 @@ def __generate_local_potential(p):
         else:
             raise Exception("local_potential_factor should be float or list of length %d" % n_inequiv_shells)
     except Exception as e:
-        print("Error: local_potential_factor =", local_potential_factor)
-        print(e)
+        print("Error: local_potential_factor =", local_potential_factor, file=sys.stderr)
+        print(e, file=sys.stderr)
         exit(1)
 
     # print factor
@@ -472,7 +472,7 @@ def __generate_local_potential(p):
             for sp in range(pot_ish.shape[0]):
                 assert is_hermitian(pot_ish[sp]), "potential matrix for ish={} sp={} is not hermitian".format(ish, sp)
     except AssertionError as e:
-        print("Error:", e)
+        print("Error:", e, file=sys.stderr)
         exit(1)
 
     # write potential matrix
