@@ -464,6 +464,11 @@ class DMFTCoreSolver(object):
             _, dm0_sh = self.calc_G0loc()
             self.set_dc_imp(dm0_sh)
 
+            # Add dc_imp to Sigma to cancel dc_imp in the first iteration
+            for ish in range(self.n_inequiv_shells):
+                for sp in self._spin_block_names:
+                    self._sh_quant[ish].Sigma_iw[sp] << self._dc_imp[self._sk.inequiv_to_corr[ish]][sp]
+
         # Set initial value to self-energy
         if self._params["control"]["initial_static_self_energy"] != "None":
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Setting initial value to self-energy @@@@@@@@@@@@@@@@@@@@@@@@")
@@ -474,7 +479,8 @@ class DMFTCoreSolver(object):
 
             for ish in range(self.n_inequiv_shells):
                 for isp, sp in enumerate(self._spin_block_names):
-                    self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
+                    # self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
+                    self._sh_quant[ish].Sigma_iw[sp].data[...] += init_se[ish][isp]
 
         elif self._params["control"]["initial_self_energy"] != "None":
             self._loaded_initial_self_energy = True
@@ -889,9 +895,9 @@ class DMFTCoreSolver(object):
             sys.stdout.flush()
 
         self._previous_runs += max_step
-    
+
     def _save_sigma_iw(self, dm_sh: List[numpy.ndarray]) -> None:
-        """ Save Sigma(iw) for post processing/restart """ 
+        """ Save Sigma(iw) for post processing/restart """
         data = {}
         idata = 0
         for ish in range(self._n_inequiv_shells):
