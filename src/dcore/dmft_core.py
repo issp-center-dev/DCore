@@ -529,6 +529,7 @@ class DMFTCoreSolver(object):
             'dc_energ'      : self._dc_energ,
             'mu'            : self._chemical_potential,
             'adjust_mu'     : False,
+            'matsubara_sum_without_fitting' : self._params['system']['matsubara_sum_without_fitting'],
         }
 
     def calc_G0loc(self):
