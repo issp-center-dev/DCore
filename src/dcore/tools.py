@@ -926,7 +926,7 @@ def _calc_density(gf):
     total_density: float
 
     """
-    assert isinstance(gf, GfImFreq)
+    assert isinstance(gf, Gf)
 
     beta = gf.mesh.beta
 
@@ -973,7 +973,7 @@ def _calc_density_matrix(gf):
     density_matrix: numpy.ndarray
 
     """
-    assert isinstance(gf, GfImFreq)
+    assert isinstance(gf, Gf)
 
     beta = gf.mesh.beta
 
