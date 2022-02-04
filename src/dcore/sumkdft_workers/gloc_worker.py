@@ -14,6 +14,12 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
 
         sk = SumkDFT(hdf_file=self.model_hdf5_file, use_dft_blocks=False, h_field=0.0)
         setup_sk(sk, 'iwn', self.params)
+
+        # workaround for 'High frequency error'
+        if True:
+            sk.total_density = sk.total_density_matsubara
+            sk.density_matrix = sk.density_matrix_matsubara
+
         if self.params['adjust_mu']:
             # find the chemical potential for given density
             sk.calc_mu(self.params['prec_mu'])
