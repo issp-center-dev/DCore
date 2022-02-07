@@ -92,7 +92,7 @@ def create_parser(target_sections=None):
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double-counting correction (See below)")
     parser.add_option("system", "dc_type", str, 'HF_DFT', "Chosen from 'HF_DFT' (default), 'HF_imp', 'FLL'")
-    parser.add_option("system", "matsubara_sum_without_fitting", bool, False, "Compute Matsubara summation without fitting high-frequency moments.")
+    parser.add_option("system", "no_tail_fit", bool, False, "Compute Matsubara summation without fitting high-frequency moments.")
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',

@@ -16,7 +16,7 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
         setup_sk(sk, 'iwn', self.params)
 
         # workaround for 'High frequency error'
-        if self.params['matsubara_sum_without_fitting']:
+        if self.params['no_tail_fit']:
             sk.total_density = sk.total_density_matsubara
             sk.density_matrix = sk.density_matrix_matsubara
 

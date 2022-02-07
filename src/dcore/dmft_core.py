@@ -544,7 +544,7 @@ class DMFTCoreSolver(object):
             'dc_energ'      : self._dc_energ,
             'mu'            : self._chemical_potential,
             'adjust_mu'     : False,
-            'matsubara_sum_without_fitting' : self._params['system']['matsubara_sum_without_fitting'],
+            'no_tail_fit'   : self._params['system']['no_tail_fit'],
         }
 
     def calc_G0loc(self):
@@ -761,8 +761,8 @@ class DMFTCoreSolver(object):
             self._params['control']['symmetry_generators'],
             self._use_spin_orbit, self._dim_sh)
 
-        # No fitting in computing density if matsubara_sum_without_fitting=True
-        fitting = not self._params['system']['matsubara_sum_without_fitting']
+        # No fitting in computing density if no_tail_fit=True
+        fitting = not self._params['system']['no_tail_fit']
 
         def quantities_to_check():
             x = []
