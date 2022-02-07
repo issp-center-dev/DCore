@@ -1,6 +1,8 @@
 import numpy
 from scipy import fft
-
+from itertools import product
+from dcore._dispatcher import BlockGf, Gf, GfImFreq, GfImTime, MeshImFreq
+from dcore.tools import make_block_gf
 
 
 def _matsubara_freq_fermion(beta, nw):
@@ -87,18 +89,48 @@ def _fft_fermion_t2w(gt, beta):
     return gw_fermion
 
 
+def bgf_fourier_w2t(bgf, tail=None):
+    assert isinstance(bgf, BlockGf)
+    assert isinstance(bgf.mesh, MeshImFreq)
+    assert bgf.mesh.statistic == 'Fermion'
+    assert bgf.mesh.positive_only() is False
 
-def fermion_fourier(gf, iw, beta, coef_inv_iw=1, direction='w2t'):
-    isinstance(gf, numpy.ndarray)
-    isinstance(iw, numpy.ndarray)
-    assert gf.ndim == 1
-    assert iw.ndim == 1
-    assert gf.size == iw.size
+    # print(dir(bgf))
+    # print(dir(bgf.mesh))
+    beta = bgf.mesh.beta
+    # print("beta =", beta)
 
-    n = gf.size
+    nw_pm = bgf.mesh.last_index() - bgf.mesh.first_index() + 1
+    assert nw_pm % 2 == 0  # even
+    nw = nw_pm // 2  # number of w>0
+    nt = nw * 2 + 1
 
+    # Set tail
+    if tail is None:
+        tail = {}
+        for name, gf in bgf:
+            _, orb1, orb2 = gf.data.shape
+            tail[name] = numpy.eye(orb1, orb2, dtype=numpy.float64)
+    else:
+        assert isinstance(tail, dict)
+        for name, gf in bgf:
+            _, orb1, orb2 = gf.data.shape
+            assert name in tail
+            assert isinstance(tail[name], numpy.ndarray)
+            assert tail[name].shape == (orb1, orb2)
 
-def bgf_fourier(bgf, direction='w2t'):
-    isinstance(bgf, BlockGf)
+    # Make BlockGf
+    gf_struct = {name: gf.indices for name, gf in bgf}
+    bgf_t = make_block_gf(GfImTime, gf_struct, beta, nt)
 
-    iw = numpy.array([g.mesh(n) for n in range(g.mesh.first_index(), g.mesh.last_index()+1)])
+    # FFT
+    for name, gf in bgf:
+        nw_2, norb1, norb2 = gf.data.shape
+        assert nw_2 == nw_pm
+        assert bgf_t[name].data.shape == (nt, norb1, norb2)
+        for i, j in product(range(norb1), range(norb2)):
+            gt = _fft_fermion_w2t(gf.data[:, i, j], beta, a=tail[name][i, j])
+            assert gt.shape == (nt,)
+            bgf_t[name].data[:, i, j] = gt
+
+    return bgf_t
