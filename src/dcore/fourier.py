@@ -12,12 +12,19 @@ def _matsubara_freq_fermion(beta, nw):
 
 
 def _fft_fermion_w2t(gw, beta, a=1):
-    # nw_2 = gw.size
+    """FFT from G(iw) to G(tau)
+
+    Args:
+        gw (numpy.ndarray(2*nw)): G(iw) including w>0 and w<0
+        beta (float): Inverse temperature
+        a (float, optional): Coefficient of 1/iw. Defaults to 1.
+
+    Returns:
+        numpy.ndarray(nt+1): G(tau), nt=2*nw
+    """
     assert gw.size % 2 == 0  # even
     nw = gw.size // 2
     nt = 2 * nw
-    # print("nt =", nt)
-    # print("nw =", nw)
 
     iw = _matsubara_freq_fermion(beta, nw)
     assert iw.shape == (2*nw,)
@@ -34,7 +41,6 @@ def _fft_fermion_w2t(gw, beta, a=1):
 
     # FFT
     gt_full = fft.fft(gw_full) / beta
-    # print(gt_full.shape)
     assert gt_full.shape == (2*nt,)
     assert numpy.all(numpy.abs(gt_full.imag) < 1e-8)  # real
     gt_full = gt_full.real
@@ -49,31 +55,31 @@ def _fft_fermion_w2t(gw, beta, a=1):
 
 
 def _fft_fermion_t2w(gt, beta):
+    """FFT from G(tau) to G(iw)
+
+    Args:
+        gt (numpy.ndarray(nt+1)): G(tau), nt=2*nw
+        beta (float): Inverse temperature
+
+    Returns:
+        numpy.ndarray(2*nw): G(iw) including w>0 and w<0
+    """
     assert gt.size % 2 == 1  # odd
     a =  - gt[0] - gt[-1]
-    # print("a=", a)
     nt = gt.size - 1
     nw = nt // 2
-    # print("nt =", nt)
-    # print("nw =", nw)
 
     iw = _matsubara_freq_fermion(beta, nw)
     assert iw.shape == (2*nw,)
 
     # Subtract -1/2
     gt_subtract = gt[:-1] + a / 2
-    # print(gt_subtract.shape)
 
     # beta to 2*beta
     gt_full = numpy.append(gt_subtract, -gt_subtract)
-    # print(gt_full.shape)
-    # print(gt_full)
 
     # FFT
-    # gw_full = fft.fft(gt_full, norm='backward') * beta
     gw_full = fft.ifft(gt_full) * beta
-    # gw_full = fft.ifft(gt_full) * (beta / nt)
-    # print("gw_full.shape =", gw_full.shape)
     assert gw_full.shape == (4*nw,)
 
     # Extract fermion
@@ -90,15 +96,21 @@ def _fft_fermion_t2w(gt, beta):
 
 
 def bgf_fourier_w2t(bgf, tail=None):
+    """Fourier transform BlockGf from w to t
+
+    Args:
+        bgf (BlockGf(GfImFreq)): Block Green's function in imaginary frequency.
+        tail (dict(numpy.ndarray), optional): Coefficient matrix for 1/iw tail. Defaults to None.
+
+    Returns:
+        BlockGf(GfImTime): Block Green's function in imaginary time.
+    """
     assert isinstance(bgf, BlockGf)
     assert isinstance(bgf.mesh, MeshImFreq)
     assert bgf.mesh.statistic == 'Fermion'
     assert bgf.mesh.positive_only() is False
 
-    # print(dir(bgf))
-    # print(dir(bgf.mesh))
     beta = bgf.mesh.beta
-    # print("beta =", beta)
 
     nw_pm = bgf.mesh.last_index() - bgf.mesh.first_index() + 1
     assert nw_pm % 2 == 0  # even

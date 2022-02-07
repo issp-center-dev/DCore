@@ -26,22 +26,16 @@ from itertools import product
 
 def _make_g0():
     beta = 10.0
-    # nw = 2048
     nw = 1024
-    # nw = 512
     nt = 2 * nw
     e0 = 2.0
     a = 0.1
-
-    # print("nw =", nw)
-    # print("nt =", nt)
 
     iw = _matsubara_freq_fermion(beta, nw)
     g0_w = a / (iw - e0)
 
     t = numpy.linspace(0, beta, nt+1)
     g0_t = -numpy.exp(-t*e0) / (numpy.exp(-beta*e0) + 1) * a
-    # a = - g0_t[0] - g0_t[-1]
 
     return g0_w, g0_t, beta, a
 
@@ -52,13 +46,7 @@ def test_fft_fermion_t2w(request):
     os.chdir(request.fspath.dirname)
 
     g0_w, g0_t, beta, a = _make_g0()
-
     g0_w_fft = _fft_fermion_t2w(g0_t, beta)
-
-    # numpy.savetxt('g0_w.dat', g0_w.view(float).reshape(-1,2))
-    # numpy.savetxt('g0_w_fft.dat', g0_w_fft.view(float).reshape(-1,2))
-    # numpy.savetxt('g0_w_diff.dat', (g0_w_fft - g0_w).view(float).reshape(-1,2))
-
     assert numpy.allclose(g0_w_fft, g0_w, atol=1e-4)
 
 
@@ -68,13 +56,7 @@ def test_fft_fermion_w2t(request):
     os.chdir(request.fspath.dirname)
 
     g0_w, g0_t, beta, a = _make_g0()
-
     g0_t_fft = _fft_fermion_w2t(g0_w, beta, a=a)
-
-    # numpy.savetxt('g0_t.dat', g0_t)
-    # numpy.savetxt('g0_t_fft.dat', g0_t_fft)
-    # numpy.savetxt('g0_t_diff.dat', g0_t_fft - g0_t)
-
     assert numpy.allclose(g0_t_fft, g0_t, atol=1e-4)
 
 
@@ -88,14 +70,11 @@ def test_fft_bgf_w2t(request):
     nt = g0_t.size
     nw = g0_w.size // 2
 
-    # print("nt =", nt)
-    # print("nw =", nw)
-
+    # Set BlockGf for G(iw)
     gf_struct = {'up': [0, 1]}
+    tail = {'up': numpy.identity(2) * a}
 
     bgf_w = make_block_gf(GfImFreq, gf_struct, beta, nw)
-    # bgf_t = make_block_gf(GfImTime, gf_struct, beta, nt)
-
     for name, gf in bgf_w:
         nw_2, norb1, norb2 = gf.data.shape
         assert nw_2 == nw*2
@@ -105,10 +84,10 @@ def test_fft_bgf_w2t(request):
             else:
                 gf.data[:, i, j] = numpy.zeros(2*nw)
 
-    tail = {'up': numpy.identity(2) * a}
-
+    # FFT
     bgf_t = bgf_fourier_w2t(bgf_w, tail=tail)
 
+    # Compare
     for name, gf in bgf_t:
         nt_2, norb1, norb2 = gf.data.shape
         assert nt_2 == nt
@@ -117,4 +96,3 @@ def test_fft_bgf_w2t(request):
                 assert numpy.allclose(gf.data[:, i, j], g0_t, atol=1e-4)
             else:
                 assert numpy.allclose(gf.data[:, i, j], numpy.zeros(nt))
-
