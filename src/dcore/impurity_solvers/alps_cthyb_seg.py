@@ -437,6 +437,9 @@ class ALPSCTHYBSEGSolver(SolverBase):
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(n_w2b)
         """
+        if rot is not None:
+            # TODO
+            raise NotImplementedError
 
         use_chi_loc = False
 
