@@ -279,7 +279,7 @@ def _generate_umat_slater(p: Dict, l_sh: List[int], f_sh: List[numpy.ndarray]):
 
         # Print summary in SO rep
         print(f"    |")
-        print(f"    | in SO rep (after transformed, reordered, or trancated)")
+        print(f"    | in SO rep (after transformed, reordered, or truncated)")
         print(f"    | basis(up) = {names_so[:len(names_so)//2]}")
         print(f"    | basis(dn) = {names_so[len(names_so)//2:]}")
 
