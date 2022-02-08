@@ -83,8 +83,8 @@ def create_parser(target_sections=None):
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
     # [system]
-    parser.add_option("system", "beta", float, 1.0, "Inverse temperature. This parameter is overridden, if T is given.")
-    parser.add_option("system", "T", float, -1.0, "Temperature. If this parameter is given, beta is overridden by 1/T.")
+    parser.add_option("system", "beta", float, 1.0, "Inverse temperature. This parameter is overwritten, if T is given.")
+    parser.add_option("system", "T", float, -1.0, "Temperature. If this parameter is given, beta is overwritten by 1/T.")
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
     parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
@@ -97,7 +97,7 @@ def create_parser(target_sections=None):
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',
                     "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg, pomerol.")
-    parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify either 'Hloc', 'None', or the location of a file..")
+    parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify either 'Hloc', 'None', or the location of a file.")
     parser.allow_undefined_options("impurity_solver")
 
     # [control]
