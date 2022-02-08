@@ -408,10 +408,10 @@ The parameter <code class="docutils literal notranslate"><span class="pre">local
 <p>This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 10%" />
+<col style="width: 14%" />
 <col style="width: 10%" />
 <col style="width: 9%" />
-<col style="width: 70%" />
+<col style="width: 68%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
@@ -460,6 +460,11 @@ The parameter <code class="docutils literal notranslate"><span class="pre">local
 <td><p>String</p></td>
 <td><p>HF_DFT</p></td>
 <td><p>Chosen from ‘HF_DFT’ (default), ‘HF_imp’, ‘FLL’</p></td>
+</tr>
+<tr class="row-even"><td><p>no_tail_fit</p></td>
+<td><p>Bool</p></td>
+<td><p>False</p></td>
+<td><p>Compute Matsubara summation without fitting high-frequency moments.</p></td>
 </tr>
 </tbody>
 </table>

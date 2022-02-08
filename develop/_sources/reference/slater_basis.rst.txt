@@ -64,7 +64,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.  4.5]
         | basis/sp = ['x' 'y' 'z']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['x' 'y' 'z']
         | basis(dn) = ['x' 'y' 'z']
 
@@ -95,7 +95,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.         7.73006135 4.86993865]
         | basis/sp = ['xy' 'yz' 'z^2' 'xz' 'x^2-y^2']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['xy' 'yz' 'z^2' 'xz' 'x^2-y^2']
         | basis(dn) = ['xy' 'yz' 'z^2' 'xz' 'x^2-y^2']
 
@@ -126,7 +126,7 @@ Output of ``dcore_pre`` :
         | F_2m = [ 4.         10.72759974  7.1676259   5.3028777 ]
         | basis/sp = ['x(x^2-3y^2)' 'z(x^2-y^2)' 'xz^2' 'z^3' 'yz^2' 'xyz' 'y(3x^2-y^2)']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['x(x^2-3y^2)' 'z(x^2-y^2)' 'xz^2' 'z^3' 'yz^2' 'xyz' 'y(3x^2-y^2)']
         | basis(dn) = ['x(x^2-3y^2)' 'z(x^2-y^2)' 'xz^2' 'z^3' 'yz^2' 'xyz' 'y(3x^2-y^2)']
 
@@ -159,7 +159,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.         7.73006135 4.86993865]
         | basis/sp = ['xy' 'yz' 'z^2' 'xz' 'x^2-y^2']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['z^2' 'x^2-y^2']
         | basis(dn) = ['z^2' 'x^2-y^2']
 
@@ -192,7 +192,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.         7.73006135 4.86993865]
         | basis/sp = ['xy' 'yz' 'z^2' 'xz' 'x^2-y^2']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['xy' 'yz' 'xz']
         | basis(dn) = ['xy' 'yz' 'xz']
 
@@ -224,7 +224,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.         7.73006135 4.86993865]
         | basis/sp = ['xy' 'yz' 'z^2' 'xz' 'x^2-y^2']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['xy' 'x^2-y^2']
         | basis(dn) = ['xy' 'x^2-y^2']
 
@@ -255,7 +255,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.  4.5]
         | basis/sp = ['p-1' 'p+0' 'p+1']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['p-1' 'p+0' 'p+1']
         | basis(dn) = ['p-1' 'p+0' 'p+1']
 
@@ -286,7 +286,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.         7.73006135 4.86993865]
         | basis/sp = ['d-2' 'd-1' 'd+0' 'd+1' 'd+2']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['d-2' 'd-1' 'd+0' 'd+1' 'd+2']
         | basis(dn) = ['d-2' 'd-1' 'd+0' 'd+1' 'd+2']
 
@@ -317,7 +317,7 @@ Output of ``dcore_pre`` :
         | F_2m = [ 4.         10.72759974  7.1676259   5.3028777 ]
         | basis/sp = ['f-3' 'f-2' 'f-1' 'f+0' 'f+1' 'f+2' 'f+3']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['f-3' 'f-2' 'f-1' 'f+0' 'f+1' 'f+2' 'f+3']
         | basis(dn) = ['f-3' 'f-2' 'f-1' 'f+0' 'f+1' 'f+2' 'f+3']
 
@@ -349,7 +349,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.  4.5]
         | basis/sp = ['p-1' 'p+0' 'p+1']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['j1/2-1/2' 'j3/2-3/2' 'j3/2-1/2']
         | basis(dn) = ['j1/2+1/2' 'j3/2+3/2' 'j3/2+1/2']
 
@@ -381,7 +381,7 @@ Output of ``dcore_pre`` :
         | F_2m = [4.         7.73006135 4.86993865]
         | basis/sp = ['d-2' 'd-1' 'd+0' 'd+1' 'd+2']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['j3/2-3/2' 'j3/2-1/2' 'j5/2-5/2' 'j5/2-3/2' 'j5/2-1/2']
         | basis(dn) = ['j3/2+3/2' 'j3/2+1/2' 'j5/2+5/2' 'j5/2+3/2' 'j5/2+1/2']
 
@@ -413,7 +413,7 @@ Output of ``dcore_pre`` :
         | F_2m = [ 4.         10.72759974  7.1676259   5.3028777 ]
         | basis/sp = ['f-3' 'f-2' 'f-1' 'f+0' 'f+1' 'f+2' 'f+3']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['j5/2-5/2' 'j5/2-3/2' 'j5/2-1/2' 'j7/2-7/2' 'j7/2-5/2' 'j7/2-3/2' 'j7/2-1/2']
         | basis(dn) = ['j5/2+5/2' 'j5/2+3/2' 'j5/2+1/2' 'j7/2+7/2' 'j7/2+5/2' 'j7/2+3/2' 'j7/2+1/2']
 
@@ -446,7 +446,7 @@ Output of ``dcore_pre`` :
         | F_2m = [ 4.         10.72759974  7.1676259   5.3028777 ]
         | basis/sp = ['f-3' 'f-2' 'f-1' 'f+0' 'f+1' 'f+2' 'f+3']
         |
-        | in SO rep (after transformed, reordered, or trancated)
+        | in SO rep (after transformed, reordered, or truncated)
         | basis(up) = ['j5/2-5/2' 'j5/2-3/2' 'j5/2-1/2']
         | basis(dn) = ['j5/2+5/2' 'j5/2+3/2' 'j5/2+1/2']
 
