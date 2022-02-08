@@ -912,3 +912,92 @@ def expand_path(exec_path):
         sys.exit(1)
 
     return full_path
+
+
+def _calc_density(gf):
+    """Calculte density by Matsubara summation
+
+    Parameters
+    ----------
+    gf : GfImFreq
+
+    Returns
+    -------
+    total_density: float
+
+    """
+    assert isinstance(gf, Gf)
+
+    beta = gf.mesh.beta
+
+    # sum over iw and trace over orb of g.data[iw, orb1, orb2]
+    density = numpy.sum(numpy.trace(gf.data, axis1=1, axis2=2)) / beta
+
+    # contribution of 1/iw
+    density += 0.5 * gf.data.shape[1]
+
+    # equivalent to
+    # iw = numpy.array([g.mesh(n) for n in range(g.mesh.first_index(), g.mesh.last_index()+1)])
+    # assert iw.shape[0] == g.data.shape[0]
+    # density += (0.5 - numpy.sum(1 / iw) / beta) * g.data.shape[1]
+
+    return density
+
+
+def calc_total_density(block_gf):
+    """Calculte total density by Matsubara summation
+
+    Parameters
+    ----------
+    block_gf : BlockGf
+
+    Returns
+    -------
+    total_density: float
+
+    """
+    assert isinstance(block_gf, BlockGf)
+
+    return numpy.sum([_calc_density(g) for _, g in block_gf])
+
+
+def _calc_density_matrix(gf):
+    """Calculte density matrix by Matsubara summation
+
+    Parameters
+    ----------
+    gf : GfImFreq
+
+    Returns
+    -------
+    density_matrix: numpy.ndarray
+
+    """
+    assert isinstance(gf, Gf)
+
+    beta = gf.mesh.beta
+
+    # sum over iw of g.data[iw, orb1, orb2]
+    dm = numpy.sum(gf.data, axis=0) / beta
+
+    # contribution of 1/iw
+    dm += numpy.identity(gf.data.shape[1]) * 0.5
+
+    return dm
+
+
+def calc_density_matrix(block_gf):
+    """Calculte density matrix by Matsubara summation
+
+    Parameters
+    ----------
+    block_gf : BlockGf
+
+    Returns
+    -------
+    density_matrix: dict(numpy.ndarray)
+
+    """
+    assert isinstance(block_gf, BlockGf)
+
+    return {bname: _calc_density_matrix(g) for bname, g in block_gf}
