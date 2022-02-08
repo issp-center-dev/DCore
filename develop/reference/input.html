@@ -274,7 +274,7 @@ c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \delta \sigma'} c_{
 <p>The interaction matrix <span class="math notranslate nohighlight">\(U^{i}_{\alpha \beta \gamma \delta}\)</span>
 is specified by the parameter <code class="docutils literal notranslate"><span class="pre">interaction</span></code>.</p>
 <ul>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">kanamori</span></code></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">kanamori</span></code></p>
 <p>In this case, the Kanamori-type interaction is used, i.e.</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align}
@@ -299,8 +299,8 @@ you need to set the input parameters as</p>
 </pre></div>
 </div>
 </li>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code></p>
-<p>In this case, the interaction matrix is constructed by the effective Slater integrals
+<li><p><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code></p>
+<p>In this case, the fully rotationally invariant Slater interaction is used. The interaction matrix is constructed by the effective Slater integrals
 <span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span>.
 These Slater integrals and the angular momentum at each correlated shell
 are specified by the parameter <code class="docutils literal notranslate"><span class="pre">slater_f</span></code> as follows</p>
@@ -320,10 +320,11 @@ you need to set the input parameter as</p>
 <p class="admonition-title">Note</p>
 <p>You must specify all of <span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span>.</p>
 </div>
+<p>The basis can be specified by <code class="docutils literal notranslate"><span class="pre">slater_basis</span></code> parameter. See <a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis</span></a> for details.</p>
 </li>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_uj</span></code></p>
-<p>In this case, the Slater-type interaction is used.
-The effective Slater integrals are computed with the following formulae:</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_uj</span></code></p>
+<p>The Slater interaction is used as in the case with <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code>, but a conventional intuitive parameterization is implemented.
+The effective Slater integrals <span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span> are evaluated from parameters <span class="math notranslate nohighlight">\(U\)</span> and <span class="math notranslate nohighlight">\(J\)</span>. The explicit formulas are given as follows:</p>
 <ul>
 <li><p><span class="math notranslate nohighlight">\(l = 1\)</span></p>
 <div class="math notranslate nohighlight">
@@ -350,8 +351,9 @@ are specified by the parameter <code class="docutils literal notranslate"><span 
 <span class="n">slater_uj</span> <span class="o">=</span> <span class="p">[(</span><span class="n">angular_momentum1</span><span class="p">,</span> <span class="n">U1</span><span class="p">,</span> <span class="n">J1</span><span class="p">),</span> <span class="p">(</span><span class="n">angular_momentum2</span><span class="p">,</span> <span class="n">U2</span><span class="p">,</span> <span class="n">J2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
 </pre></div>
 </div>
+<p>The basis can be specified by <code class="docutils literal notranslate"><span class="pre">slater_basis</span></code> parameter. See <a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis</span></a> for details.</p>
 </li>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">respack</span></code></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">respack</span></code></p>
 <p>Use the output by <a class="reference external" href="https://sites.google.com/view/kazuma7k6r">RESPACK</a>.
 <strong>Under construction.</strong></p>
 </li>
