@@ -277,3 +277,17 @@ def parse_bvec(bvec_string):
     else:
         raise RuntimeError("Error ! Format of bvec is wrong.")
     return bvec
+
+
+def print_parameters(p):
+    """
+    Print parameters
+    """
+    assert isinstance(p, dict)
+
+    print("\n  @ Parameter summary\n")
+    for block, params in p.items():
+        print(f"    [{block}]")
+        for k, v in params.items():
+            print(f"      {k} = {v!r}")
+        print("")

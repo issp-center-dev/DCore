@@ -29,7 +29,7 @@ from dcore.sumkdft_compat import SumkDFTCompat
 
 from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import print_local_fields
-from dcore.program_options import parse_parameters
+from dcore.program_options import parse_parameters, print_parameters
 from dcore.interaction import generate_umat
 
 
@@ -132,10 +132,7 @@ def dcore_pre(filename):
     #
     # Summary of input parameters
     #
-    print("\n  @ Parameter summary")
-    print("\n    [model] block")
-    for k, v in list(p["model"].items()):
-        print(f"      {k} = {v!r}")
+    print_parameters(p)
 
     #
     # remove HDF5 file if exists

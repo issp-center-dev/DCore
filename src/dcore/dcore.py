@@ -41,6 +41,9 @@ def dcore(filename, np=1):
 
     params["mpi"]["num_processes"] = np
 
+    # Summary of input parameters
+    print_parameters(params)
+
     solver = DMFTCoreSolver(params["model"]["seedname"], params, restart=params['control']['restart'])
 
     solver.do_steps(max_step=params["control"]["max_step"])
