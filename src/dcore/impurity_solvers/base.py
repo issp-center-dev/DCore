@@ -102,7 +102,7 @@ class SolverBase(object):
         self._G0_iw << new_G0_iw.copy()
 
     def get_G0_iw(self):
-        return self._G0w_iw.copy()
+        return self._G0_iw.copy()
 
     def get_Sigma_iw(self):
         return self._Sigma_iw.copy()
