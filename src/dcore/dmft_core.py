@@ -855,7 +855,7 @@ class DMFTCoreSolver(object):
                     self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
 
             # Symmetrization
-            for isn in range(self._n_inequiv_shells):
+            for ish in range(self._n_inequiv_shells):
                 if len(symm_generators[ish]) > 0:
                     self._sh_quant[ish].Sigma_iw << symmetrize(self._sh_quant[ish].Sigma_iw, symm_generators[ish])
 
