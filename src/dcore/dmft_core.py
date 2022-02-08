@@ -60,16 +60,16 @@ warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 #             total_density += g_iw_.total_density().real
 #     return total_density
 
-def _total_density(bgf, fitting=True):
+def _total_density(bgf, tail_fit=True):
     assert isinstance(bgf, BlockGf)
-    if fitting:
+    if tail_fit:
         return bgf.total_density().real
     else:
         return calc_total_density(bgf).real
 
-def _density(bgf, fitting=True):
+def _density(bgf, tail_fit=True):
     assert isinstance(bgf, BlockGf)
-    if fitting:
+    if tail_fit:
         return bgf.density()
     else:
         return calc_density_matrix(bgf)
@@ -761,8 +761,8 @@ class DMFTCoreSolver(object):
             self._params['control']['symmetry_generators'],
             self._use_spin_orbit, self._dim_sh)
 
-        # No fitting in computing density if no_tail_fit=True
-        fitting = not self._params['system']['no_tail_fit']
+        # No tail fit in computing density if no_tail_fit=True
+        tail_fit = not self._params['system']['no_tail_fit']
 
         def quantities_to_check():
             x = []
@@ -814,7 +814,7 @@ class DMFTCoreSolver(object):
             self._quant_to_save_history['spin_moment'] = smoment_sh
 
             # Compute Total charge from G_loc
-            charge_loc = [_total_density(Gloc_iw_sh[ish], fitting) for ish in range(self._n_inequiv_shells)]
+            charge_loc = [_total_density(Gloc_iw_sh[ish], tail_fit) for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_loc):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_loc'] = charge_loc
@@ -832,7 +832,7 @@ class DMFTCoreSolver(object):
             #
 
             # Compute Total charge from G_imp
-            charge_imp = [_total_density(new_Gimp_iw[ish], fitting) for ish in range(self._n_inequiv_shells)]
+            charge_imp = [_total_density(new_Gimp_iw[ish], tail_fit) for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_imp):
                 print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_imp'] = charge_imp
@@ -861,7 +861,7 @@ class DMFTCoreSolver(object):
 
             # update DC correction
             if with_dc and dc_type == "HF_imp":
-                dm_imp = [_density(new_Gimp_iw[ish], fitting) for ish in range(self._n_inequiv_shells)]
+                dm_imp = [_density(new_Gimp_iw[ish], tail_fit) for ish in range(self._n_inequiv_shells)]
                 self.set_dc_imp(dm_imp)
 
             self._quant_to_save_history.update(chemical_potential=self._chemical_potential,
