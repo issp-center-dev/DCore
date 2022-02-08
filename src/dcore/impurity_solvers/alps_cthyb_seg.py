@@ -271,7 +271,6 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # (0) Rotate H0 and Delta_tau if rot is given
         g0_iw_rotated = self._G0_iw.copy()
-        print(type(g0_iw_rotated))
         if rot is None:
             u_mat_rotated = self.u_mat
         else:
