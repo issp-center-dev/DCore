@@ -68,12 +68,20 @@ See <a class="reference internal" href="impuritysolvers.html"><span class="doc">
 </section>
 <section id="id2">
 <h2>Installation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
-<p>You can install the latest version of DCore using pip as follows.</p>
+<p>You can install the latest version of DCore using <code class="docutils literal notranslate"><span class="pre">pip</span></code> command as follows.</p>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install dcore -U
 </pre></div>
 </div>
 </div></blockquote>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">-U</span></code> stands for ‘’Upgrade’’. The installed packages are upgraded to the latest version, if you already have packages installed.
+Further, if you do not have root privileges, you need to add <code class="docutils literal notranslate"><span class="pre">--user</span></code> option as</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install dcore -U --user
+</pre></div>
+</div>
+</div></blockquote>
+<p>Then, the packages are installed into .local directory in your home directory. Make sure that <strong>$HOME/.local/bin</strong> is included in PATH environment variable.</p>
 </section>
 <section id="installation-only-for-developers">
 <h2>Installation (only for developers)<a class="headerlink" href="#installation-only-for-developers" title="Permalink to this headline">¶</a></h2>
