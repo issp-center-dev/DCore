@@ -219,7 +219,6 @@ def _generate_umat_slater(p: Dict, l_sh: List[int], f_sh: List[numpy.ndarray]):
         print(f"  ish = {ish}")
         print(f"    | l = {l}")
         print(f"    | F_2m = {f}")
-        print("order", order)
 
         # Check basis
         if basis not in ('cubic', 'spherical', 'spherical_j'):
