@@ -49,6 +49,12 @@
 <span class="n">name</span> <span class="o">=</span> <span class="n">null</span>
 </pre></div>
 </div>
+<p>In material calculations, we recommend users to use null solver first to check agreement with the DFT calculation.
+Note that, since self-energy is zero, one should introduce an artificial broadening to the excitation spectra to make delta functions visible. This can be done by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tool</span><span class="p">]</span>
+<span class="n">broadening</span> <span class="o">=</span> <span class="mf">0.001</span>
+</pre></div>
+</div>
 </section>
 
 

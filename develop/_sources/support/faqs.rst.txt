@@ -57,8 +57,12 @@ For changes of parameters other than [model] block, on the other hand, you can r
 How should I judge convergence of the DMFT loop?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the ``dcore_check`` and look at the generated figures.
-We do not implement automatic convergence check, because results by QMC solvers include statistical errors and simple convergence criteria does not work.
+The most reliable way is to use the ``dcore_check`` and look at the generated figures that plot some physical quantities as a function of iterations.
+
+Automatic convergence check is also available. Use ``converge_tol`` parameter in [control] block. For QMC calculations, we rocommend to use ``n_converge`` parameter simultaneously to exclude possibility that the convergence criteria is satisfied accidentally. An appropriate value would be ``n_converge=3`` or larger.
+
+..
+    We do not implement automatic convergence check, because results by QMC solvers include statistical errors and simple convergence criteria does not work.
 
 The DMFT loop does not converge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
