@@ -1,0 +1,5 @@
+[info]
+author = Hiroshi Shinaoka
+version = v3.2.0+2.g7ee9c46.dirty
+date = 2022/02/9/
+description = [Tutorial] Chain Hubbard model with spin-orbit coupling
