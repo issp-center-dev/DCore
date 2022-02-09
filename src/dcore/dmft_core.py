@@ -230,7 +230,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     return r
 
 
-def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
+def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit, dc_orbital_average):
 
     # dim_tot is the dimension of spin x orbit for SO = 1 or that of orbital for SO=0
     # dim_tot = self._dim_sh[ish]
@@ -284,6 +284,15 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
                 dc_imp_sh[sp] = numpy.identity(num_orb) * dc
     else:
         raise ValueError("Here should not be reached")
+
+    #
+    # Average over orbitals
+    #
+    if dc_orbital_average:
+        for sp, dc_imp in dc_imp_sh.items():
+            dim = dc_imp.shape[0]
+            dc_ave = numpy.trace(dc_imp) / dim
+            dc_imp_sh[sp] = numpy.identity(dim) * dc_ave
 
     return dc_imp_sh
 
@@ -693,7 +702,8 @@ class DMFTCoreSolver(object):
         """
 
         dc_type = self._params['system']['dc_type']
-        print("\n  set DC (dc_type = {})".format(dc_type))
+        dc_orbital_average = self._params['system']['dc_orbital_average']
+        print(f"\n  set DC (dc_type = {dc_type}, dc_orbital_average = {dc_orbital_average})")
 
         def print_matrix(mat):
             dim = mat.shape[0]
@@ -727,7 +737,7 @@ class DMFTCoreSolver(object):
                 print_matrix(dens_mat[sp1][0:num_orb, 0:num_orb])
 
             # calculated DC
-            _dc_imp.append(calc_dc(dc_type, u_mat, dens_mat, self.spin_block_names, self._use_spin_orbit))
+            _dc_imp.append(calc_dc(dc_type, u_mat, dens_mat, self.spin_block_names, self._use_spin_orbit, dc_orbital_average))
 
             # print DC self energy
             print("\n      DC Self Energy:")
