@@ -37,3 +37,7 @@ dcore_check $ini || exit
 
 echo "running dcore_post..."
 dcore_post --np $NUM_PROC $ini || exit
+
+echo "plotting akw..."
+cd ..
+gnuplot test_akw.gp
