@@ -1,10 +1,10 @@
 """
-Setup script for irbasis_x
+Setup script for DCore
 """
 from setuptools import setup, find_packages
 import versioneer
+import re, os, io
 
-#VERSION = '3.0.0'
 REPO_URL = "https://github.com/issp-center-dev/DCore.git"
 LONG_DESCRIPTION = ""
 
@@ -43,7 +43,12 @@ setup(
     install_requires=[
         'numpy',
         'scipy',
-        'h5py',
+        # h5py 2.10.0 has a bug.
+        # Import h5py imports mpi4py automatically.
+        'h5py!=2.10.0',
+        'toml>=0.10',
+        'dcorelib>=0.6',
+        'sympy',
         ],
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],
@@ -64,6 +69,8 @@ setup(
             "dcore_check = dcore.dcore_check:run",
             "dcore_bse = dcore.dcore_bse:run",
             "dcore_gk = dcore.dcore_gk:run",
+            "dcore_mpicheck = dcore.dcore_mpicheck:run",
+            "dcore_pade = dcore.dcore_pade:run",
         ]
     },
 

@@ -20,11 +20,9 @@ from matplotlib.gridspec import GridSpec
 import numpy
 import math
 
-from triqs.gf import *
-
+from dcore._dispatcher import *
 from dcore.dmft_core import DMFTCoreSolver
 from dcore.program_options import *
-
 
 class DMFTCoreCheck(object):
 
@@ -100,10 +98,10 @@ class DMFTCoreCheck(object):
         import matplotlib
         matplotlib.use('Agg')  # do not plot on x11
 
-        from triqs.plot.mpl_interface import oplot, plt
+        from ._dispatcher import mpl_interface
 
-        self.plt = plt
-        self.oplot = oplot
+        self.plt = mpl_interface.plt
+        self.oplot = mpl_interface.oplot
 
 
     def plot_sigma_ave(self, basename, fig_ext):
@@ -195,7 +193,9 @@ class DMFTCoreCheck(object):
         # set linestyles
         linestyles = ['-', ':', '--', '-.', '-', ':']
         markers = ['v', 'x']
-        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  # basic colors
+        cmap = self.plt.get_cmap('Set2')
+        colors += [cmap(i) for i in range(8)]  # extend colors
 
         def get_ls(idx):
             return linestyles[idx % len(linestyles)]

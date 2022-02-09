@@ -15,18 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 import sys
 import os
 import numpy
-import re
 import ast
 import h5py
-from h5 import HDFArchive
-from dcore.program_options import create_parser
-from triqs.operators.util.U_matrix import U_J_to_radial_integrals, U_matrix, eg_submatrix, t2g_submatrix
 
-from dcore.converters.wannier90 import Wannier90Converter
+from dcore._dispatcher import HDFArchive
+from dcore.program_options import create_parser
 
 from dcore.tools import *
 from dcore.sumkdft_compat import SumkDFTCompat
@@ -34,212 +30,7 @@ from dcore.sumkdft_compat import SumkDFTCompat
 from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import print_local_fields
 from dcore.program_options import parse_parameters
-
-def __print_paramter(p, param_name):
-    print(param_name + " = " + str(p[param_name]))
-
-def __generate_umat(p):
-    """
-    Add U-matrix block (Tentative)
-    :param p: dictionary
-        Input parameters
-    :return:
-    """
-    # Add U-matrix block (Tentative)
-    # ####  The format of this block is not fixed  ####
-    #
-    nsh = p['model']['n_inequiv_shells']
-    kanamori = numpy.zeros((nsh, 3), numpy.float_)
-    slater_f = numpy.zeros((nsh, 4), numpy.float_)
-    slater_l = numpy.zeros(nsh, numpy.int_)
-    #
-    # Read interaction from input file
-    #
-    if p["model"]["interaction"] == 'kanamori':
-        if p["model"]["kanamori"] == "None":
-            print("Error ! Parameter \"kanamori\" is not specified.")
-            sys.exit(-1)
-        if p["model"]["slater_f"] != "None":
-            print("Error ! Parameter \"slater_f\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["slater_uj"] != "None":
-            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
-            sys.exit(-1)
-
-        kanamori_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["kanamori"])
-        if len(kanamori_list) != nsh:
-            print("\nError! The length of \"kanamori\" is wrong.")
-            sys.exit(-1)
-
-        try:
-            for i, _list in enumerate(kanamori_list):
-                _kanamori = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
-                for j in range(3):
-                    kanamori[i, j] = float(_kanamori[j])
-        except RuntimeError:
-            raise RuntimeError("Error ! Format of u_j is wrong.")
-    elif p["model"]["interaction"] == 'slater_uj':
-        if p["model"]["slater_uj"] == "None":
-            print("Error ! Parameter \"slater_uj\" is not specified.")
-            sys.exit(-1)
-        if p["model"]["slater_f"] != "None":
-            print("Error ! Parameter \"slater_f\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["kanamori"] != "None":
-            print("Error ! Parameter \"kanamori\" is specified but is not used.")
-            sys.exit(-1)
-
-        f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
-                            p["model"]["slater_uj"])
-        if len(f_list) != nsh:
-            print("\nError! The length of \"slater_uj\" is wrong.")
-            sys.exit(-1)
-
-        try:
-            for i, _list in enumerate(f_list):
-                _slater = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
-                slater_l[i] = int(_slater[0])
-                slater_u = float(_slater[1])
-                slater_j = float(_slater[2])
-                if slater_l[i] == 0:
-                    slater_f[i, 0] = slater_u
-                else:
-                    slater_f[i, 0:slater_l[i]+1] = U_J_to_radial_integrals(slater_l[i], slater_u, slater_j)
-        except RuntimeError:
-            raise RuntimeError("Error ! Format of u_j is wrong.")
-    elif p["model"]["interaction"] == 'slater_f':
-        if p["model"]["slater_f"] == "None":
-            print("Error ! Parameter \"slater_f\" is not specified.")
-            sys.exit(-1)
-        if p["model"]["kanamori"] != "None":
-            print("Error ! Parameter \"kanamori\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["slater_uj"] != "None":
-            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
-            sys.exit(-1)
-
-        f_list = re.findall(r'\(\s*\d+\s*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)',
-                            p["model"]["slater_f"])
-        slater_f = numpy.zeros((nsh, 4), numpy.float_)
-        slater_l = numpy.zeros(nsh, numpy.int_)
-        if len(f_list) != nsh:
-            print("\nError! The length of \"slater_f\" is wrong.")
-            sys.exit(-1)
-
-        try:
-            for i, _list in enumerate(f_list):
-                _slater = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
-                slater_l[i] = int(_slater[0])
-                for j in range(4):
-                    slater_f[i, j] = float(_slater[j])
-        except RuntimeError:
-            raise RuntimeError("Error ! Format of u_j is wrong.")
-    elif p["model"]["interaction"] == 'respack':
-        if p["model"]["kanamori"] != "None":
-            print("Error ! Parameter \"kanamori\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["slater_uj"] != "None":
-            print("Error ! Parameter \"slater_uj\" is specified but is not used.")
-            sys.exit(-1)
-        if p["model"]["slater_f"] != "None":
-            print("Error ! Parameter \"slater_f\" is specified but is not used.")
-            sys.exit(-1)
-    else:
-        print("Error ! Invalid interaction : ", p["model"]["interaction"])
-        sys.exit(-1)
-
-    #
-    # Generate and Write U-matrix
-    #
-    print("\n  @ Write the information of interactions")
-    f = HDFArchive(p["model"]["seedname"]+'.h5', 'a')
-
-    norb = p['model']['norb_inequiv_sh']
-
-    if not ("DCore" in f):
-        f.create_group("DCore")
-    #
-    u_mat = [numpy.zeros((norb[ish], norb[ish], norb[ish], norb[ish]), numpy.complex_) for ish in range(nsh)]
-    if p["model"]["interaction"] == 'kanamori':
-        for ish in range(nsh):
-            for iorb in range(norb[ish]):
-                for jorb in range(norb[ish]):
-                    u_mat[ish][iorb, jorb, iorb, jorb] = kanamori[ish, 1]
-                    u_mat[ish][iorb, jorb, jorb, iorb] = kanamori[ish, 2]
-                    u_mat[ish][iorb, iorb, jorb, jorb] = kanamori[ish, 2]
-            for iorb in range(norb[ish]):
-                u_mat[ish][iorb, iorb, iorb, iorb] = kanamori[ish, 0]
-    elif p["model"]["interaction"] == 'slater_uj' or p["model"]["interaction"] == 'slater_f':
-        for ish in range(nsh):
-            if slater_l[ish] == 0:
-                umat_full = numpy.zeros((1, 1, 1, 1), numpy.complex_)
-                umat_full[0, 0, 0, 0] = slater_f[ish, 0]
-            else:
-                umat_full = U_matrix(l=slater_l[ish], radial_integrals=slater_f[ish, :], basis='cubic')
-            #
-            # For t2g or eg, compute submatrix
-            #
-            if slater_l[ish]*2+1 != norb[ish]:
-                if slater_l[ish] == 2 and norb[ish] == 2:
-                    u_mat[ish] = eg_submatrix(umat_full)
-                elif slater_l[ish] == 2 and norb[ish] == 3:
-                    u_mat[ish] = t2g_submatrix(umat_full)
-                else:
-                    print("Error ! Unsupported pair of l and norb : ", slater_l[ish], norb[ish])
-                    sys.exit(-1)
-            else:
-                u_mat[ish] = umat_full
-    elif p["model"]["interaction"] == 'respack':
-        w90u = Wannier90Converter(seedname=p["model"]["seedname"])
-        w90u.convert_dft_input()
-        nr_u, rvec_u, rdeg_u, nwan_u, hamr_u = w90u.read_wannier90hr(p["model"]["seedname"] + "_ur.dat")
-        w90j = Wannier90Converter(seedname=p["model"]["seedname"])
-        w90j.convert_dft_input()
-        nr_j, rvec_j, rdeg_j, nwan_j, hamr_j = w90j.read_wannier90hr(p["model"]["seedname"] + "_jr.dat")
-        #
-        # Read 2-index U-matrix
-        #
-        umat2 = numpy.zeros((nwan_u, nwan_u), numpy.complex_)
-        for ir in range(nr_u):
-            if rvec_u[ir, 0] == 0 and rvec_u[ir, 1] == 0 and rvec_u[ir, 2] == 0:
-                umat2 = hamr_u[ir]
-        #
-        # Read 2-index J-matrix
-        #
-        jmat2 = numpy.zeros((nwan_j, nwan_j), numpy.complex_)
-        for ir in range(nr_j):
-            if rvec_j[ir, 0] == 0 and rvec_j[ir, 1] == 0 and rvec_j[ir, 2] == 0:
-                jmat2 = hamr_j[ir]
-        #
-        # Map into 4-index U at each correlated shell
-        #
-        start = 0
-        for ish in range(nsh):
-            for iorb in range(norb[ish]):
-                for jorb in range(norb[ish]):
-                    u_mat[ish][iorb, jorb, iorb, jorb] = umat2[start+iorb, start+jorb]
-                    u_mat[ish][iorb, jorb, jorb, iorb] = jmat2[start+iorb, start+jorb]
-                    u_mat[ish][iorb, iorb, jorb, jorb] = jmat2[start+iorb, start+jorb]
-            for iorb in range(norb[ish]):
-                u_mat[ish][iorb, iorb, iorb, iorb] = umat2[start+iorb, start+iorb]
-            start += norb[ish]
-    for ish in range(nsh):
-        u_mat[ish][:, :, :, :].imag = 0.0
-    #
-    # Spin & Orb
-    #
-    u_mat2 = [numpy.zeros((norb[ish]*2, norb[ish]*2, norb[ish]*2, norb[ish]*2), numpy.complex_)
-              for ish in range(nsh)]
-    for ish in range(nsh):
-        u_mat2[ish] = to_spin_full_U_matrix(u_mat[ish])
-
-    if p["model"]["density_density"]:
-        for ish in range(nsh):
-            umat = umat2dd(u_mat2[ish][:])
-            u_mat2[ish][:] = umat
-    f["DCore"]["Umat"] = u_mat2
-    print("\n    Written to {0}".format(p["model"]["seedname"]+'.h5'))
-    del f
+from dcore.interaction import generate_umat
 
 
 def __generate_local_potential(p):
@@ -270,8 +61,8 @@ def __generate_local_potential(p):
         else:
             raise Exception("local_potential_factor should be float or list of length %d" % n_inequiv_shells)
     except Exception as e:
-        print("Error: local_potential_factor =", local_potential_factor)
-        print(e)
+        print("Error: local_potential_factor =", local_potential_factor, file=sys.stderr)
+        print(e, file=sys.stderr)
         exit(1)
 
     # print factor
@@ -291,7 +82,7 @@ def __generate_local_potential(p):
             for sp in range(pot_ish.shape[0]):
                 assert is_hermitian(pot_ish[sp]), "potential matrix for ish={} sp={} is not hermitian".format(ish, sp)
     except AssertionError as e:
-        print("Error:", e)
+        print("Error:", e, file=sys.stderr)
         exit(1)
 
     # write potential matrix
@@ -344,7 +135,7 @@ def dcore_pre(filename):
     print("\n  @ Parameter summary")
     print("\n    [model] block")
     for k, v in list(p["model"].items()):
-        print("      {0} = {1}".format(k, v))
+        print(f"      {k} = {v!r}")
 
     #
     # remove HDF5 file if exists
@@ -367,12 +158,14 @@ def dcore_pre(filename):
     # Interaction
     #   -> create h5_file/DCore/umat
     #
-    __generate_umat(p)
+    print("\nGenerating U-matrix")
+    generate_umat(p)
 
     #
     # Local potential
     #   -> create h5_file/DCore/local_potential
     #
+    print("\nGenerating local potential")
     __generate_local_potential(p)
 
     #

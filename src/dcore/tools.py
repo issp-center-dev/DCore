@@ -25,20 +25,17 @@ import subprocess
 from itertools import *
 import ast
 import math
+import shutil
 import scipy
 from scipy import linalg as scipy_linalg
 
-from triqs.utility.h5diff import compare, failures
-from triqs.utility.h5diff import h5diff as h5diff_org
-from h5 import HDFArchive
-from triqs.gf import *
-from triqs.operators import *
-
-from triqs import version
+from dcore._dispatcher import h5diff as h5diff_org, compare, \
+    BlockGf, HDFArchive, failures, MeshImFreq, fit_hermitian_tail, Gf, GfImFreq
 
 """
 THIS MODULE MUST NOT DEPEND ON MPI!
 """
+
 
 def h5diff(f1, f2, key=None, precision=1.e-6):
     """
@@ -127,10 +124,8 @@ def extract_H0_from_tail(G0_iw):
     if isinstance(G0_iw, BlockGf):
         return {name:extract_H0_from_tail(b) for name, b in G0_iw}
     elif isinstance(G0_iw.mesh, MeshImFreq):
-       import triqs.gf.gf_fnt as gf_fnt
        assert len(G0_iw.target_shape) in [0,2], "extract_H0_from_tail(G0_iw) requires a matrix or scalar_valued Green function"
-       assert gf_fnt.is_gf_hermitian(G0_iw), "extract_H0_from_tail(G0_iw) requires a Green function with the property G0_iw[iw][i,j] = conj(G0_iw[-iw][j,i])"
-       tail, err = gf_fnt.fit_hermitian_tail(G0_iw)
+       tail, err = fit_hermitian_tail(G0_iw)
        if err > 1e-5:
            print("WARNING: delta extraction encountered a sizeable tail-fit error: ", err)
        return tail[2]
@@ -158,7 +153,7 @@ def gf_block_names(use_spin_orbit):
         return ['up', 'down']
 
 def raise_if_mpi_imported():
-    if 'triqs.utility.mpi' in sys.modules:
+    if 'triqs.utility.mpi' in sys.modules or 'mpi4py' in sys.modules:
         raise RuntimeError("Error: MPI must not be imported in a non-MPI module! This indicates a bug in DCore.")
 
 def convert_to_built_in_scalar_type(data):
@@ -198,6 +193,7 @@ def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
     """
     commands = shlex.split(mpirun_command)
     commands.extend(rest_commands)
+    raise_if_mpi_imported()
     return_code = subprocess.call(commands, stdout=output_file, stderr=output_file)
     output_file.flush()
     if return_code:
@@ -233,8 +229,17 @@ def extract_H0(G0_iw, block_names, hermitianize=True):
 
     return data
 
+def _ph_symmetrize(eps):
+    N = eps.size
+    half_eps = eps[0:N//2]
+    if N%2 == 0:
+        return numpy.hstack((half_eps, -half_eps[::-1]))
+    else:
+        return numpy.hstack((half_eps, 0.0, -half_eps[::-1]))
 
-def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
+
+
+def fit_delta_iw(delta_iw, beta, n_bath, n_fit, ph_symmetric, verbose, **fit_params):
     """
     Fit Delta(iw) using scipy
 
@@ -247,6 +252,7 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
     beta: [float] 1/T
     n_bath: [int] number of bath
     n_fit: [int] number of repetition of fitting
+    ph_symmetric: [bool] particle-hole symmetric
     **fit_params: [dict] optional parameters to the fitting function
 
     Returns
@@ -268,6 +274,8 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
     # delta_fit = sum_{l=1}^{n_bath} V_{o1, l} * V_{l, o2} / (iw - eps_{l})
     def distance(x):
         _eps = x[0:n_bath]
+        if ph_symmetric:
+            _eps = _ph_symmetrize(_eps)
         _hyb = x[n_bath:].reshape(n_orb, n_bath)
 
         # denom[i,j] = (freqs[i] - eps[j])
@@ -281,7 +289,7 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
 
     # Determine eps and V which minimize the distance between delta_iw and delta_fit
     dis_min = 1.0e+10
-    # [0:n_bath] -> eps_{l},  [n_bath:n_orb*n_bath] -> V_{o,l}
+    # [0:n_bath] -> eps_{l},  [n_bath:n_bath+n_orb*n_bath] -> V_{o,l}
     result_best = numpy.zeros(n_bath + n_orb * n_bath, dtype=float)
     for l in range(n_fit):
         # initial guess, random values in the range [-1:1]
@@ -299,11 +307,13 @@ def fit_delta_iw(delta_iw, beta, n_bath, n_fit, verbose, **fit_params):
             result_best = result.copy()
 
     eps = result_best[0:n_bath]
+    if ph_symmetric:
+        eps = _ph_symmetrize(eps)
     hyb = result_best[n_bath:].reshape(n_orb, n_bath)
     return eps, hyb
 
 
-def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1e-5, verbose=False):
+def extract_bath_params(delta_iw, beta, block_names, n_bath, ph_symmetric=False, n_fit=5, fit_gtol=1e-5, verbose=False):
     """
     Determine bath parameters by fitting Delta(iw)
 
@@ -313,6 +323,7 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
     beta: [float] 1/T
     block_names: [list] block names
     n_bath: [int] number of bath
+    ph_symmetric: [bool] particle-hole symmetric
     n_fit: [int] number of repetition of fitting. The best fit result will be taken.
     fit_gtol: [float] A fitting parameter: Gradient norm must be less than gtol before successful termination.
 
@@ -355,7 +366,7 @@ def extract_bath_params(delta_iw, beta, block_names, n_bath, n_fit=5, fit_gtol=1
         assert delta_iw[b].data.shape[1] == delta_iw[b].data.shape[2] == n_orb
 
         # use only positive Matsubara freq
-        eps, hyb = fit_delta_iw(delta_iw[b].data[n_w//2:n_w, :, :], beta, n_bath, n_fit, verbose, **fit_params)
+        eps, hyb = fit_delta_iw(delta_iw[b].data[n_w//2:n_w, :, :], beta, n_bath, n_fit, ph_symmetric, verbose, **fit_params)
         assert eps.shape == (n_bath,)
         assert hyb.shape == (n_orb, n_bath)
         eps_list.append(eps)
@@ -391,7 +402,7 @@ def umat2dd(dcore_U):
     dcore_U_len = len(dcore_U)
     Uout = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb), dtype=complex)
 
-    for i, j, k, l in product(list(range(dcore_U_len)), list(range(dcore_U_len)), list(range(dcore_U_len)), list(range(dcore_U_len))):
+    for i, j, k, l in product(list(range(dcore_U_len)), repeat=4):
         if (i == k and j == l) or (i == l and j == k):
             Uout[i, j, k, l] = dcore_U[i, j, k, l]
 
@@ -426,7 +437,7 @@ def spin_moments_sh(dm_sh):
         assert dm.shape[0] == dm.shape[1]
 
         norb = dm.shape[0]//2
- 
+
         dm = dm.reshape((2, norb, 2, norb))
 
         s = numpy.array([0.5*numpy.einsum('st, sntn', pauli_mat[i], dm).real for i in range(3)])
@@ -437,7 +448,7 @@ def spin_moments_sh(dm_sh):
 
 def read_potential(filename, mat):
     if not os.path.exists(filename):
-        print("Error: file '{}' not found".format(filename))
+        print("Error: file '{}' not found".format(filename), file=sys.stderr)
         exit(1)
     print("Reading '{}'...".format(filename))
 
@@ -445,12 +456,12 @@ def read_potential(filename, mat):
     try:
         with open(filename, 'r') as f:
             for line in f:
-                # skip comment line
-                if line[0] == '#':
+                line_comment_removed = line.split('#')[0]  # remove comment
+                array = line_comment_removed.split()
+                if len(array) == 0:  # skip an empty line
                     continue
-
-                array = line.split()
-                assert len(array) == 5
+                if len(array) != 5:
+                    raise Exception(f"expect 5 columns, but {len(array)} columns entered")
                 sp = int(array[0])
                 o1 = int(array[1])
                 o2 = int(array[2])
@@ -460,8 +471,8 @@ def read_potential(filename, mat):
                 mat[sp, o1, o2] = val
                 filled[sp, o1, o2] = True
     except Exception as e:
-        print("Error:", e)
-        print(line, end="")
+        print("Error:", e, file=sys.stderr)
+        print(line, end="", file=sys.stderr)
         exit(1)
 
 
@@ -500,8 +511,8 @@ def set_potential(input_str, name, n_inequiv_shells, dim_sh, spin_orbit):
             assert isinstance(files, dict), "should be dictionary"
             assert all([ish < n_inequiv_shells for ish in list(files.keys())]), "The keys must fulfill: key < n_inequiv_shells"
         except Exception as e:
-            print("Error: %s =" % name, input_str)
-            print(e)
+            print("Error: %s =" % name, input_str, file=sys.stderr)
+            print(e, file=sys.stderr)
             exit(1)
 
         for ish, file in list(files.items()):
@@ -694,7 +705,7 @@ def save_giw(h5file, path, g):
 
     """
 
-    assert isinstance(g, Gf), 'Type {} is not supported by save_giw'.format(type(g))
+    #assert type(g) not in [Gf, GfImFreq], 'Type {} is not supported by save_giw'.format(type(g))
 
     h5file[path + '/__version'] = 'DCore_GfImFreq_v1'
     h5file[path + '/data'] = complex_to_float_array(g.data)
@@ -853,6 +864,7 @@ def symmetrize(Sigma_iw, generators):
         Symmetrized self-energy.
 
     """
+    assert isinstance(generators, list)
 
     Sigma_iw_symm = Sigma_iw.copy()
 
@@ -876,3 +888,116 @@ def mpi_split(work_size, comm_size):
     offsets[1:] = numpy.cumsum(sizes)[:-1]
 
     return sizes, offsets
+
+def expand_path(exec_path):
+    """
+    Expand relative path and command into full path
+
+    Parameters
+    ----------
+    exec_path: str
+        path or command
+
+    Returns
+    -------
+    full_path: str
+        Full path of exec_path
+
+    """
+
+    full_path = os.path.expandvars(exec_path)  # expand environment variables
+    full_path = shutil.which(full_path)  # return full path
+    if full_path is None:
+        print(f"ERROR: {exec_path} does not exist. Set exec_path properly!", file=sys.stderr)
+        sys.exit(1)
+
+    return full_path
+
+
+def _calc_density(gf):
+    """Calculte density by Matsubara summation
+
+    Parameters
+    ----------
+    gf : GfImFreq
+
+    Returns
+    -------
+    total_density: float
+
+    """
+    assert isinstance(gf, Gf)
+
+    beta = gf.mesh.beta
+
+    # sum over iw and trace over orb of g.data[iw, orb1, orb2]
+    density = numpy.sum(numpy.trace(gf.data, axis1=1, axis2=2)) / beta
+
+    # contribution of 1/iw
+    density += 0.5 * gf.data.shape[1]
+
+    # equivalent to
+    # iw = numpy.array([g.mesh(n) for n in range(g.mesh.first_index(), g.mesh.last_index()+1)])
+    # assert iw.shape[0] == g.data.shape[0]
+    # density += (0.5 - numpy.sum(1 / iw) / beta) * g.data.shape[1]
+
+    return density
+
+
+def calc_total_density(block_gf):
+    """Calculte total density by Matsubara summation
+
+    Parameters
+    ----------
+    block_gf : BlockGf
+
+    Returns
+    -------
+    total_density: float
+
+    """
+    assert isinstance(block_gf, BlockGf)
+
+    return numpy.sum([_calc_density(g) for _, g in block_gf])
+
+
+def _calc_density_matrix(gf):
+    """Calculte density matrix by Matsubara summation
+
+    Parameters
+    ----------
+    gf : GfImFreq
+
+    Returns
+    -------
+    density_matrix: numpy.ndarray
+
+    """
+    assert isinstance(gf, Gf)
+
+    beta = gf.mesh.beta
+
+    # sum over iw of g.data[iw, orb1, orb2]
+    dm = numpy.sum(gf.data, axis=0) / beta
+
+    # contribution of 1/iw
+    dm += numpy.identity(gf.data.shape[1]) * 0.5
+
+    return dm
+
+
+def calc_density_matrix(block_gf):
+    """Calculte density matrix by Matsubara summation
+
+    Parameters
+    ----------
+    block_gf : BlockGf
+
+    Returns
+    -------
+    density_matrix: dict(numpy.ndarray)
+
+    """
+    assert isinstance(block_gf, BlockGf)
+
+    return {bname: _calc_density_matrix(g) for bname, g in block_gf}

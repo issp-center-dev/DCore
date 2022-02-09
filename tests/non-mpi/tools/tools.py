@@ -17,6 +17,7 @@
 #
 
 
+import os
 import numpy
 import h5py
 
@@ -42,10 +43,12 @@ def test_spin_moments_sh():
     dm_sh = [{'ud': dm_mat.reshape(2*norb,2*norb)}]
     assert numpy.allclose(spin_moments_sh(dm_sh)[0], numpy.array([0, 0, norb*0.5]) )
 
-def test_save_load_Sigma_iw():
+def test_save_load_Sigma_iw(request):
+    os.chdir(request.fspath.dirname)
+
     from dcore.tools import make_block_gf, save_Sigma_iw_sh_txt, load_Sigma_iw_sh_txt
     from dcore.tools import make_block_gf, save_giw, load_giw
-    from triqs.gf import GfImFreq
+    from dcore._dispatcher import GfImFreq
 
     nsh = 2
     norb = 2
@@ -99,7 +102,7 @@ def test_symmetrization_Sigma_iw():
     Consider two-orbital system and symmetrize Sigma over orbitals
     """
     from dcore.tools import make_block_gf, symmetrize, _to_numpy_array
-    from triqs.gf import GfImFreq
+    from dcore._dispatcher import GfImFreq
 
     norb = 2
     beta = 10.0
@@ -134,7 +137,3 @@ def test_symmetrization_Sigma_iw():
 
         for isp in range(2):
             numpy.testing.assert_allclose(data_symmetrized[:, isp, 0, isp, 0], data_symmetrized[:, isp, 1, isp, 1])
-
-test_spin_moments_sh()
-test_save_load_Sigma_iw()
-test_symmetrization_Sigma_iw()

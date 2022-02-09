@@ -1,10 +1,8 @@
 import numpy
 import copy
 from warnings import warn
-from triqs.gf import *
-import triqs.utility.mpi as mpi
-from triqs_dft_tools import SumkDFT
-
+from dcore._dispatcher import *
+from .tools import calc_total_density, calc_density_matrix
 
 class SumkDFT_opt(SumkDFT):
 
@@ -465,3 +463,158 @@ class SumkDFT_opt(SumkDFT):
             return None
         else:
             return gf_upfolded
+
+    ###############################################################
+    # OVERRIDE FUNCTIONS
+    # The density is computed by simple Matsubara summation
+    # to avoid "High frequency error"
+    # Replaced parts are indicated by "+++REPLACED"
+    ###############################################################
+
+
+    def total_density_matsubara(self, mu=None, iw_or_w="iw", with_Sigma=True, with_dc=True, broadening=None):
+        r"""
+        Calculates the total charge within the energy window for a given chemical potential.
+        The chemical potential is either given by parameter `mu` or, if it is not specified,
+        taken from `self.chemical_potential`.
+        The total charge is calculated from the trace of the GF in the Bloch basis.
+        By default, a full interacting GF is used. To use the non-interacting GF, set
+        parameter `with_Sigma = False`.
+        The number of bands within the energy windows generally depends on `k`. The trace is
+        therefore calculated separately for each `k`-point.
+        Since in general n_orbitals depends on k, the calculation is done in the following order:
+        .. math:: n_{tot} = \sum_{k} n(k),
+        with
+        .. math:: n(k) = Tr G_{\nu\nu'}(k, i\omega_{n}).
+        The calculation is done in the global coordinate system, if distinction is made between local/global.
+        Parameters
+        ----------
+        mu : float, optional
+             Input chemical potential. If not specified, `self.chemical_potential` is used instead.
+        iw_or_w : string, optional
+                  - `iw_or_w` = 'iw' for a imaginary-frequency self-energy
+                  - `iw_or_w` = 'w' for a real-frequency self-energy
+        with_Sigma : boolean, optional
+             If `True` the full interacing GF is evaluated, otherwise the self-energy is not
+             included and the charge would correspond to a non-interacting system.
+        with_dc : boolean, optional
+             Whether or not to subtract the double-counting term from the self-energy.
+        broadening : float, optional
+                     Imaginary shift for the axis along which the real-axis GF is calculated.
+                     If not provided, broadening will be set to double of the distance between mesh points in 'mesh'.
+                     Only relevant for real-frequency GF.
+        Returns
+        -------
+        dens : float
+               Total charge :math:`n_{tot}`.
+        """
+
+        if mu is None:
+            mu = self.chemical_potential
+        dens = 0.0
+        ikarray = numpy.array(list(range(self.n_k)))
+        for ik in mpi.slice_array(ikarray):
+            G_latt = self.lattice_gf(
+                ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening)
+            # dens += self.bz_weights[ik] * G_latt.total_density()
+            # +++REPLACED
+            dens += self.bz_weights[ik] * calc_total_density(G_latt)
+        # collect data from mpi:
+        dens = mpi.all_reduce(mpi.world, dens, lambda x, y: x + y)
+        mpi.barrier()
+
+        if abs(dens.imag) > 1e-20:
+            mpi.report("Warning: Imaginary part in density will be ignored ({})".format(str(abs(dens.imag))))
+        return dens.real
+
+
+    def density_matrix_matsubara(self, method='using_gf', beta=40.0):
+        """Calculate density matrices in one of two ways.
+        Parameters
+        ----------
+        method : string, optional
+                 - if 'using_gf': First get lattice gf (g_loc is not set up), then density matrix.
+                                  It is useful for Hubbard I, and very quick.
+                                  No assumption on the hopping structure is made (ie diagonal or not).
+                 - if 'using_point_integration': Only works for diagonal hopping matrix (true in wien2k).
+        beta : float, optional
+               Inverse temperature.
+        Returns
+        -------
+        dens_mat : list of dicts
+                   Density matrix for each spin in each correlated shell.
+        """
+        dens_mat = [{} for icrsh in range(self.n_corr_shells)]
+        for icrsh in range(self.n_corr_shells):
+            for sp in self.spin_block_names[self.corr_shells[icrsh]['SO']]:
+                dens_mat[icrsh][sp] = numpy.zeros(
+                    [self.corr_shells[icrsh]['dim'], self.corr_shells[icrsh]['dim']], numpy.complex_)
+
+        ikarray = numpy.array(list(range(self.n_k)))
+        for ik in mpi.slice_array(ikarray):
+
+            if method == "using_gf":
+
+                G_latt_iw = self.lattice_gf(
+                    ik=ik, mu=self.chemical_potential, iw_or_w="iw", beta=beta)
+                # G_latt_iw *= self.bz_weights[ik]
+                # dm = G_latt_iw.density()
+                # MMat = [dm[sp] for sp in self.spin_block_names[self.SO]]
+                # +++REPLACED
+                dm = calc_density_matrix(G_latt_iw)
+                MMat = [dm[sp] * self.bz_weights[ik] for sp in self.spin_block_names[self.SO]]
+
+            elif method == "using_point_integration":
+
+                ntoi = self.spin_names_to_ind[self.SO]
+                spn = self.spin_block_names[self.SO]
+                dims = {sp:self.n_orbitals[ik, ntoi[sp]] for sp in spn}
+                MMat = [numpy.zeros([dims[sp], dims[sp]], numpy.complex_) for sp in spn]
+
+                for isp, sp in enumerate(spn):
+                    ind = ntoi[sp]
+                    for inu in range(self.n_orbitals[ik, ind]):
+                        # only works for diagonal hopping matrix (true in
+                        # wien2k)
+                        if (self.hopping[ik, ind, inu, inu] - self.h_field * (1 - 2 * isp)) < 0.0:
+                            MMat[isp][inu, inu] = 1.0
+                        else:
+                            MMat[isp][inu, inu] = 0.0
+
+            else:
+                raise ValueError("density_matrix: the method '%s' is not supported." % method)
+
+            for icrsh in range(self.n_corr_shells):
+                for isp, sp in enumerate(self.spin_block_names[self.corr_shells[icrsh]['SO']]):
+                    ind = self.spin_names_to_ind[
+                        self.corr_shells[icrsh]['SO']][sp]
+                    dim = self.corr_shells[icrsh]['dim']
+                    n_orb = self.n_orbitals[ik, ind]
+                    projmat = self.proj_mat[ik, ind, icrsh, 0:dim, 0:n_orb]
+                    if method == "using_gf":
+                        dens_mat[icrsh][sp] += numpy.dot(numpy.dot(projmat, MMat[isp]),
+                                                         projmat.transpose().conjugate())
+                    elif method == "using_point_integration":
+                        dens_mat[icrsh][sp] += self.bz_weights[ik] * numpy.dot(numpy.dot(projmat, MMat[isp]),
+                                                                               projmat.transpose().conjugate())
+
+        # get data from nodes:
+        for icrsh in range(self.n_corr_shells):
+            for sp in dens_mat[icrsh]:
+                dens_mat[icrsh][sp] = mpi.all_reduce(
+                    mpi.world, dens_mat[icrsh][sp], lambda x, y: x + y)
+        mpi.barrier()
+
+        if self.symm_op != 0:
+            dens_mat = self.symmcorr.symmetrize(dens_mat)
+
+        # Rotate to local coordinate system:
+        if self.use_rotations:
+            for icrsh in range(self.n_corr_shells):
+                for sp in dens_mat[icrsh]:
+                    if self.rot_mat_time_inv[icrsh] == 1:
+                        dens_mat[icrsh][sp] = dens_mat[icrsh][sp].conjugate()
+                    dens_mat[icrsh][sp] = numpy.dot(numpy.dot(self.rot_mat[icrsh].conjugate().transpose(), dens_mat[icrsh][sp]),
+                                                    self.rot_mat[icrsh])
+
+        return dens_mat

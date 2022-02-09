@@ -27,19 +27,53 @@ import copy
 import ast
 import h5py
 import builtins
+from typing import List
 
+from ._dispatcher import dyson, make_zero_tail
 from .program_options import *
 from .sumkdft_workers.launcher import run_sumkdft
 
 from .sumkdft_compat import SumkDFTCompat
 
 from .tools import *
+from .dc import hf_dc
 
 from . import impurity_solvers
+from .symmetrizer import pm_symmetrizer
 
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
+# def _total_density(bgf):
+#     """Compute total density of a BlockGf instance assuming 1/iw"""
+#     assert isinstance(bgf, BlockGf)
+#     total_density = 0
+#     for _, g_iw in bgf:
+#         km = make_zero_tail(g_iw, 2)
+#         km[1] = numpy.eye(g_iw.target_shape[0])
+#         try:
+#             total_density += g_iw.total_density(km).real
+#         except RuntimeError:
+#             from dcorelib.triqs_compat.gf import GfImFreq
+#             g_iw_ = GfImFreq.from_triqs(g_iw)
+#             total_density += g_iw_.total_density().real
+#     return total_density
+
+def _total_density(bgf, tail_fit=True):
+    assert isinstance(bgf, BlockGf)
+    if tail_fit:
+        return bgf.total_density().real
+    else:
+        return calc_total_density(bgf).real
+
+def _density(bgf, tail_fit=True):
+    assert isinstance(bgf, BlockGf)
+    if tail_fit:
+        return bgf.density()
+    else:
+        return calc_density_matrix(bgf)
+
 
 def __gettype(name):
     t = getattr(builtins, name)
@@ -165,22 +199,6 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
         print('Warning G0_iw is not hermite conjugate: {}'.format(diff))
     sol.set_G0_iw(G0_iw)
 
-    # Compute rotation matrix to the diagonal basis if supported
-    if basis_rot == 'None':
-        rot = None
-    elif basis_rot == 'Hloc':
-        rot = compute_diag_basis(G0_iw)
-    else:
-        if not os.path.exists(basis_rot):
-            raise RuntimeError("Invalid basis_rot : {}".format(basis_rot))
-        if sol.use_spin_orbit:
-            rot = numpy.zeros((1, sol.n_flavors, sol.n_flavors), dtype=complex)
-            read_potential(basis_rot, rot)
-            rot = {'ud' : rot[0,:,:]}
-        else:
-            rot = numpy.zeros((2, sol.n_orb, sol.n_orb), dtype=complex)
-            read_potential(basis_rot, rot)
-            rot = {'up' : rot[0,:,:], 'down': rot[1,:,:]}
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
@@ -193,6 +211,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
         s_params['omega_min'], s_params['omega_max'], s_params['n_omega'] = mesh
 
     # Solve the model
+    rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     sol.solve(rot, mpirun_command, s_params)
 
     os.chdir(work_dir_org)
@@ -316,8 +335,8 @@ class DMFTCoreSolver(object):
         # Dimension of an inequivalent shell or a correlated shell
         # 'dim' is the dimension of either 'ud', 'up' or 'down' sectors for a correlated shell
         # For 'ud', dim is the size of spin times orbital.
-        self._dim_corr_sh = [sk.corr_shells[icrsh]['dim'] for icrsh in range(self._n_corr_shells)]
-        self._dim_sh = [self._dim_corr_sh[sk.inequiv_to_corr[ish]] for ish in range(self._n_inequiv_shells)]
+        self._dim_corr_sh = numpy.array([sk.corr_shells[icrsh]['dim'] for icrsh in range(self._n_corr_shells)])
+        self._dim_sh = numpy.array([self._dim_corr_sh[sk.inequiv_to_corr[ish]] for ish in range(self._n_inequiv_shells)])
 
         if self._use_spin_orbit:
             self._spin_block_names = ['ud']
@@ -378,6 +397,14 @@ class DMFTCoreSolver(object):
         # physical quantities to save
         self._quant_to_save_latest = {}  # only the latest results are saved (overwritten)
         self._quant_to_save_history = {}  # histories are retained
+
+        if not self._read_only:
+            if self._params["control"]["time_reversal"]:
+                norb_sh = self._dim_corr_sh//2 if self.use_spin_orbit else self._dim_corr_sh
+                self._spin_symm = [
+                    pm_symmetrizer(norb, self.use_spin_orbit, self._params["control"]["time_reversal_transverse"]) for norb in norb_sh]
+            else:
+                self._spin_symm = None
 
         self._sanity_check()
 
@@ -453,6 +480,11 @@ class DMFTCoreSolver(object):
             _, dm0_sh = self.calc_G0loc()
             self.set_dc_imp(dm0_sh)
 
+            # Add dc_imp to Sigma to cancel dc_imp in the first iteration
+            for ish in range(self.n_inequiv_shells):
+                for sp in self._spin_block_names:
+                    self._sh_quant[ish].Sigma_iw[sp] << self._dc_imp[self._sk.inequiv_to_corr[ish]][sp]
+
         # Set initial value to self-energy
         if self._params["control"]["initial_static_self_energy"] != "None":
             print("@@@@@@@@@@@@@@@@@@@@@@@@  Setting initial value to self-energy @@@@@@@@@@@@@@@@@@@@@@@@")
@@ -463,7 +495,8 @@ class DMFTCoreSolver(object):
 
             for ish in range(self.n_inequiv_shells):
                 for isp, sp in enumerate(self._spin_block_names):
-                    self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
+                    # self._sh_quant[ish].Sigma_iw[sp] << init_se[ish][isp]
+                    self._sh_quant[ish].Sigma_iw[sp].data[...] += init_se[ish][isp]
 
         elif self._params["control"]["initial_self_energy"] != "None":
             self._loaded_initial_self_energy = True
@@ -511,6 +544,7 @@ class DMFTCoreSolver(object):
             'dc_energ'      : self._dc_energ,
             'mu'            : self._chemical_potential,
             'adjust_mu'     : False,
+            'no_tail_fit'   : self._params['system']['no_tail_fit'],
         }
 
     def calc_G0loc(self):
@@ -727,6 +761,9 @@ class DMFTCoreSolver(object):
             self._params['control']['symmetry_generators'],
             self._use_spin_orbit, self._dim_sh)
 
+        # No tail fit in computing density if no_tail_fit=True
+        tail_fit = not self._params['system']['no_tail_fit']
+
         def quantities_to_check():
             x = []
             # chemical potential
@@ -777,7 +814,7 @@ class DMFTCoreSolver(object):
             self._quant_to_save_history['spin_moment'] = smoment_sh
 
             # Compute Total charge from G_loc
-            charge_loc = [Gloc_iw_sh[ish].total_density().real for ish in range(self._n_inequiv_shells)]
+            charge_loc = [_total_density(Gloc_iw_sh[ish], tail_fit) for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_loc):
                 print("\n  Total charge of Gloc_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_loc'] = charge_loc
@@ -795,22 +832,17 @@ class DMFTCoreSolver(object):
             #
 
             # Compute Total charge from G_imp
-            charge_imp = [new_Gimp_iw[ish].total_density().real for ish in range(self._n_inequiv_shells)]
+            charge_imp = [_total_density(new_Gimp_iw[ish], tail_fit) for ish in range(self._n_inequiv_shells)]
             for ish, charge in enumerate(charge_imp):
                 print("\n  Total charge of Gimp_{shell %d} : %.6f" % (ish, charge))
             self._quant_to_save_history['total_charge_imp'] = charge_imp
 
             # Symmetrize over spin components
-            if self._params["control"]["time_reversal"]:
+            if self._spin_symm is not None:
                 print("Averaging self-energy and impurity Green's function over spin components...")
-
-                if self._params["model"]["spin_orbit"]:
-                    # TODO
-                    raise Exception("Spin-symmetrization in the case with the spin-orbit coupling is not implemented")
-
                 for ish in range(self._n_inequiv_shells):
-                    symmetrize_spin(new_Gimp_iw[ish])
-                    symmetrize_spin(new_Sigma_iw[ish])
+                    new_Gimp_iw[ish] << self._spin_symm[ish](new_Gimp_iw[ish])
+                    new_Sigma_iw[ish] << self._spin_symm[ish](new_Sigma_iw[ish])
 
             # Update Sigma_iw and Gimp_iw.
             # Mix Sigma if requested.
@@ -823,13 +855,13 @@ class DMFTCoreSolver(object):
                     self._sh_quant[ish].Sigma_iw << new_Sigma_iw[ish]
 
             # Symmetrization
-            for isn in range(self._n_inequiv_shells):
+            for ish in range(self._n_inequiv_shells):
                 if len(symm_generators[ish]) > 0:
                     self._sh_quant[ish].Sigma_iw << symmetrize(self._sh_quant[ish].Sigma_iw, symm_generators[ish])
 
             # update DC correction
             if with_dc and dc_type == "HF_imp":
-                dm_imp = [new_Gimp_iw[ish].density() for ish in range(self._n_inequiv_shells)]
+                dm_imp = [_density(new_Gimp_iw[ish], tail_fit) for ish in range(self._n_inequiv_shells)]
                 self.set_dc_imp(dm_imp)
 
             self._quant_to_save_history.update(chemical_potential=self._chemical_potential,
@@ -857,6 +889,9 @@ class DMFTCoreSolver(object):
                         path = output_group + '/Sigma_iw/ite{}/sh{}/{}'.format(iteration_number, ish, bname)
                         save_giw(ar, path, g)
 
+            # Save Sigma in *.npz file
+            self._save_sigma_iw(dm_sh)
+
             # convergence check
             tol = self._params["control"]["converge_tol"]
             if tol > 0:
@@ -880,6 +915,18 @@ class DMFTCoreSolver(object):
             sys.stdout.flush()
 
         self._previous_runs += max_step
+
+    def _save_sigma_iw(self, dm_sh: List[numpy.ndarray]) -> None:
+        """ Save Sigma(iw) for post processing/restart """
+        data = {}
+        idata = 0
+        for ish in range(self._n_inequiv_shells):
+            hf = hf_dc(dm_sh[ish], self._Umat[ish], self._use_spin_orbit)
+            for bname, g in self._sh_quant[ish].Sigma_iw:
+                data[f"data{idata}"] = g.data
+                data[f"hartree_fock{idata}"] = hf[bname]
+                idata += 1
+        numpy.savez(self._seedname + "_sigma_iw.npz", **data)
 
     def chemical_potential(self, iteration_number):
         with HDFArchive(self._output_file, 'r') as ar:

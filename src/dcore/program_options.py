@@ -26,13 +26,26 @@ from collections import namedtuple
 
 from .mpi_command import default_mpi_command
 
+def _set_nk(nk, nk0, nk1, nk2):
+    if abs(nk0) + abs(nk1) + abs(nk2) == 0:
+        # If one of nk0, nk1 and nk2 are set, use nk.
+        nk0 = nk
+        nk1 = nk
+        nk2 = nk
+    elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
+        # if any of nk0, nk1 and nk2 are set, use them.
+        if nk0 * nk1 * nk2 == 0:
+            raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
+    return nk0, nk1, nk2
+
+
 
 def create_parser(target_sections=None):
     """
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'bse'])
+        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
 
@@ -52,7 +65,7 @@ def create_parser(target_sections=None):
     parser.add_option("model", "corr_to_inequiv", str, "None",
                       "Mapping from correlated shells to equivalent shells (for lattice = wannier90)")
     parser.add_option("model", "bvec", str, "[(1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)]", "Reciprocal lattice vectors in arbitrary unit.")
-    parser.add_option("model", "nk", int, 8, "Number of *k* along each line")
+    parser.add_option("model", "nk", int, 8, "Number of *k* along each line. This automatically sets nk0=nk1=nk2=nk. This parameter and (nk0, nk1, nk2) are mutually exclusive.")
     parser.add_option("model", "nk0", int, 0, "Number of *k* along b_0 (for lattice = wannier90, external)")
     parser.add_option("model", "nk1", int, 0, "Number of *k* along b_1 (for lattice = wannier90, external)")
     parser.add_option("model", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
@@ -65,12 +78,13 @@ def create_parser(target_sections=None):
                       "U (Diagonal Coulomb pot.), U\' (Off-diagonal Coulomb pot.) and J (Hund coupling) (See below).")
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
     parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
+    parser.add_option("model", "slater_basis", str, "cubic", "Basis of the Slater interaction (See below).")
     parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: 'filename'} to specify local potential matrix of ish-th shell")
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
     # [system]
-    parser.add_option("system", "beta", float, 1.0, "Inverse temperature. This parameter is overridden, if T is given.")
-    parser.add_option("system", "T", float, -1.0, "Temperature. If this parameter is given, beta is overridden by 1/T.")
+    parser.add_option("system", "beta", float, 1.0, "Inverse temperature. This parameter is overwritten, if T is given.")
+    parser.add_option("system", "T", float, -1.0, "Temperature. If this parameter is given, beta is overwritten by 1/T.")
     parser.add_option("system", "n_iw", int, 2048, "Number of Matsubara frequencies")
     parser.add_option("system", "fix_mu", bool, False, "Whether or not to fix chemical potential to a given value.")
     parser.add_option("system", "mu", float, 0.0, "Initial chemical potential.")
@@ -78,21 +92,23 @@ def create_parser(target_sections=None):
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not use double-counting correction (See below)")
     parser.add_option("system", "dc_type", str, 'HF_DFT', "Chosen from 'HF_DFT' (default), 'HF_imp', 'FLL'")
+    parser.add_option("system", "no_tail_fit", bool, False, "Compute Matsubara summation without fitting high-frequency moments.")
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',
-                      "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg, pomerol.")
-    parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify either 'Hloc', 'None', or the location of a file..")
+                    "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg, pomerol.")
+    parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify either 'Hloc', 'None', or the location of a file.")
     parser.allow_undefined_options("impurity_solver")
 
     # [control]
     parser.add_option("control", "max_step", int, 100, "Maximum steps of DMFT loops")
     parser.add_option("control", "sigma_mix", float, 0.5, "Mixing parameter for self-energy")
     parser.add_option("control", "restart", bool, False,
-                      "Whether or not restart from a previous calculation stored in a HDF file.")
+                    "Whether or not restart from a previous calculation stored in a HDF file.")
     parser.add_option("control", "initial_static_self_energy", str, "None", "dict of {ish: 'filename'} to specify initial value of the self-energy of ish-th shell. The file format is the same as local_potential_matrix.")
     parser.add_option("control", "initial_self_energy", str, "None", "Filename containing initial self-energy in the same format as sigma.dat generated by dcore_check.")
-    parser.add_option("control", "time_reversal", bool, False, "If true, an average over spin components are taken.")
+    parser.add_option("control", "time_reversal", bool, False, "If true, an average over spin components are taken to set Sz = 0.")
+    parser.add_option("control", "time_reversal_transverse", bool, False, "If true, the self-energy is symmetrized so that Sx=Sy=0.")
     parser.add_option("control", "symmetry_generators", str, 'None', "Generators for symmetrization of self-energy.")
     parser.add_option("control", "n_converge", int, 1, "The DMFT loop is terminated if the convergence criterion defined with converge_tol is satisfied n_converge times consecutively.")
     parser.add_option("control", "converge_tol", float, 0, "Tolerance in the convergence check. The chemical potential and the renormalization factor are examined.")
@@ -116,6 +132,13 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "nk0_mesh", int, 0, "Number of k points along b_0 for computation of A(k,omega) on a 3D mesh")
     parser.add_option("tool", "nk1_mesh", int, 0, "Number of k points along b_1 for computation of A(k,omega) on a 3D mesh")
     parser.add_option("tool", "nk2_mesh", int, 0, "Number of k points along b_2 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("tool", "Lambda_IR", float, 1e+4, "IR parameter for computing G(k,iw)")
+    parser.add_option("tool", "cutoff_IR", float, 1e-5, "IR cutoff parameter for computing G(k,iw)")
+    parser.add_option("tool", "cutoff_IR_2P", float, 1e-5, "IR cutoff parameter for computing two-particle quantities")
+    parser.add_option("tool", "gk_smpl_freqs", str, "dense", "Sampling fermionic frequencies for dcore_gk. dense or the name of a text file that contains sampling frequencies."
+        "For gk_smpl_freqs = dense, all fermionic frequencies in the range of [-n_iw, n_iw] are used. A valid text file must contain the number of sampling frequencies in its first line."
+        "Each line after the first line must contain two integer numbers: The first one is an sequential index of a sampling frequency (start from 0), and the second one is a fermionic sampling frequency (i.e, -1, 0, 1)."
+    )
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")
@@ -125,7 +148,6 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
-
 
     return parser
 
@@ -186,6 +208,13 @@ def parse_parameters(params):
         # Set [model][norb_corr_sh]
         corr_to_inequiv = params['model']['corr_to_inequiv']
         params['model']['norb_corr_sh'] = numpy.array([params['model']['norb_inequiv_sh'][corr_to_inequiv[icrsh]] for icrsh in range(ncor)])
+
+        # Set nk
+        params['model']['nk0'], params['model']['nk1'], params['model']['nk2'] = \
+            _set_nk(params['model']['nk'], params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
+        params['model']['nkdiv'] = (params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
+        del params['model']['nk']
+
 
     if 'mpi' in params:
         # Expand enviroment variables
