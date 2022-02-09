@@ -4,13 +4,14 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>How to integrate your own solver &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -40,7 +41,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="how-to-integrate-your-own-solver">
+  <section id="how-to-integrate-your-own-solver">
 <h1>How to integrate your own solver<a class="headerlink" href="#how-to-integrate-your-own-solver" title="Permalink to this headline">¶</a></h1>
 <p>You can use your own impurity solver from DCore by wrapping the executable as appropriate.
 The null solver serves as a template of wrapper code.</p>
@@ -48,14 +49,14 @@ The null solver serves as a template of wrapper code.</p>
 <div><p><a class="reference download internal" download="" href="../_downloads/e0e8c552f0930992e8848c8956202f74/null_solver.py"><code class="xref download docutils literal notranslate"><span class="pre">null_solver.py</span></code></a></p>
 </div></blockquote>
 <p>Follow the instructions below.</p>
-<div class="section" id="copy-the-template">
+<section id="copy-the-template">
 <h2>Copy the template<a class="headerlink" href="#copy-the-template" title="Permalink to this headline">¶</a></h2>
 <p>In directory <strong>python/impurity_solvers</strong>, copy the template</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cp null_solver.py your_solver.py
 </pre></div>
 </div>
-</div>
-<div class="section" id="edit-the-template">
+</section>
+<section id="edit-the-template">
 <h2>Edit the template<a class="headerlink" href="#edit-the-template" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p>Change the class name</p>
@@ -126,8 +127,8 @@ The self-energy and the Green’s function are stored as <code class="docutils l
 See other wrappers or <a class="reference external" href="https://triqs.github.io/triqs/1.4/reference/gfs/py/contents.html">the TRIQS documentation</a>.</p>
 </li>
 </ul>
-</div>
-<div class="section" id="register-your-solver">
+</section>
+<section id="register-your-solver">
 <h2>Register your solver<a class="headerlink" href="#register-your-solver" title="Permalink to this headline">¶</a></h2>
 <p>Finally, you register your own solver to <strong>DCore</strong>.
 Edit <strong>python/impurity_solvers/__init__.py</strong>
@@ -147,8 +148,8 @@ to import your class</p>
 <span class="n">name</span> <span class="o">=</span> <span class="n">your_solver</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -173,17 +174,21 @@ to import your class</p>
 <li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="null.html"
-                        title="previous chapter">Non-interacting limit: <code class="docutils literal notranslate"><span class="pre">null</span></code></a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../tools.html"
-                        title="next chapter">Tools</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="null.html"
+                          title="previous chapter">Non-interacting limit: <code class="docutils literal notranslate"><span class="pre">null</span></code></a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../tools.html"
+                          title="next chapter">Tools</a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>

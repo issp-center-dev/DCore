@@ -4,17 +4,18 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Multiorbital model by a QMC solver &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Antiferromagnetic state" href="../afm/afm.html" />
@@ -40,46 +41,46 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="multiorbital-model-by-a-qmc-solver">
+  <section id="multiorbital-model-by-a-qmc-solver">
 <h1>Multiorbital model by a QMC solver<a class="headerlink" href="#multiorbital-model-by-a-qmc-solver" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference download internal" download="" href="../../_downloads/4597ad694e31bb00dcb3d29f11e8e0c8/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_bethe.ini</span></code></a></p>
 <p>An interesting phenomena called spin-freezing transition occurs in multi-orbital models
 [<a class="reference external" href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.101.166405">P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008)</a>].
 The spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: <span class="math notranslate nohighlight">\(\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}\)</span>.
 In this tutorial, we solve the three-orbital model on a Bethe lattice to reproduce the results in the above reference.</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
-<span class="na">lattice</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">seedname</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">nelec</span> <span class="o">=</span> <span class="s">1.6</span>
-<span class="na">t</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">norb</span> <span class="o">=</span> <span class="s">3</span>
-<span class="na">interaction</span> <span class="o">=</span> <span class="s">kanamori</span>
-<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(8.0, 5.3333333, 1.33333)]</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">1000</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span><span class="w"></span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span><span class="w"></span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.6</span><span class="w"></span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span><span class="w"></span>
+<span class="na">interaction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">kanamori</span><span class="w"></span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(8.0, 5.3333333, 1.33333)]</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span><span class="w"></span>
 
-<span class="k">[mpi]</span>
-<span class="na">command</span> <span class="o">=</span> <span class="s">&#39;$MPIRUN -np #&#39;</span>
+<span class="k">[mpi]</span><span class="w"></span>
+<span class="na">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;$MPIRUN -np #&#39;</span><span class="w"></span>
 
-<span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">50.0</span>
+<span class="k">[system]</span><span class="w"></span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span><span class="w"></span>
 
-<span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">ALPS/cthyb</span>
-<span class="na">timelimit{int}</span> <span class="o">=</span> <span class="s">300</span>
-<span class="na">exec_path{str}</span> <span class="o">=</span> <span class="s">$HOME/opt/CT-HYB/bin/hybmat</span>
+<span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb</span><span class="w"></span>
+<span class="na">timelimit{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300</span><span class="w"></span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">$HOME/opt/CT-HYB/bin/hybmat</span><span class="w"></span>
 
-<span class="k">[control]</span>
-<span class="na">max_step</span> <span class="o">=</span> <span class="s">40</span>
-<span class="na">sigma_mix</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">restart</span> <span class="o">=</span> <span class="s">False</span>
+<span class="k">[control]</span><span class="w"></span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40</span><span class="w"></span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span><span class="w"></span>
 
-<span class="k">[tool]</span>
-<span class="na">omega_max</span> <span class="o">=</span> <span class="s">15.0</span>
-<span class="na">omega_min</span> <span class="o">=</span><span class="s">-15.0</span>
-<span class="na">Nomega</span> <span class="o">=</span> <span class="s">100</span>
+<span class="k">[tool]</span><span class="w"></span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">15.0</span><span class="w"></span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-15.0</span><span class="w"></span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
 </pre></div>
 </div>
-<div class="section" id="pre-process-dcore-pre">
+<section id="pre-process-dcore-pre">
 <h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this headline">¶</a></h2>
 <p>We first generate a h5 file that is necessary for DMFT calculations.
 The script <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
@@ -87,8 +88,8 @@ The script <code class="docutils literal notranslate"><span class="pre">dcore_pr
 </pre></div>
 </div>
 <p>If successful, a h5 file named <em>seedname</em>.h5 (<code class="docutils literal notranslate"><span class="pre">bethe.h5</span></code> in the present case) is generated.</p>
-</div>
-<div class="section" id="dmft-loop-dcore">
+</section>
+<section id="dmft-loop-dcore">
 <h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this headline">¶</a></h2>
 <p>The DMFT loop is performed by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> program.
 In this tutorial, we use continuous-time QMC implementation of ALPS/CT-HYB.
@@ -182,8 +183,8 @@ For instance, <code class="docutils literal notranslate"><span class="pre">check
 <a class="reference download internal" download="" href="../../_downloads/fe6ab51628368b87c407fbbc52cae95f/sigma-PRL101-166405.txt"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.
 The plot should look like the following.</p>
 <a class="reference internal image-reference" href="../../_images/sigma.png"><img alt="../../_images/sigma.png" class="align-center" src="../../_images/sigma.png" style="width: 600px;" /></a>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -208,17 +209,21 @@ The plot should look like the following.</p>
 <li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../square/square.html"
-                        title="previous chapter">The first example: 2D Hubbard model</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../afm/afm.html"
-                        title="next chapter">Antiferromagnetic state</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../square/square.html"
+                          title="previous chapter">The first example: 2D Hubbard model</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../afm/afm.html"
+                          title="next chapter">Antiferromagnetic state</a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>

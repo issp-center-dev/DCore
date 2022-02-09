@@ -17,8 +17,7 @@
 #
 
 
-from triqs.gf import *
-from triqs.operators import *
+from dcore._dispatcher import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0
 from .base import SolverBase

@@ -4,13 +4,14 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>CT-QMC: ALPS/CT-HYB &#8212; DCore  documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/wild.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -40,7 +41,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="ct-qmc-alps-ct-hyb">
+  <section id="ct-qmc-alps-ct-hyb">
 <span id="howtoalpscthyb"></span><h1>CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code><a class="headerlink" href="#ct-qmc-alps-ct-hyb" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="https://github.com/ALPSCore/CT-HYB">ALPS/CT-HYB solver</a> implements the CT-HYB QMC algorithm and is developed by H. Shinaoka, E. Gull and P. Werner.
 The spin-orbit coupling is supported by default.
@@ -53,10 +54,10 @@ Please follow <a class="reference external" href="https://github.com/ALPSCore/CT
 <p>A minimum working example is the following.
 We assumed that the executable is installed at “$HOME/opt/CT-HYB/bin/hybmat”.
 The solver runs for 300 seconds.</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">ALPS/cthyb</span>
-<span class="na">timelimit{int}</span> <span class="o">=</span> <span class="s">300</span>
-<span class="na">exec_path{str}</span> <span class="o">=</span> <span class="s">$HOME/opt/CT-HYB/bin/hybmat</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb</span><span class="w"></span>
+<span class="na">timelimit{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300</span><span class="w"></span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">$HOME/opt/CT-HYB/bin/hybmat</span><span class="w"></span>
 </pre></div>
 </div>
 <p>ALPS/CT-HYB have many input parameters.
@@ -64,13 +65,13 @@ Please refer to <a class="reference external" href="https://github.com/ALPSCore/
 The DCore interface supports support all of them.
 For instance, one can enable verbose model as follows.
 Note that one must specify type for input parameters of ALPS/CT-HYB.</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
-<span class="na">verbose{int}</span> <span class="o">=</span> <span class="s">1</span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">verbose{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
 </pre></div>
 </div>
 <p>The DCore interface generates input files for ALPS/CT-HYB into a working directory at work/imp_shell&lt;ish&gt;_ite&lt;ite&gt; (ish is the index of the shell and ite is the iteration).
 Then, ALPS/CT-HYB is excecuted in the working directory.</p>
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -95,17 +96,21 @@ Then, ALPS/CT-HYB is excecuted in the working directory.</p>
 <li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../../impuritysolvers.html"
-                        title="previous chapter">Impurity solvers</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../triqs_cthyb/cthyb.html"
-                        title="next chapter">CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code></a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../../impuritysolvers.html"
+                          title="previous chapter">Impurity solvers</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../triqs_cthyb/cthyb.html"
+                          title="next chapter">CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code></a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
