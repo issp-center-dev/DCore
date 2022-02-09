@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Multiorbital model by a QMC solver &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Antiferromagnetic state" href="../afm/afm.html" />
+    <link rel="prev" title="The first example: 2D Hubbard model" href="../square/square.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../afm/afm.html" title="Antiferromagnetic state"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../square/square.html" title="The first example: 2D Hubbard model"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" accesskey="U">Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Multiorbital model by a QMC solver</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="multiorbital-model-by-a-qmc-solver">
+<h1>Multiorbital model by a QMC solver<a class="headerlink" href="#multiorbital-model-by-a-qmc-solver" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" download="" href="../../_downloads/4597ad694e31bb00dcb3d29f11e8e0c8/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_bethe.ini</span></code></a></p>
+<p>An interesting phenomena called spin-freezing transition occurs in multi-orbital models
+[<a class="reference external" href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.101.166405">P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008)</a>].
+The spin-freezing phenomena is signaled by a peculiar frequency dependence of the self-energy: <span class="math notranslate nohighlight">\(\mathrm{Im}\Sigma(i\omega_n) \propto \omega_n^{0.5}\)</span>.
+In this tutorial, we solve the three-orbital model on a Bethe lattice to reproduce the results in the above reference.</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span><span class="w"></span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span><span class="w"></span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.6</span><span class="w"></span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span><span class="w"></span>
+<span class="na">interaction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">kanamori</span><span class="w"></span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(8.0, 5.3333333, 1.33333)]</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span><span class="w"></span>
+
+<span class="k">[mpi]</span><span class="w"></span>
+<span class="na">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;$MPIRUN -np #&#39;</span><span class="w"></span>
+
+<span class="k">[system]</span><span class="w"></span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50.0</span><span class="w"></span>
+
+<span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb</span><span class="w"></span>
+<span class="na">timelimit{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300</span><span class="w"></span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">$HOME/opt/CT-HYB/bin/hybmat</span><span class="w"></span>
+
+<span class="k">[control]</span><span class="w"></span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40</span><span class="w"></span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span><span class="w"></span>
+
+<span class="k">[tool]</span><span class="w"></span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">15.0</span><span class="w"></span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-15.0</span><span class="w"></span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="pre-process-dcore-pre">
+<h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this headline">¶</a></h2>
+<p>We first generate a h5 file that is necessary for DMFT calculations.
+The script <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre dmft_bethe.ini
+</pre></div>
+</div>
+<p>If successful, a h5 file named <em>seedname</em>.h5 (<code class="docutils literal notranslate"><span class="pre">bethe.h5</span></code> in the present case) is generated.</p>
+</section>
+<section id="dmft-loop-dcore">
+<h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this headline">¶</a></h2>
+<p>The DMFT loop is performed by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> program.
+In this tutorial, we use continuous-time QMC implementation of ALPS/CT-HYB.
+The runtime of the impurity solver is set to 300 sec.
+You should not use the Hubbard-I solver for a metallic system.
+One can run the program with 24 MPI processes as follows.
+For solving the same model with TRIQS/cthyb, use
+<a class="reference download internal" download="" href="../../_downloads/0d8365707d661033e0421229beeb5ac6/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">this</span> <span class="pre">input</span> <span class="pre">file</span></code></a> instead.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
+$ dcore dmft_bethe.ini --np <span class="m">24</span>
+</pre></div>
+</div>
+<p>Any environment variables in <code class="docutils literal notranslate"><span class="pre">command</span></code> of the mpi section and <code class="docutils literal notranslate"><span class="pre">exec_path</span></code> of the impurity_solver section are expanded at runtime.
+In addition, <code class="docutils literal notranslate"><span class="pre">#</span></code> in <code class="docutils literal notranslate"><span class="pre">command</span></code> of the mpi section is replaced by the number of processes specified at runtime (24 in this case).
+In the above example, we defined the environment varible <code class="docutils literal notranslate"><span class="pre">MPIRUN</span></code>.</p>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">dcore</span></code> must be lauched without using the mpirun command as
+it launches MPI processes internally for heavy tasks.
+The QMC solver is executed with the number of MPI processes as well.</p>
+<p>Each self-consistent step takes around 5 min,
+most of which is spent for solving an effective impurity problem by QMC.
+40 iterations take around 200 min.
+Results for the self-energy and Green’s function in each iteration are accumulated into a h5 file named <em>seedname</em>.out.h5 (<code class="docutils literal notranslate"><span class="pre">bethe.out.h5</span></code> in the present case).</p>
+<p>One can check the convergence of DMFT iterations by using <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> program as follows.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_check dmft_bethe.ini
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> program prints the value of the chemical potential at each iteration on the standard output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">@</span> <span class="n">Reading</span> <span class="n">dmft_bethe</span><span class="o">.</span><span class="n">ini</span> <span class="o">...</span>
+<span class="n">Loading</span> <span class="n">Sigma_iw</span><span class="o">...</span>
+<span class="n">Loading</span> <span class="n">dc_imp</span> <span class="ow">and</span> <span class="n">dc_energ</span><span class="o">...</span>
+  <span class="n">Total</span> <span class="n">number</span> <span class="n">of</span> <span class="n">Iteration</span><span class="p">:</span> <span class="mi">40</span>
+
+  <span class="n">Iter</span>  <span class="n">Chemical</span><span class="o">-</span><span class="n">potential</span>
+  <span class="mi">1</span> <span class="o">-</span><span class="mf">0.751277456949</span>
+  <span class="mi">2</span> <span class="mf">0.434702172833</span>
+  <span class="mi">3</span> <span class="mf">1.24052366776</span>
+  <span class="mi">4</span> <span class="mf">1.87430591459</span>
+  <span class="mi">5</span> <span class="mf">2.3902083604</span>
+  <span class="mi">6</span> <span class="mf">2.80560950907</span>
+  <span class="mi">7</span> <span class="mf">3.15120273079</span>
+  <span class="mi">8</span> <span class="mf">3.39906953401</span>
+  <span class="mi">9</span> <span class="mf">3.59109395044</span>
+  <span class="mi">10</span> <span class="mf">3.77841000694</span>
+  <span class="mi">11</span> <span class="mf">3.94933085606</span>
+  <span class="mi">12</span> <span class="mf">4.04565623891</span>
+  <span class="mi">13</span> <span class="mf">4.14089310218</span>
+  <span class="mi">14</span> <span class="mf">4.21761388235</span>
+  <span class="mi">15</span> <span class="mf">4.19672207134</span>
+  <span class="mi">16</span> <span class="mf">4.22954996706</span>
+  <span class="mi">17</span> <span class="mf">4.21218913905</span>
+  <span class="mi">18</span> <span class="mf">4.23609175782</span>
+  <span class="mi">19</span> <span class="mf">4.29360816707</span>
+  <span class="mi">20</span> <span class="mf">4.30206162285</span>
+  <span class="mi">21</span> <span class="mf">4.30581583599</span>
+  <span class="mi">22</span> <span class="mf">4.31236778925</span>
+  <span class="mi">23</span> <span class="mf">4.3507968933</span>
+  <span class="mi">24</span> <span class="mf">4.34734048538</span>
+  <span class="mi">25</span> <span class="mf">4.34881158874</span>
+  <span class="mi">26</span> <span class="mf">4.35435696735</span>
+  <span class="mi">27</span> <span class="mf">4.32563489267</span>
+  <span class="mi">28</span> <span class="mf">4.3284996731</span>
+  <span class="mi">29</span> <span class="mf">4.32645567868</span>
+  <span class="mi">30</span> <span class="mf">4.31936571106</span>
+  <span class="mi">31</span> <span class="mf">4.30926807535</span>
+  <span class="mi">32</span> <span class="mf">4.34097777828</span>
+  <span class="mi">33</span> <span class="mf">4.3454259465</span>
+  <span class="mi">34</span> <span class="mf">4.29481990383</span>
+  <span class="mi">35</span> <span class="mf">4.32541999195</span>
+  <span class="mi">36</span> <span class="mf">4.33632971069</span>
+  <span class="mi">37</span> <span class="mf">4.38081434746</span>
+  <span class="mi">38</span> <span class="mf">4.38713422713</span>
+  <span class="mi">39</span> <span class="mf">4.34154680207</span>
+  <span class="mi">40</span> <span class="mf">4.38279281529</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">sigma</span><span class="o">.</span><span class="n">dat</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">sigma_ave</span><span class="o">.</span><span class="n">png</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">iter_mu</span><span class="o">.</span><span class="n">dat</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">iter_mu</span><span class="o">.</span><span class="n">png</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">iter_sigma</span><span class="o">-</span><span class="n">ish0</span><span class="o">.</span><span class="n">png</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">iter_sigma</span><span class="o">.</span><span class="n">dat</span>
+
+  <span class="n">Done</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> generates several figures as well as data files in text format.
+For instance, <code class="docutils literal notranslate"><span class="pre">check/iter_sigma-ish0.png</span></code> shows how the renormalization factor converges for each orbital.</p>
+<a class="reference internal image-reference" href="../../_images/iter_sigma-ish02.png"><img alt="../../_images/iter_sigma-ish02.png" class="align-center" src="../../_images/iter_sigma-ish02.png" style="width: 800px;" /></a>
+<p>If those results are not converged, one can restart DMFT iterations.</p>
+<p>You can plot the data for positive Matsubara frequencies as follows (like Fig. 3 of PRL 101, 166405 (2008)) using
+<a class="reference download internal" download="" href="../../_downloads/4519b5b5cc0b7ae13b9fb5f08ee6a320/plot.plt"><code class="xref download docutils literal notranslate"><span class="pre">a</span> <span class="pre">gnuplot</span> <span class="pre">command</span> <span class="pre">file</span></code></a>.</p>
+<p>The reference data extracted from PRL 101, 166405 (2008) are available
+<a class="reference download internal" download="" href="../../_downloads/fe6ab51628368b87c407fbbc52cae95f/sigma-PRL101-166405.txt"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.
+The plot should look like the following.</p>
+<a class="reference internal image-reference" href="../../_images/sigma.png"><img alt="../../_images/sigma.png" class="align-center" src="../../_images/sigma.png" style="width: 600px;" /></a>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../basicnotions/structure.html">Minimum introduction: Structure of DCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../square/square.html">The first example: 2D Hubbard model</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Multiorbital model by a QMC solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../afm/afm.html">Antiferromagnetic state</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../srvo3/srvo3.html">SrVO<sub>3</sub></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../square/square.html"
+                          title="previous chapter">The first example: 2D Hubbard model</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../afm/afm.html"
+                          title="next chapter">Antiferromagnetic state</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../afm/afm.html" title="Antiferromagnetic state"
+             >next</a></li>
+        <li class="right" >
+          <a href="../square/square.html" title="The first example: 2D Hubbard model"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" >Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Multiorbital model by a QMC solver</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
