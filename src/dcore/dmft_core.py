@@ -734,7 +734,7 @@ class DMFTCoreSolver(object):
             print("\n      Local Density Matrix:".format(ish))
             for sp1 in self._spin_block_names:
                 print("        Spin {0}".format(sp1))
-                print_matrix(dens_mat[sp1][0:num_orb, 0:num_orb])
+                print_matrix(dens_mat[sp1])
 
             # calculated DC
             _dc_imp.append(calc_dc(dc_type, u_mat, dens_mat, self.spin_block_names, self._use_spin_orbit, dc_orbital_average))
