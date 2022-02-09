@@ -42,22 +42,19 @@ setup(
     python_requires='>=3.6, <4',
     install_requires=[
         'numpy',
-        'scipy',
+        'scipy>=1.4',
         # h5py 2.10.0 has a bug.
         # Import h5py imports mpi4py automatically.
         'h5py!=2.10.0',
         'toml>=0.10',
-        'dcorelib>=0.6',
+        'dcorelib>=0.7.1',
         'sympy',
         ],
+
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],
         },
 
-    setup_requires=[
-        'numpy',
-        'scipy',
-        ],
 
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
