@@ -352,10 +352,12 @@ def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
 
 def run():
     import argparse
-    from dcore.option_tables import generate_all_description
     from dcore.version import version, print_header
+    import os
 
     print_header()
+
+    default_ext = os.environ.get("DCORE_CHECK_DEFAULT_EXT", "eps")
 
     parser = argparse.ArgumentParser(
         prog='dcore_check.py',
@@ -377,7 +379,7 @@ def run():
                         )
     parser.add_argument('--ext',
                         action='store',
-                        default='png',
+                        default=default_ext,
                         type=str,
                         help='file extension of output figures (png, pdf, eps, jpg, etc)'
                         )
