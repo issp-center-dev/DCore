@@ -1,6 +1,11 @@
-version: '2'
+version: '3'
 services:
-  dcore:
-    build: .
-    container_name: dcore_container
+  dcoretest:
+    build:
+      context: .
+      #env_file:
+      #- ./.env
     tty: true
+    #volumes:
+    #- ./:/var/dcoretest
+    working_dir: /var/dcoretest

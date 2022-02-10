@@ -1,2 +1,6 @@
-Test funtions that are run without using mpirun
+To run test funtions in this direction,
+invoke py.test without mpirun.
 mpi4py can be imported in a subprocess.
+The number of MPI processes invoked internally can be controlled
+though an environment variable:
+$ export DCORE_TEST_NUM_PROC=4

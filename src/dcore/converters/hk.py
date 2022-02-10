@@ -22,11 +22,11 @@
 
 from types import *
 import numpy
-from h5 import *
+from dcore._dispatcher import h5, HDFArchive
 from math import sqrt
 from .converter_tools import *
 
-from . import _mpi as mpi
+from dcore._dispatcher import mpi
 
 class HkConverter(ConverterTools):
     """

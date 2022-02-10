@@ -1,0 +1,38 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json or the definition README at
+// https://github.com/microsoft/vscode-dev-containers/tree/master/containers/docker-existing-dockerfile
+{
+    "name": "Existing Dockerfile",
+    // Sets the run context to one level up instead of the .devcontainer folder.
+    "context": "..",
+    // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
+    "dockerFile": "./Dockerfile",
+    // The optional 'runArgs' property can be used to specify additional runtime arguments.
+    "runArgs": [],
+    // Use 'settings' to set *default* container specific settings.json values on container create.
+    // You can edit these settings after create using File > Preferences > Settings > Remote.
+    // Uncomment the next line if you want to publish any ports.
+    // "appPort": [],
+    // Uncomment the next line to run commands after the container is created - for example installing git.
+    // "postCreateCommand": "apt-get update && apt-get install -y git",
+    // Add the IDs of extensions you want installed when the container is created in the array below.
+    "extensions": [
+      "ms-azuretools.vscode-docker",
+      "mutantdino.resourcemonitor",
+      "shardulm94.trailing-spaces",
+      "cliffordfajardo.hightlight-selections-vscode",
+      "wdawson.better-kill-ring",
+      "oderwat.indent-rainbow",
+      "github.vscode-pull-request-github",
+      "mhutchie.git-graph",
+      "donjayamanne.githistory",
+      "eamodio.gitlens",
+      "bungcip.better-toml",
+      "usernamehw.errorlens",
+      "ms-vscode.live-server",
+      "christian-kohler.path-intellisense",
+    "ms-python.python",
+    ],
+   "remoteUser": "vscode",
+   "workspaceFolder": "/home/vscode/work",
+   "workspaceMount": "src=${localWorkspaceFolder},dst=/home/vscode/work,type=bind",
+  }
