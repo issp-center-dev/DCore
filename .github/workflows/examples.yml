@@ -11,7 +11,7 @@ on:
     tags: '*'
 
 jobs:
-  all-tests:
+  run-examples:
     runs-on: ubuntu-latest
     steps:
       - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
@@ -74,9 +74,7 @@ jobs:
             git config --local user.name "${GIT_USER}"
             git config --local user.email "${GIT_EMAIL}"
             git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
-            pwd
-            ls
-            ls examples_results_dcorelib
+            git pull
             git add examples_results_dcorelib/${TARGET_NAME}
             if git commit -m "Deploy docs to ${TARGET_NAME} by GitHub Actions triggered by ${GITHUB_SHA}"
             then
