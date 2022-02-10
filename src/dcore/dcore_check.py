@@ -357,7 +357,7 @@ def run():
 
     print_header()
 
-    default_ext = os.environ.get("DCORE_CHECK_DEFAULT_EXT", "eps")
+    default_ext = os.environ.get("DCORE_CHECK_DEFAULT_EXT", "png")
 
     parser = argparse.ArgumentParser(
         prog='dcore_check.py',
