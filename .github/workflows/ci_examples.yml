@@ -1,0 +1,89 @@
+name: Run examples
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - deploy_examples  # test branch
+      - '**-autodoc'
+      - '!gh-pages'
+    tags: '*'
+
+jobs:
+  all-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: main
+    
+      - name: Checkout gh-pages
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          path: gh-pages
+  
+      - name: Run examples
+        run: |
+          cd ${GITHUB_WORKSPACE}/main/
+          export LOCAL_UID=$(id -u $USER)
+          export LOCAL_GID=$(id -g $USER)
+          echo "LOCAL_UID=${LOCAL_UID}" > .env
+          echo "LOCAL_GID=${LOCAL_GID}" >> .env
+          docker-compose up -d examples
+          # Manually execute entrypoint script until the environmet is set up correctly
+          docker exec examples-container bash -c '/entrypoint-examples.sh'
+          docker exec examples-container bash -c 'cd examples; ls -l'
+          #docker exec examples-container bash -c 'source /opt/triqs/share/triqsvars.sh; export OMPI_MCA_btl_vader_single_copy_mechanism=none; cd examples; MPIRUN=mpirun NUM_PROC=2 DCORE_CHECK_DEFAULT_EXT=png gosu user sh run_ci.sh'
+          docker exec examples-container bash -c 'source /env-examples.sh; cd examples; gosu user sh run_ci.sh'
+
+      - name: Deploy Configuration
+        run: |
+            mkdir ~/.ssh
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            echo "${{ secrets.GH_ACTIONS_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+            chmod 400 ~/.ssh/id_rsa
+
+      - name: Push
+        env:
+          GIT_USER: "DCore Developers"
+          GIT_EMAIL: "dcore-dev@issp.u-tokyo.ac.jp"
+          REF_SLUG: ${{ env.GITHUB_REF_SLUG }}
+        run: |
+            cd ${GITHUB_WORKSPACE}
+            echo ${GITHUB_WORKSPACE}
+            feature_branch=${REF_SLUG%-autodoc}
+            if [ "_${REF_SLUG}" != "_${feature_branch}" ]; then
+              TARGET_NAME=${feature_branch}
+            else
+              TARGET_NAME=${REF_SLUG}
+            fi
+            rm -rf "gh-pages/examples_results/${TARGET_NAME}"
+            docker cp examples-container:/var/dcoretest/examples examples_results
+            cd examples_results
+            find . -name "*.eps" -or -name "*.ini" -or -name "*.png" | xargs -I@ install -D @ "${GITHUB_WORKSPACE}/gh-pages/examples_results/${TARGET_NAME}/"@
+            cd ${GITHUB_WORKSPACE}/gh-pages
+            git config --local user.name "${GIT_USER}"
+            git config --local user.email "${GIT_EMAIL}"
+            git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
+            pwd
+            ls
+            ls examples_results
+            git add examples_results/${TARGET_NAME}
+            if git commit -m "Deploy docs to ${TARGET_NAME} by GitHub Actions triggered by ${GITHUB_SHA}"
+            then
+              git push origin gh-pages
+            else
+              echo "Nothing to deploy"
+            fi
+  
+      - run: echo "This job's status is ${{ job.status }}."

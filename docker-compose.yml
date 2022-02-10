@@ -3,9 +3,13 @@ services:
   dcoretest:
     build:
       context: .
-      #env_file:
-      #- ./.env
+      dockerfile: Dockerfile-pytest
     tty: true
-    #volumes:
-    #- ./:/var/dcoretest
+    working_dir: /var/dcoretest
+  examples:
+    build:
+      context: .
+      dockerfile: Dockerfile-examples
+    tty: true
+    container_name: examples-container
     working_dir: /var/dcoretest
