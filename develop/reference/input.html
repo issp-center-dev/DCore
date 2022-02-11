@@ -408,10 +408,10 @@ The parameter <code class="docutils literal notranslate"><span class="pre">local
 <p>This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 14%" />
-<col style="width: 10%" />
-<col style="width: 9%" />
-<col style="width: 68%" />
+<col style="width: 15%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 72%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
@@ -454,14 +454,19 @@ The parameter <code class="docutils literal notranslate"><span class="pre">local
 <tr class="row-even"><td><p>with_dc</p></td>
 <td><p>Bool</p></td>
 <td><p>False</p></td>
-<td><p>Whether or not use double-counting correction (See below)</p></td>
+<td><p>Whether or not to use double-counting (DC) correction (See below)</p></td>
 </tr>
 <tr class="row-odd"><td><p>dc_type</p></td>
 <td><p>String</p></td>
 <td><p>HF_DFT</p></td>
 <td><p>Chosen from ‘HF_DFT’ (default), ‘HF_imp’, ‘FLL’</p></td>
 </tr>
-<tr class="row-even"><td><p>no_tail_fit</p></td>
+<tr class="row-even"><td><p>dc_orbital_average</p></td>
+<td><p>Bool</p></td>
+<td><p>False</p></td>
+<td><p>If true, the DC correction is averaged over orbitals in each shell. Off-diagonal components are dropped.</p></td>
+</tr>
+<tr class="row-odd"><td><p>no_tail_fit</p></td>
 <td><p>Bool</p></td>
 <td><p>False</p></td>
 <td><p>Compute Matsubara summation without fitting high-frequency moments.</p></td>
