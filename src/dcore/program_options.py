@@ -92,7 +92,7 @@ def create_parser(target_sections=None):
                       "Threshold for calculating chemical potential with the bisection method.")
     parser.add_option("system", "with_dc", bool, False, "Whether or not to use double-counting (DC) correction (See below)")
     parser.add_option("system", "dc_type", str, 'HF_DFT', "Chosen from 'HF_DFT' (default), 'HF_imp', 'FLL'")
-    parser.add_option("system", "dc_orbital_average", bool, False, "If true, the DC correction is averaged over orbitals in each shell")
+    parser.add_option("system", "dc_orbital_average", bool, False, "If true, the DC correction is averaged over orbitals in each shell. Off-diagonal components are dropped.")
     parser.add_option("system", "no_tail_fit", bool, False, "Compute Matsubara summation without fitting high-frequency moments.")
 
     # [impurity_solver]
