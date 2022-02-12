@@ -296,7 +296,7 @@ class DMFTCoreTools:
                 # Analytic continuation
                 for bname, sig in Sigma_iw:
                     sigma_w_sh[ish][bname].set_from_pade(sig, n_points=self._n_pade, freq_offset=self._eta)
-    
+
         print("\n#############  Print Self energy in the Real Frequency  ################\n")
         filename = self._prefix + self._seedname + '_sigmaw.dat'
         print("\n Writing real-freqnecy self-energy into ", filename)
@@ -565,6 +565,6 @@ def run():
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
-        print("Input file does not exist.")
+        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
         sys.exit(-1)
     dcore_post(args.path_input_file, int(args.np), args.prefix)

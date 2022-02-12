@@ -36,9 +36,6 @@ class DMFTCoreCheck(object):
             Max number of iterations to be processed
         """
 
-        if os.path.isfile(ini_file) is False:
-            raise Exception("Input file '%s' does not exist." % ini_file)
-
         print("\n  @ Reading {0} ...".format(ini_file))
         #
         # Construct a parser with default values
@@ -413,6 +410,9 @@ def run():
     #     warn("--output option is not used")
 
     args = parser.parse_args()
+    if os.path.isfile(args.path_input_file) is False:
+        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
+        sys.exit(-1)
 
     dcore_check(args.path_input_file, args.prefix, args.ext, args.max_n_iter)
 
