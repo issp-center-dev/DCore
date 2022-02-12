@@ -317,14 +317,18 @@ class DMFTCoreCheck(object):
         """
 
         w0 = self.n_iw
+
+        # Load data only once for each itr
+        Sigma_iw_sh_itr = [self.solver.Sigma_iw_sh(itr) for itr in range(1, self.n_iter + 1)]
+
         for ish in range(self.n_sh):
             # Make a graph for each shell
             data_list = []
             norb = self.shell_info[ish]['block_dim']
             for isp, spn in enumerate(self.spin_names):
                 for iorb in range(norb):
-                    sigma0 = numpy.array([self.solver.Sigma_iw_sh(itr)[ish][spn].data[w0, iorb, iorb].imag
-                                          for itr in range(1, self.n_iter + 1)])
+                    sigma0 = numpy.array([Sigma_iw_sh[ish][spn].data[w0, iorb, iorb].imag
+                                          for Sigma_iw_sh in Sigma_iw_sh_itr])
                     z = 1. / (1 - sigma0 / numpy.pi * self.beta)
 
                     data = {
