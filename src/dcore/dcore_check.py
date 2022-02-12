@@ -177,7 +177,7 @@ class DMFTCoreCheck(object):
         fig_ext
         data_list: list of dict. The dict must includes
             'y': numpy.ndarray  (mandatory)
-            'label': string  ('' if not provided)
+            'label': string  (None if not provided)
             'iorb': int  (0 if not provided)
             'isp': int  (0 if not prvided)
         ylabel: string
@@ -281,13 +281,34 @@ class DMFTCoreCheck(object):
 
                     data = {
                         'y': occup,
-                        'label': "shell=%d, spin=%s, %d" % (ish, spn, iorb),
+                        'label': f"spin={spn}, orb={iorb}",
                         'iorb': iorb,
                         'isp': isp,
                     }
                     data_list.append(data)
 
             self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Occupation number")
+
+    def plot_iter_total_charge(self, basename, fig_ext):
+        """
+        plot total charge in correlated shells as a function of iteration number
+        """
+
+        for ish in range(self.n_sh):
+            # Make a graph for each shell
+            data_list = []
+            for j, key in enumerate(['total_charge_loc', 'total_charge_imp']):
+                charge = numpy.array([self.solver.get_history(key, itr)[ish]
+                                      for itr in range(1, self.n_iter + 1)])
+
+                data = {
+                    'y': charge,
+                    'label': f"{key}",
+                    'iorb': j,  # change the color
+                }
+                data_list.append(data)
+
+            self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Total charge")
 
     def plot_iter_spin_moment(self, basename, fig_ext):
         """
@@ -304,7 +325,7 @@ class DMFTCoreCheck(object):
 
                 data = {
                     'y': smoment,
-                    'label': "shell=%d, %s" % (ish, labels[j]),
+                    'label': f"{labels[j]}",
                     'iorb': j,  # change the color depending on the spin direction
                 }
                 data_list.append(data)
@@ -333,7 +354,7 @@ class DMFTCoreCheck(object):
 
                     data = {
                         'y': z,
-                        'label': "shell=%d, spin=%s, %d" % (ish, spn, iorb),
+                        'label': f"spin={spn}, orb={iorb}",
                         'iorb': iorb,
                         'isp': isp,
                     }
@@ -360,6 +381,7 @@ def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
     check.plot_iter_sigma(basename=prefix+"iter_sigma", fig_ext=ext)
     check.plot_iter_occupation(basename=prefix+"iter_occup", fig_ext=ext)
     check.plot_iter_spin_moment(basename=prefix+"iter_spin", fig_ext=ext)
+    check.plot_iter_total_charge(basename=prefix+"iter_charge", fig_ext=ext)
 
 
 def run():
