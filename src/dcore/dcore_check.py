@@ -119,7 +119,7 @@ class DMFTCoreCheck(object):
                 Sigma_iw_sh = self.solver.Sigma_iw_sh(itr)
 
                 itr_sigma[nsigma] = itr
-                sigma_ave.append(GfImFreq(indices=[0], beta=self.beta, n_points=self.p["system"]["n_iw"], name="$\Sigma_\mathrm{ave}$"))
+                sigma_ave.append(GfImFreq(indices=[0], beta=self.beta, n_points=self.p["system"]["n_iw"]))
                 sigma_ave[nsigma].data[:, 0, 0] = 0.0
                 norb_tot = 0
                 for ish in range(self.n_sh):
@@ -139,16 +139,18 @@ class DMFTCoreCheck(object):
         #
         self.plt.subplot(gs[0])
         for itr in range(nsigma):
-            self.oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
+            self.oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, self.omega_check), label=f'itr = {itr_sigma[itr]}')
         self.plt.legend(loc=0)
+        self.plt.ylabel(r"Re $\Sigma_\mathrm{ave} (i\omega_n)$")
         self.plt.xlim(0, self.omega_check)
         #
         # Imaginary part
         #
         self.plt.subplot(gs[1])
         for itr in range(nsigma):
-            self.oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
+            self.oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, self.omega_check), label=f'itr = {itr_sigma[itr]}')
         self.plt.legend(loc=0)
+        self.plt.ylabel(r"Im $\Sigma_\mathrm{ave} (i\omega_n)$")
         self.plt.xlim(0, self.omega_check)
 
         filename = basename + fig_ext
@@ -205,37 +207,46 @@ class DMFTCoreCheck(object):
 
         # plot
         self.__plot_init()
-        self.plt.figure(figsize=(8, 10))
-        gs = GridSpec(2, 1)
+        fig = self.plt.figure(figsize=(8, 10), tight_layout=True)
 
-        ax1 = self.plt.subplot(gs[0])
-        ax2 = self.plt.subplot(gs[1])
+        gs = fig.add_gridspec(2, 1)
+        ax1 = fig.add_subplot(gs[0])
+        ax2 = fig.add_subplot(gs[1], sharex=ax1)
 
+        show_legend = False
         for data in data_list:
             y = data['y']
-            label = data.get('label', '')
+            label = data.get('label', None)
             iorb = data.get('iorb', 0)
             isp = data.get('isp', 0)
 
-            ax1.plot(iter, y, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            _plot_options = dict(
+                label = label,
+                ls = get_ls(isp),
+                marker = markers[isp],
+                color = get_c(iorb),
+                # clip_on = False,
+            )
+            ax1.plot(iter, y, **_plot_options)
             diff = abs(numpy.array(y[1:]) - numpy.array(y[:-1]))
-            ax2.plot(iter[1:], diff, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            ax2.plot(iter[1:], diff, **_plot_options)
+
+            if label is not None:
+                show_legend = True
 
         filename = basename + fig_ext
         ax1.set_xlabel("iterations")
         ax1.set_ylabel(ylabel)
-        ax1.set_xlim(left=iter[0])
-        ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        if show_legend:
+            ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
 
         ax2.set_xlabel("iterations")
         ax2.set_ylabel("diff")
         ax2.set_yscale("log")
-        ax2.set_xlim(left=iter[0])
-        ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        if show_legend:
+            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
 
-        # self.plt.xlim(left=iter[0])
-        self.plt.tight_layout()
-        self.plt.savefig(filename)
+        fig.savefig(filename)
         print(" Output " + filename)
 
         # save data
@@ -255,7 +266,7 @@ class DMFTCoreCheck(object):
         """
         mu = [ self.solver.chemical_potential(itr) for itr in range(1, self.n_iter+1) ]
         data = {'y': mu}
-        self._plot_iter(basename, fig_ext, [data, ], "$\mu$")
+        self._plot_iter(basename, fig_ext, [data, ], r"$\mu$")
 
     def plot_iter_occupation(self, basename, fig_ext):
         """
