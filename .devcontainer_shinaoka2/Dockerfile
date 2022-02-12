@@ -58,4 +58,5 @@ RUN mkdir /home/${NB_USER}/work
 # For DCore
 ENV DCORE_TRIQS_COMPAT 1
 
-RUN pip3 install scipy, h5py>2.10.0, toml, dcorelib, mpi4py, matplotlib
+RUN pip3 install -U pip && \
+    pip3 install scipy h5py toml tomli dcorelib mpi4py matplotlib pytest mypy sympy
