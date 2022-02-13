@@ -108,6 +108,20 @@ Three kinds of figures will be included:
      :width: 500
      :align: center
 
+- **iter_occup-ish0.png**
+
+  The spin- and orbital-dependent occupation numbers as a function of the iteration number.
+
+  .. todo::
+      figure
+
+- **iter_spin-ish0.png**
+
+  The spin moments as a function of the iteration number.
+
+  .. todo::
+      figure
+
 - **sigma_ave.png**
 
   The averaged self-energy at the last seven iterations.
@@ -148,7 +162,7 @@ This program computes the total DOS (*seedname*\_dos.dat) and momenum-resolved s
 
 Here, please specify the number of MPI processes.
 The computed spectral function can be drawn by
-   
+
 .. code-block:: bash
 
    $ gnuplot [seedname]_akw.gp
