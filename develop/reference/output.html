@@ -78,11 +78,27 @@
 <td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
 </tr>
 <tr class="row-odd"><td></td>
-<td><p>check/iter_sigma.dat</p></td>
+<td><p>check/iter_sigma-ish0.dat</p></td>
 <td></td>
 </tr>
 <tr class="row-even"><td></td>
 <td><p>check/iter_sigma-ish0.png</p></td>
+<td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>check/iter_occup-ish0.dat</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>check/iter_occup-ish0.png</p></td>
+<td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>check/iter_spin-ish0.dat</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>check/iter_spin-ish0.png</p></td>
 <td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
 </tr>
 <tr class="row-odd"><td></td>
@@ -194,6 +210,10 @@ See <a class="reference internal" href="gf_format.html"><span class="doc">File f
 </tr>
 </tbody>
 </table>
+<p>The latest data list can be obtained by <code class="docutils literal notranslate"><span class="pre">h5ls</span></code> command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">h5ls</span> <span class="p">[</span><span class="n">seedname</span><span class="p">]</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">h5</span><span class="o">/</span><span class="n">dmft_out</span>
+</pre></div>
+</div>
 </li>
 <li><p>solver_dependent_output</p>
 <p>All solver-dependent output are stored in the working directory such as <strong>work/imp_shell#_iter#</strong> (#’s are replaced with numbers).
@@ -217,9 +237,9 @@ This is the data corresponding to the figure iter_mu.png (see <a class="referenc
 </pre></div>
 </div>
 </li>
-<li><p><strong>check/iter_sigma.dat</strong></p>
-<p>The average self-energy as a function of the iteration number.
-This is the data corresponding to the figure iter_sigma.png (see <a class="reference internal" href="programs.html#program-dcore-check"><span class="std std-ref">Convergence-check : dcore_check</span></a>).</p>
+<li><p><strong>check/iter_sigma-ish0.dat</strong></p>
+<p>The renormalization factor as a function of the iteration number.
+This is the data corresponding to the figure iter_sigma-ish0.png (see <a class="reference internal" href="programs.html#program-dcore-check"><span class="std std-ref">Convergence-check : dcore_check</span></a>).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="mf">0.6674359500130874</span> <span class="mf">0.6674359500130874</span>
 <span class="mi">2</span> <span class="mf">0.5208316972639336</span> <span class="mf">0.5208316972639336</span>
 <span class="mi">3</span> <span class="mf">0.31558993009526837</span> <span class="mf">0.31558993009526837</span>
@@ -228,6 +248,22 @@ This is the data corresponding to the figure iter_sigma.png (see <a class="refer
 <span class="mi">6</span> <span class="mf">0.11496910148099888</span> <span class="mf">0.11496910148099888</span>
 <span class="mi">7</span> <span class="mf">0.09665012984893595</span> <span class="mf">0.09665012984893595</span>
 </pre></div>
+</div>
+</li>
+<li><p><strong>check/iter_occup-ish0.dat</strong></p>
+<p>The spin- and orbital-dependent occupation numbers as a function of the iteration number.
+This is the data corresponding to the figure iter_occup-ish0.png (see <a class="reference internal" href="programs.html#program-dcore-check"><span class="std std-ref">Convergence-check : dcore_check</span></a>).</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>numerical data</p>
+</div>
+</li>
+<li><p><strong>check/iter_spin-ish0.dat</strong></p>
+<p>The spin moments as a function of the iteration number.
+This is the data corresponding to the figure iter_spin-ish0.png (see <a class="reference internal" href="programs.html#program-dcore-check"><span class="std std-ref">Convergence-check : dcore_check</span></a>).</p>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>numerical data</p>
 </div>
 </li>
 <li><p><strong>check/sigma.dat</strong></p>
@@ -252,7 +288,7 @@ This is the data corresponding to the figure iter_sigma.png (see <a class="refer
 <h2><code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#dcore-post" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p><strong>post/</strong><em>seedname</em><strong>_dos.dat</strong></p>
-<p>The density of states.</p>
+<p>The k-integrated single-particle excitation spectrum <span class="math notranslate nohighlight">\(A(\omega)\)</span> (density of states).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># [1] Energy</span>
 <span class="c1"># [2] Total DOS of spin up</span>
 <span class="c1"># [3] Total DOS of spin down</span>
@@ -268,7 +304,7 @@ This is the data corresponding to the figure iter_sigma.png (see <a class="refer
 </div>
 </li>
 <li><p><strong>post/</strong><em>seedname</em><strong>_akw.dat</strong></p>
-<p>The single-particle excitation spectrum A(k, w).
+<p>The single-particle excitation spectrum <span class="math notranslate nohighlight">\(A(\boldsymbol{k}, \omega)\)</span> on the given k-path.
 See <a class="reference internal" href="programs.html#program-dcore-post"><span class="std std-ref">Post-processing : dcore_post</span></a> for how to plot this data.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.000000</span> <span class="o">-</span><span class="mf">5.000000</span> <span class="mf">0.092677</span>
 <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">4.972431</span> <span class="mf">0.097063</span>
