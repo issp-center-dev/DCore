@@ -304,8 +304,9 @@ class SaveBSE:
         n_w2b = xloc_ijkl[list(xloc_ijkl.keys())[0]].shape[0]
 
         def decompose_index(index):
-            spn = index // self.n_orb
-            orb = index % self.n_orb
+            n_inner = self.n_flavors // len(self.spin_names)
+            spn = index // n_inner
+            orb = index % n_inner
             return self.spin_names[spn], orb
 
         # read X_loc data and save into h5 file
@@ -316,16 +317,10 @@ class SaveBSE:
                 # (wb, wf1, wf2) --> (wf1, wf2)
                 data_wb = data[wb]
 
-                if not self.use_spin_orbit:
-                    s1, o1 = decompose_index(i1)
-                    s2, o2 = decompose_index(i2)
-                    s3, o3 = decompose_index(i3)
-                    s4, o4 = decompose_index(i4)
-                else:
-                    s1, o1 = 0, i1
-                    s2, o2 = 0, i2
-                    s3, o3 = 0, i3
-                    s4, o4 = 0, i4
+                s1, o1 = decompose_index(i1)
+                s2, o2 = decompose_index(i2)
+                s3, o3 = decompose_index(i3)
+                s4, o4 = decompose_index(i4)
 
                 s12 = self.block2.get_index(icrsh, s1, icrsh, s2)
                 s34 = self.block2.get_index(icrsh, s3, icrsh, s4)
