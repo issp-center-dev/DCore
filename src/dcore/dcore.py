@@ -91,7 +91,7 @@ def run():
 
     args = parser.parse_args()
     if os.path.isfile(args.path_input_file) is False:
-        print("Input file does not exist.")
+        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
         sys.exit(-1)
 
     dcore(args.path_input_file, int(args.np))

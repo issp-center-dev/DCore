@@ -950,6 +950,12 @@ class DMFTCoreSolver(object):
         with HDFArchive(self._output_file, 'r') as ar:
             return ar[self._output_group]['spin_moment'][str(iteration_number)]
 
+    def get_history(self, key, iteration_number):
+        assert isinstance(key, str)
+        assert isinstance(iteration_number, int)
+        with HDFArchive(self._output_file, 'r') as ar:
+            return ar[self._output_group][key][str(iteration_number)]
+
     @property
     def n_inequiv_shells(self):
         return self._n_inequiv_shells

@@ -1,5 +1,6 @@
 from dcore._dispatcher import mpi
 from .worker_base import SumkDFTWorkerBase, setup_sk
+import sys
 
 class SumkDFTWorkerGloc(SumkDFTWorkerBase):
     """For computing Gloc"""
@@ -23,6 +24,10 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
         if self.params['adjust_mu']:
             # find the chemical potential for given density
             sk.calc_mu(self.params['prec_mu'])
+            # calc_mu returns None when it failed in adjusting chemical potential
+            if sk.chemical_potential is None:
+                print("ERROR: Failed in adjusting chemical potential", file=sys.stderr)
+                sys.exit(-1)
             if mpi.is_master_node():
                 results['mu'] = float(sk.chemical_potential)
 

@@ -523,7 +523,9 @@ class SumkDFT_opt(SumkDFT):
         dens = mpi.all_reduce(mpi.world, dens, lambda x, y: x + y)
         mpi.barrier()
 
-        if abs(dens.imag) > 1e-20:
+        # if abs(dens.imag) > 1e-20:
+        # +++REPLACED
+        if abs(dens.imag) > 1e-12:
             mpi.report("Warning: Imaginary part in density will be ignored ({})".format(str(abs(dens.imag))))
         return dens.real
 
