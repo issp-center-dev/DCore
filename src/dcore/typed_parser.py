@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import os
+import sys
 import copy
 from enum import Enum
 from warnings import warn
@@ -192,7 +193,8 @@ class TypedParser(object):
                     if sect in self.__allow_undefined_options:
                         self.__results[sect][opt] = value
                     else:
-                        raise RuntimeError("Undefined option " + opt + " is not allowed in section " + sect + "!")
+                        # raise RuntimeError("Undefined option " + opt + " is not allowed in section " + sect + "!")
+                        sys.exit(f"ERROR: Parameter '{opt}' is not allowed in section [{sect}]")
 
     def get(self, sect, opt):
         """

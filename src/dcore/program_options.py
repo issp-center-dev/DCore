@@ -35,7 +35,8 @@ def _set_nk(nk, nk0, nk1, nk2):
     elif abs(nk0) + abs(nk1) + abs(nk2) > 0:
         # if any of nk0, nk1 and nk2 are set, use them.
         if nk0 * nk1 * nk2 == 0:
-            raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
+            # raise RuntimeError("Some of nk0, nk1 and nk2 are zero!")
+            sys.exit(f"ERROR: Invalid values (nk0, nk1, nk2) = ({nk0}, {nk1}, {nk2}). nk0, nk1, nk2 must be all positive.")
     return nk0, nk1, nk2
 
 
@@ -163,7 +164,10 @@ def _cast_to_bool(p):
 
 def two_options_incompatible(params, option1, option2):
     if _cast_to_bool(params[option1[0]][option1[1]]) and _cast_to_bool(params[option2[0]][option2[1]]):
-        raise RuntimeError("[{}][{}] and [{}][{}] cannot be True at the same time!".format(option1[0], option1[1], option2[0], option2[1]))
+        # raise RuntimeError("[{}][{}] and [{}][{}] cannot be True at the same time!".format(option1[0], option1[1], option2[0], option2[1]))
+        block1, param1 = option1
+        block2, param2 = option2
+        sys.exit(f"ERROR: [{block1}]{param1} and [{block2}]{param2} cannot be True at the same time.")
 
 
 def parse_parameters(params):
@@ -194,17 +198,26 @@ def parse_parameters(params):
             equiv_str_list = re.findall(r'[^\s,]+', params['model']['corr_to_inequiv'])
             corr_to_inequiv = numpy.array(list(map(int, equiv_str_list)))
             if len(corr_to_inequiv) != ncor:
-                raise RuntimeError("Invalid number of elements in corr_to_inequiv!")
+                # raise RuntimeError("Invalid number of elements in corr_to_inequiv!")
+                sys.exit(f"ERROR: corr_to_inequiv={params['model']['corr_to_inequiv']!r} must have ncor={params['model']['ncor']!r} entries.")
             params['model']['corr_to_inequiv'] = corr_to_inequiv
-            params['model']['n_inequiv_shells'] = len(numpy.unique(corr_to_inequiv))
-            if numpy.amin(corr_to_inequiv) < 0 or numpy.amin(corr_to_inequiv) > params['model']['n_inequiv_shells']:
-                raise RuntimeError('Elements of corr_to_inequiv must be in the range of [0, n_inequiv_shells-1]!')
+
+            # Check numerical values in corr_to_inequiv
+            seq_array = numpy.unique(corr_to_inequiv)  # must be sequential
+            if not numpy.array_equal(seq_array, numpy.arange(len(seq_array))):
+                # raise RuntimeError('Elements of corr_to_inequiv must be in the range of [0, n_inequiv_shells-1]!')
+                sys.exit(f"ERROR: Invalid value corr_to_inequiv={params['model']['corr_to_inequiv']}. Elements of corr_to_inequiv must be composed of sequential numbers, 0, 1, ...")
+            params['model']['n_inequiv_shells'] = len(seq_array)
 
         # Set [model][norb_inequiv_sh]
         nsh = params['model']['n_inequiv_shells']
         params['model']['norb_inequiv_sh'] = numpy.array(list(map(int, re.findall(r'\d+', params['model']['norb']))))
         if len(params['model']['norb_inequiv_sh']) != nsh:
-            raise RuntimeError("Wrong number of entries in norb!")
+            # raise RuntimeError("Wrong number of entries in norb!")
+            sys.exit(f"ERROR: norb={params['model']['norb']!r} must have n_inequiv_shells={nsh} entries.")
+        for norb in params['model']['norb_inequiv_sh']:
+            if norb <= 0:
+                sys.exit(f"ERROR: Invalid value norb={params['model']['norb']}. All entries in norb must be positive.")
 
         # Set [model][norb_corr_sh]
         corr_to_inequiv = params['model']['corr_to_inequiv']
@@ -243,6 +256,7 @@ def parse_knode(knode_string):
 
     KNode = namedtuple('KNode', ('kvec', 'label'))
 
+    # TODO : use ast.literal_eval and assert
     knode_list = re.findall(r'\(\w+,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', knode_string.replace(" ", ""))
     knode = []
     try:
@@ -250,7 +264,8 @@ def parse_knode(knode_string):
             _knode = [w for w in re.split(r'[)(,]', _list) if len(w) > 0]
             knode.append(KNode(label = _knode[0], kvec = numpy.array(list(map(float, _knode[1:4])))))
     except RuntimeError:
-        raise RuntimeError("Error ! Format of knode is wrong.")
+        # raise RuntimeError("Error ! Format of knode is wrong.")
+        sys.exit(f"ERROR: Cannot parse knode={knode_string}. knode must be a list of (str, float, float, float).")
     return knode
 
 
@@ -271,10 +286,13 @@ def parse_bvec(bvec_string):
     """
 
     #bvec_list = re.findall(r'\(\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*,\s*-?\s*\d+\.?\d*\)', p["model"]["bvec"])
-    bvec_list = ast.literal_eval(bvec_string)
-    if isinstance(bvec_list, list) and len(bvec_list) == 3:
+    try:
+        bvec_list = ast.literal_eval(bvec_string)
+        # if isinstance(bvec_list, list) and len(bvec_list) == 3:
+        assert isinstance(bvec_list, (list, tuple)), f"type(bvec)={type(bvec_list)}"
         bvec = numpy.array(bvec_list, dtype=float)
-        assert bvec.shape == (3,3)
-    else:
-        raise RuntimeError("Error ! Format of bvec is wrong.")
+        assert bvec.shape == (3,3), f"bvec.shape={bvec.shape}"
+    except Exception as e:
+        print(e)
+        sys.exit(f"ERROR: Unable to parse bvec={bvec_string}. bvec must be a double list of shape (3, 3).")
     return bvec
