@@ -29,7 +29,7 @@ from dcore.sumkdft_compat import SumkDFTCompat
 
 from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import print_local_fields
-from dcore.program_options import parse_parameters, print_parameters
+from dcore.program_options import parse_parameters, print_parameters, delete_parameters
 from dcore.interaction import generate_umat
 
 
@@ -129,6 +129,12 @@ def dcore_pre(filename):
     pars.read(filename)
     p = pars.as_dict()
     parse_parameters(p)
+
+    #
+    # Delete unnecessary parameters
+    #
+    delete_parameters(p, block='model', delete=['bvec'])
+
     #
     # Summary of input parameters
     #
@@ -140,7 +146,7 @@ def dcore_pre(filename):
     h5_file = p['model']['seedname'] + '.h5'
     if p['model']['lattice'] != 'external':
         if os.path.exists(h5_file):
-            print("Removing the existing model HDF5 file...")
+            print("\nRemoving the existing model HDF5 file...")
             os.remove(h5_file)
 
     #

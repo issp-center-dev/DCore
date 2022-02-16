@@ -331,9 +331,19 @@ def print_parameters(p):
     """
     assert isinstance(p, dict)
 
-    print("\n  @ Parameter summary\n")
+    # print("\n  @ Parameter summary\n")
+    # for block, params in p.items():
+    #     print(f"    [{block}]")
+    #     for k, v in params.items():
+    #         print(f"      {k} = {v!r}")
+    #     print("")
+
+    print("\n==========================================================")
+    print("Parameter summary\n")
     for block, params in p.items():
-        print(f"    [{block}]")
+        print(f"  [{block}]")
         for k, v in params.items():
-            print(f"      {k} = {v!r}")
+            print(f"    {k} = {v!r}")
         print("")
+    print("End of parameter summary")
+    print("==========================================================")

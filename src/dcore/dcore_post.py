@@ -24,7 +24,7 @@ from itertools import product
 
 from dcore._dispatcher import *
 from dcore.dmft_core import DMFTCoreSolver
-from dcore.program_options import create_parser, parse_parameters, parse_bvec, _set_nk, print_parameters
+from dcore.program_options import create_parser, parse_parameters, parse_bvec, _set_nk, print_parameters, delete_parameters
 from dcore.tools import save_Sigma_w_sh_txt
 from dcore import impurity_solvers
 from dcore.lattice_models import create_lattice_model
@@ -470,15 +470,18 @@ def dcore_post(filename, np=1, prefix="./"):
     mpirun_command = p['mpi']['command'].replace('#', str(p['mpi']['num_processes']))
     mpirun_command_np1 = p['mpi']['command'].replace('#', '1')
 
+    #
+    # Delete unnecessary parameters
+    #
+    delete_parameters(p, block='model', delete=['interaction', 'density_density', 'kanamori', 'slater_f', 'slater_uj', 'slater_basis', 'local_potential_matrix', 'local_potential_factor'])
+
+    # Summary of input parameters
+    print_parameters(p)
+
     # make directory
     dir = os.path.dirname(prefix)
     if not os.path.exists(dir):
         os.makedirs(dir)
-
-    #
-    # Summary of input parameters
-    #
-    print_parameters(p)
 
     #
     # Generate k-path and compute H(k) on this path

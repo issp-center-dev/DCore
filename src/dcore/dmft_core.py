@@ -394,7 +394,7 @@ class DMFTCoreSolver(object):
         else:
             if os.path.exists(self._output_file):
                 import shutil
-                print("Moving {} to {}...".format(self._output_file, self._output_file + '.bak'))
+                print("\nMoving {} to {}...".format(self._output_file, self._output_file + '.bak'))
                 shutil.move(self._output_file, self._output_file + '.bak')
 
             self._prepare_output_file__from_scratch()
