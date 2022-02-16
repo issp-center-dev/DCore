@@ -444,7 +444,7 @@ def gen_script_gnuplot(xnode, seedname, prefix, spin_orbit):
         print("\n      $ gnuplot {0}".format(os.path.basename(file_akw_gp)))
 
 
-def dcore_post(filename, np=1, prefix="./"):
+def dcore_post(filename, np=1, prefix=None):
     """
     Main routine for the post-processing tool
 
@@ -470,6 +470,10 @@ def dcore_post(filename, np=1, prefix="./"):
     mpirun_command = p['mpi']['command'].replace('#', str(p['mpi']['num_processes']))
     mpirun_command_np1 = p['mpi']['command'].replace('#', '1')
 
+    # for backward compatibility
+    if prefix is not None:
+        p["tool"]["post_dir"] = prefix
+
     #
     # Delete unnecessary parameters
     #
@@ -479,9 +483,12 @@ def dcore_post(filename, np=1, prefix="./"):
     print_parameters(p)
 
     # make directory
-    dir = os.path.dirname(prefix)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
+    post_dir = p["tool"]["post_dir"]
+    if post_dir:
+        os.makedirs(post_dir, exist_ok=True)
+        prefix = post_dir + "/"
+    else:
+        prefix = "./"
 
     #
     # Generate k-path and compute H(k) on this path
@@ -554,14 +561,20 @@ def run():
                         )
     parser.add_argument('--np', help='Number of MPI processes', required=True)
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
-    parser.add_argument('--prefix',
+    parser.add_argument('--prefix',  # Deprecated
                         action='store',
-                        default='post/',
+                        default=None,
                         type=str,
-                        help='prefix for output files (default: post/)'
+                        # help='prefix for output files (default: post/)'
+                        help='[Deprecated] Use post_dir parameter in [tool] block',
                         )
 
     args = parser.parse_args()
+
+    # for backward compatibility
+    if args.prefix is not None:
+        print("DeprecationWarning: --prefix option is deprecated. Use post_dir parameter in [tool] block", file=sys.stderr)
+
     for path_input_file in args.path_input_files:
         if os.path.isfile(path_input_file) is False:
             sys.exit(f"Input file '{path_input_file}' does not exist.")

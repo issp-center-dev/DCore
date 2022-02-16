@@ -128,6 +128,7 @@ def create_parser(target_sections=None):
     parser.add_option("tool", "omega_pade", float, 1E+20, "Cutoff frequency for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.")
     parser.add_option("tool", "n_pade_min", int, 20, "Minimum number of Matsubara frequencies used for Pade approximation.")
     parser.add_option("tool", "n_pade_max", int, -1, "Maximum number of Matsubara frequencies used for Pade approximation. If negative, this will be replaced with n_iw in [system] block.")
+    parser.add_option("tool", "post_dir", str, "post", "Directory to which results of dcore_post are stored.")
 
     parser.add_option("tool", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
     parser.add_option("tool", "nk_mesh", int, 0, "Number of k points along each axis for computation of A(k,omega) on a 3D mesh")
