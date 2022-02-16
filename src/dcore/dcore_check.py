@@ -407,11 +407,12 @@ def run():
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name."
+                        nargs='*',
+                        help="Input filename(s)",
                         )
     parser.add_argument('--prefix',
                         action='store',
@@ -444,11 +445,11 @@ def run():
     #     warn("--output option is not used")
 
     args = parser.parse_args()
-    if os.path.isfile(args.path_input_file) is False:
-        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
-        sys.exit(-1)
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
 
-    dcore_check(args.path_input_file, args.prefix, args.ext, args.max_n_iter)
+    dcore_check(args.path_input_files, args.prefix, args.ext, args.max_n_iter)
 
     # Finish
     print("\n  Done\n")

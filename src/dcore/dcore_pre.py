@@ -107,7 +107,7 @@ def __check_if_Hk_is_hermite(h5file):
                     print('Warning: {}'.format(message))
 
 
-def dcore_pre(filename):
+def dcore_pre(input_filenames):
     """
     Main routine for the pre-processing tool
 
@@ -118,7 +118,7 @@ def dcore_pre(filename):
     """
 
     print("\n@@@@@@@@@@@@@@@@@@@  Reading Input File  @@@@@@@@@@@@@@@@@@@@\n")
-    print("Input File Name : ", filename)
+    print("Input Filename(s) : ", input_filenames)
     #
     # Construct a parser with default values
     #
@@ -126,7 +126,7 @@ def dcore_pre(filename):
     #
     # Parse keywords and store
     #
-    pars.read(filename)
+    pars.read(input_filenames)
     p = pars.as_dict()
     parse_parameters(p)
 
@@ -202,16 +202,17 @@ def run():
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=generate_all_description()
     )
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name."
+                        nargs='*',
+                        help="Input filename(s)",
                         )
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
-    if os.path.isfile(args.path_input_file) is False:
-        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
-        sys.exit(-1)
-    dcore_pre(args.path_input_file)
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
+    dcore_pre(args.path_input_files)
