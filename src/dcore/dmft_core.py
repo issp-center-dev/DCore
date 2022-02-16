@@ -508,11 +508,14 @@ class DMFTCoreSolver(object):
                     self._sh_quant[ish].Sigma_iw[sp].data[...] += init_se[ish][isp]
 
         elif self._params["control"]["initial_self_energy"] != "None":
+            filename = self._params["control"]["initial_self_energy"]
+            if not os.path.exists(filename):
+                sys.exit(f"ERROR: File not found: initial_self_energy='{filename}'.")
             self._loaded_initial_self_energy = True
             Sigma_iw_sh_tmp = [self._sh_quant[ish].Sigma_iw for ish in range(self.n_inequiv_shells)]
-            load_Sigma_iw_sh_txt(self._params["control"]["initial_self_energy"], Sigma_iw_sh_tmp, self.spin_block_names)
+            load_Sigma_iw_sh_txt(filename, Sigma_iw_sh_tmp, self.spin_block_names)
             print('')
-            print('Loading {} ...'.format(self._params["control"]["initial_self_energy"]), end=' ')
+            print(f'Loading {filename} ...', end=' ')
             for ish in range(self.n_inequiv_shells):
                 self._sh_quant[ish].Sigma_iw << Sigma_iw_sh_tmp[ish]
             print('Done')

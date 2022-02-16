@@ -41,6 +41,11 @@ def dcore(filename, np=1):
 
     params["mpi"]["num_processes"] = np
 
+    # Check if seedname.h5 exists
+    h5_file = params['model']['seedname'] + '.h5'
+    if not os.path.exists(h5_file):
+        sys.exit(f"ERROR: File '{h5_file}' not found. Execute dcore_pre in advance!")
+
     solver = DMFTCoreSolver(params["model"]["seedname"], params, restart=params['control']['restart'])
 
     solver.do_steps(max_step=params["control"]["max_step"])
