@@ -428,7 +428,8 @@ class DMFTCoreSolver(object):
         with HDFArchive(output_file, 'r') as f:
             ar = f[output_group]
             if 'iterations' not in ar:
-                raise RuntimeError("Failed to restart the previous simulation! Data not found!")
+                # raise RuntimeError("Failed to restart the previous simulation! Data not found!")
+                sys.exit(f"ERROR: Failed in restoring the previous simulation. Data not found in file {output_file!r}.")
 
             self._previous_runs = ar['iterations']
             if ar['iterations'] <= 0:
