@@ -296,3 +296,17 @@ def parse_bvec(bvec_string):
         print(e)
         sys.exit(f"ERROR: Unable to parse bvec={bvec_string}. bvec must be a double list of shape (3, 3).")
     return bvec
+
+
+def print_parameters(p):
+    """
+    Print parameters
+    """
+    assert isinstance(p, dict)
+
+    print("\n  @ Parameter summary\n")
+    for block, params in p.items():
+        print(f"    [{block}]")
+        for k, v in params.items():
+            print(f"      {k} = {v!r}")
+        print("")

@@ -41,6 +41,9 @@ def dcore(filename, np=1):
 
     params["mpi"]["num_processes"] = np
 
+    # Summary of input parameters
+    print_parameters(params)
+
     # Check if seedname.h5 exists
     h5_file = params['model']['seedname'] + '.h5'
     if not os.path.exists(h5_file):

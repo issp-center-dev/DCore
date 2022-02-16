@@ -24,7 +24,7 @@ from itertools import product
 
 from dcore._dispatcher import *
 from dcore.dmft_core import DMFTCoreSolver
-from dcore.program_options import create_parser, parse_parameters, parse_bvec, _set_nk
+from dcore.program_options import create_parser, parse_parameters, parse_bvec, _set_nk, print_parameters
 from dcore.tools import save_Sigma_w_sh_txt
 from dcore import impurity_solvers
 from dcore.lattice_models import create_lattice_model
@@ -478,13 +478,7 @@ def dcore_post(filename, np=1, prefix="./"):
     #
     # Summary of input parameters
     #
-    print("\n  @ Parameter summary")
-    print("\n    [model] block")
-    for k, v in list(p["model"].items()):
-        print("      {0} = {1}".format(k, v))
-    print("\n    [tool] block")
-    for k, v in list(p["tool"].items()):
-        print("      {0} = {1}".format(k, v))
+    print_parameters(p)
 
     #
     # Generate k-path and compute H(k) on this path
