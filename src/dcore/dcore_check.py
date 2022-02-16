@@ -403,7 +403,7 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore_check.py',
-        description='script for checking the convergence of dcore.',
+        description='Supplementary script of DCore for checking the convergence of DMFT iteration',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
     )

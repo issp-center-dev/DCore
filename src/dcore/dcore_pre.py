@@ -196,8 +196,8 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore_pre.py',
-        description='pre script for dcore.',
-        usage='$ dcore_pre input',
+        description='Preprocessing script of DCore',
+        # usage='$ dcore_pre input',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=generate_all_description()
