@@ -546,7 +546,7 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore_post.py',
-        description='Postprocessing script of DCore',
+        description='Post-processing script in DCore',
         # usage='$ dcore_post input --np 4',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,

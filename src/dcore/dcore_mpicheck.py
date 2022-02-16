@@ -87,21 +87,22 @@ def run():
     parser = argparse.ArgumentParser(
         prog='dcore_mpicheck.py',
         description='Checker for MPI environment and input parameterrs',
-        usage='$ dcore_mpicheck input --np 4',
+        # usage='$ dcore_mpicheck input --np 4',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=generate_all_description()
     )
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name."
+                        nargs='*',
+                        help="Input filename(s)",
                         )
     parser.add_argument('--np', help='Number of MPI processes', required=True)
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
     args = parser.parse_args()
-    if os.path.isfile(args.path_input_file) is False:
-        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
-        sys.exit(-1)
-    dcore_mpicheck(args.path_input_file, int(args.np))
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
+    dcore_mpicheck(args.path_input_files, int(args.np))

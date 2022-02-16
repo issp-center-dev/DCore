@@ -654,22 +654,24 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore_bse.py',
-        description='Post-processing script for dcore (bse).',
-        usage='$ dcore_bse input --np 4',
+        description='Post-processing script in DCore (bse)',
+        # usage='$ dcore_bse input --np 4',
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=generate_all_description(),
         add_help=True)
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name."
+                        nargs='*',
+                        help="Input filename(s)",
                         )
     parser.add_argument('--np', help='Number of MPI processes', required=True)
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
-    if os.path.isfile(args.path_input_file) is False:
-        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
-        sys.exit(-1)
-    dcore_bse(args.path_input_file, int(args.np))
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
+
+    dcore_bse(args.path_input_files, int(args.np))

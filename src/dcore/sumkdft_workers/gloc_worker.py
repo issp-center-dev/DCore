@@ -26,8 +26,7 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
             sk.calc_mu(self.params['prec_mu'])
             # calc_mu returns None when it failed in adjusting chemical potential
             if sk.chemical_potential is None:
-                print("ERROR: Failed in adjusting chemical potential", file=sys.stderr)
-                sys.exit(-1)
+                sys.exit("ERROR: Failed in adjusting chemical potential")
             if mpi.is_master_node():
                 results['mu'] = float(sk.chemical_potential)
 

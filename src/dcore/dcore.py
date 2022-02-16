@@ -86,7 +86,7 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore.py',
-        description='Main script of DCore',
+        description='Main script in DCore',
         # usage='$ dcore input.ini --np 4',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
