@@ -41,6 +41,10 @@ def dcore(filename, np=1):
 
     params["mpi"]["num_processes"] = np
 
+    # Delete unnecessary parameters
+    delete_parameters(params, block='model', retain=['seedname'])
+    delete_parameters(params, block='tool', retain=['Nomega', 'omega_min', 'omega_max', 'n_pade_min', 'n_pade_max', 'omega_pade', 'eta'])
+
     # Summary of input parameters
     print_parameters(params)
 

@@ -298,6 +298,33 @@ def parse_bvec(bvec_string):
     return bvec
 
 
+def delete_parameters(p, block, delete=None, retain=None):
+    """
+    Delete parameters
+    """
+
+    assert block in p
+    assert (delete is None and retain is not None) or (delete is not None and retain is None)
+
+    if delete is not None:
+        assert isinstance(delete, (list, tuple))
+        for key in delete:
+            assert isinstance(key, str)
+            del p[block][key]  # Delete an entry
+
+    elif retain is not None:
+        assert isinstance(retain, (list, tuple))
+        for key in retain:
+            assert isinstance(key, str)
+            assert key in p[block]
+        # Replace with a new dict
+        assert type(p[block]) == dict  # exclude OrderedDict
+        p[block] = {key: value for key, value in p[block].items() if key in retain}
+
+    else:
+        raise Exception("Here should not be reached")
+
+
 def print_parameters(p):
     """
     Print parameters

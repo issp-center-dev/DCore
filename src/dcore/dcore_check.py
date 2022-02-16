@@ -47,6 +47,13 @@ class DMFTCoreCheck(object):
         pars.read(ini_file)
         self.p = pars.as_dict()
         parse_parameters(self.p)
+
+        # Delete unnecessary parameters
+        delete_parameters(self.p, block='model', retain=['seedname'])
+        delete_parameters(self.p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu'])
+        delete_parameters(self.p, block='tool', retain=['omega_check'])
+
+        # Summary of input parameters
         print_parameters(self.p)
 
         # Just for convenience
