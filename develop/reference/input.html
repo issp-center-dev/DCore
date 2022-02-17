@@ -663,47 +663,52 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 <td><p>-1</p></td>
 <td><p>Maximum number of Matsubara frequencies used for Pade approximation. If negative, this will be replaced with n_iw in [system] block.</p></td>
 </tr>
-<tr class="row-odd"><td><p>omega_check</p></td>
+<tr class="row-odd"><td><p>post_dir</p></td>
+<td><p>String</p></td>
+<td><p>post</p></td>
+<td><p>Directory to which results of dcore_post are stored.</p></td>
+</tr>
+<tr class="row-even"><td><p>omega_check</p></td>
 <td><p>Float</p></td>
 <td><p>0.0</p></td>
 <td><p>Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.</p></td>
 </tr>
-<tr class="row-even"><td><p>nk_mesh</p></td>
+<tr class="row-odd"><td><p>nk_mesh</p></td>
 <td><p>Integer</p></td>
 <td><p>0</p></td>
 <td><p>Number of k points along each axis for computation of A(k,omega) on a 3D mesh</p></td>
 </tr>
-<tr class="row-odd"><td><p>nk0_mesh</p></td>
+<tr class="row-even"><td><p>nk0_mesh</p></td>
 <td><p>Integer</p></td>
 <td><p>0</p></td>
 <td><p>Number of k points along b_0 for computation of A(k,omega) on a 3D mesh</p></td>
 </tr>
-<tr class="row-even"><td><p>nk1_mesh</p></td>
+<tr class="row-odd"><td><p>nk1_mesh</p></td>
 <td><p>Integer</p></td>
 <td><p>0</p></td>
 <td><p>Number of k points along b_1 for computation of A(k,omega) on a 3D mesh</p></td>
 </tr>
-<tr class="row-odd"><td><p>nk2_mesh</p></td>
+<tr class="row-even"><td><p>nk2_mesh</p></td>
 <td><p>Integer</p></td>
 <td><p>0</p></td>
 <td><p>Number of k points along b_2 for computation of A(k,omega) on a 3D mesh</p></td>
 </tr>
-<tr class="row-even"><td><p>Lambda_IR</p></td>
+<tr class="row-odd"><td><p>Lambda_IR</p></td>
 <td><p>Float</p></td>
 <td><p>10000.0</p></td>
 <td><p>IR parameter for computing G(k,iw)</p></td>
 </tr>
-<tr class="row-odd"><td><p>cutoff_IR</p></td>
+<tr class="row-even"><td><p>cutoff_IR</p></td>
 <td><p>Float</p></td>
 <td><p>1e-05</p></td>
 <td><p>IR cutoff parameter for computing G(k,iw)</p></td>
 </tr>
-<tr class="row-even"><td><p>cutoff_IR_2P</p></td>
+<tr class="row-odd"><td><p>cutoff_IR_2P</p></td>
 <td><p>Float</p></td>
 <td><p>1e-05</p></td>
 <td><p>IR cutoff parameter for computing two-particle quantities</p></td>
 </tr>
-<tr class="row-odd"><td><p>gk_smpl_freqs</p></td>
+<tr class="row-even"><td><p>gk_smpl_freqs</p></td>
 <td><p>String</p></td>
 <td><p>dense</p></td>
 <td><p>Sampling fermionic frequencies for dcore_gk. dense or the name of a text file that contains sampling frequencies.For gk_smpl_freqs = dense, all fermionic frequencies in the range of [-n_iw, n_iw] are used. A valid text file must contain the number of sampling frequencies in its first line.Each line after the first line must contain two integer numbers: The first one is an sequential index of a sampling frequency (start from 0), and the second one is a fermionic sampling frequency (i.e, -1, 0, 1).</p></td>
