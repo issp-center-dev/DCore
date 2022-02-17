@@ -8,11 +8,12 @@
 # check command
 check_command dcore
 check_command dcore_bse
-check_command BSE
 check_command pomerol2dcore
-
-# check environment variable
-check_var BSE_DIR
+check_command BSE
+check_command bse_tool.py
+check_command bse_post.py
+check_command gen_qpath.py
+check_command plot_chiq_path.py
 
 # set NUM_PROC=1 if not defined
 set_num_proc
@@ -26,15 +27,9 @@ cd results || exit
 cp ../eigenvec.in .
 
 # ---------------------------------
-# set variables
-
-export PYTHONPATH=$BSE_DIR/python:$PYTHONPATH
-echo "PYTHONPATH = $PYTHONPATH"
+# DCore
 
 ini=../dmft_square.in
-
-# ---------------------------------
-# DCore
 
 echo ""
 echo "##################"
@@ -63,16 +58,16 @@ echo " BSE"
 echo "##################"
 echo ""
 
-# print latest commit of git repository
-$BSE_DIR/bin/misc/print_latest_commit.sh
+# Print version
+bse_tool.py --version || exit
 
 # Generate q_path.dat
-python3 $BSE_DIR/python/bse_tools/gen_qpath.py $ini ../qpath.in || exit
+gen_qpath.py $ini ../qpath.in || exit
 
 # BSE
-mpirun -np $NUM_PROC python3 $BSE_DIR/python/bse_tools/bse_tool.py ../bse.in || exit
-python3 $BSE_DIR/python/bse_tools/bse_post.py ../bse.in || exit
+mpirun -np $NUM_PROC bse_tool.py ../bse.in || exit
+bse_post.py ../bse.in || exit
 
 # Plot BSE results
-python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi_q_eigen.dat
-python3 $BSE_DIR/python/bse_tools/plot_chiq_path.py q_path.dat chi0_q_eigen.dat --mode='chi0'
+plot_chiq_path.py q_path.dat chi_q_eigen.dat
+plot_chiq_path.py q_path.dat chi0_q_eigen.dat --mode='chi0'

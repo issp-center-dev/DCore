@@ -33,7 +33,7 @@ from dcore import impurity_solvers
 from .sumkdft_workers.launcher import run_sumkdft
 
 # from BSE repo
-from bse_tools.h5bse import h5BSE
+from bse.h5bse import h5BSE
 
 
 def to_str(x):
@@ -261,7 +261,7 @@ class SaveBSE:
         self.args = copy.deepcopy(locals())
         del self.args['self']
 
-        from dft_tools.index_pair import IndexPair, IndexPair2
+        from bse.index_pair import IndexPair, IndexPair2
 
         self.spin_names = spin_names
         self.use_spin_orbit = use_spin_orbit
