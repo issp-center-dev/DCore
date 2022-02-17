@@ -48,6 +48,14 @@ class DMFTCoreCheck(object):
         self.p = pars.as_dict()
         parse_parameters(self.p)
 
+        # Delete unnecessary parameters
+        delete_parameters(self.p, block='model', retain=['seedname'])
+        delete_parameters(self.p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu'])
+        delete_parameters(self.p, block='tool', retain=['omega_check'])
+
+        # Summary of input parameters
+        print_parameters(self.p)
+
         # Just for convenience
         #output_file = p["model"]["seedname"]+'.out.h5'
         #output_group = 'dmft_out'
@@ -395,15 +403,16 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore_check.py',
-        description='script for checking the convergence of dcore.',
+        description='Supplementary script in DCore for checking the convergence of DMFT iteration',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name."
+                        nargs='*',
+                        help="Input filename(s)",
                         )
     parser.add_argument('--prefix',
                         action='store',
@@ -436,11 +445,11 @@ def run():
     #     warn("--output option is not used")
 
     args = parser.parse_args()
-    if os.path.isfile(args.path_input_file) is False:
-        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
-        sys.exit(-1)
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
 
-    dcore_check(args.path_input_file, args.prefix, args.ext, args.max_n_iter)
+    dcore_check(args.path_input_files, args.prefix, args.ext, args.max_n_iter)
 
     # Finish
     print("\n  Done\n")

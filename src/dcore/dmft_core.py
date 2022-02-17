@@ -394,7 +394,7 @@ class DMFTCoreSolver(object):
         else:
             if os.path.exists(self._output_file):
                 import shutil
-                print("Moving {} to {}...".format(self._output_file, self._output_file + '.bak'))
+                print("\nMoving {} to {}...".format(self._output_file, self._output_file + '.bak'))
                 shutil.move(self._output_file, self._output_file + '.bak')
 
             self._prepare_output_file__from_scratch()
@@ -428,7 +428,8 @@ class DMFTCoreSolver(object):
         with HDFArchive(output_file, 'r') as f:
             ar = f[output_group]
             if 'iterations' not in ar:
-                raise RuntimeError("Failed to restart the previous simulation! Data not found!")
+                # raise RuntimeError("Failed to restart the previous simulation! Data not found!")
+                sys.exit(f"ERROR: Failed in restoring the previous simulation. Data not found in file {output_file!r}.")
 
             self._previous_runs = ar['iterations']
             if ar['iterations'] <= 0:
@@ -508,11 +509,14 @@ class DMFTCoreSolver(object):
                     self._sh_quant[ish].Sigma_iw[sp].data[...] += init_se[ish][isp]
 
         elif self._params["control"]["initial_self_energy"] != "None":
+            filename = self._params["control"]["initial_self_energy"]
+            if not os.path.exists(filename):
+                sys.exit(f"ERROR: File not found: initial_self_energy='{filename}'.")
             self._loaded_initial_self_energy = True
             Sigma_iw_sh_tmp = [self._sh_quant[ish].Sigma_iw for ish in range(self.n_inequiv_shells)]
-            load_Sigma_iw_sh_txt(self._params["control"]["initial_self_energy"], Sigma_iw_sh_tmp, self.spin_block_names)
+            load_Sigma_iw_sh_txt(filename, Sigma_iw_sh_tmp, self.spin_block_names)
             print('')
-            print('Loading {} ...'.format(self._params["control"]["initial_self_energy"]), end=' ')
+            print(f'Loading {filename} ...', end=' ')
             for ish in range(self.n_inequiv_shells):
                 self._sh_quant[ish].Sigma_iw << Sigma_iw_sh_tmp[ish]
             print('Done')

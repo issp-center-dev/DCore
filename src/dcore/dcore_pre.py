@@ -29,7 +29,7 @@ from dcore.sumkdft_compat import SumkDFTCompat
 
 from dcore.lattice_models import create_lattice_model
 from dcore.lattice_models.tools import print_local_fields
-from dcore.program_options import parse_parameters
+from dcore.program_options import parse_parameters, print_parameters, delete_parameters
 from dcore.interaction import generate_umat
 
 
@@ -107,7 +107,7 @@ def __check_if_Hk_is_hermite(h5file):
                     print('Warning: {}'.format(message))
 
 
-def dcore_pre(filename):
+def dcore_pre(input_filenames):
     """
     Main routine for the pre-processing tool
 
@@ -118,7 +118,7 @@ def dcore_pre(filename):
     """
 
     print("\n@@@@@@@@@@@@@@@@@@@  Reading Input File  @@@@@@@@@@@@@@@@@@@@\n")
-    print("Input File Name : ", filename)
+    print("Input Filename(s) : ", input_filenames)
     #
     # Construct a parser with default values
     #
@@ -126,16 +126,19 @@ def dcore_pre(filename):
     #
     # Parse keywords and store
     #
-    pars.read(filename)
+    pars.read(input_filenames)
     p = pars.as_dict()
     parse_parameters(p)
+
+    #
+    # Delete unnecessary parameters
+    #
+    delete_parameters(p, block='model', delete=['bvec'])
+
     #
     # Summary of input parameters
     #
-    print("\n  @ Parameter summary")
-    print("\n    [model] block")
-    for k, v in list(p["model"].items()):
-        print(f"      {k} = {v!r}")
+    print_parameters(p)
 
     #
     # remove HDF5 file if exists
@@ -143,7 +146,7 @@ def dcore_pre(filename):
     h5_file = p['model']['seedname'] + '.h5'
     if p['model']['lattice'] != 'external':
         if os.path.exists(h5_file):
-            print("Removing the existing model HDF5 file...")
+            print("\nRemoving the existing model HDF5 file...")
             os.remove(h5_file)
 
     #
@@ -193,22 +196,23 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore_pre.py',
-        description='pre script for dcore.',
-        usage='$ dcore_pre input',
+        description='Pre-processing script in DCore',
+        # usage='$ dcore_pre input',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=generate_all_description()
     )
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name."
+                        nargs='*',
+                        help="Input filename(s)",
                         )
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
-    if os.path.isfile(args.path_input_file) is False:
-        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
-        sys.exit(-1)
-    dcore_pre(args.path_input_file)
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
+    dcore_pre(args.path_input_files)

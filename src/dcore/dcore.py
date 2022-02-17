@@ -41,6 +41,18 @@ def dcore(filename, np=1):
 
     params["mpi"]["num_processes"] = np
 
+    # Delete unnecessary parameters
+    delete_parameters(params, block='model', retain=['seedname'])
+    delete_parameters(params, block='tool', retain=['Nomega', 'omega_min', 'omega_max', 'n_pade_min', 'n_pade_max', 'omega_pade', 'eta'])
+
+    # Summary of input parameters
+    print_parameters(params)
+
+    # Check if seedname.h5 exists
+    h5_file = params['model']['seedname'] + '.h5'
+    if not os.path.exists(h5_file):
+        sys.exit(f"ERROR: File '{h5_file}' not found. Execute dcore_pre in advance!")
+
     solver = DMFTCoreSolver(params["model"]["seedname"], params, restart=params['control']['restart'])
 
     solver.do_steps(max_step=params["control"]["max_step"])
@@ -74,24 +86,26 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore.py',
-        description='.',
-        usage='$ dcore input.ini --np 4',
+        description='Main script in DCore',
+        # usage='$ dcore input.ini --np 4',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=generate_all_description()
     )
 
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name.")
+                        nargs='*',
+                        help="Input filename(s)",
+                        )
     parser.add_argument('--np', default=1, help='Number of MPI processes', required=True)
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
-    if os.path.isfile(args.path_input_file) is False:
-        print(f"Input file '{args.path_input_file}' does not exist.", file=sys.stderr)
-        sys.exit(-1)
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
 
-    dcore(args.path_input_file, int(args.np))
+    dcore(args.path_input_files, int(args.np))

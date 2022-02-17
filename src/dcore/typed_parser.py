@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import os
+import sys
 import copy
 from enum import Enum
 from warnings import warn
@@ -155,11 +156,11 @@ class TypedParser(object):
         else:
             raise ValueError("section must be a str!")
 
-    def read(self, in_file):
+    def read(self, in_files):
         """
         Read an init file. This function must not be called more than once.
 
-        :param in_file:
+        :param in_files: str or list of str
         :return:
         """
         if self.__read:
@@ -167,9 +168,14 @@ class TypedParser(object):
 
         self.__read = True
 
-        if not os.path.exists(in_file):
-            raise RuntimeError("Not found "+in_file)
-        self.__config_parser.read(in_file)
+        assert isinstance(in_files, (str, list))
+        if isinstance(in_files, str):  # tolist
+            in_files = [in_files]
+
+        for in_file in in_files:
+            if not os.path.exists(in_file):
+                raise RuntimeError("Not found "+in_file)
+        self.__config_parser.read(in_files)
 
         for sect in self.__config_parser.sections():
             if sect not in self.__section_to_be_used:
@@ -192,7 +198,8 @@ class TypedParser(object):
                     if sect in self.__allow_undefined_options:
                         self.__results[sect][opt] = value
                     else:
-                        raise RuntimeError("Undefined option " + opt + " is not allowed in section " + sect + "!")
+                        # raise RuntimeError("Undefined option " + opt + " is not allowed in section " + sect + "!")
+                        sys.exit(f"ERROR: Parameter '{opt}' is not allowed in section [{sect}]")
 
     def get(self, sect, opt):
         """
