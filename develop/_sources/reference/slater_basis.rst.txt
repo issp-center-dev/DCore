@@ -1,4 +1,6 @@
-``slater_basis``
+:orphan:
+
+``slater_basis`` parameter
 ================================================
 
 The basis for the Slater interactions can be specified by ``slater_basis`` parameter. The format is ``slater_basis=[(basis, order), (basis, order),]``. One needs to specify *basis* and *order* for each inequivalent shell as in ``slater_f`` and ``slater_uj`` parameters. The details of *basis* and *order* are described below.

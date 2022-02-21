@@ -43,7 +43,7 @@
             
   <section id="input-file-format">
 <h1>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h1>
-<p>The input file consists of five parameter blocks named <code class="docutils literal notranslate"><span class="pre">[model]</span></code>, <code class="docutils literal notranslate"><span class="pre">[system]</span></code>, <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span></code>, <code class="docutils literal notranslate"><span class="pre">[control]</span></code>, and <code class="docutils literal notranslate"><span class="pre">[tool]</span></code>.</p>
+<p>The input file consists of six parameter blocks named [model], [system], [impurity_solver], [control], [tool], and [mpi].</p>
 <p>The following table shows which blocks are used by each program.</p>
 <table class="colwidths-given docutils align-default">
 <colgroup>
@@ -100,10 +100,27 @@
 </tr>
 </tbody>
 </table>
-<p>For example, we can see that <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> needs to be re-executed only when [model] block is changed.</p>
+<p>For example, we can see that <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> reads only [model] block. Therefore, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> needs to be re-executed only when the parameters in [model] block are changed.</p>
 <p>The parameters included in each block are explained below.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#model-block" id="id1">[model] block</a></p>
+<ul>
+<li><p><a class="reference internal" href="#lattice" id="id2"><a class="reference internal" href="lattice.html"><span class="doc">lattice parameter</span></a></a></p></li>
+<li><p><a class="reference internal" href="#interaction" id="id3"><a class="reference internal" href="interaction.html"><span class="doc">interaction parameter</span></a></a></p></li>
+<li><p><a class="reference internal" href="#slater-basis" id="id4"><a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis parameter</span></a></a></p></li>
+<li><p><a class="reference internal" href="#local-potential" id="id5"><a class="reference internal" href="local_potential.html"><span class="doc">local_potential_* parameters</span></a></a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#system-block" id="id6">[system] block</a></p></li>
+<li><p><a class="reference internal" href="#impurity-solver-block" id="id7">[impurity_solver] block</a></p></li>
+<li><p><a class="reference internal" href="#control-block" id="id8">[control] block</a></p></li>
+<li><p><a class="reference internal" href="#tool-block" id="id9">[tool] block</a></p></li>
+<li><p><a class="reference internal" href="#mpi-block" id="id10">[mpi] block</a></p></li>
+</ul>
+</div>
 <section id="model-block">
-<h2>[model] block<a class="headerlink" href="#model-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id1">[model] block</a><a class="headerlink" href="#model-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes parameters for defining a model to be solved.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -232,179 +249,22 @@
 </tr>
 </tbody>
 </table>
+<p>See separate pages from the link below for detailed descriptions of some parameters.</p>
 <section id="lattice">
-<h3>lattice<a class="headerlink" href="#lattice" title="Permalink to this headline">¶</a></h3>
-<p>For model calculations, the following preset models are defined:</p>
-<ul class="simple">
-<li><p><strong>chain</strong></p></li>
-<li><p><strong>square</strong></p></li>
-<li><p><strong>cubic</strong></p></li>
-<li><p><strong>bethe</strong> (semicircular DOS with energy ranges [-2t:2t])</p></li>
-</ul>
-<a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
-<p>For DFT+DMFT calculations, hopping parameters in the Wannier90 format can be imported by</p>
-<ul>
-<li><p><strong>wannier90</strong></p>
-<p>Place the Wannier90 file in the current directory with the name <em>seedname</em>_hr.dat.</p>
-</li>
-</ul>
-<p>For experts, the lattice data may be prepared by your own. In this case, use</p>
-<ul>
-<li><p><strong>external</strong></p>
-<p>In this mode, you should make all necessary data in <code class="docutils literal notranslate"><span class="pre">dft_input</span></code> group of <em>seedname</em>.h5.
-The data structure follows <strong>DFTTools</strong>. For details, see
-<a class="reference external" href="https://triqs.github.io/dft_tools/1.4/reference/h5structure.html">the reference manual of DFTTools</a>.</p>
-<p>The pre-process <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> does not touch the data in <code class="docutils literal notranslate"><span class="pre">dft_input</span></code> group, and write only additional data such as interactions into <code class="docutils literal notranslate"><span class="pre">DCore</span></code> group.</p>
-</li>
-</ul>
+<h3><a class="toc-backref" href="#id2"><a class="reference internal" href="lattice.html"><span class="doc">lattice parameter</span></a></a><a class="headerlink" href="#lattice" title="Permalink to this headline">¶</a></h3>
 </section>
 <section id="interaction">
-<h3>interaction<a class="headerlink" href="#interaction" title="Permalink to this headline">¶</a></h3>
-<p>Model Hamiltonian is defined as</p>
-<div class="math notranslate nohighlight">
-\[{\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
-t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
-+h.c. + {\hat H}_{\rm int},\]</div>
-<p>where</p>
-<div class="math notranslate nohighlight">
-\[{\hat H}_{\rm int} = \frac{1}{2}
-\sum_{i, \alpha \beta \gamma \delta,\sigma \sigma'}
-U^{i}_{\alpha \beta \gamma \delta}
-c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \delta \sigma'} c_{i \gamma \sigma}.\]</div>
-<p>The interaction matrix <span class="math notranslate nohighlight">\(U^{i}_{\alpha \beta \gamma \delta}\)</span>
-is specified by the parameter <code class="docutils literal notranslate"><span class="pre">interaction</span></code>.</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">kanamori</span></code></p>
-<p>In this case, the Kanamori-type interaction is used, i.e.</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\begin{align}
-U_{\alpha \alpha \alpha \alpha} &amp;= U,
-\\
-U_{\alpha \beta \alpha \beta} &amp;= U' \qquad (\alpha \neq \beta),
-\\
-U_{\alpha \beta \beta \alpha} &amp;= J \qquad (\alpha \neq \beta),
-\\
-U_{\alpha \alpha \beta \beta} &amp;= J \qquad (\alpha \neq \beta),
-\end{align}\end{split}\]</div>
-<p>where <span class="math notranslate nohighlight">\(U, U', J\)</span> at each correlated shell are specified by the parameter <code class="docutils literal notranslate"><span class="pre">kanamori</span></code> as</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">kanamori</span>
-<span class="n">kanamori</span> <span class="o">=</span> <span class="p">[(</span><span class="n">U_1</span><span class="p">,</span> <span class="sa">U</span><span class="s1">&#39;_1, J_1), (U_2, U&#39;</span><span class="n">_2</span><span class="p">,</span> <span class="n">J_2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
-</pre></div>
-</div>
-<p>For example, if there are two correlated shells that have
-<span class="math notranslate nohighlight">\((U, U', J) = (4, 2, 1)\)</span> and <span class="math notranslate nohighlight">\((U, U', J) = (6, 3, 1.5)\)</span>, respectively,
-you need to set the input parameters as</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">kanamori</span>
-<span class="n">kanamori</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">6.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)]</span>
-</pre></div>
-</div>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code></p>
-<p>In this case, the fully rotationally invariant Slater interaction is used. The interaction matrix is constructed by the effective Slater integrals
-<span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span>.
-These Slater integrals and the angular momentum at each correlated shell
-are specified by the parameter <code class="docutils literal notranslate"><span class="pre">slater_f</span></code> as follows</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_f</span>
-<span class="n">slater_f</span> <span class="o">=</span> <span class="p">[(</span><span class="n">angular_momentum</span><span class="p">,</span> <span class="n">F_0</span><span class="p">,</span> <span class="n">F_2</span><span class="p">,</span> <span class="n">F_4</span><span class="p">,</span> <span class="n">F_6</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
-</pre></div>
-</div>
-<p>For example, if there are two correlated shells,
-one has d-orbital with <span class="math notranslate nohighlight">\((F_0, F_2, F_4) = (2, 1, 0.5)\)</span> and
-the other has p-orbital with <span class="math notranslate nohighlight">\((F_0, F_2) = (3, 1.5)\)</span>,
-you need to set the input parameter as</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_f</span>
-<span class="n">slater_f</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.5</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You must specify all of <span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span>.</p>
-</div>
-<p>The basis can be specified by <code class="docutils literal notranslate"><span class="pre">slater_basis</span></code> parameter. See <a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis</span></a> for details.</p>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_uj</span></code></p>
-<p>The Slater interaction is used as in the case with <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code>, but a conventional intuitive parameterization is implemented.
-The effective Slater integrals <span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span> are evaluated from parameters <span class="math notranslate nohighlight">\(U\)</span> and <span class="math notranslate nohighlight">\(J\)</span>. The explicit formulas are given as follows:</p>
-<ul>
-<li><p><span class="math notranslate nohighlight">\(l = 1\)</span></p>
-<div class="math notranslate nohighlight">
-\[F_0 = U, \quad
-F_2 = 5 J\]</div>
-</li>
-<li><p><span class="math notranslate nohighlight">\(l=2\)</span></p>
-<div class="math notranslate nohighlight">
-\[F_0 = U, \quad
-F_2 = \frac{14 J}{1.0 + 0.63},\quad
-F_4 = 0.63 F_2\]</div>
-</li>
-<li><p><span class="math notranslate nohighlight">\(l=3\)</span></p>
-<div class="math notranslate nohighlight">
-\[F_0 = U, \quad
-F_2 = \frac{6435 J}{286 + 195 \times 451 / 675 + 250 \times 1001 / 2025},\quad
-F_4 = \frac{451 F_2}{675},\quad
-F_6 = \frac{1001 F_2}{2025}\]</div>
-</li>
-</ul>
-<p>The <span class="math notranslate nohighlight">\(U\)</span>, <span class="math notranslate nohighlight">\(J\)</span> and the angular momentum at each correlated shell
-are specified by the parameter <code class="docutils literal notranslate"><span class="pre">slater_uj</span></code> as</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">slater_uj</span>
-<span class="n">slater_uj</span> <span class="o">=</span> <span class="p">[(</span><span class="n">angular_momentum1</span><span class="p">,</span> <span class="n">U1</span><span class="p">,</span> <span class="n">J1</span><span class="p">),</span> <span class="p">(</span><span class="n">angular_momentum2</span><span class="p">,</span> <span class="n">U2</span><span class="p">,</span> <span class="n">J2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
-</pre></div>
-</div>
-<p>The basis can be specified by <code class="docutils literal notranslate"><span class="pre">slater_basis</span></code> parameter. See <a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis</span></a> for details.</p>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">respack</span></code></p>
-<p>Use the output by <a class="reference external" href="https://sites.google.com/view/kazuma7k6r">RESPACK</a>.
-<strong>Under construction.</strong></p>
-</li>
-</ul>
-<p>If you want to treat only the density-density part</p>
-<div class="math notranslate nohighlight">
-\[{\hat H}_{\rm int} = \frac{1}{2}
-\sum_{i, \alpha, \sigma \sigma'}
-U^{i}_{\alpha \alpha \alpha \alpha}
-c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \beta \sigma'} c_{i \alpha \sigma}
-+ \frac{1}{2}
-\sum_{i, \alpha \neq \beta, \sigma \sigma'}
-U^{i}_{\alpha \beta \alpha \beta}
-c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \beta \sigma'} c_{i \alpha \sigma}
-+ \frac{1}{2}
-\sum_{i, \alpha \neq \beta, \sigma}
-U^{i}_{\alpha \beta \beta \alpha}
-c_{i \alpha \sigma}^\dagger c_{i \beta \sigma}^\dagger c_{i \alpha \sigma} c_{i \beta \sigma},\]</div>
-<p>you specify the parameter <code class="docutils literal notranslate"><span class="pre">density_density</span></code> as</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">density_density</span> <span class="o">=</span> <span class="kc">True</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It can not be used in conjunction to the Hubbard-I solver or
-the double-counting correction.</p>
-</div>
+<h3><a class="toc-backref" href="#id3"><a class="reference internal" href="interaction.html"><span class="doc">interaction parameter</span></a></a><a class="headerlink" href="#interaction" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="slater-basis">
+<h3><a class="toc-backref" href="#id4"><a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis parameter</span></a></a><a class="headerlink" href="#slater-basis" title="Permalink to this headline">¶</a></h3>
 </section>
 <section id="local-potential">
-<h3>local potential<a class="headerlink" href="#local-potential" title="Permalink to this headline">¶</a></h3>
-<p>An arbitrary local potential can be implemented using parameters <code class="docutils literal notranslate"><span class="pre">local_potential_*</span></code>.
-The format looks like</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
-<span class="n">local_potential_matrix</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;pot0.txt&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;pot1.txt&#39;</span><span class="p">}</span>
-<span class="n">local_potential_factor</span> <span class="o">=</span> <span class="mf">0.01</span>
-</pre></div>
-</div>
-<p>Here, <code class="docutils literal notranslate"><span class="pre">local_potential_matrix</span></code> describes, in the python dictionary format, a set of the inequivalent shell index <em>ish</em> and the filename which defines the local potential matrix.
-The parameter <code class="docutils literal notranslate"><span class="pre">local_potential_factor</span></code> defines a prefactor to the potential matrix.</p>
-<p>For example, the Zeeman term along z-axis for S=1/2 is represented by</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat pot0.txt
-# spin orb1 orb2  Re Im
-0 0 0   0.5 0.
-1 0 0  -0.5 0.
-</pre></div>
-</div>
-<p>and the magnetic field is specified by <code class="docutils literal notranslate"><span class="pre">local_potential_factor</span></code>.</p>
+<h3><a class="toc-backref" href="#id5"><a class="reference internal" href="local_potential.html"><span class="doc">local_potential_* parameters</span></a></a><a class="headerlink" href="#local-potential" title="Permalink to this headline">¶</a></h3>
 </section>
 </section>
 <section id="system-block">
-<h2>[system] block<a class="headerlink" href="#system-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">[system] block</a><a class="headerlink" href="#system-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -487,7 +347,7 @@ U_{\alpha \gamma \delta \beta}
 <p>where <span class="math notranslate nohighlight">\(\langle \cdots \rangle_0\)</span> indicates the expectation value at the initial (Kohn-Sham) state.</p>
 </section>
 <section id="impurity-solver-block">
-<h2>[impurity_solver] block<a class="headerlink" href="#impurity-solver-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">[impurity_solver] block</a><a class="headerlink" href="#impurity-solver-block" title="Permalink to this headline">¶</a></h2>
 <p>This block specifies an impurity solver to be used and necessary parameters for running the solver program.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -520,7 +380,7 @@ U_{\alpha \gamma \delta \beta}
 For details, see <a class="reference internal" href="../impuritysolvers.html"><span class="doc">the reference manual for each solver</span></a>.</p>
 </section>
 <section id="control-block">
-<h2>[control] block<a class="headerlink" href="#control-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id8">[control] block</a><a class="headerlink" href="#control-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes parameters that control the self-consistency loop of DMFT.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -591,7 +451,7 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </table>
 </section>
 <section id="tool-block">
-<h2>[tool] block<a class="headerlink" href="#tool-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9">[tool] block</a><a class="headerlink" href="#tool-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes parameters that are solely used by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -717,7 +577,7 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </table>
 </section>
 <section id="mpi-block">
-<h2>[mpi] block<a class="headerlink" href="#mpi-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id10">[mpi] block</a><a class="headerlink" href="#mpi-block" title="Permalink to this headline">¶</a></h2>
 <p>This block includes parameters which are read by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table class="docutils align-default">
 <colgroup>
