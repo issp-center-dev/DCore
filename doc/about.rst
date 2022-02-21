@@ -29,6 +29,8 @@ We would like to express our sincere gratitude to TRIQS's developers.
 
 This package of ver.1.0 was developed under the support of "Project for advancement of software usability in materials science" by The Institute for Solid State Physics, The University of Tokyo. The copyright of DCore ver.1.0 belongs to The University of Tokyo.
 
+.. _dcore_paper:
+
 Citing DCore
 -------------------
 If we has used DCore in your research, and you would like to acknowledge the project in your academic publication,
