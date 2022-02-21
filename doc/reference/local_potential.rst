@@ -1,7 +1,7 @@
 :orphan:
 
-local potential
-^^^^^^^^^^^^^^^
+``local_potential_*`` parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 An arbitrary local potential can be implemented using parameters ``local_potential_*``.
 The format looks like
