@@ -97,7 +97,7 @@ def bcast(send_buf, max_bytes: int = int(1e+8)):
 
     use_split_transfer = False
     if comm.Get_rank() == 0:
-        use_split_transfer = (not isinstance(send_buf, numpy.ndarray)) or \
+        use_split_transfer = isinstance(send_buf, numpy.ndarray) and \
             send_buf.size * send_buf.itemsize > max_bytes
 
     use_split_transfer = comm.bcast(use_split_transfer)
