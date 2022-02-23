@@ -624,8 +624,8 @@ class SumkDFT_opt(SumkDFT):
 
     ###############################################################
     # OVERRIDE FUNCTIONS
-    # If mpi.broadcast raises OverFlowError, all process read
-    # input from HDF5 file.
+    # mpi.bcast is replaced with the split transfer version
+    # to avoid OverFlowError when object size exceeds ~2GB
     # Replaced parts are indicated by "+++REPLACED"
     ###############################################################
 
@@ -677,7 +677,7 @@ class SumkDFT_opt(SumkDFT):
         for it in things_to_read:
             # setattr(self, it, mpi.bcast(getattr(self, it)))
             # +++REPLACED
-            setattr(self, it, dcore_mpi.bcast(getattr(self, it)))
+            setattr(self, it, dcore_mpi.bcast(getattr(self, it)))  # split transfer version
         subgroup_present = mpi.bcast(subgroup_present)
         values_not_read = mpi.bcast(values_not_read)
 
