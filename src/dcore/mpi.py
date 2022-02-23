@@ -88,3 +88,46 @@ def get_range(idx_size, comm=None):
     size = comm.Get_size()
     sizes, offsets = split_idx(idx_size, size)
     return range(offsets[rank], offsets[rank]+sizes[rank])
+
+
+def bcast(send_buf, max_bytes: int = int(1e+8)):
+    """ bcast supporting a large array """
+    MPI = mpi4py.MPI
+    comm = MPI.COMM_WORLD
+
+    use_split_transfer = False
+    if comm.Get_rank() == 0:
+        use_split_transfer = (not isinstance(send_buf, numpy.ndarray)) or \
+            send_buf.size * send_buf.itemsize > max_bytes
+
+    use_split_transfer = comm.bcast(use_split_transfer)
+
+    if not use_split_transfer:
+        return comm.bcast(send_buf)
+
+    # Large array
+    if comm.Get_rank() == 0:
+        send_buf_ravel = send_buf.ravel()
+        dtype = comm.bcast(send_buf.dtype)
+        size = comm.bcast(send_buf.size)
+        shape = comm.bcast(send_buf.shape)
+        batch_size = int(max_bytes // send_buf.itemsize)
+        batch_size = comm.bcast(batch_size)
+    else:
+        send_buf_ravel = None
+        dtype = comm.bcast(None)
+        size = comm.bcast(None)
+        shape = comm.bcast(None)
+        batch_size = comm.bcast(None)
+    recv_buf = numpy.empty(size, dtype=dtype)
+
+    offset = 0
+    while offset < size:
+        end = min(offset + batch_size, size-1)
+        if comm.Get_rank() == 0:
+            recv_buf[offset:end] = comm.bcast(send_buf_ravel[offset:end])
+        else:
+            recv_buf[offset:end] = comm.bcast(None)
+        offset += batch_size
+
+    return recv_buf.reshape(shape)
