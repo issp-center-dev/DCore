@@ -127,7 +127,7 @@ class PomerolSolver(SolverBase):
 
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
-        ph_symmetric = params_kw.get('ph_symmetric', False) 
+        ph_symmetric = params_kw.get('ph_symmetric', False)
         fit_params = {}
         for key in ['fit_gtol',]:
             if key in params_kw:
@@ -183,7 +183,11 @@ class PomerolSolver(SolverBase):
         # H0 is extracted from the tail of the Green's function.
         self._Delta_iw = delta(self._G0_iw)
 
-        bath_levels, bath_hyb = extract_bath_params(self._Delta_iw, self.beta, self.block_names, n_bath, ph_symmetric=ph_symmetric, **fit_params)
+        n_bath_so = n_bath
+        if self.use_spin_orbit:
+            n_bath_so *= 2  # for up and down spins
+
+        bath_levels, bath_hyb = extract_bath_params(self._Delta_iw, self.beta, self.block_names, n_bath_so, ph_symmetric=ph_symmetric, **fit_params)
         assert bath_levels.shape == (2*n_bath,)
         assert bath_hyb.shape == (self.n_flavors, 2*n_bath)
 
