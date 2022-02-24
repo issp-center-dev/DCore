@@ -51,6 +51,7 @@ RUN useradd -u $NB_UID -m $NB_USER -s /bin/bash && \
 USER $NB_USER
 ENV PATH "/home/${NB_USER}/.local/bin:/opt/pomerol2dcore/bin:${PATH}"
 ENV PYTHONPATH "/home/${NB_USER}/work/src:${PYTONPATH}"
+ENV OMPI_MCA_btl_vader_single_copy_mechanism "none"
 
 # for vscode
 RUN mkdir /home/${NB_USER}/work
