@@ -71,8 +71,6 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
     sol.set_G0_iw(G0_iw)
 
-    # Compute rotation matrix to the diagonal basis if supported
-    rot = compute_diag_basis(G0_iw) if basis_rot else None
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
@@ -86,6 +84,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     flag_box = freqs is None
 
     # Solve the model
+    rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     if flag_box:
         xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
     else:
