@@ -279,25 +279,25 @@ class SaveBSE:
         print(" block2 namelist =", self.block2.namelist)
         print(" inner2 namelist =", self.inner2.namelist)
 
-        self.h5_file = h5_file
-        self.bse_grp = bse_grp
-        h5bse = h5BSE(self.h5_file, self.bse_grp)
+        # self.h5_file = h5_file
+        # self.bse_grp = bse_grp
+        self.h5bse = h5BSE(h5_file, bse_grp)
         if bse_info == 'check':
             # check equivalence of info
             #assert compare_str_list(h5bse.get(key=('block_name',)), self.block2.namelist)
             #assert compare_str_list(h5bse.get(key=('inner_name',)), self.inner2.namelist)
-            assert h5bse.get(key=('beta',)) == beta
+            assert self.h5bse.get(key=('beta',)) == beta
         elif bse_info == 'save':
             # save info
-            h5bse.save(key=('block_name',), data=self.block2.namelist)
-            h5bse.save(key=('inner_name',), data=self.inner2.namelist)
-            h5bse.save(key=('beta',), data=beta)
+            self.h5bse.save(key=('block_name',), data=self.block2.namelist)
+            self.h5bse.save(key=('inner_name',), data=self.inner2.namelist)
+            self.h5bse.save(key=('beta',), data=beta)
         else:
             raise ValueError("bse_info =", bse_info)
 
     def _save_common(self, xloc_ijkl, icrsh, key_type):
 
-        h5bse = h5BSE(self.h5_file, self.bse_grp)
+        # h5bse = h5BSE(self.h5_file, self.bse_grp)
 
         n_inner2 = len(self.inner2.namelist)
         n_w2b = xloc_ijkl[list(xloc_ijkl.keys())[0]].shape[0]
@@ -331,7 +331,7 @@ class SaveBSE:
                 xloc_bse[(s12, s34)][inner12, inner34] = data_wb  # copy
 
             # save
-            h5bse.save(key=(key_type, wb), data=xloc_bse)
+            self.h5bse.save(key=(key_type, wb), data=xloc_bse)
 
     def save_xloc(self, xloc_ijkl, icrsh):
         self._save_common(xloc_ijkl, icrsh, 'X_loc')
@@ -343,7 +343,7 @@ class SaveBSE:
 
         assert u_mat.shape == (self.n_flavors, )*4
 
-        h5bse = h5BSE(self.h5_file, self.bse_grp)
+        # h5bse = h5BSE(self.h5_file, self.bse_grp)
 
         # transpose U matrix into p-h channel, c_1^+ c_2 c_4^+ c_3
         u_mat_ph1 = u_mat.transpose(0, 2, 3, 1)
@@ -366,12 +366,12 @@ class SaveBSE:
 
                 gamma0[(s12, s34)] = gamma0_orb.reshape((self.n_orb**2, )*2)
 
-            h5bse.save(key=('gamma0', ), data=gamma0)
+            self.h5bse.save(key=('gamma0', ), data=gamma0)
         else:
             gamma0_inner = - u_mat_ph1 + u_mat_ph2
             gamma0_inner = gamma0_inner.reshape((len(self.inner2.namelist), )*2)
             block_index = self.block2.get_index(icrsh, self.spin_names[0], icrsh, self.spin_names[0])
-            h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
+            self.h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
 
     def save_sparse_info(self, freqs):
         grp = self.args['sparse_grp']
@@ -502,6 +502,9 @@ class DMFTBSESolver(DMFTCoreSolver):
 
             subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
 
+            # Open HDF5 file to improve performance. Close manually.
+            bse.h5bse.open('a')
+
             # save X_loc, chi_loc
             for icrsh in range(self._n_corr_shells):
                 if ish == self._sk.corr_to_inequiv[icrsh]:
@@ -510,6 +513,8 @@ class DMFTBSESolver(DMFTCoreSolver):
                     # chi_loc
                     if chi_loc is not None:
                         bse.save_chiloc(chi_loc, icrsh=icrsh)
+
+            bse.h5bse.close()
 
     def calc_bse(self):
         """
