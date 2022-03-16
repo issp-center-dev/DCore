@@ -1,9 +1,10 @@
 Programs
 ========
 
-**DCore** consists of four main programs, ``dcore_pre``, ``dcore``, ``dcore_check``  and ``dcore_post``.
+**DCore** consists of four main programs, ``dcore_pre``, ``dcore``, ``dcore_check``,  and ``dcore_post``.
 All programs read a single input file (say *input.ini*) which contains parameters classified into blocks.
-See :doc:`input`, for details on the relation between the parameter blocks and each program.
+It is also possible to pass multiple input files to the program. Parameters from all input files are merged. Duplicate paramegers are overwritten by the later one.
+See :doc:`input`, for the list of parameters and detailed descriptions.
 
 ..
     All programs can read input files of the same type and get the information by using blocks.
@@ -180,22 +181,24 @@ The original band structure is shifted by the chemical potential specified by ``
 Online help
 ~~~~~~~~~~~
 
-For all programs, online help is available by ``-h`` option.
+For all programs, online help is available by ``-h`` or ``--help`` option.
 For example, the help of the main program ``dcore`` looks like
 
 ::
 
     $ dcore -h
-    usage: $ dcore input.ini --np 4
+    usage: dcore.py [-h] --np NP [--version]
+                    [path_input_files [path_input_files ...]]
 
-    .
+    Main script in DCore
 
     positional arguments:
-      path_input_file  input file name.
+    path_input_files  Input filename(s)
 
     optional arguments:
-      -h, --help       show this help message and exit
-      --np NP          Number of MPI processes
+    -h, --help        show this help message and exit
+    --np NP           Number of MPI processes
+    --version         show program's version number and exit
 
 Additionally, the complete list of the input parameters are shown.
 It would help readers to make use of the latest features in the **develop** branch that are not documented in this manual.
