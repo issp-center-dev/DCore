@@ -1,12 +1,16 @@
-from __future__ import print_function
+# from __future__ import print_function
 import numpy
 from itertools import product
 import datetime
 
-try:
-    input = raw_input  # for python2
-except NameError:
-    pass
+import argparse
+import os
+import sys
+
+# try:
+#     input = raw_input  # for python2
+# except NameError:
+#     pass
 
 
 help_commands = """
@@ -57,7 +61,7 @@ List of available commands.
 def is_unitary(matrix):
     assert matrix.shape[0] == matrix.shape[1]
     # M^dag.M = 1
-    return numpy.allclose(numpy.dot(matrix.conjugate().T, matrix), numpy.identity(matrix.shape[0]))
+    return numpy.allclose(matrix.conjugate().T @ matrix, numpy.identity(matrix.shape[0]))
 
 
 def is_hermitian(matrix):
@@ -105,7 +109,7 @@ class Wannier90( object ):
         print("Num of Wannier functions = ", self.Nwann)
         print("Num of R points = ", self.nrpts)
 
-    def print(self, i1, i2, i3):
+    def print_hr(self, i1, i2, i3):
         rvec = numpy.array([i1, i2, i3], dtype=int)
         ir = self.get_ir(rvec)
         h_r = self.HamR[ir]
@@ -116,7 +120,8 @@ class Wannier90( object ):
             if (self.irvec[ir] == rvec).all():
                 return ir
 
-        raise ValueError("coordinate {} {} {} was not found".format(i1, i2, i3))
+        i1, i2, i3 = rvec
+        raise ValueError("coordinate ({} {} {}) not found.".format(i1, i2, i3))
 
     def get_Hk(self, kvec):
         """
@@ -125,7 +130,7 @@ class Wannier90( object ):
         :return: matrix of H(k)
         """
 
-        Hk = numpy.zeros((2*self.norb, 2*self.norb),dtype=complex)
+        Hk = numpy.zeros((2*self.norb, 2*self.norb), dtype=complex)
         for iR in range(self.nrpts):
             factor = numpy.exp(2J*numpy.pi*(self.irvec[iR,0]*kvec[0]+self.irvec[iR,1]*kvec[1]+self.irvec[iR,2]*kvec[2]))
             Hk += self.HamR_full[iR,:,:] * factor / self.ndgen[iR]
@@ -213,7 +218,7 @@ class Wannier90( object ):
 
         for ir in range(self.nrpts):
             h = self.HamR[ir]
-            h_transformed = numpy.dot(mat_full.conjugate().T, numpy.dot(h, mat_full))
+            h_transformed = mat_full.conjugate().T @ h @ mat_full
             self.HamR[ir] = h_transformed
 
     def add_potential(self, v_matrix, istart, iend):
@@ -300,11 +305,7 @@ def _read_file(filename, shape):
     return matrix
 
 
-if __name__ == '__main__':
-    import argparse
-    import os
-    import sys
-
+def main():
     parser = argparse.ArgumentParser(
         prog='w90tool.py',
         description='An interactive tool for manipulating a wannier90 format file' + help_commands,
@@ -350,7 +351,7 @@ if __name__ == '__main__':
                 i1 = int(commands[1])
                 i2 = int(commands[2])
                 i3 = int(commands[3])
-                w90.print(i1, i2, i3)
+                w90.print_hr(i1, i2, i3)
 
             elif commands[0] in ('double', 'do'):
                 _check_num_args(commands, 1)
@@ -415,6 +416,9 @@ if __name__ == '__main__':
                 _check_num_args(commands, 0)
                 break
 
+            elif commands[0] in ('#'):
+                pass
+
             else:
                 raise ValueError("Command '{}' not supported".format(commands[0]))
 
@@ -436,3 +440,7 @@ if __name__ == '__main__':
         except EOFError:
             print("EOF")
             break
+
+
+if __name__ == '__main__':
+    main()
