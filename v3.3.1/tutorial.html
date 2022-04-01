@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Tutorial &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/dcore.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Minimum introduction: Structure of DCore" href="basicnotions/structure.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="basicnotions/structure.html" title="Minimum introduction: Structure of DCore"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Tutorial</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p><strong>Preface</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="basicnotions/structure.html">Minimum introduction: Structure of DCore</a></li>
+</ul>
+</div>
+<p><strong>Part-I: Model calculations</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/square/square.html">The first example: 2D Hubbard model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/square/square.html#pre-process-dcore-pre">Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/square/square.html#dmft-loop-dcore">DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/square/square.html#spectral-function-dcore-post">Spectral function : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/square/square.html#another-impurity-solver-cthyb-seg">Another impurity solver: CTHYB-SEG</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/bethe-t2g/bethe.html">Multiorbital model by a QMC solver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/bethe-t2g/bethe.html#pre-process-dcore-pre">Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/bethe-t2g/bethe.html#dmft-loop-dcore">DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/afm/afm.html">Antiferromagnetic state</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/afm/afm.html#define-lattice-model">Define lattice model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/afm/afm.html#generate-initial-guess-for-self-energy">Generate initial guess for self-energy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/afm/afm.html#self-consistent-calculations">Self-consistent calculations</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><strong>Part-II: DFT+DMFT</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/srvo3/srvo3.html">SrVO<sub>3</sub></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/srvo3/srvo3.html#construction-of-wannier-functions">Construction of Wannier functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/srvo3/srvo3.html#dmft-calculation">DMFT calculation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>More examples are found in the directory “examples”.</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basicnotions/structure.html">Minimum introduction: Structure of DCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/square/square.html">The first example: 2D Hubbard model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/bethe-t2g/bethe.html">Multiorbital model by a QMC solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/afm/afm.html">Antiferromagnetic state</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/srvo3/srvo3.html">SrVO<sub>3</sub></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="install.html"
+                          title="previous chapter">Installation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="basicnotions/structure.html"
+                          title="next chapter">Minimum introduction: Structure of DCore</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="basicnotions/structure.html" title="Minimum introduction: Structure of DCore"
+             >next</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Tutorial</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

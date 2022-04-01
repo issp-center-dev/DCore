@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>The first example: 2D Hubbard model &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The first example: 2D Hubbard model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="the-first-example-2d-hubbard-model">
+<h1>The first example: 2D Hubbard model<a class="headerlink" href="#the-first-example-2d-hubbard-model" title="Permalink to this headline">¶</a></h1>
+<p>The first example is the two-dimensional Hubbard model.
+We use the Hubbard-I approximation for solving the effective impurity problem and see the emergence of the Mott gap.
+The input file is given below.</p>
+<p><a class="reference download internal" download="" href="../../_downloads/8f3f08172858047785a5a35eb43613ab/dmft_square.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_square.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span><span class="w"></span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(2.0, 0.0, 0.0)]</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
+
+<span class="k">[system]</span><span class="w"></span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span><span class="w"></span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span><span class="w"></span>
+<span class="na">prec_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.001</span><span class="w"></span>
+
+<span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/hubbard-I</span><span class="w"></span>
+
+<span class="k">[control]</span><span class="w"></span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span><span class="w"></span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+
+<span class="k">[tool]</span><span class="w"></span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.4</span><span class="w"></span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span><span class="w"></span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">6.0</span><span class="w"></span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-5.0</span><span class="w"></span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="pre-process-dcore-pre">
+<h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this headline">¶</a></h2>
+<p>We first generate an HDF5 file that is necessary for DMFT calculations.
+The script <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre dmft_square.ini
+</pre></div>
+</div>
+<p>Then, an HDF5 file named <em>seedname</em>.h5 (<code class="docutils literal notranslate"><span class="pre">square.h5</span></code> in the present case) will be generated.</p>
+</section>
+<section id="dmft-loop-dcore">
+<h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this headline">¶</a></h2>
+<p>One can perform a DMFT self-consistent calculation with <code class="docutils literal notranslate"><span class="pre">dcore</span></code> program.
+In this tutorial, we use the Hubbard-I solver just for simplicity.
+One can run the program by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore dmft_square.ini --np <span class="m">1</span>
+</pre></div>
+</div>
+<p>with a single process.</p>
+<p>It takes several minutes. You may run it with MPI to reduce the computational time.
+Results for the self-energy and Green’s function in each iteration are accumulated into an HDF5 file named <em>seedname</em>.out.h5 (<code class="docutils literal notranslate"><span class="pre">square.out.h5</span></code> in the present case).</p>
+<p>One can check the convergence of DMFT iterations by using <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> program as follows.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_check dmft_square.ini
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> program prints the value of the chemical potential at each iteration on the standard output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">@</span> <span class="n">Reading</span> <span class="n">dmft_square</span><span class="o">.</span><span class="n">ini</span> <span class="o">...</span>
+<span class="n">Loading</span> <span class="n">Sigma_iw</span><span class="o">...</span>
+<span class="n">Loading</span> <span class="n">dc_imp</span> <span class="ow">and</span> <span class="n">dc_energ</span><span class="o">...</span>
+  <span class="n">Total</span> <span class="n">number</span> <span class="n">of</span> <span class="n">Iteration</span><span class="p">:</span> <span class="mi">5</span>
+
+  <span class="n">Iter</span>  <span class="n">Chemical</span><span class="o">-</span><span class="n">potential</span>
+  <span class="mi">1</span> <span class="mf">0.0</span>
+  <span class="mi">2</span> <span class="mf">0.141978800943</span>
+  <span class="mi">3</span> <span class="mf">0.597913733347</span>
+  <span class="mi">4</span> <span class="mf">0.700078346042</span>
+  <span class="mi">5</span> <span class="mf">0.742275654406</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">sigma</span><span class="o">.</span><span class="n">dat</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">sigma_ave</span><span class="o">.</span><span class="n">png</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">iter_mu</span><span class="o">.</span><span class="n">dat</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">iter_mu</span><span class="o">.</span><span class="n">png</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">iter_sigma</span><span class="o">-</span><span class="n">ish0</span><span class="o">.</span><span class="n">png</span>
+ <span class="n">Output</span> <span class="n">check</span><span class="o">/</span><span class="n">iter_sigma</span><span class="o">.</span><span class="n">dat</span>
+
+  <span class="n">Done</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> generates several figures as well as data files in text format.
+For instance, <code class="docutils literal notranslate"><span class="pre">check/iter_sigma-ish0.png</span></code> shows how the renormalization factor converges for each orbital.</p>
+<a class="reference internal image-reference" href="../../_images/iter_sigma-ish03.png"><img alt="../../_images/iter_sigma-ish03.png" class="align-center" src="../../_images/iter_sigma-ish03.png" style="width: 800px;" /></a>
+</section>
+<section id="spectral-function-dcore-post">
+<h2>Spectral function : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectral-function-dcore-post" title="Permalink to this headline">¶</a></h2>
+<p>We can calculate the density of states and the momentum-dependent single-particle excitations using <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> program.
+In the Hubbard-I solver, the self-energy on the real-frequency axis can be directly computed (no analytical continuation is required).
+Hence, the impurity problem is solved once more in <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
+<p>The calculation is done by the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post dmft_square.ini --np <span class="m">1</span>
+</pre></div>
+</div>
+<p>After finishing the calculation,
+<code class="docutils literal notranslate"><span class="pre">square_akw.dat</span></code>, <code class="docutils literal notranslate"><span class="pre">square_akw.gp</span></code> and <code class="docutils literal notranslate"><span class="pre">square_dos.dat</span></code> are generated.
+The data of momentum-resolved spectral functions are output into <code class="docutils literal notranslate"><span class="pre">square_akw.dat</span></code>.
+We can easily plot the result by using the script file <code class="docutils literal notranslate"><span class="pre">square_akw.gp</span></code> for gnuplot:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ gnuplot square_akw.gp
+</pre></div>
+</div>
+<p>In the plot shown below, the left and right panels correspond to up and down spins, respectively.</p>
+<a class="reference internal image-reference" href="../../_images/akw.png"><img alt="../../_images/akw.png" class="align-center" src="../../_images/akw.png" style="width: 700px;" /></a>
+<p>The result for the density of states is output into <code class="docutils literal notranslate"><span class="pre">square_dos.dat</span></code>.
+We can plot it using gnuplot as follows:</p>
+<div class="highlight-gnuplot notranslate"><div class="highlight"><pre><span></span><span class="k">set</span><span class="w"> </span><span class="nb">xlabel</span><span class="w"> </span><span class="s">&quot;Energy&quot;</span><span class="w"></span>
+<span class="k">set</span><span class="w"> </span><span class="nb">ylabel</span><span class="w"> </span><span class="s">&quot;DOS&quot;</span><span class="w"></span>
+<span class="k">plot</span><span class="w"> </span><span class="s">&quot;square_dos.dat&quot;</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"></span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/dos.png"><img alt="../../_images/dos.png" class="align-center" src="../../_images/dos.png" style="width: 700px;" /></a>
+</section>
+<section id="another-impurity-solver-cthyb-seg">
+<h2>Another impurity solver: CTHYB-SEG<a class="headerlink" href="#another-impurity-solver-cthyb-seg" title="Permalink to this headline">¶</a></h2>
+<p>The input file for ALPS/cthyb-seg is given as below.</p>
+<p><a class="reference download internal" download="" href="../../_downloads/e10fb35b0c2ca5e981350e32076f2c59/dmft_square_ctseg.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_square_ctseg.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span><span class="w"></span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span><span class="w"></span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
+
+<span class="k">[system]</span><span class="w"></span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10.0</span><span class="w"></span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span><span class="w"></span>
+<span class="na">prec_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.001</span><span class="w"></span>
+<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span><span class="w"></span>
+
+<span class="k">[impurity_solver]</span><span class="w"></span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb-seg</span><span class="w"></span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="s">/path/to/alps_cthyb</span><span class="w"></span>
+<span class="na">cthyb.TEXT_OUTPUT{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">cthyb.MEASUREMENT_freq{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">MEASURE_gw{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<span class="na">MAX_TIME{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
+<span class="na">cthyb.N_MEAS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span><span class="w"></span>
+<span class="na">cthyb.THERMALIZATION{int}</span><span class="o">=</span><span class="s">1000</span><span class="w"></span>
+<span class="na">cthyb.SWEEPS{int}</span><span class="o">=</span><span class="s">100000000</span><span class="w"></span>
+
+<span class="k">[control]</span><span class="w"></span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">20</span><span class="w"></span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
+<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
+
+<span class="k">[tool]</span><span class="w"></span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.4</span><span class="w"></span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span><span class="w"></span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">6.0</span><span class="w"></span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-5.0</span><span class="w"></span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The computed momentum-resolved spectral functions are shown below.</p>
+<a class="reference internal image-reference" href="../../_images/akw_ctseg.png"><img alt="../../_images/akw_ctseg.png" class="align-center" src="../../_images/akw_ctseg.png" style="width: 700px;" /></a>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The first example: 2D Hubbard model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
