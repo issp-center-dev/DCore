@@ -1,5 +1,12 @@
-Index
-======================
+DCore
+=======
+
+**DCore** = Integrated **D**\ MFT software for **Cor**\ related **e**\ lectrons.
+
+DCore is aimed at model calculations and ab-initio calculations by the dynamical mean-field theory (DMFT). This package consists of programs with text-based and hdf5-based interface. These programs enable users to perform DMFT calculations and analyze results without writing computer code.
+
+Table of Contents
+----------------------
 
 .. toctree::
    :maxdepth: 2

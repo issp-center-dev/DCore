@@ -2,17 +2,8 @@
 
 .. module:: dcore
 
-DCore
-=====
-
-integrated **D**\ MFT software for **Cor**\ related **e**\ lectrons
-
-What is DCore?
---------------
-
-`DCore <https://github.com/issp-center-dev/DCore>`_ is aimed at model calculations and ab-initio calculations by the dynamical mean-field theory (DMFT).
-This package consists of programs with text-based and hdf5-based interface.
-These programs enable users to perform DMFT calculations and analyze results without writing computer code.
+About DCore
+===========
 
 License
 -------
@@ -28,6 +19,8 @@ The following files are from the TRIQS (Toolbox for Research on Interacting Quan
 We would like to express our sincere gratitude to TRIQS's developers.
 
 This package of ver.1.0 was developed under the support of "Project for advancement of software usability in materials science" by The Institute for Solid State Physics, The University of Tokyo. The copyright of DCore ver.1.0 belongs to The University of Tokyo.
+
+.. _dcore_paper:
 
 Citing DCore
 -------------------
@@ -86,10 +79,6 @@ GitHub repository
 -----------------
 
 You can download the source code of **DCore** from https://github.com/issp-center-dev/DCore.
-
-Contents
------------------
-:doc:`Contents <contents>`
 
 Disclaimer
 ----------
