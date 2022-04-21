@@ -18,7 +18,7 @@
 import sys
 import os
 
-from h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 from ..tools import launch_mpi_subprocesses, raise_if_mpi_imported, make_empty_dir
 
 def run_sumkdft(runner_cls, model_file, work_dir, mpirun_command, params):

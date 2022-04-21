@@ -20,12 +20,10 @@
 import numpy
 from itertools import product
 import os
-import subprocess
 
-from triqs.gf import *
-from triqs.operators import *
+from dcore._dispatcher import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params, expand_path
 from .base import SolverBase
 
 VERSION_REQUIRED = 1.5
@@ -124,11 +122,12 @@ class PomerolSolver(SolverBase):
         #   self.use_spin_orbit
 
         # print("params_kw =", params_kw)
-        exec_path = os.path.expandvars(params_kw['exec_path'])
+        exec_path = expand_path(params_kw['exec_path'])
         check_version(mpirun_command, exec_path)
 
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
+        ph_symmetric = params_kw.get('ph_symmetric', False) 
         fit_params = {}
         for key in ['fit_gtol',]:
             if key in params_kw:
@@ -184,7 +183,7 @@ class PomerolSolver(SolverBase):
         # H0 is extracted from the tail of the Green's function.
         self._Delta_iw = delta(self._G0_iw)
 
-        bath_levels, bath_hyb = extract_bath_params(self._Delta_iw, self.beta, self.block_names, n_bath, **fit_params)
+        bath_levels, bath_hyb = extract_bath_params(self._Delta_iw, self.beta, self.block_names, n_bath, ph_symmetric=ph_symmetric, **fit_params)
         assert bath_levels.shape == (2*n_bath,)
         assert bath_hyb.shape == (self.n_flavors, 2*n_bath)
 

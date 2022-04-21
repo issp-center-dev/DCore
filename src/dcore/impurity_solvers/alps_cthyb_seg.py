@@ -20,11 +20,9 @@ import os
 import shutil
 import sys
 from itertools import product
-from triqs.gf import *
-from h5 import HDFArchive
-from triqs.operators import *
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size
-from .base import SolverBase
+from dcore._dispatcher import *
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size, expand_path
+from .base import SolverBase, rotate_basis
 
 
 def to_numpy_array(g, names):
@@ -38,7 +36,7 @@ def to_numpy_array(g, names):
     if g.n_blocks > 2:
         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
 
-    n_spin_orbital = numpy.sum([get_block_size(block) for name, block in g])
+    n_spin_orbital = numpy.sum([get_block_size(block) for _, block in g])
 
     # FIXME: Bit ugly
     n_data = g[names[0]].data.shape[0]
@@ -51,8 +49,8 @@ def to_numpy_array(g, names):
         data[:, offset:offset + block_dim, offset:offset + block_dim] = block.data
         offset += block_dim
 
-    # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
-    # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
+    # from (spin, orb) : (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
+    # to (orb, spin)   : (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
     norb = n_spin_orbital//2
     index = numpy.zeros(n_spin_orbital, dtype=int)
     index[0::2] = numpy.arange(norb)
@@ -111,18 +109,20 @@ def assign_from_numpy_array(g, data, names):
     niw = data.shape[1]
 
     # array which data are assigned from
-    data_from = data.reshape(n_inner, n_sp, niw)
+    # (orb, spin, iw) -> (spin, orb, iw) -> (spin, orb, iw)  w/o SO
+    #                                       (1, inner, iw)   w/  SO
+    data_from = data.reshape((-1, 2, niw)).transpose((1, 0, 2)).reshape(n_sp, n_inner, niw)
 
     # assign data_from to g
-    for sp in range(n_sp):
+    for sp, name in enumerate(names):
         # array which data are assigned to
-        data_to = g[names[sp]].data
+        data_to = g[name].data
         assert data_to.shape == (2*niw, n_inner, n_inner)
         for i in range(n_inner):
             # positive frequency
-            data_to[niw:, i, i] = data_from[i, sp, :]
+            data_to[niw:, i, i] = data_from[sp, i, :]
             # negative frequency
-            data_to[:niw, i, i] = numpy.conj(data_from[i, sp, ::-1])
+            data_to[:niw, i, i] = numpy.conj(data_from[sp, i, ::-1])
 
 
 def dcore2alpscore(dcore_U):
@@ -269,11 +269,19 @@ class ALPSCTHYBSEGSolver(SolverBase):
         #   self.n_flavor
         #   self.gf_struct
 
+        # (0) Rotate H0 and Delta_tau if rot is given
+        g0_iw_rotated = self._G0_iw.copy()
+        if rot is None:
+            u_mat_rotated = self.u_mat
+        else:
+            assert isinstance(rot, dict)
+            u_mat_rotated = rotate_basis(rot, self.use_spin_orbit, self.u_mat, [g0_iw_rotated,], direction='forward')
+
         # (1a) If H0 is necessary:
         # Non-interacting part of the local Hamiltonian including chemical potential
         # Make sure H0 is hermite.
         # Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...
-        H0 = extract_H0(self._G0_iw, self.block_names)
+        H0 = extract_H0(g0_iw_rotated, self.block_names)
 
         # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
         # to (up,orb1), (down,orb1), (up,orb2), (down,orb2), ...
@@ -287,7 +295,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # Compute the hybridization function from G0:
         #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
         # H0 is extracted from the tail of the Green's function.
-        self._Delta_iw = delta(self._G0_iw)
+        self._Delta_iw = delta(g0_iw_rotated)
         Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
         for name in self.block_names:
             Delta_tau[name] << Fourier(self._Delta_iw[name])
@@ -304,26 +312,10 @@ class ALPSCTHYBSEGSolver(SolverBase):
                 print("--> continue. To stop calculation, set neglect_offdiagonal{bool}=False", file=sys.stderr)
             else:
                 print("--> exit. To neglect this warning, set neglect_offdiagonal{bool}=True", file=sys.stderr)
-                exit(1)
+                sys.exit(1)
 
         # TODO: check Delta_tau_data
         #    Delta_{ab}(tau) should be diagonal, real, negative
-
-        # rotate H0 and Delta_tau if rot is given
-        if rot is not None:
-            raise ValueError("basis_rotation is not supported in alps_cthyb_seg")
-
-            # rot^H . H0 . rot
-            # rot_mat = numpy.zeros((2*self.n_orb, 2*self.n_orb), dtype=complex)
-            # if self.use_spin_orbit:
-            #     rot_mat_4dim = rot_mat.reshape((1, 2*self.n_orb, 1, 2*self.n_orb))
-            # else:
-            #     rot_mat_4dim = rot_mat.reshape((2, self.n_orb, 2, self.n_orb))
-            # for sp, name in enumerate(self.block_names):
-            #     # rot_mat[sp*self.n_orb:(sp+1)*self.n_orb, sp*self.n_orb:(sp+1)*self.n_orb] = rot[name]
-            #     rot_mat_4dim[sp, :, sp, :] = rot[name]
-            # H0_diag = numpy.dot(rot_mat.conjugate().T, numpy.dot(H0, rot_mat))
-            # print(H0_diag)
 
         # (1c) Set U_{ijkl} for the solver
         # Set up input parameters and files for ALPS/CTHYB-SEG
@@ -362,7 +354,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
                     print(' {:.15e}'.format(Delta_tau_data[itau, f1, f1].real), file=f, end="")
                 print("", file=f)
 
-        U, Uprime, J = dcore2alpscore(self.u_mat)
+        U, Uprime, J = dcore2alpscore(u_mat_rotated)
         write_Umatrix(U, Uprime, J, self.n_orb)
 
         with open('./MUvector', 'w') as f:
@@ -377,11 +369,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
             return
 
         # Invoke subprocess
-        exec_path = os.path.expandvars(_read('exec_path'))
-        if exec_path == '':
-            raise RuntimeError("Please set exec_path!")
-        if not os.path.exists(exec_path):
-            raise RuntimeError(exec_path + " does not exist. Set exec_path properly!")
+        exec_path = expand_path(_read('exec_path'))
 
         # (2) Run a working horse
         with open('./output', 'w') as output_f:
@@ -415,6 +403,11 @@ class ALPSCTHYBSEGSolver(SolverBase):
         set_blockgf_from_h5(self._Sigma_iw, "S_omega")
         set_blockgf_from_h5(self._Gimp_iw, "G_omega")
 
+        # Rotate Sigma and Gimp back to the original basis
+        if rot is not None:
+            rotate_basis(rot, self.use_spin_orbit, None, [self._Sigma_iw, self._Gimp_iw], direction='backward')
+            # rotate_basis(rot, self.use_spin_orbit, None, self._Gimp_iw, direction='backward')
+
         #   self.quant_to_save['nn_equal_time']
         nn_equal_time = self._get_results("nn", 1, orbital_symmetrize=True, stop_if_data_not_exist=False)
         # [(s1,o1), (s2,o2), 0]
@@ -443,6 +436,9 @@ class ALPSCTHYBSEGSolver(SolverBase):
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(n_w2b)
         """
+        if rot is not None:
+            # TODO
+            raise NotImplementedError
 
         use_chi_loc = False
 

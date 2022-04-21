@@ -18,7 +18,7 @@
 
 
 from .tools import gen_kpath
-from h5 import HDFArchive
+from dcore._dispatcher import HDFArchive
 
 
 class LatticeModel(object):
@@ -28,6 +28,10 @@ class LatticeModel(object):
     def __init__(self, params):
         self._nkdiv = (1, 1, 1)
         self._params = params
+
+        self.ncor = params['model']['ncor']
+        self.corr_to_inequiv = params['model']['corr_to_inequiv']
+        self.norb_corr_sh = params['model']['norb_corr_sh']
 
     @classmethod
     def name(cls):

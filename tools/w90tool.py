@@ -158,3 +158,6 @@ def run():
 
     if not args.output is None:
         w90.save(args.output)
+
+if __name__ == '__main__':
+    run()

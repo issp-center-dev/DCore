@@ -1,4 +1,4 @@
-import triqs.utility.mpi as mpi
+from dcore._dispatcher import mpi
 from .worker_base import SumkDFTWorkerBase, setup_sk
 
 class SumkDFTWorkerDOS(SumkDFTWorkerBase):

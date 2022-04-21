@@ -1,4 +1,4 @@
-import triqs.utility.mpi as mpi
+from dcore._dispatcher import mpi
 from .worker_base import SumkDFTWorkerBase, setup_sk
 
 class SumkDFTWorkerGloc(SumkDFTWorkerBase):
@@ -7,7 +7,6 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
         super().__init__(model_hdf5_file, input_file, output_file)
 
     def run(self):
-        #from triqs_dft_tools import SumkDFT
         from dcore.sumkdft_opt import SumkDFT_opt as SumkDFT
         beta = self.params['beta']
         with_dc = self.params['with_dc']
@@ -15,6 +14,12 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
 
         sk = SumkDFT(hdf_file=self.model_hdf5_file, use_dft_blocks=False, h_field=0.0)
         setup_sk(sk, 'iwn', self.params)
+
+        # workaround for 'High frequency error'
+        if self.params['no_tail_fit']:
+            sk.total_density = sk.total_density_matsubara
+            sk.density_matrix = sk.density_matrix_matsubara
+
         if self.params['adjust_mu']:
             # find the chemical potential for given density
             sk.calc_mu(self.params['prec_mu'])

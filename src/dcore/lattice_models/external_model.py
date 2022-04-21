@@ -22,9 +22,8 @@ import numpy
 from warnings import warn
 
 from .base import LatticeModel
-from .tools import set_nk, XNode
-from h5 import HDFArchive
-
+from .tools import XNode
+from dcore._dispatcher import HDFArchive
 
 class ExternalModel(LatticeModel):
     """
@@ -46,10 +45,7 @@ class ExternalModel(LatticeModel):
             raise Exception("Prepare, in advance, '%s' file which stores DFT data in 'dft_input' subgroup" % h5_file)
 
         # set nkdiv
-        self._nkdiv = set_nk(params["model"]["nk"],
-                             params["model"]["nk0"],
-                             params["model"]["nk1"],
-                             params["model"]["nk2"])
+        self._nkdiv = params["model"]["nk0"], params["model"]["nk1"], params["model"]["nk2"]
 
         # Set [model][norb_inequiv_sh], which is necessary for generate_umat
         with HDFArchive(h5_file, 'r') as f:

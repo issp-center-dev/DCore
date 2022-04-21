@@ -30,14 +30,23 @@ Prerequisites
    See :doc:`impuritysolvers` for a complete list of supported impurity solvers and their user manuals.
 
 
-Installation 
+Installation
 ------------------
 
-You can install the latest version of DCore using pip as follows.
+You can install the latest version of DCore using ``pip`` command as follows.
 
    ::
 
      $ pip3 install dcore -U
+
+Here, ``-U`` stands for ''Upgrade''. The installed packages are upgraded to the latest version, if you already have packages installed.
+Further, if you do not have root privileges, you need to add ``--user`` option as
+
+   ::
+
+     $ pip3 install dcore -U --user
+
+Then, the packages are installed into .local directory in your home directory. Make sure that **$HOME/.local/bin** is included in PATH environment variable.
 
 
 Installation (only for developers)
@@ -71,13 +80,13 @@ You can download the source files in two ways.
   .. code-block:: bash
 
       $ pip3 install .
- 
+
   If you do not have root privileges, please try
 
   .. code-block:: bash
 
       $ pip3 install . --user
- 
+
   If both of them did not work, you could build a binary package and install it as follows
 
   .. code-block:: bash
@@ -115,7 +124,7 @@ You can download the source files in two ways.
   MPI tests invoke MPI parallelized impourity solvers.
   If your system MPI command is not "mpirun", please provide the name of the correct one to DCore at runtime in an input file.
   The default value is "mpirun -np #" (# is replaced by the number of processors).
-  For instance, if the MPI command of your system is "mpijob", please set the environment variable "DCORE_MPIRUN_COMMAND" as folows. 
+  For instance, if the MPI command of your system is "mpijob", please set the environment variable "DCORE_MPIRUN_COMMAND" as folows.
 
   .. code-block:: bash
 

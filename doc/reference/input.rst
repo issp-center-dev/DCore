@@ -75,7 +75,7 @@ interaction
 ^^^^^^^^^^^
 
 Model Hamiltonian is defined as
-   
+
 .. math::
 
    {\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
@@ -94,7 +94,7 @@ where
 The interaction matrix :math:`U^{i}_{\alpha \beta \gamma \delta}`
 is specified by the parameter ``interaction``.
 
-* If ``interaction = kanamori``
+* ``interaction = kanamori``
 
   In this case, the Kanamori-type interaction is used, i.e.
 
@@ -108,7 +108,7 @@ is specified by the parameter ``interaction``.
      \\
      U_{\alpha \alpha \beta \beta} &= J \qquad (\alpha \neq \beta),
      \end{align}
-  
+
   where :math:`U, U', J` at each correlated shell are specified by the parameter ``kanamori`` as
 
   ::
@@ -125,9 +125,9 @@ is specified by the parameter ``interaction``.
      interaction = kanamori
      kanamori = [(4.0, 2.0, 1.0), (6.0, 3.0, 1.5)]
 
-* If ``interaction = slater_f``
+* ``interaction = slater_f``
 
-  In this case, the interaction matrix is constructed by the effective Slater integrals 
+  In this case, the fully rotationally invariant Slater interaction is used. The interaction matrix is constructed by the effective Slater integrals
   :math:`F_0, F_2, F_4, F_6`.
   These Slater integrals and the angular momentum at each correlated shell
   are specified by the parameter ``slater_f`` as follows
@@ -148,33 +148,35 @@ is specified by the parameter ``interaction``.
      slater_f = [(2, 2.0, 1.0, 0.5, 0.0), (1, 3.0, 1.5 0.0, 0.0)]
 
   .. note::
-     
+
      You must specify all of :math:`F_0, F_2, F_4, F_6`.
-     
-* If ``interaction = slater_uj``
-      
-  In this case, the Slater-type interaction is used.
-  The effective Slater integrals are computed with the following formulae:
+
+  The basis can be specified by ``slater_basis`` parameter. See :doc:`slater_basis` for details.
+
+* ``interaction = slater_uj``
+
+  The Slater interaction is used as in the case with ``interaction = slater_f``, but a conventional intuitive parameterization is implemented.
+  The effective Slater integrals :math:`F_0, F_2, F_4, F_6` are evaluated from parameters :math:`U` and :math:`J`. The explicit formulas are given as follows:
 
   * :math:`l = 1`
 
     .. math::
-   
+
        F_0 = U, \quad
        F_2 = 5 J
 
   * :math:`l=2`
 
     .. math::
-   
+
        F_0 = U, \quad
        F_2 = \frac{14 J}{1.0 + 0.63},\quad
        F_4 = 0.63 F_2
-  
+
   * :math:`l=3`
 
     .. math::
-   
+
        F_0 = U, \quad
        F_2 = \frac{6435 J}{286 + 195 \times 451 / 675 + 250 \times 1001 / 2025},\quad
        F_4 = \frac{451 F_2}{675},\quad
@@ -187,8 +189,10 @@ is specified by the parameter ``interaction``.
 
      interaction = slater_uj
      slater_uj = [(angular_momentum1, U1, J1), (angular_momentum2, U2, J2), ... ]
-  
-* If ``interaction = respack``
+
+  The basis can be specified by ``slater_basis`` parameter. See :doc:`slater_basis` for details.
+
+* ``interaction = respack``
 
   Use the output by `RESPACK <https://sites.google.com/view/kazuma7k6r>`_.
   **Under construction.**
@@ -220,6 +224,7 @@ you specify the parameter ``density_density`` as
 
    It can not be used in conjunction to the Hubbard-I solver or
    the double-counting correction.
+
 
 local potential
 ^^^^^^^^^^^^^^^
@@ -271,7 +276,7 @@ the self-energy.
    \langle c_{\gamma \sigma'}^\dagger c_{\delta \sigma}\rangle_0,
 
 where :math:`\langle \cdots \rangle_0` indicates the expectation value at the initial (Kohn-Sham) state.
-   
+
 [impurity_solver] block
 -----------------------
 

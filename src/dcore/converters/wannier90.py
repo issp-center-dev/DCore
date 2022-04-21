@@ -47,11 +47,11 @@
 from types import *
 import numpy
 import math
-from h5 import *
+from dcore._dispatcher import h5, HDFArchive
 from .converter_tools import *
 from itertools import product
 import os.path
-from . import _mpi as mpi
+from dcore._dispatcher import mpi
 
 
 class Wannier90Converter(ConverterTools):
@@ -268,7 +268,7 @@ class Wannier90Converter(ConverterTools):
                 # we assume spin up and spin down always have same total number
                 # of WFs
                 n_orbitals = numpy.ones(
-                    [self.n_k, n_spin], numpy.int) * self.nwfs
+                    [self.n_k, n_spin], numpy.int64) * self.nwfs
 
             else:
                 # consistency check between the _up and _down file contents
@@ -405,7 +405,7 @@ class Wannier90Converter(ConverterTools):
             num_wf = int(hr_data[1])
             nrpt = int(hr_data[2])
         except ValueError:
-            mpi.report("Could not read number of WFs or R vectors")
+            raise RuntimeError("Could not read number of WFs or R vectors")
 
         # allocate arrays to save the R vector indexes and degeneracies and the
         # Hamiltonian
