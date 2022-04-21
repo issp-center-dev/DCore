@@ -29,7 +29,7 @@ from triqs.operators import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
 from .base import SolverBase
-from .hphi_spectrum import CalcSpectrum
+from .hphi_spectrum import calc_one_body_green_core_parallel
 from .pomerol import assign_from_numpy_array
 
 
@@ -307,9 +307,13 @@ class HPhiSolver(SolverBase):
         eta = 1e-4
 
         #print("Check Energy")
-        calcspectrum = CalcSpectrum(T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
-        #energy_list = calcspectrum.get_energies()
-        one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
+        output_dir = "./output"
+        p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
+        one_body_g = calc_one_body_green_core_parallel(p_common)
+
+        # calcspectrum = CalcSpectrum(T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
+        # energy_list = calcspectrum.get_energies()
+        # one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
 
         # print(len(energy_list))
         # print(energy_list)
