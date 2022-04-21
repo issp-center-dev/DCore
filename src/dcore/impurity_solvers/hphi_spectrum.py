@@ -4,7 +4,114 @@ import numpy as np
 import os
 import sys
 
+# T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"
+
+def calc_one_body_green_core_parallel(p_common):
+    n_sigma = 2
+    n_flg = 2
+    n_excitation = 2
+    n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut = p_common
+
+    def gen_p():
+        for sitei, sigmai in itertools.product(range(n_site), range(n_sigma)):
+            for sitej, sigmaj in itertools.product(range(n_site), range(n_sigma)):
+                    for idx, flg in enumerate([True, False]):
+                        for ex_state in range(n_excitation):
+                            yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
+
+    from concurrent.futures import ProcessPoolExecutor
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        one_body_g_tmp = np.array(list(executor.map(calc_one_body_green_core, gen_p())))
+
+    one_body_green_core = one_body_g_tmp.reshape((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(T_list), NOmega))
+    one_body_green = calc_one_body_green(one_body_green_core)
+
+    import shutil
+    for sitei, sigmai in itertools.product(range(n_site), range(n_sigma)):
+        for sitej, sigmaj in itertools.product(range(n_site), range(n_sigma)):
+            for idx in range(n_flg):
+                for ex_state in range(n_excitation):
+                    dir_path = "{}_{}_{}_{}_{}_{}".format(sitei, sigmai, sitej, sigmaj, ex_state, idx)
+                    shutil.rmtree(dir_path)
+
+    return one_body_green
+
+def calc_one_body_green_core(p):
+    #unpack parameters
+    sitei, sigmai, sitej, sigmaj, i_flg, ex_state, p_common = p
+    n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut = p_common
+    calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo",
+                                           output_dir="./output")
+
+    calc_spectrum_core.set_energies()
+    flg = True if i_flg == 0 else False
+    return calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut)
+
+def calc_one_body_green(one_body_green_core):
+    n_site, n_sigma, n_site, n_sigma, n_excitation, n_flg, n_T, n_omega = one_body_green_core.shape
+    n_excitation = 2
+    n_flg = 2
+    n_sigma = 2
+    one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, n_T, n_omega), dtype=np.complex128)
+    # Diagonal
+    for sitei, sigmai, ex_state in itertools.product(range(n_site), range(n_sigma), range(n_excitation)):
+        one_body_green[sitei][sigmai][sitei][sigmai] += one_body_green_core[sitei][sigmai][sitei][sigmai][0][ex_state]
+
+    # Off diagonal
+    for sitei, sigmai, sitej, sigmaj  in itertools.product(range(n_site), range(n_sigma), range(n_site), range(n_sigma)):
+        one_body_green_tmp = np.zeros((n_flg, n_T, n_omega), dtype=np.complex128)
+        for idx in range(n_flg):
+            for ex_state in range(n_excitation):
+                one_body_green_tmp[idx] += one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state]
+            one_body_green_tmp[1] -= one_body_green[sitei][sigmai][sitei][sigmai] + \
+                                     one_body_green[sitej][sigmaj][sitej][sigmaj]
+            one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] + 1J * one_body_green_tmp[
+                1]) / 2.0
+            one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] - 1J * one_body_green_tmp[
+                1]) / 2.0
+    return one_body_green
+
+
 class CalcSpectrum:
+    def __init__(self, T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
+        self.T_list = T_list
+        self.exct = exct
+        self.eta = eta
+        self.header = header
+        self.output_dir = output_dir
+        self.path_to_HPhi = path_to_HPhi
+        self.calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output")
+        self.nomega = n_iw
+
+    def get_one_body_green_core(self, n_site, exct_cut):
+        self.calc_spectrum_core.set_energies()
+        n_excitation = 2 # type of excitation operator
+        n_flg = 2
+        n_sigma = 2
+        one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, len(self.T_list), self.nomega), dtype=np.complex128)
+        one_body_green_core = np.zeros((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(self.T_list), self.nomega), dtype=np.complex128)
+
+        for sitei, sigmai, sitej, sigmaj  in itertools.product(range(n_site), range(n_sigma), range(n_site), range(n_sigma)):
+            for idx, flg in enumerate([True, False]):
+                for ex_state in range(n_excitation):
+                    one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state] = self.calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut)
+
+        #Diagonal
+        for sitei, sigmai, ex_state in itertools.product(range(n_site), range(n_sigma), range(n_excitation)):
+            one_body_green[sitei][sigmai][sitei][sigmai] += one_body_green_core[sitei][sigmai][sitei][sigmai][0][ex_state]
+
+        # Off diagonal
+        for sitei, sigmai, sitej, sigmaj in itertools.product(range(n_site), range(n_sigma),range(n_site), range(n_sigma)):
+            one_body_green_tmp = np.zeros((n_flg, len(self.T_list), self.nomega), dtype=np.complex128)
+            for idx in range(n_flg):
+                for ex_state in range(n_excitation):
+                    one_body_green_tmp[idx] += one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state]
+                one_body_green_tmp[1] -= one_body_green[sitei][sigmai][sitei][sigmai] + one_body_green[sitej][sigmaj][sitej][sigmaj]
+                one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] + 1J * one_body_green_tmp[1]) / 2.0
+                one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] - 1J * one_body_green_tmp[1]) / 2.0
+        return one_body_green
+
+class CalcSpectrumCore:
     def __init__(self, T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
         self.T_list = T_list
         self.exct = exct
@@ -12,22 +119,25 @@ class CalcSpectrum:
         self.header = header
         self.output_dir = output_dir
         self.nomega = 0
-        self.path_to_HPhi = path_to_HPhi
+        self.parent_dir = os.getcwd()
+        self.path_to_HPhi = os.path.join(self.parent_dir, path_to_HPhi)
 
-    def Make_Spectrum_Input(self, spectrum_type="single"):
+    def Make_Spectrum_Input(self, calc_dir="./", spectrum_type="single"):
+
+        rel_path_org = os.path.relpath(self.parent_dir, calc_dir)
         for idx in range(self.exct):
-            with open("calcmod.def") as f:
+            with open(os.path.join(self.parent_dir, "calcmod.def")) as f:
                 lines = f.readlines()
-            with open("calcmod_ex.def", "w") as fex:
+            with open(os.path.join(calc_dir, "calcmod_ex.def"), "w") as fex:
                 for line in lines:
                    words = line.split()
                    if words[0] == "CalcSpec" or words[0] == "OutputExVec" or words[0] == "OutputEigenVec":
                     continue
                    fex.write(line)
                 fex.write("CalcSpec    1\n")
-            with open("namelist.def") as f:
+            with open(os.path.join(self.parent_dir, "namelist.def")) as f:
                 lines = f.readlines()
-            with open("namelist_ex_{}.def".format(idx), "w") as fex:
+            with open(os.path.join(calc_dir, "namelist_ex_{}.def".format(idx)), "w") as fex:
                 for line in lines:
                     words = line.split()
                     if len(words) == 0:
@@ -38,22 +148,23 @@ class CalcSpectrum:
                         continue
                     if words[0] == "PairExcitation":
                         continue
-                    fex.write(line)
-
+                    fex.write("{} {}\n".format(words[0], os.path.join(rel_path_org, words[1])))
                 fex.write("ModPara modpara_ex.def\n")
                 fex.write("CalcMod calcmod_ex.def\n")
-                fex.write("SpectrumVec    {}_eigenvec_{}\n".format(self.header, idx))
+                rel_path = os.path.relpath(os.path.join(self.parent_dir, "output"), calc_dir)
+                fex.write("SpectrumVec    {}_eigenvec_{}\n".format(os.path.join("../", rel_path, self.header), idx))
                 if spectrum_type == "single":
                     fex.write("SingleExcitation single_ex.def\n")
                 elif spectrum_type == "pair":
                     fex.write("PairExcitation pair_ex.def\n")
 
-        with open("modpara.def", "r") as fr:
+        with open(os.path.join(self.parent_dir,"modpara.def"), "r") as fr:
             lines = fr.readlines()
             for line in lines:
                 words = line.split()
                 if words[0] == "NOmega":
                     self.nomega = int(words[1])
+
         if self.nomega == 0:
             print("Error: Please set NOmega in modpara file")
             sys.exit(1)
@@ -71,7 +182,7 @@ class CalcSpectrum:
         frequencies = frequencies
         return frequencies, spectrum_dict
 
-    def get_energies(self):
+    def set_energies(self):
         energy_list = []
         with open(os.path.join(self.output_dir, "{}_energy.dat".format(self.header))) as f:
             lines = f.readlines()
@@ -87,7 +198,6 @@ class CalcSpectrum:
             print("T = {}: exp[-beta(ene_max-ene_mix)] = {}".format(T, eta_ene))
             if eta_ene > self.eta:
                 print("Warning: At T = {}, eta_ene is larger than eta.".format(T))
-        return energy_list
 
     def _calc_Z(self, T):
         Z = 0
@@ -116,10 +226,10 @@ class CalcSpectrum:
                 for idx, value in enumerate(spectrum):
                     fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
 
-    def _update_modpara(self, exct, ex_state=0):
+    def _update_modpara(self, exct, ex_state=0, calc_dir="./"):
         dict_mod={}
         header = []
-        with open("modpara.def", "r") as fr:
+        with open(os.path.join(self.parent_dir, "modpara.def"), "r") as fr:
             lines = fr.readlines()
             header = lines[:8]
             for line in lines[8:]:
@@ -131,7 +241,7 @@ class CalcSpectrum:
                 dict_mod["OmegaMax"] = [-1.0*float(omega_max[0]), -1.0*float(omega_max[1])] 
                 omega_min = dict_mod["OmegaMin"]
                 dict_mod["OmegaMin"] = [-1.0*float(omega_min[0]), -1.0*float(omega_min[1])]
-            with open("modpara_ex.def", "w") as fw:
+            with open(os.path.join(calc_dir, "modpara_ex.def"), "w") as fw:
                 for line in header:
                     fw.write(line)
                 for key, value in dict_mod.items():
@@ -140,12 +250,12 @@ class CalcSpectrum:
                     else:
                         fw.write("{} {} {}\n".format(key, value[0], value[1]))
 
-    def _make_single_excitation(self, site_i, sigma_i, site_j, sigma_j, file_name = "single_ex.def", ex_state=0, flg_complex = True):
+    def _make_single_excitation(self, site_i, sigma_i, site_j, sigma_j, file_name = "single_ex.def", ex_state=0, flg_complex = True, calc_dir="./"):
         # c_{i sigma_i} or c_{i sigma_i} + i c_{j sigma_j}
         nsingle = 2 
         if (2 * site_i + sigma_i) == ( 2 * site_j + sigma_j):
             nsingle = 1
-        with open(file_name, "w") as fw:
+        with open(os.path.join(calc_dir, file_name), "w") as fw:
             fw.write("===============================\n")
             fw.write("NSingle {}\n".format(nsingle)) 
             fw.write("===============================\n")
@@ -161,68 +271,34 @@ class CalcSpectrum:
                     fw.write("{} {} {} 1.0 0.0\n".format(site_i, sigma_i, ex_state))
                     fw.write("{} {} {} 1.0 0.0\n".format(site_j, sigma_j, ex_state))
 
-    def _run_HPhi(self, exct_cut, ex_state=0):
+    def _run_HPhi(self, exct_cut, ex_state=0, calc_dir="./"):
+        os.chdir(calc_dir)
         for idx in range(exct_cut):
-            self._update_modpara(idx, ex_state)
-            input_path = "namelist_ex_{}.def".format(idx)
+            self._update_modpara(idx, ex_state, calc_dir)
+            input_path = os.path.join(calc_dir, "namelist_ex_{}.def".format(idx))
             exec_path = self.path_to_HPhi
             cmd = "{} -e {} > std_{}.log".format(exec_path, input_path, idx)
             subprocess.call(cmd, shell=True)
             cmd = "mv ./output/{0}_DynamicalGreen.dat ./output/{0}_DynamicalGreen_{1}.dat".format(self.header, idx)
             subprocess.call(cmd, shell=True)
+        os.chdir(self.parent_dir)
 
-    def get_one_body_green(self, n_site, exct_cut):
-        self.Make_Spectrum_Input()
-        one_body_green = {}
-        for T in self.T_list:
-            one_body_green[T] = np.zeros((n_site, 2, n_site, 2, self.nomega), dtype=np.complex)
-        #diagonal 
-        print("Calculate Diagonal Green function")
-        for sitei, sigmai in itertools.product(range(n_site), range(2)):
-            print("G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitei, "u" if sigmai == 0 else "d"))
-            for ex_state in range(2):
-                self._make_single_excitation(sitei, sigmai, sitei, sigmai, ex_state=ex_state)
-                #Run HPhi
-                self._run_HPhi(exct_cut, ex_state)
-                #Get Finite-T Green
-                frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
-                if ex_state == 1:
-                    self.frequencies = frequencies
-                sign = 1.0 if ex_state ==1 else -1.0
-                for T in self.T_list:
-                    one_body_green[T][sitei][sigmai][sitei][sigmai] += sign*finite_spectrum_list[T]
-                
-        #off diagonal
-        print("Calculate Off-Diagonal Green function")
-        one_body_green_tmp = [{}, {}]
-        for T in self.T_list:
-            one_body_green_tmp[0][T] = np.zeros((self.nomega), dtype=np.complex)
-            one_body_green_tmp[1][T] = np.zeros((self.nomega), dtype=np.complex)
-
-        for sitei, sigmai in itertools.product(range(n_site), range(2)):
-            sitei_idx = 2 * sitei +  sigmai   
-            for sitej, sigmaj in itertools.product(range(n_site), range(2)): 
-                sitej_idx = 2 * sitej + sigmaj
-                if sitei_idx >= sitej_idx:
-                    continue
-                print("G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitej, "u" if sigmaj == 0 else "d"))
-                for ex_state in range(2):
-                    #True c_i + c_j, False: c_i + i c_j
-                    for idx, flg in enumerate([True, False]):
-                        self._make_single_excitation(sitei, sigmai, sitej, sigmaj, ex_state=ex_state, flg_complex=flg)
-                        #Run HPhi
-                        self._run_HPhi(exct_cut, ex_state)
-                        #Get Finite-T Green
-                        frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
-                        sign = 1.0 if ex_state ==1 else -1.0
-                        for T in self.T_list:
-                            one_body_green_tmp[idx][T] += sign*finite_spectrum_list[T]
-                for T in self.T_list:
-                    one_body_green_tmp[1][T] -= one_body_green[T][sitei][sigmai][sitei][sigmai]+one_body_green[T][sitej][sigmaj][sitej][sigmaj]
-                #Get Offdiagonal Green
-                for T in self.T_list:
-                    one_body_green[T][sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0][T] + 1J * one_body_green_tmp[1][T] )/2.0
-                    one_body_green[T][sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[0][T] - 1J * one_body_green_tmp[1][T] )/2.0
+    def get_one_body_green_core(self, sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut):
+        calc_dir = os.path.join(self.parent_dir, "{}_{}_{}_{}_{}_{}".format(sitei,sigmai,sitej,sigmaj, ex_state, 0 if flg is True else 1))
+        os.makedirs(calc_dir, exist_ok=True)
+        self.Make_Spectrum_Input(calc_dir)
+        one_body_green = np.zeros((len(self.T_list), self.nomega), dtype=np.complex)
+        print("Calculate G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitej, "u" if sigmaj == 0 else "d"))
+        self._make_single_excitation(sitei, sigmai, sitej, sigmaj, ex_state=ex_state, flg_complex=flg, calc_dir=calc_dir)
+        # Run HPhi
+        self._run_HPhi(exct_cut, ex_state, calc_dir)
+        # Get Finite-T Green
+        frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
+        if ex_state == 1:
+            self.frequencies = frequencies
+        sign = 1.0 if ex_state == 1 else -1.0
+        for idx, T in enumerate(self.T_list):
+            one_body_green[idx] = sign * finite_spectrum_list[T]
         return one_body_green
 
 if __name__ == "__main__":
@@ -236,8 +312,7 @@ if __name__ == "__main__":
     file_name = sys.argv[1]
     import toml
     dict_toml = toml.load(open(file_name))
-    #def __init__(T_list, exct, eta, mpirun_command="", path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
-
+    NOmega = 200
     T_list = dict_toml.get("T_list", [1.0])
     exct = dict_toml.get("exct", 10)
     eta = dict_toml.get("eta", 1e-4)
@@ -245,8 +320,18 @@ if __name__ == "__main__":
     header = dict_toml.get("header", "zvo")
     output_dir = dict_toml.get("output_dir", "./output")
     n_site = dict_toml.get("n_site", 2)
-    calcspectrum = CalcSpectrum(T_list, exct, eta, path_to_HPhi, header, output_dir)
-    energy_list = calcspectrum.get_energies()
-    one_body_g = calcspectrum.get_one_body_green(n_site=n_site, exct_cut=exct)
-    np.save(one_body_g)
-    print(one_body_g)
+    max_workers=4
+
+    #Calculate one body Green's functions directly
+    # calcg = CalcSpectrum(T_list, NOmega, exct, eta, path_to_HPhi, header, output_dir)
+    # one_body_g_direct = calcg.get_one_body_green(n_site, exct)
+    # print(one_body_g_direct)
+    # exit(0)
+
+    #Calculate one body Green's functions using parallel
+    n_sigma = 2
+    n_flg = 2
+    n_excitation = 2
+    p_common = (n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct)
+    one_body_green = calc_one_body_green_core_parallel(p_common)
+    np.save("test_g", one_body_green)

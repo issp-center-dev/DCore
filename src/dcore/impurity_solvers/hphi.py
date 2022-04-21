@@ -309,8 +309,7 @@ class HPhiSolver(SolverBase):
         eta = 1e-4
 
         print("Check Energy")
-        calcspectrum = CalcSpectrum(prefix, T_list, mpirun_command=mpirun_command_power4, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
-        energy_list = calcspectrum.get_energies()
+        calcspectrum = CalcSpectrum(prefix, T_list, n_iw=self.n_iw, mpirun_command=mpirun_command_power4, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
         one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
 
         # print(len(energy_list))
@@ -358,6 +357,7 @@ class HPhiSolver(SolverBase):
         h0_block = [h0_full[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
 
         # Construct G0 including bath sites
+        bath_names = ["bath" + str(i_bath) for i_bath in range(n_bath)]
         bath_names = ["bath" + str(i_bath) for i_bath in range(n_bath)]
         gf_struct_full = {block: list(inner_names) + bath_names for block, inner_names in self.gf_struct.items()}
         g0_full = make_block_gf(GfImFreq, gf_struct_full, self.beta, self.n_iw)
