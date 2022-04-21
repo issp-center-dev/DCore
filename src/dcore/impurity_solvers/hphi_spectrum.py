@@ -23,8 +23,8 @@ def calc_one_body_green_core_parallel(p_common):
     # with ProcessPoolExecutor(max_workers=max_workers) as executor:
     with ProcessPoolExecutor() as executor:  # FIXME: tentative; max_workers should be provided through p_common
         one_body_g_tmp = np.array(list(executor.map(calc_one_body_green_core, gen_p())))
-
-    one_body_green_core = one_body_g_tmp.reshape((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(T_list), NOmega))
+    n_omega = one_body_g_tmp.shape[2]
+    one_body_green_core = one_body_g_tmp.reshape((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(T_list), n_omega))
     one_body_green = calc_one_body_green(one_body_green_core)
 
     import shutil
@@ -80,7 +80,7 @@ class CalcSpectrum:
         self.eta = eta
         self.header = header
         self.output_dir = output_dir
-        self.path_to_HPhi = path_to_HPhi
+        self.path_to_HPhi = os.path.abspath(path_to_HPhi)
         self.calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output")
         self.nomega = n_iw
 
@@ -122,7 +122,7 @@ class CalcSpectrumCore:
         self.nomega = 0
         self.parent_dir = os.getcwd()
         # self.path_to_HPhi = os.path.join(self.parent_dir, path_to_HPhi)
-        self.path_to_HPhi = path_to_HPhi  # converted to full path in DCore
+        self.path_to_HPhi = os.path.abspath(path_to_HPhi)  # converted to full path in DCore
 
     def Make_Spectrum_Input(self, calc_dir="./", spectrum_type="single"):
 
@@ -171,16 +171,16 @@ class CalcSpectrumCore:
             print("Error: Please set NOmega in modpara file")
             sys.exit(1)
 
-    def _read_spectrum(self):
+    def _read_spectrum(self, calc_dir="./"):
         spectrum_dict={}
         frequencies =[]
         for idx in range(self.exct):
-            path_to_DG = os.path.join(self.output_dir, "{}_DynamicalGreen_{}.dat".format(self.header,idx))
+            path_to_spectrum_dir = os.path.join(calc_dir, self.output_dir)
+            path_to_DG = os.path.join(path_to_spectrum_dir, "{}_DynamicalGreen_{}.dat".format(self.header,idx))
             spectrum = np.loadtxt(path_to_DG)
             spectrum_dict[idx] = spectrum[:,2] + 1J*spectrum[:,3]
             if idx == 0 :
                 frequencies = spectrum[:, 0] + 1J*spectrum[:, 1]
-        spectrums_dict = spectrum_dict
         frequencies = frequencies
         return frequencies, spectrum_dict
 
@@ -208,8 +208,8 @@ class CalcSpectrumCore:
             Z += np.exp(-ene_diff/T)
         return Z
 
-    def get_finite_T_spectrum(self):
-        frequencies, self.spectrums_dict = self._read_spectrum()
+    def get_finite_T_spectrum(self, calc_dir="./"):
+        frequencies, self.spectrums_dict = self._read_spectrum(calc_dir)
         finite_T_spectrum_dict ={}
         for T in self.T_list:
             Z = self._calc_Z(T)
@@ -295,7 +295,7 @@ class CalcSpectrumCore:
         # Run HPhi
         self._run_HPhi(exct_cut, ex_state, calc_dir)
         # Get Finite-T Green
-        frequencies, finite_spectrum_list = self.get_finite_T_spectrum()
+        frequencies, finite_spectrum_list = self.get_finite_T_spectrum(calc_dir)
         if ex_state == 1:
             self.frequencies = frequencies
         sign = 1.0 if ex_state == 1 else -1.0
