@@ -27,7 +27,7 @@ from triqs.gf import *
 # from pytriqs.archive import HDFArchive
 from triqs.operators import *
 
-from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params
+from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params, expand_path
 from .base import SolverBase
 from .hphi_spectrum import calc_one_body_green_core_parallel
 from .pomerol import assign_from_numpy_array
@@ -142,7 +142,7 @@ class HPhiSolver(SolverBase):
         #   self.gf_struct
         #   self.use_spin_orbit
 
-        exec_path = os.path.expandvars(params_kw['exec_path'])
+        exec_path = expand_path(params_kw['exec_path'])
 
         # The number of process (np) must be 4^m in HPhi
         mpirun_command_power4 = mpirun_command

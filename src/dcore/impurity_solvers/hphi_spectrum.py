@@ -20,7 +20,8 @@ def calc_one_body_green_core_parallel(p_common):
                             yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
 
     from concurrent.futures import ProcessPoolExecutor
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+    # with ProcessPoolExecutor(max_workers=max_workers) as executor:
+    with ProcessPoolExecutor() as executor:  # FIXME: tentative; max_workers should be provided through p_common
         one_body_g_tmp = np.array(list(executor.map(calc_one_body_green_core, gen_p())))
 
     one_body_green_core = one_body_g_tmp.reshape((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(T_list), NOmega))
@@ -40,8 +41,8 @@ def calc_one_body_green_core(p):
     #unpack parameters
     sitei, sigmai, sitej, sigmaj, i_flg, ex_state, p_common = p
     n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut = p_common
-    calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo",
-                                           output_dir="./output")
+    calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi=path_to_HPhi, header=header,
+                                           output_dir=output_dir)
 
     calc_spectrum_core.set_energies()
     flg = True if i_flg == 0 else False
@@ -120,7 +121,8 @@ class CalcSpectrumCore:
         self.output_dir = output_dir
         self.nomega = 0
         self.parent_dir = os.getcwd()
-        self.path_to_HPhi = os.path.join(self.parent_dir, path_to_HPhi)
+        # self.path_to_HPhi = os.path.join(self.parent_dir, path_to_HPhi)
+        self.path_to_HPhi = path_to_HPhi  # converted to full path in DCore
 
     def Make_Spectrum_Input(self, calc_dir="./", spectrum_type="single"):
 
@@ -238,7 +240,7 @@ class CalcSpectrumCore:
             dict_mod["OmegaOrg"] = [self.energy_list[exct], 0]
             if ex_state == 0:
                 omega_max = dict_mod["OmegaMax"]
-                dict_mod["OmegaMax"] = [-1.0*float(omega_max[0]), -1.0*float(omega_max[1])] 
+                dict_mod["OmegaMax"] = [-1.0*float(omega_max[0]), -1.0*float(omega_max[1])]
                 omega_min = dict_mod["OmegaMin"]
                 dict_mod["OmegaMin"] = [-1.0*float(omega_min[0]), -1.0*float(omega_min[1])]
             with open(os.path.join(calc_dir, "modpara_ex.def"), "w") as fw:
@@ -252,12 +254,12 @@ class CalcSpectrumCore:
 
     def _make_single_excitation(self, site_i, sigma_i, site_j, sigma_j, file_name = "single_ex.def", ex_state=0, flg_complex = True, calc_dir="./"):
         # c_{i sigma_i} or c_{i sigma_i} + i c_{j sigma_j}
-        nsingle = 2 
+        nsingle = 2
         if (2 * site_i + sigma_i) == ( 2 * site_j + sigma_j):
             nsingle = 1
         with open(os.path.join(calc_dir, file_name), "w") as fw:
             fw.write("===============================\n")
-            fw.write("NSingle {}\n".format(nsingle)) 
+            fw.write("NSingle {}\n".format(nsingle))
             fw.write("===============================\n")
             fw.write("===============================\n")
             fw.write("===============================\n")
@@ -301,8 +303,8 @@ class CalcSpectrumCore:
             one_body_green[idx] = sign * finite_spectrum_list[T]
         return one_body_green
 
-if __name__ == "__main__":
 
+def test_main():
     args = sys.argv
     if len(args) != 2:
         print("Error: Wrong argument.")
@@ -335,3 +337,6 @@ if __name__ == "__main__":
     p_common = (n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct)
     one_body_green = calc_one_body_green_core_parallel(p_common)
     np.save("test_g", one_body_green)
+
+if __name__ == "__main__":
+    test_main()
