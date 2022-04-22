@@ -151,11 +151,12 @@ class HPhiSolver(SolverBase):
         try:
             np = int(commands[-1])
         except ValueError:
+            np = None
             print("A check of np is skipped.")
         else:
             if not math.log(np, 4).is_integer():  # check if np = 4^m
                 np_new = 4**int(math.log(np, 4))
-                print(f"Warning: np must be a power of 4 in HPhi. np is set to {np_new}.", file=sys.stderr)
+                print(f"Warning: np must be a power of 4 in HPhi. np is set to {np_new} in eigenenergies calculations. Note that np={np} is used for Gf calculations.", file=sys.stderr)
                 commands[-1] = str(np_new)
                 mpirun_command_power4 = " ".join(commands)
 
@@ -312,7 +313,7 @@ class HPhiSolver(SolverBase):
         #print("Check Energy")
         output_dir = "./output"
         p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
-        one_body_g = calc_one_body_green_core_parallel(p_common)
+        one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=np)
 
         print("\nFinish Gf calc.")
 

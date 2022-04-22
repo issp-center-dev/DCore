@@ -6,7 +6,7 @@ import sys
 
 # T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"
 
-def calc_one_body_green_core_parallel(p_common):
+def calc_one_body_green_core_parallel(p_common, max_workers=None):
     """
     Return:
         numpy.ndarray(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
@@ -27,8 +27,7 @@ def calc_one_body_green_core_parallel(p_common):
                             yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
 
     from concurrent.futures import ProcessPoolExecutor
-    # with ProcessPoolExecutor(max_workers=max_workers) as executor:
-    with ProcessPoolExecutor() as executor:  # FIXME: tentative; max_workers should be provided through p_common
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
         one_body_g_tmp = np.array(list(executor.map(calc_one_body_green_core, gen_p())))
     n_omega = one_body_g_tmp.shape[2]
     one_body_green_core = one_body_g_tmp.reshape((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(T_list), n_omega))
