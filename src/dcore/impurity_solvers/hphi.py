@@ -318,8 +318,12 @@ class HPhiSolver(SolverBase):
         # print(len(energy_list))
         # print(energy_list)
 
+        print(one_body_g.shape)
+        assert isinstance(one_body_g, numpy.ndarray)
+        assert one_body_g.shape == (self.n_orb, 2, self.n_orb, 2, 1, self.n_iw)
+
         # print(one_body_g)
-        gf = one_body_g[T_list[0]]
+        gf = one_body_g[..., 0, :]
         print(gf.shape)
         assert gf.shape == (self.n_orb, 2, self.n_orb, 2, self.n_iw)
 

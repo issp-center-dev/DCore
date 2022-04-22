@@ -7,6 +7,11 @@ import sys
 # T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"
 
 def calc_one_body_green_core_parallel(p_common):
+    """
+    Return:
+        numpy.ndarray(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
+    """
+
     n_sigma = 2
     n_flg = 2
     n_excitation = 2
