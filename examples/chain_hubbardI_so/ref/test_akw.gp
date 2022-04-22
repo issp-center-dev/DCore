@@ -1,3 +1,5 @@
+set term png
+set output "test_akw.png"
 set size 0.95, 1.0
 set xtics (\
   "G"  0.0, \
@@ -10,5 +12,4 @@ set pm3d map
 unset key
 set ylabel "Energy"
 set cblabel "A(k,w)"
-splot "test_akw.dat"
-pause -1
+splot "test_akw.dat" u 1:2:(abs($3))

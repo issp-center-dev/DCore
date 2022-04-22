@@ -230,7 +230,7 @@ def solve_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, 
     return r
 
 
-def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
+def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit, dc_orbital_average):
 
     # dim_tot is the dimension of spin x orbit for SO = 1 or that of orbital for SO=0
     # dim_tot = self._dim_sh[ish]
@@ -284,6 +284,15 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit):
                 dc_imp_sh[sp] = numpy.identity(num_orb) * dc
     else:
         raise ValueError("Here should not be reached")
+
+    #
+    # Average over orbitals
+    #
+    if dc_orbital_average:
+        for sp, dc_imp in dc_imp_sh.items():
+            dim = dc_imp.shape[0]
+            dc_ave = numpy.trace(dc_imp) / dim
+            dc_imp_sh[sp] = numpy.identity(dim) * dc_ave
 
     return dc_imp_sh
 
@@ -385,7 +394,7 @@ class DMFTCoreSolver(object):
         else:
             if os.path.exists(self._output_file):
                 import shutil
-                print("Moving {} to {}...".format(self._output_file, self._output_file + '.bak'))
+                print("\nMoving {} to {}...".format(self._output_file, self._output_file + '.bak'))
                 shutil.move(self._output_file, self._output_file + '.bak')
 
             self._prepare_output_file__from_scratch()
@@ -419,7 +428,8 @@ class DMFTCoreSolver(object):
         with HDFArchive(output_file, 'r') as f:
             ar = f[output_group]
             if 'iterations' not in ar:
-                raise RuntimeError("Failed to restart the previous simulation! Data not found!")
+                # raise RuntimeError("Failed to restart the previous simulation! Data not found!")
+                sys.exit(f"ERROR: Failed in restoring the previous simulation. Data not found in file {output_file!r}.")
 
             self._previous_runs = ar['iterations']
             if ar['iterations'] <= 0:
@@ -499,11 +509,14 @@ class DMFTCoreSolver(object):
                     self._sh_quant[ish].Sigma_iw[sp].data[...] += init_se[ish][isp]
 
         elif self._params["control"]["initial_self_energy"] != "None":
+            filename = self._params["control"]["initial_self_energy"]
+            if not os.path.exists(filename):
+                sys.exit(f"ERROR: File not found: initial_self_energy='{filename}'.")
             self._loaded_initial_self_energy = True
             Sigma_iw_sh_tmp = [self._sh_quant[ish].Sigma_iw for ish in range(self.n_inequiv_shells)]
-            load_Sigma_iw_sh_txt(self._params["control"]["initial_self_energy"], Sigma_iw_sh_tmp, self.spin_block_names)
+            load_Sigma_iw_sh_txt(filename, Sigma_iw_sh_tmp, self.spin_block_names)
             print('')
-            print('Loading {} ...'.format(self._params["control"]["initial_self_energy"]), end=' ')
+            print(f'Loading {filename} ...', end=' ')
             for ish in range(self.n_inequiv_shells):
                 self._sh_quant[ish].Sigma_iw << Sigma_iw_sh_tmp[ish]
             print('Done')
@@ -693,7 +706,8 @@ class DMFTCoreSolver(object):
         """
 
         dc_type = self._params['system']['dc_type']
-        print("\n  set DC (dc_type = {})".format(dc_type))
+        dc_orbital_average = self._params['system']['dc_orbital_average']
+        print(f"\n  set DC (dc_type = {dc_type}, dc_orbital_average = {dc_orbital_average})")
 
         def print_matrix(mat):
             dim = mat.shape[0]
@@ -724,10 +738,10 @@ class DMFTCoreSolver(object):
             print("\n      Local Density Matrix:".format(ish))
             for sp1 in self._spin_block_names:
                 print("        Spin {0}".format(sp1))
-                print_matrix(dens_mat[sp1][0:num_orb, 0:num_orb])
+                print_matrix(dens_mat[sp1])
 
             # calculated DC
-            _dc_imp.append(calc_dc(dc_type, u_mat, dens_mat, self.spin_block_names, self._use_spin_orbit))
+            _dc_imp.append(calc_dc(dc_type, u_mat, dens_mat, self.spin_block_names, self._use_spin_orbit, dc_orbital_average))
 
             # print DC self energy
             print("\n      DC Self Energy:")
@@ -939,6 +953,12 @@ class DMFTCoreSolver(object):
     def spin_moment(self, iteration_number):
         with HDFArchive(self._output_file, 'r') as ar:
             return ar[self._output_group]['spin_moment'][str(iteration_number)]
+
+    def get_history(self, key, iteration_number):
+        assert isinstance(key, str)
+        assert isinstance(iteration_number, int)
+        with HDFArchive(self._output_file, 'r') as ar:
+            return ar[self._output_group][key][str(iteration_number)]
 
     @property
     def n_inequiv_shells(self):

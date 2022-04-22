@@ -34,12 +34,10 @@ def _check_parameters(p: Dict, required: List[str], unused: List[str]):
     assert isinstance(unused, list)
     for key in required:
         if p[key] == "None":
-            print(f"Error ! Parameter '{key}' is not specified.", file=sys.stderr)
-            sys.exit(-1)
+            sys.exit(f"Error ! Parameter '{key}' is not specified.")
     for key in unused:
         if p[key] != "None":
-            print(f"Error ! Parameter '{key}' is specified but is not used.", file=sys.stderr)
-            sys.exit(-1)
+            sys.exit(f"Error ! Parameter '{key}' is specified but is not used.")
 
 
 def _parse_interaction_parameters(
@@ -65,7 +63,7 @@ def _parse_interaction_parameters(
     except Exception as e:
         print(f"\nERROR in parsing {name} = {input_str!r}", file=sys.stderr)
         print(e, file=sys.stderr)
-        sys.exit(-1)
+        sys.exit(1)
     print(f" {name} = {list_of_list!r}")
     return list_of_list
 
@@ -240,8 +238,7 @@ def _generate_umat_slater(p: Dict, l_sh: List[int], f_sh: List[numpy.ndarray]):
                     (2, 'cubic', 't2g') : [0, 1, 3],
                 }.get((l, basis, order_str))
                 if order is None:
-                    print(f"Error ! Unsupported pair of (l, basis, order) = ({l!r}, {basis!r}, {order_str!r})", file=sys.stderr)
-                    sys.exit(-1)
+                    sys.exit(f"Error ! Unsupported pair of (l, basis, order) = ({l!r}, {basis!r}, {order_str!r})")
             _norb = len(order)
         else:
             _norb = 2*l + 1
@@ -406,8 +403,7 @@ def generate_umat(p: Dict):
         'respack': _generate_umat_respack,
     }.get(interaction)
     if func_umat is None:
-        print(f"Error ! Invalid interaction : {interaction}", file=sys.stderr)
-        sys.exit(-1)
+        sys.exit(f"Error ! Invalid interaction : {interaction}")
     u_mat_so_sh = func_umat(p)
     #
     # Check U-matrix

@@ -2,6 +2,7 @@ import numpy
 import copy
 from warnings import warn
 from dcore._dispatcher import *
+from dcore import mpi as dcore_mpi
 from .tools import calc_total_density, calc_density_matrix
 
 class SumkDFT_opt(SumkDFT):
@@ -471,7 +472,6 @@ class SumkDFT_opt(SumkDFT):
     # Replaced parts are indicated by "+++REPLACED"
     ###############################################################
 
-
     def total_density_matsubara(self, mu=None, iw_or_w="iw", with_Sigma=True, with_dc=True, broadening=None):
         r"""
         Calculates the total charge within the energy window for a given chemical potential.
@@ -523,7 +523,9 @@ class SumkDFT_opt(SumkDFT):
         dens = mpi.all_reduce(mpi.world, dens, lambda x, y: x + y)
         mpi.barrier()
 
-        if abs(dens.imag) > 1e-20:
+        # if abs(dens.imag) > 1e-20:
+        # +++REPLACED
+        if abs(dens.imag) > 1e-12:
             mpi.report("Warning: Imaginary part in density will be ignored ({})".format(str(abs(dens.imag))))
         return dens.real
 
@@ -618,3 +620,65 @@ class SumkDFT_opt(SumkDFT):
                                                     self.rot_mat[icrsh])
 
         return dens_mat
+
+
+    ###############################################################
+    # OVERRIDE FUNCTIONS
+    # mpi.bcast is replaced with the split transfer version
+    # to avoid OverFlowError when object size exceeds ~2GB
+    # Replaced parts are indicated by "+++REPLACED"
+    ###############################################################
+
+    def read_input_from_hdf(self, subgrp, things_to_read):
+        r"""
+        Reads data from the HDF file. Prints a warning if a requested dataset is not found.
+
+        Parameters
+        ----------
+        subgrp : string
+                 Name of hdf5 file subgroup from which the data are to be read.
+        things_to_read : list of strings
+                         List of datasets to be read from the hdf5 file.
+
+        Returns
+        -------
+        subgroup_present : boolean
+                           Is the subgrp is present in hdf5 file?
+        values_not_read : list of strings
+                           List of things that could not be read
+
+        """
+
+        values_not_read = []
+        # initialise variables on all nodes to ensure mpi broadcast works at
+        # the end
+        for it in things_to_read:
+            setattr(self, it, None)
+        subgroup_present = 0
+
+        if mpi.is_master_node():
+            with HDFArchive(self.hdf_file, 'r') as ar:
+                if subgrp in ar:
+                    subgroup_present = True
+                    # first read the necessary things:
+                    for it in things_to_read:
+                        if it in ar[subgrp]:
+                            setattr(self, it, ar[subgrp][it])
+                        else:
+                            values_not_read.append(it)
+                else:
+                    if (len(things_to_read) != 0):
+                        mpi.report(
+                            "Loading failed: No %s subgroup in hdf5!" % subgrp)
+                    subgroup_present = False
+                    values_not_read = things_to_read
+
+        # now do the broadcasting:
+        for it in things_to_read:
+            # setattr(self, it, mpi.bcast(getattr(self, it)))
+            # +++REPLACED
+            setattr(self, it, dcore_mpi.bcast(getattr(self, it)))  # split transfer version
+        subgroup_present = mpi.bcast(subgroup_present)
+        values_not_read = mpi.bcast(values_not_read)
+
+        return subgroup_present, values_not_read

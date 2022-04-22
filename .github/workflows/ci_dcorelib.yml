@@ -1,0 +1,42 @@
+name: Build/test suite
+on: [push, pull_request]
+jobs:
+  build:
+    name: |
+      ${{ matrix.os }}, numpy==${{ matrix.numpy }}, scipy==${{ matrix.scipy }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            numpy: 1.16
+            scipy: 1.4
+            python: 3.6
+          #- os: ubuntu-latest
+            #numpy: auto
+            #scipy: auto
+            #python: 3.9
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mpi4py/setup-mpi@v1
+
+      - name: Set up python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install numpy ${{ matrix.numpy }}, scipy ${{ matrix.scipy }}
+        if: ${{ matrix.numpy != 'auto' }}
+        run: |
+          pip install numpy==${{ matrix.numpy}} scipy==${{ matrix.scipy }}
+
+      - name: Install package with testing dependencies
+        run: |
+          pip install .[dev]
+
+      - name: Test with pytest
+        run: |
+          export DCORE_TRIQS_COMPAT=1
+          pytest tests/non-mpi/*/*.py
+          mpirun -np 2 pytest tests/mpi/*/*.py

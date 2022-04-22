@@ -10,7 +10,7 @@ class SumkDFTWorkerBSE(SumkDFTWorkerBase):
 
     def run(self):
         # chi0
-        from dft_tools.sumk_dft_chi import SumkDFTChi
+        from bse.sumk_dft_chi import SumkDFTChi
         # save div data (overwrite if data exist)
         if mpi.is_master_node():
             with HDFArchive(self.model_hdf5_file, 'a') as ar:

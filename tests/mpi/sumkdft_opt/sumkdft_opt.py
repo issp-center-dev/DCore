@@ -1,9 +1,9 @@
 import numpy
 import time
 import os
-from triqs.gf import *
+from dcorelib.triqs_compat.gf import GfImFreq
 from dcore.tools import make_block_gf
-from triqs_dft_tools import SumkDFT  # original SumkDFT
+from dcore._dispatcher import SumkDFT  # original SumkDFT
 from dcore.sumkdft_opt import SumkDFT_opt  # optimized SumkDFT
 
 def test_sumkdft_opt(request):

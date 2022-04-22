@@ -33,7 +33,7 @@ from dcore import impurity_solvers
 from .sumkdft_workers.launcher import run_sumkdft
 
 # from BSE repo
-from bse_tools.h5bse import h5BSE
+from bse.h5bse import h5BSE
 
 
 def to_str(x):
@@ -71,8 +71,6 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     G0_iw = dyson(Sigma_iw=Sigma_iw, G_iw=Gloc_iw)
     sol.set_G0_iw(G0_iw)
 
-    # Compute rotation matrix to the diagonal basis if supported
-    rot = compute_diag_basis(G0_iw) if basis_rot else None
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
@@ -86,6 +84,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     flag_box = freqs is None
 
     # Solve the model
+    rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     if flag_box:
         xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
     else:
@@ -261,7 +260,7 @@ class SaveBSE:
         self.args = copy.deepcopy(locals())
         del self.args['self']
 
-        from dft_tools.index_pair import IndexPair, IndexPair2
+        from bse.index_pair import IndexPair, IndexPair2
 
         self.spin_names = spin_names
         self.use_spin_orbit = use_spin_orbit
@@ -280,32 +279,33 @@ class SaveBSE:
         print(" block2 namelist =", self.block2.namelist)
         print(" inner2 namelist =", self.inner2.namelist)
 
-        self.h5_file = h5_file
-        self.bse_grp = bse_grp
-        h5bse = h5BSE(self.h5_file, self.bse_grp)
+        # self.h5_file = h5_file
+        # self.bse_grp = bse_grp
+        self.h5bse = h5BSE(h5_file, bse_grp)
         if bse_info == 'check':
             # check equivalence of info
             #assert compare_str_list(h5bse.get(key=('block_name',)), self.block2.namelist)
             #assert compare_str_list(h5bse.get(key=('inner_name',)), self.inner2.namelist)
-            assert h5bse.get(key=('beta',)) == beta
+            assert self.h5bse.get(key=('beta',)) == beta
         elif bse_info == 'save':
             # save info
-            h5bse.save(key=('block_name',), data=self.block2.namelist)
-            h5bse.save(key=('inner_name',), data=self.inner2.namelist)
-            h5bse.save(key=('beta',), data=beta)
+            self.h5bse.save(key=('block_name',), data=self.block2.namelist)
+            self.h5bse.save(key=('inner_name',), data=self.inner2.namelist)
+            self.h5bse.save(key=('beta',), data=beta)
         else:
             raise ValueError("bse_info =", bse_info)
 
     def _save_common(self, xloc_ijkl, icrsh, key_type):
 
-        h5bse = h5BSE(self.h5_file, self.bse_grp)
+        # h5bse = h5BSE(self.h5_file, self.bse_grp)
 
         n_inner2 = len(self.inner2.namelist)
         n_w2b = xloc_ijkl[list(xloc_ijkl.keys())[0]].shape[0]
 
         def decompose_index(index):
-            spn = index // self.n_orb
-            orb = index % self.n_orb
+            n_inner = self.n_flavors // len(self.spin_names)
+            spn = index // n_inner
+            orb = index % n_inner
             return self.spin_names[spn], orb
 
         # read X_loc data and save into h5 file
@@ -316,16 +316,10 @@ class SaveBSE:
                 # (wb, wf1, wf2) --> (wf1, wf2)
                 data_wb = data[wb]
 
-                if not self.use_spin_orbit:
-                    s1, o1 = decompose_index(i1)
-                    s2, o2 = decompose_index(i2)
-                    s3, o3 = decompose_index(i3)
-                    s4, o4 = decompose_index(i4)
-                else:
-                    s1, o1 = 0, i1
-                    s2, o2 = 0, i2
-                    s3, o3 = 0, i3
-                    s4, o4 = 0, i4
+                s1, o1 = decompose_index(i1)
+                s2, o2 = decompose_index(i2)
+                s3, o3 = decompose_index(i3)
+                s4, o4 = decompose_index(i4)
 
                 s12 = self.block2.get_index(icrsh, s1, icrsh, s2)
                 s34 = self.block2.get_index(icrsh, s3, icrsh, s4)
@@ -337,7 +331,7 @@ class SaveBSE:
                 xloc_bse[(s12, s34)][inner12, inner34] = data_wb  # copy
 
             # save
-            h5bse.save(key=(key_type, wb), data=xloc_bse)
+            self.h5bse.save(key=(key_type, wb), data=xloc_bse)
 
     def save_xloc(self, xloc_ijkl, icrsh):
         self._save_common(xloc_ijkl, icrsh, 'X_loc')
@@ -349,7 +343,7 @@ class SaveBSE:
 
         assert u_mat.shape == (self.n_flavors, )*4
 
-        h5bse = h5BSE(self.h5_file, self.bse_grp)
+        # h5bse = h5BSE(self.h5_file, self.bse_grp)
 
         # transpose U matrix into p-h channel, c_1^+ c_2 c_4^+ c_3
         u_mat_ph1 = u_mat.transpose(0, 2, 3, 1)
@@ -372,12 +366,12 @@ class SaveBSE:
 
                 gamma0[(s12, s34)] = gamma0_orb.reshape((self.n_orb**2, )*2)
 
-            h5bse.save(key=('gamma0', ), data=gamma0)
+            self.h5bse.save(key=('gamma0', ), data=gamma0)
         else:
             gamma0_inner = - u_mat_ph1 + u_mat_ph2
             gamma0_inner = gamma0_inner.reshape((len(self.inner2.namelist), )*2)
             block_index = self.block2.get_index(icrsh, self.spin_names[0], icrsh, self.spin_names[0])
-            h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
+            self.h5bse.save(key=('gamma0', ), data={(block_index, block_index): gamma0_inner})
 
     def save_sparse_info(self, freqs):
         grp = self.args['sparse_grp']
@@ -508,6 +502,9 @@ class DMFTBSESolver(DMFTCoreSolver):
 
             subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
 
+            # Open HDF5 file to improve performance. Close manually.
+            bse.h5bse.open('a')
+
             # save X_loc, chi_loc
             for icrsh in range(self._n_corr_shells):
                 if ish == self._sk.corr_to_inequiv[icrsh]:
@@ -516,6 +513,8 @@ class DMFTBSESolver(DMFTCoreSolver):
                     # chi_loc
                     if chi_loc is not None:
                         bse.save_chiloc(chi_loc, icrsh=icrsh)
+
+            bse.h5bse.close()
 
     def calc_bse(self):
         """
@@ -659,22 +658,24 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog='dcore_bse.py',
-        description='Post-processing script for dcore (bse).',
-        usage='$ dcore_bse input --np 4',
+        description='Post-processing script in DCore (bse)',
+        # usage='$ dcore_bse input --np 4',
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=generate_all_description(),
         add_help=True)
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name."
+                        nargs='*',
+                        help="Input filename(s)",
                         )
     parser.add_argument('--np', help='Number of MPI processes', required=True)
     parser.add_argument('--version', action='version', version='DCore {}'.format(version))
 
     args = parser.parse_args()
-    if os.path.isfile(args.path_input_file) is False:
-        print("Input file does not exist.")
-        sys.exit(-1)
-    dcore_bse(args.path_input_file, int(args.np))
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
+
+    dcore_bse(args.path_input_files, int(args.np))

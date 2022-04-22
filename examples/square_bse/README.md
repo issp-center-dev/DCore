@@ -9,12 +9,12 @@ BSE in square-lattice Hubbard model
 
     - ``dcore_bse``
 
-    - ``BSE``
-
     - ``pomerol2dcore``
 
-- Environment variables
+    - ``BSE``
 
-    - $BSE_DIR (path to BSE repository)
+    - ``bse_tool.py`` and others
+
+- Environment variables
 
     - [optional] $NUM_PROC

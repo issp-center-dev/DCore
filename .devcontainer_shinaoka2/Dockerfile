@@ -51,6 +51,7 @@ RUN useradd -u $NB_UID -m $NB_USER -s /bin/bash && \
 USER $NB_USER
 ENV PATH "/home/${NB_USER}/.local/bin:/opt/pomerol2dcore/bin:${PATH}"
 ENV PYTHONPATH "/home/${NB_USER}/work/src:${PYTONPATH}"
+ENV OMPI_MCA_btl_vader_single_copy_mechanism "none"
 
 # for vscode
 RUN mkdir /home/${NB_USER}/work
@@ -58,4 +59,5 @@ RUN mkdir /home/${NB_USER}/work
 # For DCore
 ENV DCORE_TRIQS_COMPAT 1
 
-RUN pip3 install scipy, h5py>2.10.0, toml, dcorelib, mpi4py, matplotlib
+RUN pip3 install -U pip && \
+    pip3 install scipy h5py toml tomli dcorelib mpi4py matplotlib pytest mypy sympy

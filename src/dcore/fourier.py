@@ -130,7 +130,7 @@ def bgf_fourier_w2t(bgf, tail=None):
 
     beta = bgf.mesh.beta
 
-    nw_pm = bgf.mesh.last_index() - bgf.mesh.first_index() + 1
+    nw_pm = bgf.mesh.size
     assert nw_pm % 2 == 0  # even
     nw = nw_pm // 2  # number of w>0
     nt = nw * 2 + 1

@@ -36,9 +36,6 @@ class DMFTCoreCheck(object):
             Max number of iterations to be processed
         """
 
-        if os.path.isfile(ini_file) is False:
-            raise Exception("Input file '%s' does not exist." % ini_file)
-
         print("\n  @ Reading {0} ...".format(ini_file))
         #
         # Construct a parser with default values
@@ -50,6 +47,14 @@ class DMFTCoreCheck(object):
         pars.read(ini_file)
         self.p = pars.as_dict()
         parse_parameters(self.p)
+
+        # Delete unnecessary parameters
+        delete_parameters(self.p, block='model', retain=['seedname'])
+        delete_parameters(self.p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu'])
+        delete_parameters(self.p, block='tool', retain=['omega_check'])
+
+        # Summary of input parameters
+        print_parameters(self.p)
 
         # Just for convenience
         #output_file = p["model"]["seedname"]+'.out.h5'
@@ -119,7 +124,7 @@ class DMFTCoreCheck(object):
                 Sigma_iw_sh = self.solver.Sigma_iw_sh(itr)
 
                 itr_sigma[nsigma] = itr
-                sigma_ave.append(GfImFreq(indices=[0], beta=self.beta, n_points=self.p["system"]["n_iw"], name="$\Sigma_\mathrm{ave}$"))
+                sigma_ave.append(GfImFreq(indices=[0], beta=self.beta, n_points=self.p["system"]["n_iw"]))
                 sigma_ave[nsigma].data[:, 0, 0] = 0.0
                 norb_tot = 0
                 for ish in range(self.n_sh):
@@ -139,16 +144,18 @@ class DMFTCoreCheck(object):
         #
         self.plt.subplot(gs[0])
         for itr in range(nsigma):
-            self.oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
+            self.oplot(sigma_ave[itr], '-o', mode='R', x_window=(0.0, self.omega_check), label=f'itr = {itr_sigma[itr]}')
         self.plt.legend(loc=0)
+        self.plt.ylabel(r"Re $\Sigma_\mathrm{ave} (i\omega_n)$")
         self.plt.xlim(0, self.omega_check)
         #
         # Imaginary part
         #
         self.plt.subplot(gs[1])
         for itr in range(nsigma):
-            self.oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, self.omega_check), name='Sigma-%s' % itr_sigma[itr])
+            self.oplot(sigma_ave[itr], '-o', mode='I', x_window=(0.0, self.omega_check), label=f'itr = {itr_sigma[itr]}')
         self.plt.legend(loc=0)
+        self.plt.ylabel(r"Im $\Sigma_\mathrm{ave} (i\omega_n)$")
         self.plt.xlim(0, self.omega_check)
 
         filename = basename + fig_ext
@@ -178,7 +185,7 @@ class DMFTCoreCheck(object):
         fig_ext
         data_list: list of dict. The dict must includes
             'y': numpy.ndarray  (mandatory)
-            'label': string  ('' if not provided)
+            'label': string  (None if not provided)
             'iorb': int  (0 if not provided)
             'isp': int  (0 if not prvided)
         ylabel: string
@@ -205,37 +212,46 @@ class DMFTCoreCheck(object):
 
         # plot
         self.__plot_init()
-        self.plt.figure(figsize=(8, 10))
-        gs = GridSpec(2, 1)
+        fig = self.plt.figure(figsize=(8, 10), tight_layout=True)
 
-        ax1 = self.plt.subplot(gs[0])
-        ax2 = self.plt.subplot(gs[1])
+        gs = fig.add_gridspec(2, 1)
+        ax1 = fig.add_subplot(gs[0])
+        ax2 = fig.add_subplot(gs[1], sharex=ax1)
 
+        show_legend = False
         for data in data_list:
             y = data['y']
-            label = data.get('label', '')
+            label = data.get('label', None)
             iorb = data.get('iorb', 0)
             isp = data.get('isp', 0)
 
-            ax1.plot(iter, y, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            _plot_options = dict(
+                label = label,
+                ls = get_ls(isp),
+                marker = markers[isp],
+                color = get_c(iorb),
+                # clip_on = False,
+            )
+            ax1.plot(iter, y, **_plot_options)
             diff = abs(numpy.array(y[1:]) - numpy.array(y[:-1]))
-            ax2.plot(iter[1:], diff, label=label, ls=get_ls(isp), marker=markers[isp], color=get_c(iorb))
+            ax2.plot(iter[1:], diff, **_plot_options)
+
+            if label is not None:
+                show_legend = True
 
         filename = basename + fig_ext
         ax1.set_xlabel("iterations")
         ax1.set_ylabel(ylabel)
-        ax1.set_xlim(left=iter[0])
-        ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        if show_legend:
+            ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
 
         ax2.set_xlabel("iterations")
         ax2.set_ylabel("diff")
         ax2.set_yscale("log")
-        ax2.set_xlim(left=iter[0])
-        ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
+        if show_legend:
+            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, fontsize=8)
 
-        # self.plt.xlim(left=iter[0])
-        self.plt.tight_layout()
-        self.plt.savefig(filename)
+        fig.savefig(filename)
         print(" Output " + filename)
 
         # save data
@@ -255,7 +271,7 @@ class DMFTCoreCheck(object):
         """
         mu = [ self.solver.chemical_potential(itr) for itr in range(1, self.n_iter+1) ]
         data = {'y': mu}
-        self._plot_iter(basename, fig_ext, [data, ], "$\mu$")
+        self._plot_iter(basename, fig_ext, [data, ], r"$\mu$")
 
     def plot_iter_occupation(self, basename, fig_ext):
         """
@@ -273,13 +289,34 @@ class DMFTCoreCheck(object):
 
                     data = {
                         'y': occup,
-                        'label': "shell=%d, spin=%s, %d" % (ish, spn, iorb),
+                        'label': f"spin={spn}, orb={iorb}",
                         'iorb': iorb,
                         'isp': isp,
                     }
                     data_list.append(data)
 
             self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Occupation number")
+
+    def plot_iter_total_charge(self, basename, fig_ext):
+        """
+        plot total charge in correlated shells as a function of iteration number
+        """
+
+        for ish in range(self.n_sh):
+            # Make a graph for each shell
+            data_list = []
+            for j, key in enumerate(['total_charge_loc', 'total_charge_imp']):
+                charge = numpy.array([self.solver.get_history(key, itr)[ish]
+                                      for itr in range(1, self.n_iter + 1)])
+
+                data = {
+                    'y': charge,
+                    'label': f"{key}",
+                    'iorb': j,  # change the color
+                }
+                data_list.append(data)
+
+            self._plot_iter(basename + '-ish{}'.format(ish), fig_ext, data_list, "Total charge")
 
     def plot_iter_spin_moment(self, basename, fig_ext):
         """
@@ -296,7 +333,7 @@ class DMFTCoreCheck(object):
 
                 data = {
                     'y': smoment,
-                    'label': "shell=%d, %s" % (ish, labels[j]),
+                    'label': f"{labels[j]}",
                     'iorb': j,  # change the color depending on the spin direction
                 }
                 data_list.append(data)
@@ -309,19 +346,23 @@ class DMFTCoreCheck(object):
         """
 
         w0 = self.n_iw
+
+        # Load data only once for each itr
+        Sigma_iw_sh_itr = [self.solver.Sigma_iw_sh(itr) for itr in range(1, self.n_iter + 1)]
+
         for ish in range(self.n_sh):
             # Make a graph for each shell
             data_list = []
             norb = self.shell_info[ish]['block_dim']
             for isp, spn in enumerate(self.spin_names):
                 for iorb in range(norb):
-                    sigma0 = numpy.array([self.solver.Sigma_iw_sh(itr)[ish][spn].data[w0, iorb, iorb].imag
-                                          for itr in range(1, self.n_iter + 1)])
+                    sigma0 = numpy.array([Sigma_iw_sh[ish][spn].data[w0, iorb, iorb].imag
+                                          for Sigma_iw_sh in Sigma_iw_sh_itr])
                     z = 1. / (1 - sigma0 / numpy.pi * self.beta)
 
                     data = {
                         'y': z,
-                        'label': "shell=%d, spin=%s, %d" % (ish, spn, iorb),
+                        'label': f"spin={spn}, orb={iorb}",
                         'iorb': iorb,
                         'isp': isp,
                     }
@@ -348,26 +389,30 @@ def dcore_check(ini_file, prefix, fig_ext, max_n_iter):
     check.plot_iter_sigma(basename=prefix+"iter_sigma", fig_ext=ext)
     check.plot_iter_occupation(basename=prefix+"iter_occup", fig_ext=ext)
     check.plot_iter_spin_moment(basename=prefix+"iter_spin", fig_ext=ext)
+    check.plot_iter_total_charge(basename=prefix+"iter_charge", fig_ext=ext)
 
 
 def run():
     import argparse
-    from dcore.option_tables import generate_all_description
     from dcore.version import version, print_header
+    import os
 
     print_header()
 
+    default_ext = os.environ.get("DCORE_CHECK_DEFAULT_EXT", "png")
+
     parser = argparse.ArgumentParser(
         prog='dcore_check.py',
-        description='script for checking the convergence of dcore.',
+        description='Supplementary script in DCore for checking the convergence of DMFT iteration',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument('path_input_file',
+    parser.add_argument('path_input_files',
                         action='store',
                         default=None,
                         type=str,
-                        help="input file name."
+                        nargs='*',
+                        help="Input filename(s)",
                         )
     parser.add_argument('--prefix',
                         action='store',
@@ -377,7 +422,7 @@ def run():
                         )
     parser.add_argument('--ext',
                         action='store',
-                        default='png',
+                        default=default_ext,
                         type=str,
                         help='file extension of output figures (png, pdf, eps, jpg, etc)'
                         )
@@ -400,8 +445,11 @@ def run():
     #     warn("--output option is not used")
 
     args = parser.parse_args()
+    for path_input_file in args.path_input_files:
+        if os.path.isfile(path_input_file) is False:
+            sys.exit(f"Input file '{path_input_file}' does not exist.")
 
-    dcore_check(args.path_input_file, args.prefix, args.ext, args.max_n_iter)
+    dcore_check(args.path_input_files, args.prefix, args.ext, args.max_n_iter)
 
     # Finish
     print("\n  Done\n")
