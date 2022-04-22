@@ -61,5 +61,6 @@ jobs:
       - name: Test with pytest
         run: |
           export DCORE_TRIQS_COMPAT=1
+          export PATH=${{runner.workspace}}/HPhi/bin:$PATH
           pytest tests/non-mpi/*/*.py
           mpirun -np 2 pytest tests/mpi/*/*.py
