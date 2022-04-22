@@ -1,4 +1,4 @@
-name: Build/test suite
+name: Run tests with dcorelib
 on: [push, pull_request]
 jobs:
   build:
@@ -19,6 +19,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: apt
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt update
+          sudo apt install liblapack-dev openmpi-bin libopenmpi-dev libscalapack-openmpi-dev
       - uses: mpi4py/setup-mpi@v1
 
       - name: Set up python ${{ matrix.python }}
@@ -35,8 +40,27 @@ jobs:
         run: |
           pip install .[dev]
 
+      - name: make workspace [HPhi]
+        run: |
+          pwd
+          cmake -E make_directory ${{runner.workspace}}/HPhi/build
+
+      - name: download [HPhi]
+        working-directory: ${{runner.workspace}}/HPhi
+        run: |
+          wget https://github.com/issp-center-dev/HPhi/releases/download/v3.5.0/HPhi-3.5.0.tar.gz
+          tar zxvf HPhi-3.5.0.tar.gz
+
+      - name: cmake [HPhi]
+        working-directory: ${{runner.workspace}}/HPhi/build
+        shell: bash
+        run: |
+          cmake -DCMAKE_VERBOSE_MAKEFILE=ON $GITHUB_WORKSPACE ../HPhi-3.5.0 -DCMAKE_INSTALL_PREFIX=${{runner.workspace}}/HPhi
+          make install
+
       - name: Test with pytest
         run: |
           export DCORE_TRIQS_COMPAT=1
+          export PATH=${{runner.workspace}}/HPhi/bin:$PATH
           pytest tests/non-mpi/*/*.py
           mpirun -np 2 pytest tests/mpi/*/*.py
