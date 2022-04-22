@@ -9,7 +9,7 @@ import sys
 def calc_one_body_green_core_parallel(p_common, max_workers=None):
     """
     Return:
-        numpy.ndarray(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
+        np.ndarray(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
     """
 
     n_sigma = 2
@@ -212,7 +212,6 @@ class CalcSpectrumCore:
             print(f"\n  Check eta:=exp[-beta(ene_max-ene_mix)] < {self.eta:.1e}")
             for T in self.T_list:
                 eta_ene = np.exp(-(self.ene_max-self.ene_min)/T)
-                # print("    T = {}: exp[-beta(ene_max-ene_mix)] = {}".format(T, eta_ene))
                 print(f"    T = {T}: eta = {eta_ene:.2e}")
                 if eta_ene > self.eta:
                     print(f"Warning: At T = {T}, exp[-beta(ene_max-ene_mix)]={eta_ene:.2e} is larger than eta={self.eta}.", file=sys.stderr)

@@ -20,7 +20,6 @@ from itertools import product
 import os
 import sys
 from collections import namedtuple
-from warnings import warn
 import shlex
 import math
 
@@ -180,7 +179,7 @@ class HPhiSolver(SolverBase):
 
         exct_max = 4**n_site
         if exct > exct_max:
-            warn("exct={0} is larger than {1}. exct is set to {1}".format(exct, exct_max))
+            print(f"Warning: exct={exct} is larger than {exct_max}. exct is set to {exct_max}", file=sys.stderr)
             exct = exct_max
 
         # Output namelist.def
@@ -302,35 +301,24 @@ class HPhiSolver(SolverBase):
             launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f)
 
         print("\nComputing Gf ...")
-        #
-        # output_dir = "./output"
-        # prefix = "TEST"
         header = "zvo"
         T_list = [1./self.beta]
-        # exct = 2
         eta = 1e-4
-
-        #print("Check Energy")
         output_dir = "./output"
         p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
         one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=np)
-
-        print("\nFinish Gf calc.")
 
         # calcspectrum = CalcSpectrum(T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
         # energy_list = calcspectrum.get_energies()
         # one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
 
-        # print(len(energy_list))
-        # print(energy_list)
+        print("\nFinish Gf calc.")
 
         # print(one_body_g.shape)
         assert isinstance(one_body_g, numpy.ndarray)
         assert one_body_g.shape == (self.n_orb, 2, self.n_orb, 2, 1, self.n_iw)
 
-        # print(one_body_g)
         gf = one_body_g[..., 0, :]
-        # print(gf.shape)
         assert gf.shape == (self.n_orb, 2, self.n_orb, 2, self.n_iw)
 
         # (3) Copy results into
@@ -346,7 +334,6 @@ class HPhiSolver(SolverBase):
             # [s, o1, o2, iw]
             gf = numpy.einsum("isjsw->sijw", gf)
             assert gf.shape == (2, self.n_orb, self.n_orb, self.n_iw)
-        # print(gf.shape)
 
         assign_from_numpy_array(self._Gimp_iw, gf, self.block_names)
 
