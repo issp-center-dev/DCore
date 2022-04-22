@@ -1,4 +1,4 @@
-name: Build/test suite
+name: Run tests with dcorelib
 on: [push, pull_request]
 jobs:
   build:
@@ -19,6 +19,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: apt
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt update
+          sudo apt install liblapack-dev openmpi-bin libopenmpi-dev libscalapack-openmpi-dev
       - uses: mpi4py/setup-mpi@v1
 
       - name: Set up python ${{ matrix.python }}
@@ -34,6 +39,21 @@ jobs:
       - name: Install package with testing dependencies
         run: |
           pip install .[dev]
+
+      - name: make workspace [HPhi]
+        run: cmake -E make_directory ${{runner.workspace}}/build
+      - name: cmake [HPhi]
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: |
+          if [ ${{ runner.os }} = "macOS" ] ; then
+            export FC=gfortran-11
+          fi
+          cmake -DCMAKE_VERBOSE_MAKEFILE=ON $GITHUB_WORKSPACE
+      - name: build [HPhi]
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: cmake --build ./ -j4
 
       - name: Test with pytest
         run: |
