@@ -23,9 +23,7 @@ from collections import namedtuple
 import shlex
 import math
 
-from triqs.gf import *
-# from pytriqs.archive import HDFArchive
-from triqs.operators import *
+from dcore._dispatcher import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params, expand_path
 from .base import SolverBase
