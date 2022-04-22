@@ -18,6 +18,7 @@
 import numpy
 from itertools import product
 import os
+import sys
 from collections import namedtuple
 from warnings import warn
 import shlex
@@ -154,7 +155,7 @@ class HPhiSolver(SolverBase):
         else:
             if not math.log(np, 4).is_integer():  # check if np = 4^m
                 np_new = 4**int(math.log(np, 4))
-                warn("np must be a power of 4 in HPhi. np is set to {}.".format(np_new))
+                print(f"Warning: np must be a power of 4 in HPhi. np is set to {np_new}.", file=sys.stderr)
                 commands[-1] = str(np_new)
                 mpirun_command_power4 = " ".join(commands)
 
@@ -295,9 +296,11 @@ class HPhiSolver(SolverBase):
                 print(u.i1, u.s1, u.i2, u.s2, u.i3, u.s3, u.i4, u.s4, u.U.real, u.U.imag, file=f)
 
         # (2) Run a working horse
+        print("\nComputing eigeneneries ...")
         with open('./stdout.log', 'w') as output_f:
             launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f)
 
+        print("\nComputing Gf ...")
         #
         # output_dir = "./output"
         # prefix = "TEST"
@@ -311,6 +314,8 @@ class HPhiSolver(SolverBase):
         p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
         one_body_g = calc_one_body_green_core_parallel(p_common)
 
+        print("\nFinish Gf calc.")
+
         # calcspectrum = CalcSpectrum(T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
         # energy_list = calcspectrum.get_energies()
         # one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
@@ -318,13 +323,13 @@ class HPhiSolver(SolverBase):
         # print(len(energy_list))
         # print(energy_list)
 
-        print(one_body_g.shape)
+        # print(one_body_g.shape)
         assert isinstance(one_body_g, numpy.ndarray)
         assert one_body_g.shape == (self.n_orb, 2, self.n_orb, 2, 1, self.n_iw)
 
         # print(one_body_g)
         gf = one_body_g[..., 0, :]
-        print(gf.shape)
+        # print(gf.shape)
         assert gf.shape == (self.n_orb, 2, self.n_orb, 2, self.n_iw)
 
         # (3) Copy results into
@@ -340,7 +345,7 @@ class HPhiSolver(SolverBase):
             # [s, o1, o2, iw]
             gf = numpy.einsum("isjsw->sijw", gf)
             assert gf.shape == (2, self.n_orb, self.n_orb, self.n_iw)
-        print(gf.shape)
+        # print(gf.shape)
 
         assign_from_numpy_array(self._Gimp_iw, gf, self.block_names)
 

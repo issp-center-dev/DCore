@@ -17,6 +17,8 @@ def calc_one_body_green_core_parallel(p_common):
     n_excitation = 2
     n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut = p_common
 
+    check_eta(p_common)
+
     def gen_p():
         for sitei, sigmai in itertools.product(range(n_site), range(n_sigma)):
             for sitej, sigmaj in itertools.product(range(n_site), range(n_sigma)):
@@ -52,6 +54,12 @@ def calc_one_body_green_core(p):
     calc_spectrum_core.set_energies()
     flg = True if i_flg == 0 else False
     return calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut)
+
+def check_eta(p_common):
+    _, T_list, exct, eta, path_to_HPhi, header, output_dir, _ = p_common
+    calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi=path_to_HPhi, header=header,
+                                           output_dir=output_dir)
+    calc_spectrum_core.set_energies(check_eta=True)
 
 def calc_one_body_green(one_body_green_core):
     n_site, n_sigma, n_site, n_sigma, n_excitation, n_flg, n_T, n_omega = one_body_green_core.shape
@@ -189,7 +197,7 @@ class CalcSpectrumCore:
         frequencies = frequencies
         return frequencies, spectrum_dict
 
-    def set_energies(self):
+    def set_energies(self, check_eta=False):
         energy_list = []
         with open(os.path.join(self.output_dir, "{}_energy.dat".format(self.header))) as f:
             lines = f.readlines()
@@ -200,11 +208,15 @@ class CalcSpectrumCore:
         self.energy_list = energy_list
         self.ene_min = energy_list[0]
         self.ene_max = energy_list[len(energy_list)-1]
-        for T in self.T_list:
-            eta_ene = np.exp(-(self.ene_max-self.ene_min)/T)
-            print("T = {}: exp[-beta(ene_max-ene_mix)] = {}".format(T, eta_ene))
-            if eta_ene > self.eta:
-                print("Warning: At T = {}, eta_ene is larger than eta.".format(T))
+
+        if check_eta:
+            print(f"\n  Check eta:=exp[-beta(ene_max-ene_mix)] < {self.eta:.1e}")
+            for T in self.T_list:
+                eta_ene = np.exp(-(self.ene_max-self.ene_min)/T)
+                # print("    T = {}: exp[-beta(ene_max-ene_mix)] = {}".format(T, eta_ene))
+                print(f"    T = {T}: eta = {eta_ene:.2e}")
+                if eta_ene > self.eta:
+                    print(f"Warning: At T = {T}, exp[-beta(ene_max-ene_mix)]={eta_ene:.2e} is larger than eta={self.eta}.", file=sys.stderr)
 
     def _calc_Z(self, T):
         Z = 0
@@ -295,7 +307,7 @@ class CalcSpectrumCore:
         os.makedirs(calc_dir, exist_ok=True)
         self.Make_Spectrum_Input(calc_dir)
         one_body_green = np.zeros((len(self.T_list), self.nomega), dtype=np.complex)
-        print("Calculate G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitej, "u" if sigmaj == 0 else "d"))
+        # print("Calculate G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitej, "u" if sigmaj == 0 else "d"))
         self._make_single_excitation(sitei, sigmai, sitej, sigmaj, ex_state=ex_state, flg_complex=flg, calc_dir=calc_dir)
         # Run HPhi
         self._run_HPhi(exct_cut, ex_state, calc_dir)
