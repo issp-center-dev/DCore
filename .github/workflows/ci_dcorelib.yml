@@ -41,8 +41,9 @@ jobs:
           pip install .[dev]
 
       - name: make workspace [HPhi]
-        run: pwd
-        run: cmake -E make_directory ${{runner.workspace}}/HPhi/build
+        run: |
+          pwd
+          cmake -E make_directory ${{runner.workspace}}/HPhi/build
 
       - name: download [HPhi]
         working-directory: ${{runner.workspace}}/HPhi
