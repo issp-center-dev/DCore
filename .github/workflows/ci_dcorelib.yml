@@ -41,19 +41,21 @@ jobs:
           pip install .[dev]
 
       - name: make workspace [HPhi]
-        run: cmake -E make_directory ${{runner.workspace}}/build
+        run: pwd
+        run: cmake -E make_directory ${{runner.workspace}}/HPhi/build
+
+      - name: download [HPhi]
+        working-directory: ${{runner.workspace}}/HPhi
+        run: |
+          wget https://github.com/issp-center-dev/HPhi/releases/download/v3.5.0/HPhi-3.5.0.tar.gz
+          tar zxvf HPhi-3.5.0.tar.gz
+
       - name: cmake [HPhi]
-        working-directory: ${{runner.workspace}}/build
+        working-directory: ${{runner.workspace}}/HPhi/build
         shell: bash
         run: |
-          if [ ${{ runner.os }} = "macOS" ] ; then
-            export FC=gfortran-11
-          fi
-          cmake -DCMAKE_VERBOSE_MAKEFILE=ON $GITHUB_WORKSPACE
-      - name: build [HPhi]
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        run: cmake --build ./ -j4
+          cmake -DCMAKE_VERBOSE_MAKEFILE=ON $GITHUB_WORKSPACE ../HPhi-3.5.0 -DCMAKE_INSTALL_PREFIX=${{runner.workspace}}/HPhi
+          make install
 
       - name: Test with pytest
         run: |
