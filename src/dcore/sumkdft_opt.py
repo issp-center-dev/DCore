@@ -1,3 +1,4 @@
+from os import readlink
 import numpy
 import copy
 from warnings import warn
@@ -216,7 +217,10 @@ class SumkDFT_opt(SumkDFT):
         for ibl in range(self.n_spin_blocks[self.SO]):
             ind = ntoi[spn[ibl]]
             n_orb = self.n_orbitals[ik, ind]
-            M[ibl] = self.hopping[ik, ind, 0:n_orb, 0:n_orb] - \
+            # M[ibl] = self.hopping[ik, ind, 0:n_orb, 0:n_orb] - \
+            #     (idmat[ibl] * mu) - (idmat[ibl] * self.h_field * (1 - 2 * ibl))
+            # +++REPLACED
+            M[ibl] = self.hopping_part[ik][ind, 0:n_orb, 0:n_orb] - \
                 (idmat[ibl] * mu) - (idmat[ibl] * self.h_field * (1 - 2 * ibl))
         G_latt -= M
         print_time("G_latt -= M")
@@ -529,6 +533,100 @@ class SumkDFT_opt(SumkDFT):
             mpi.report("Warning: Imaginary part in density will be ignored ({})".format(str(abs(dens.imag))))
         return dens.real
 
+    def density_matrix(self, method='using_gf', beta=40.0):
+        """Calculate density matrices in one of two ways.
+
+        Parameters
+        ----------
+        method : string, optional
+
+                 - if 'using_gf': First get lattice gf (g_loc is not set up), then density matrix.
+                                  It is useful for Hubbard I, and very quick.
+                                  No assumption on the hopping structure is made (ie diagonal or not).
+                 - if 'using_point_integration': Only works for diagonal hopping matrix (true in wien2k).
+
+        beta : float, optional
+               Inverse temperature.
+
+        Returns
+        -------
+        dens_mat : list of dicts
+                   Density matrix for each spin in each correlated shell.
+        """
+        dens_mat = [{} for icrsh in range(self.n_corr_shells)]
+        for icrsh in range(self.n_corr_shells):
+            for sp in self.spin_block_names[self.corr_shells[icrsh]['SO']]:
+                dens_mat[icrsh][sp] = numpy.zeros(
+                    [self.corr_shells[icrsh]['dim'], self.corr_shells[icrsh]['dim']], numpy.complex_)
+
+        ikarray = numpy.array(list(range(self.n_k)))
+        for ik in mpi.slice_array(ikarray):
+
+            if method == "using_gf":
+
+                G_latt_iw = self.lattice_gf(
+                    ik=ik, mu=self.chemical_potential, iw_or_w="iw", beta=beta)
+                G_latt_iw *= self.bz_weights[ik]
+                dm = G_latt_iw.density()
+                MMat = [dm[sp] for sp in self.spin_block_names[self.SO]]
+
+            elif method == "using_point_integration":
+
+                ntoi = self.spin_names_to_ind[self.SO]
+                spn = self.spin_block_names[self.SO]
+                dims = {sp:self.n_orbitals[ik, ntoi[sp]] for sp in spn}
+                MMat = [numpy.zeros([dims[sp], dims[sp]], numpy.complex_) for sp in spn]
+
+                for isp, sp in enumerate(spn):
+                    ind = ntoi[sp]
+                    for inu in range(self.n_orbitals[ik, ind]):
+                        # only works for diagonal hopping matrix (true in
+                        # wien2k)
+                        # if (self.hopping[ik, ind, inu, inu] - self.h_field * (1 - 2 * isp)) < 0.0:
+                        # +++REPLACED
+                        if (self.hopping_part[ik][ind, inu, inu] - self.h_field * (1 - 2 * isp)) < 0.0:
+                            MMat[isp][inu, inu] = 1.0
+                        else:
+                            MMat[isp][inu, inu] = 0.0
+
+            else:
+                raise ValueError("density_matrix: the method '%s' is not supported." % method)
+
+            for icrsh in range(self.n_corr_shells):
+                for isp, sp in enumerate(self.spin_block_names[self.corr_shells[icrsh]['SO']]):
+                    ind = self.spin_names_to_ind[
+                        self.corr_shells[icrsh]['SO']][sp]
+                    dim = self.corr_shells[icrsh]['dim']
+                    n_orb = self.n_orbitals[ik, ind]
+                    projmat = self.proj_mat[ik, ind, icrsh, 0:dim, 0:n_orb]
+                    if method == "using_gf":
+                        dens_mat[icrsh][sp] += numpy.dot(numpy.dot(projmat, MMat[isp]),
+                                                         projmat.transpose().conjugate())
+                    elif method == "using_point_integration":
+                        dens_mat[icrsh][sp] += self.bz_weights[ik] * numpy.dot(numpy.dot(projmat, MMat[isp]),
+                                                                               projmat.transpose().conjugate())
+
+        # get data from nodes:
+        for icrsh in range(self.n_corr_shells):
+            for sp in dens_mat[icrsh]:
+                dens_mat[icrsh][sp] = mpi.all_reduce(
+                    mpi.world, dens_mat[icrsh][sp], lambda x, y: x + y)
+        mpi.barrier()
+
+        if self.symm_op != 0:
+            dens_mat = self.symmcorr.symmetrize(dens_mat)
+
+        # Rotate to local coordinate system:
+        if self.use_rotations:
+            for icrsh in range(self.n_corr_shells):
+                for sp in dens_mat[icrsh]:
+                    if self.rot_mat_time_inv[icrsh] == 1:
+                        dens_mat[icrsh][sp] = dens_mat[icrsh][sp].conjugate()
+                    dens_mat[icrsh][sp] = numpy.dot(numpy.dot(self.rot_mat[icrsh].conjugate().transpose(), dens_mat[icrsh][sp]),
+                                                    self.rot_mat[icrsh])
+
+        return dens_mat
+
 
     def density_matrix_matsubara(self, method='using_gf', beta=40.0):
         """Calculate density matrices in one of two ways.
@@ -578,7 +676,9 @@ class SumkDFT_opt(SumkDFT):
                     for inu in range(self.n_orbitals[ik, ind]):
                         # only works for diagonal hopping matrix (true in
                         # wien2k)
-                        if (self.hopping[ik, ind, inu, inu] - self.h_field * (1 - 2 * isp)) < 0.0:
+                        # if (self.hopping[ik, ind, inu, inu] - self.h_field * (1 - 2 * isp)) < 0.0:
+                        # +++REPLACED
+                        if (self.hopping_part[ik][ind, inu, inu] - self.h_field * (1 - 2 * isp)) < 0.0:
                             MMat[isp][inu, inu] = 1.0
                         else:
                             MMat[isp][inu, inu] = 0.0
@@ -621,12 +721,22 @@ class SumkDFT_opt(SumkDFT):
 
         return dens_mat
 
+    ###############################################################
+    # hopping is a large array ([n_k, n_spin, n_bands, n_bands]),
+    # so broadcasting it to all nodes could cause out of memory.
+    # To avoid this, each process stores minimum set of hopping
+    # that is actually used in k-loop.
+    ###############################################################
+
+    ###############################################################
+    # mpi.bcast is replaced with the split transfer version
+    # to avoid OverFlowError when object size exceeds ~2GB
+    ###############################################################
 
     ###############################################################
     # OVERRIDE FUNCTIONS
-    # mpi.bcast is replaced with the split transfer version
-    # to avoid OverFlowError when object size exceeds ~2GB
     # Replaced parts are indicated by "+++REPLACED"
+    # Added parts are indicated by "+++ADDED"
     ###############################################################
 
     def read_input_from_hdf(self, subgrp, things_to_read):
@@ -675,10 +785,92 @@ class SumkDFT_opt(SumkDFT):
 
         # now do the broadcasting:
         for it in things_to_read:
+            # +++ADDED
+            # do not broadcast hopping
+            if it == 'hopping':
+                continue
             # setattr(self, it, mpi.bcast(getattr(self, it)))
             # +++REPLACED
             setattr(self, it, dcore_mpi.bcast(getattr(self, it)))  # split transfer version
         subgroup_present = mpi.bcast(subgroup_present)
         values_not_read = mpi.bcast(values_not_read)
 
+        # +++ADDED
+        # distribute slice of hopping
+        if 'hopping' in things_to_read:
+            self.slice_hopping()
+
         return subgroup_present, values_not_read
+
+    ###############################################################
+    # ADDED FUNCTIONS
+    ###############################################################
+
+    def slice_hopping(self):
+        """Distribute slice of hopping array. Each process (rank) stores only a part of hopping array in hopping_part.
+
+        hopping : (numpy.ndarray) [ik, sp, orb1, orb2]
+        hopping_part : (dict(numpy.ndarray)) [ik][sp, orb1, orb2]
+        """
+
+        ikarray = numpy.array(list(range(self.n_k)))
+        ikarray_part = numpy.array(mpi.slice_array(ikarray))
+
+        rank_assigned = np.zeros(self.n_k, dtype=int)
+        rank_assigned[ikarray_part] = mpi.rank
+        rank_assigned = mpi.all_reduce(mpi.world, rank_assigned, lambda x, y: x + y)
+
+        self.hopping_part = {}
+        for ik in ikarray:
+            dest = rank_assigned[ik]
+            if dest == 0:
+                if mpi.rank == 0:
+                    self.hopping_part[ik] = self.hopping[ik, ...]
+            else:
+                # Send hopping[ik] from rank=0 to rank=dest
+                if mpi.rank == 0:
+                    # mpi.Send(self.hopping[ik, ...], dest=dest, tag=ik)
+                    mpi.send(self.hopping[ik, ...], dest=dest)
+                elif mpi.rank == dest:
+                    # self.hopping_part[ik] = mpi.Recv(source=0, tag=ik)
+                    self.hopping_part[ik] = mpi.recv(source=0)
+
+        # Check if hopping_part is properly set
+        assert len(self.hopping_part) == ikarray_part.size
+        assert set(self.hopping_part.keys()) == set(ikarray_part)
+
+    ###############################################################
+    # OVERRIDE FUNCTIONS
+    # Replaced parts are indicated by "+++REPLACED"
+    ###############################################################
+
+    # This method uses hopping but is not parallelized.
+    # Wrap the original method so that only the master node calculates.
+    def eff_atomic_levels(self):
+        if mpi.is_master_node():
+            eff_atlevels = super().eff_atomic_levels()
+        else:
+            eff_atlevels = None
+        return mpi.bcast(eff_atlevels)
+
+    def calculate_min_max_band_energies(self):
+        # hop = self.hopping
+        # diag_hop = numpy.zeros(hop.shape[:-1])
+        # hop_slice = mpi.slice_array(hop)
+        # +++REPLACED
+        hop_slice = numpy.array([hop_ik for hop_ik in self.hopping_part.values()])  # dict(ndarray) to ndarray
+        diag_hop = numpy.zeros((self.n_k,) + hop_slice.shape[1:3])
+
+        diag_hop_slice = mpi.slice_array(diag_hop)
+        diag_hop_slice[:] = numpy.linalg.eigvalsh(hop_slice)
+        diag_hop = mpi.all_reduce(mpi.world, diag_hop, lambda x, y: x + y)
+        min_band_energy = diag_hop.min().real
+        max_band_energy = diag_hop.max().real
+        self.min_band_energy = min_band_energy
+        self.max_band_energy = max_band_energy
+        return min_band_energy, max_band_energy
+
+    # This method is not used for the moment.
+    # Actually, replacement is simple.
+    def calc_density_correction(self, filename=None, dm_type='wien2k'):
+        raise Exception("hopping must be replaced with hopping_part")
