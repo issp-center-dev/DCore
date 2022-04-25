@@ -724,7 +724,7 @@ class SumkDFT_opt(SumkDFT):
     ###############################################################
     # hopping is a large array ([n_k, n_spin, n_bands, n_bands]),
     # so broadcasting it to all nodes could cause out of memory.
-    # To avoid this, each process stores minimum set of hopping
+    # To avoid this, each process stores a part of hopping array
     # that is actually used in k-loop.
     ###############################################################
 
@@ -807,11 +807,13 @@ class SumkDFT_opt(SumkDFT):
     ###############################################################
 
     def slice_hopping(self):
-        """Distribute slice of hopping array. Each process (rank) stores only a part of hopping array in hopping_part.
+        """hopping array is sliced and distributed as hopping_part. Each process (rank) stores only a part of hopping array.
 
         hopping : (numpy.ndarray) [ik, sp, orb1, orb2]
         hopping_part : (dict(numpy.ndarray)) [ik][sp, orb1, orb2]
         """
+
+        mpi.report("hopping array is sliced and distributed as hopping_part.")
 
         ikarray = numpy.array(list(range(self.n_k)))
         ikarray_part = numpy.array(mpi.slice_array(ikarray))
