@@ -68,6 +68,7 @@ setup(
             "dcore_gk = dcore.dcore_gk:run",
             "dcore_mpicheck = dcore.dcore_mpicheck:run",
             "dcore_pade = dcore.dcore_pade:run",
+            "dcore_pyspmac = dcore.dcore_pyspmac:run",
         ]
     },
 

@@ -28,6 +28,8 @@ import math
 import shutil
 import scipy
 from scipy import linalg as scipy_linalg
+from scipy.integrate import quad
+from scipy.interpolate import interp1d
 
 from dcore._dispatcher import h5diff as h5diff_org, compare, \
     BlockGf, HDFArchive, failures, MeshImFreq, fit_hermitian_tail, Gf, GfImFreq
@@ -1001,3 +1003,61 @@ def calc_density_matrix(block_gf):
     assert isinstance(block_gf, BlockGf)
 
     return {bname: _calc_density_matrix(g) for bname, g in block_gf}
+
+
+# copied (and renamed) from spm_omega.util
+def calc_retarted_function_from_spectrum(
+        omegas_out: numpy.ndarray,
+        rho_mesh,
+        rho, epsabs=1e-5,
+        rho_is_complex=True
+        ):
+    """ Compute retarded Green's function from spectral function
+
+    Parameters
+    ----------
+    omegas_out:
+        real frequencies where G^R(w) is evaluated
+
+    rho_mesh:
+        real frequecies where rho(w) is given (in ascending order)
+
+    rho:
+        3D array representing rho(w).
+        The first axis corresponds to the frequency.
+
+    Returns
+    -------
+    res:
+        G^R(w)
+
+    """
+    assert rho.ndim == 3
+    nso = rho.shape[1]
+    res = numpy.zeros((omegas_out.size, nso, nso), dtype=numpy.complex128)
+
+    interp = interp1d(rho_mesh, rho[:, 0, 0].real)
+
+    for i, j in product(range(nso), repeat=2):
+        interp = interp1d(
+                    rho_mesh, rho[:, i, j].real,
+                    fill_value=(0.0, 0.0), bounds_error=False)
+        for k in range(omegas_out.size):
+            res[k, i, j] = -quad(
+                            interp, rho_mesh[0], rho_mesh[-1],
+                            weight="cauchy", wvar=omegas_out[k],
+                            limit=1000, epsabs=epsabs)[0]
+            res[k, i, j] += -1j*numpy.pi * interp(omegas_out[k])
+
+        if rho_is_complex:
+            interp = interp1d(
+                        rho_mesh, rho[:, i, j].imag,
+                        fill_value=(0.0, 0.0), bounds_error=False)
+            for k in range(omegas_out.size):
+                res[k, i, j] += 1j*quad(
+                                    interp,
+                                    rho_mesh[0], rho_mesh[-1],
+                                    weight="cauchy", wvar=omegas_out[k],
+                                    limit=1000, epsabs=epsabs)[0]
+                res[k, i, j] += numpy.pi * interp(omegas_out[k])
+    return res
