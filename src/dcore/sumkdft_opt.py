@@ -1,4 +1,3 @@
-from os import readlink
 import numpy
 import copy
 from warnings import warn
