@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Wanniernization using Quantum ESPRESSO &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
@@ -14,6 +14,7 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -32,9 +33,9 @@
           <div class="body" role="main">
             
   <section id="wanniernization-using-quantum-espresso">
-<span id="qesrvo3"></span><h1>Wanniernization using Quantum ESPRESSO<a class="headerlink" href="#wanniernization-using-quantum-espresso" title="Permalink to this headline">¶</a></h1>
+<span id="qesrvo3"></span><h1>Wanniernization using Quantum ESPRESSO<a class="headerlink" href="#wanniernization-using-quantum-espresso" title="Permalink to this heading">¶</a></h1>
 <section id="scf-calculation-of-quantum-espresso">
-<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../../_downloads/fbf4aa10c0a8f5d138fa99ae99efb2de/scf_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
  <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
@@ -76,9 +77,9 @@
 </div>
 </section>
 <section id="wannierization">
-<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this heading">¶</a></h2>
 <section id="generate-bloch-orbitals-for-the-wannier">
-<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this headline">¶</a></h3>
+<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this heading">¶</a></h3>
 <p>Perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.</p>
 <p><a class="reference download internal" download="" href="../../../_downloads/c99daac10cc60faf3570eb2a87cab34d/nscf_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_srvo3.in</span></code></a></p>
@@ -188,7 +189,7 @@ in the wannierization.</p>
 </div>
 </section>
 <section id="pre-process-for-wannier90">
-<h3>Pre-process for Wannier90<a class="headerlink" href="#pre-process-for-wannier90" title="Permalink to this headline">¶</a></h3>
+<h3>Pre-process for Wannier90<a class="headerlink" href="#pre-process-for-wannier90" title="Permalink to this heading">¶</a></h3>
 <p>Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.</p>
 <p><a class="reference download internal" download="" href="../../../_downloads/2c4a8a193ba4f8759def689a8b2ce1d8/srvo3.win"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.win</span></code></a></p>
@@ -315,7 +316,7 @@ end kpoints
 </div>
 </section>
 <section id="qe-to-wannier90-interface">
-<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this headline">¶</a></h3>
+<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference download internal" download="" href="../../../_downloads/e7ce6a1c83ef95fcbe392f6296abd452/pw2wan_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">pw2wan_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">inputpp</span> 
    <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
@@ -335,7 +336,7 @@ end kpoints
 </div>
 </section>
 <section id="wannier90">
-<h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this headline">¶</a></h3>
+<h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this heading">¶</a></h3>
 <p>Execute <code class="docutils literal notranslate"><span class="pre">wannier90.x</span></code> for the actual wannierization.
 The input file is the same as that for the pre-processing run.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wannier90.x srvo3
@@ -343,7 +344,7 @@ The input file is the same as that for the pre-processing run.</p>
 </div>
 </section>
 <section id="optional-check-wannierization">
-<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
+<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this heading">¶</a></h3>
 <p>If you want to check the quality of the wannierization,
 you can plot the original and the wannier-interpolated band structure simultaneously.</p>
 <p>First, compute the band structure with the following input file:</p>
@@ -477,7 +478,7 @@ outdir = &quot;./&quot;,
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>

@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Programs &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -14,6 +14,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
@@ -42,14 +43,14 @@
           <div class="body" role="main">
             
   <section id="programs">
-<h1>Programs<a class="headerlink" href="#programs" title="Permalink to this headline">¶</a></h1>
+<h1>Programs<a class="headerlink" href="#programs" title="Permalink to this heading">¶</a></h1>
 <p><strong>DCore</strong> consists of four main programs, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code>,  and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.
 All programs read a single input file (say <em>input.ini</em>) which contains parameters classified into blocks.
 It is also possible to pass multiple input files to the program. Parameters from all input files are merged. Duplicate paramegers are overwritten by the later one.
 See <a class="reference internal" href="input.html"><span class="doc">Input-file format</span></a>, for the list of parameters and detailed descriptions.</p>
 <p>In the following, brief explanations are given for each program.</p>
 <section id="pre-processing-dcore-pre">
-<h2>Pre-processing : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-processing-dcore-pre" title="Permalink to this headline">¶</a></h2>
+<h2>Pre-processing : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-processing-dcore-pre" title="Permalink to this heading">¶</a></h2>
 <p>This program generates model HDF5 file (<em>seedname</em>.h5).
 You need to execute this program before running the main program, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore_pre input.ini
@@ -57,7 +58,7 @@ You need to execute this program before running the main program, <code class="d
 </div>
 </section>
 <section id="main-program-dcore">
-<h2>Main program : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#main-program-dcore" title="Permalink to this headline">¶</a></h2>
+<h2>Main program : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#main-program-dcore" title="Permalink to this heading">¶</a></h2>
 <p>This is the main program, which performs DMFT cycle and output the self energy etc. into a HDF5
 file (<em>seedname</em>.out.h5).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore input.ini --np 4
@@ -72,11 +73,11 @@ You can resume the DMFT iteration using the previous results by specifying <code
 <p>The output file, <em>seedname</em>.out.h5, is created, updated, or backed up depending on
 whether the previous run exists and also on the <code class="docutils literal notranslate"><span class="pre">restart</span></code> parameter.
 The behavior is summarized below.</p>
-<table class="colwidths-given docutils align-default">
+<table class="docutils align-default">
 <colgroup>
-<col style="width: 17%" />
-<col style="width: 17%" />
-<col style="width: 67%" />
+<col style="width: 16.7%" />
+<col style="width: 16.7%" />
+<col style="width: 66.7%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p><em>seedname</em>.out.h5</p></th>
@@ -101,7 +102,7 @@ The behavior is summarized below.</p>
 </table>
 </section>
 <section id="convergence-check-dcore-check">
-<span id="program-dcore-check"></span><h2>Convergence-check : <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code><a class="headerlink" href="#convergence-check-dcore-check" title="Permalink to this headline">¶</a></h2>
+<span id="program-dcore-check"></span><h2>Convergence-check : <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code><a class="headerlink" href="#convergence-check-dcore-check" title="Permalink to this heading">¶</a></h2>
 <p>This program is used to check the convergence of the DMFT loop.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore_check input.ini [--prefix PREFIX] [--ext EXT]
 </pre></div>
@@ -148,7 +149,7 @@ in the <code class="docutils literal notranslate"><span class="pre">[tool]</span
 </ul>
 </section>
 <section id="post-processing-dcore-post">
-<span id="program-dcore-post"></span><h2>Post-processing : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this headline">¶</a></h2>
+<span id="program-dcore-post"></span><h2>Post-processing : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this heading">¶</a></h2>
 <p>This program computes the total DOS (<em>seedname</em>_dos.dat) and momenum-resolved spectral function (<em>seedname</em>_akw.dat) reading the DMFT results in <em>seedname</em>.out.h5.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post input.ini --np <span class="m">4</span>
 </pre></div>
@@ -165,7 +166,7 @@ The computed spectral function can be drawn by</p>
 The original band structure is shifted by the chemical potential specified by <code class="docutils literal notranslate"><span class="pre">mu</span></code> in <code class="docutils literal notranslate"><span class="pre">[system]</span></code> block.</p>
 </section>
 <section id="online-help">
-<h2>Online help<a class="headerlink" href="#online-help" title="Permalink to this headline">¶</a></h2>
+<h2>Online help<a class="headerlink" href="#online-help" title="Permalink to this heading">¶</a></h2>
 <p>For all programs, online help is available by <code class="docutils literal notranslate"><span class="pre">-h</span></code> or <code class="docutils literal notranslate"><span class="pre">--help</span></code> option.
 For example, the help of the main program <code class="docutils literal notranslate"><span class="pre">dcore</span></code> looks like</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore -h
@@ -230,7 +231,7 @@ It would help readers to make use of the latest features in the <strong>develop<
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>

@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Downfolding with RESPACK (SrVO3) &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -14,6 +14,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
@@ -33,7 +34,7 @@
           <div class="body" role="main">
             
   <section id="downfolding-with-respack-srvo3">
-<span id="respacksrvo3"></span><h1>Downfolding with RESPACK (SrVO<sub>3</sub>)<a class="headerlink" href="#downfolding-with-respack-srvo3" title="Permalink to this headline">¶</a></h1>
+<span id="respacksrvo3"></span><h1>Downfolding with RESPACK (SrVO<sub>3</sub>)<a class="headerlink" href="#downfolding-with-respack-srvo3" title="Permalink to this heading">¶</a></h1>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This document was written for ver.1.x, and might include descriptions incompatible with the latest version.
@@ -46,7 +47,7 @@ If you encounter some problem, see the release note of ver.2.0 and check the dif
 <p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
 <a class="reference internal image-reference" href="../../_images/struct_srvo3.png"><img alt="../../_images/struct_srvo3.png" class="align-center" src="../../_images/struct_srvo3.png" style="width: 200px;" /></a>
 <section id="scf-calculation-of-quantum-espresso">
-<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this headline">¶</a></h2>
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/123b09c7e170e0d3df9d62846503fdcb/scf_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3_r.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
  <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
@@ -96,7 +97,7 @@ the ultrasoft pseudopotentials or PAW.</p>
 </div>
 </section>
 <section id="wannierization">
-<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this headline">¶</a></h2>
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this heading">¶</a></h2>
 <p>Next, we perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.</p>
 <p><a class="reference download internal" download="" href="../../_downloads/14d3cce84048e472e1adf185c76a2cb7/nscf_respack.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_respack.in</span></code></a></p>
@@ -193,7 +194,7 @@ with the following input file:</p>
 </pre></div>
 </div>
 <section id="optional-check-wannierization">
-<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this headline">¶</a></h3>
+<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this heading">¶</a></h3>
 <p>If you want to check the quality of the wannierization,
 you can plot the original and the wannier-interpolated band structure simultaneously.</p>
 <p>First, compute the band structure with the following input file:</p>
@@ -303,7 +304,7 @@ outdir = &quot;./&quot;,
 </section>
 </section>
 <section id="dielectric-matrix-and-effective-interaction">
-<h2>Dielectric matrix and Effective interaction<a class="headerlink" href="#dielectric-matrix-and-effective-interaction" title="Permalink to this headline">¶</a></h2>
+<h2>Dielectric matrix and Effective interaction<a class="headerlink" href="#dielectric-matrix-and-effective-interaction" title="Permalink to this heading">¶</a></h2>
 <p>Next, we move on the calculation of the dielectric matrix with cRPA.
 We use the program <code class="docutils literal notranslate"><span class="pre">calc_chiqw</span></code> (in <code class="docutils literal notranslate"><span class="pre">src/calc_chiqw</span></code> in RESPACK) as</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec calc_chiqw &lt; respack.in
@@ -323,7 +324,7 @@ $ calc_j3d &lt; respack.in
 <p>The command-line argument (<code class="docutils literal notranslate"><span class="pre">&quot;srvo3&quot;</span></code> in this case) must be the same as <code class="docutils literal notranslate"><span class="pre">seedname</span></code> in the DCore input.</p>
 </section>
 <section id="dmft-calculation">
-<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this headline">¶</a></h2>
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/10fc7c42a65156219ff44a58832511f2/srvo3_respack.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
 <span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span><span class="w"></span>
@@ -378,19 +379,19 @@ If we want to compute by using 32 MPI processes at the same accuracy,
 <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be 10000*432/32=135000.</p>
 </div>
 <section id="dmft-setup-dcore-pre">
-<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this headline">¶</a></h3>
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3_respack.ini
 </pre></div>
 </div>
 </section>
 <section id="running-the-dmft-calculation-dcore">
-<h3>Running the DMFT calculation: dcore<a class="headerlink" href="#running-the-dmft-calculation-dcore" title="Permalink to this headline">¶</a></h3>
+<h3>Running the DMFT calculation: dcore<a class="headerlink" href="#running-the-dmft-calculation-dcore" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3_respack.ini
 </pre></div>
 </div>
 </section>
 <section id="post-processing-and-data-analysis-dcore-post">
-<h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this headline">¶</a></h3>
+<h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3_respack.ini
 $ sed -e <span class="s2">&quot;s/every 10/every 3/g&quot;</span> srvo3_akw.gp
 $ gnuplot nis_akw.gp
@@ -427,7 +428,7 @@ $ gnuplot nis_akw.gp
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
