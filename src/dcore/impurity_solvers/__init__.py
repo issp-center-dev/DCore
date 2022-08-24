@@ -6,6 +6,7 @@ from .null_solver import NullSolver
 from .alps_cthyb_seg import ALPSCTHYBSEGSolver
 from .pomerol import PomerolSolver
 from .hphi import HPhiSolver
+from .jo_cthyb_seg import JOCTHYBSEGSolver
 from .base import compute_basis_rot
 
 solver_classes = {
@@ -17,4 +18,5 @@ solver_classes = {
     'ALPS/cthyb-seg': ALPSCTHYBSEGSolver,
     'pomerol': PomerolSolver,
     'HPhi': HPhiSolver,
+    'JO/cthyb-seg': JOCTHYBSEGSolver,
 }
