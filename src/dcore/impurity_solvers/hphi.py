@@ -283,7 +283,7 @@ class HPhiSolver(SolverBase):
                     continue
                     # u = 0.0
                 # print(o1, s1, o3, s3, o2, s2, o4, s4, u.real, u.imag, file=f)
-                if u != 0:
+                if numpy.abs(u) > 1e-10:
                     interall.append(InterAll(o1, s1, o3, s3, o2, s2, o4, s4, u))
 
         # Output interall.def
