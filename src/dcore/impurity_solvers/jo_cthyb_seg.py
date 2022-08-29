@@ -60,34 +60,6 @@ def to_numpy_array(g, names):
     return (data[:, :, index])[:, index, :]
 
 
-# def assign_from_numpy_array(g, data, names):
-#     """
-#     Does inversion of to_numpy_array
-#     data[spin,orb,iw]
-#     g[spin].data[iw,orb1,orb2]
-#     """
-#     # print(g.n_blocks)
-#     if g.n_blocks != 2:
-#         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
-#
-#     norb = data.shape[1]
-#     niw = data.shape[2]
-#     # print(data.shape)
-#     # print("norb:", norb)
-#
-#     # check number of Matsubara frequency
-#     assert data.shape[2]*2 == g[names[0]].data.shape[0]
-#     # print(g[names[0]].data.shape)
-#
-#     for spin in range(2):
-#         for orb in range(norb):
-#             # print(orb, spin, names[spin])
-#             # positive frequency
-#             g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
-#             # negative frequency
-#             g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
-
-
 def assign_from_numpy_array(g, data, names):
     """
     Does inversion of to_numpy_array
@@ -110,10 +82,6 @@ def assign_from_numpy_array(g, data, names):
     niw = data.shape[0]
 
     # array which data are assigned from
-    # (orb, spin, iw) -> (spin, orb, iw) -> (spin, orb, iw)  w/o SO
-    #                                       (1, inner, iw)   w/  SO
-    # data_from = data.reshape((-1, 2, niw)).transpose((1, 0, 2)).reshape(n_sp, n_inner, niw)
-
     # (iw, orb, spin) -> (iw, spin, orb) -> (iw, spin, orb)  w/o SO
     #                                       (iw, 1, inner)   w/  SO
     data_from = data.reshape((niw, -1, 2)).transpose((0, 2, 1)).reshape(niw, n_sp, n_inner)
@@ -166,16 +134,18 @@ def convert_Umatrix(U, Uprime, J, norb):
 
     return Uout.reshape((2*norb, 2*norb))
 
-    # Uout = Uout.reshape((2*norb, 2*norb))
-    # with open('./Umatrix', 'w') as f:
-    #     for i in range(2*norb):
-    #         for j in range(2*norb):
-    #             print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
-    #         print("", file=f)
-
 
 def eval_tail(g_iw, beta, n_ave=10):
-    # array_iw[iw, flavor]
+    """Evaluate the coeeficients of 1/iw
+
+    Args:
+        g_iw (ndarray(n_iw, n_flavors)): Matsubara Green's function G(iw) for w>0.
+        beta (float): Inverse temperature
+        n_ave (int, optional): The number of frequency points to average. Defaults to 10.
+
+    Returns:
+        ndarray(n_flavors,): The coefficients of 1/iw
+    """
     assert g_iw.ndim == 2
 
     n_iw, n_flavors = g_iw.shape
@@ -198,61 +168,6 @@ class JOCTHYBSEGSolver(SolverBase):
 
         # self.n_tau = max(10001, 5 * n_iw)
 
-    def _get_occupation(self):
-        """
-        Read the spin-orbital-dependent occupation number from HDF5 file
-
-        Returns
-        -------
-        numpy.ndarray of size (2*self.n_orb)
-
-        """
-
-        array = numpy.zeros(2*self.n_orb, dtype=float)
-        with HDFArchive('sim.h5', 'r') as f:
-            results = f["simulation"]["results"]
-            for i1 in range(2*self.n_orb):
-                group = "density_%d" % i1
-                if group in results:
-                    array[i1] = results[group]["mean"]["value"]
-
-        # [(o1,s1)] -> [o1, s1] -> [s1, o1] -> [(s1, o1)]
-        array = array.reshape((self.n_orb, 2))\
-                     .transpose((1, 0))\
-                     .reshape((2*self.n_orb))
-        return array
-
-    def _get_results(self, group_prefix, n_data, orbital_symmetrize, dtype=float, stop_if_data_not_exist=True):
-        """
-        Read results with two spin-orbital indices from HDF5 file
-
-        Returns
-        -------
-        numpy.ndarray of size (2*self.n_orb, 2*self.n_orb, n_data)
-
-        """
-
-        data_shape = (2*self.n_orb, 2*self.n_orb, n_data)
-
-        array = numpy.zeros(data_shape, dtype=dtype)
-        with HDFArchive('sim.h5', 'r') as f:
-            results = f["simulation"]["results"]
-            for i1, i2 in product(range(2*self.n_orb), repeat=2):
-                group = "%s_%d_%d" % (group_prefix, i1, i2)
-                if group in results:
-                    array[i1, i2, :] = results[group]["mean"]["value"]
-                    if orbital_symmetrize:  # Only i1>i2 is computed in CTQMC.
-                        array[i2, i1, :] = array[i1, i2, :]
-                elif stop_if_data_not_exist:
-                    raise Exception("data does not exist in sim.h5/simulation/results/{}. alps_cthyb might be old.".format(group))
-
-
-        # [(o1,s1), (o2,s2)] -> [o1, s1, o2, s2] -> [s1, o1, s2, o2] -> [(s1,o1), (s2,o2)]
-        array = array.reshape((self.n_orb, 2, self.n_orb, 2, -1))\
-                     .transpose((1, 0, 3, 2, 4))\
-                     .reshape((2*self.n_orb, 2*self.n_orb, -1))
-        return array
-
     def solve(self, rot, mpirun_command, params_kw):
         """
         In addition to the parameters described in the docstring of SolverBase,
@@ -271,10 +186,13 @@ class JOCTHYBSEGSolver(SolverBase):
                 return params_kw[key]
             else:
                 return internal_params[key]
-        print (params_kw)
+        # print (params_kw)
 
         umat_check = umat2dd(self.u_mat)
         assert numpy.allclose(umat_check, self.u_mat), "Please set density_density = True when you run ALPS/cthyb-seg!"
+
+        if self.n_iw % 2 != 0:
+            sys.exit(f"Invalid value n_iw={self.n_iw}: Only even number is allowed for n_iw in JO/cthyb-seg solver")
 
         # (0) Rotate H0 and Delta_tau if rot is given
         g0_iw_rotated = self._G0_iw.copy()
@@ -307,7 +225,6 @@ class JOCTHYBSEGSolver(SolverBase):
         index[0::2] = numpy.arange(self.n_orb)
         index[1::2] = numpy.arange(self.n_orb) + self.n_orb
         # Swap cols and rows
-        # H0 = (H0[:, index])[index, :]
         H0 = H0[numpy.ix_(index, index)]
 
         # check if H0 is diagonal
@@ -334,24 +251,16 @@ class JOCTHYBSEGSolver(SolverBase):
 
         # H0 is extracted from the tail of the Green's function.
         self._Delta_iw = delta(g0_iw_rotated)
-        # Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
-        # for name in self.block_names:
-        #     Delta_tau[name] << Fourier(self._Delta_iw[name])
-        # Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
         delta_iw = to_numpy_array(self._Delta_iw, self.block_names)
-        print(delta_iw.shape)
         assert delta_iw.shape == (self.n_iw * 2, self.n_orb * 2, self.n_orb * 2)
         delta_iw = delta_iw[self.n_iw:, :, :]  # only positive frequency
-        print(delta_iw.shape)
-        if self.n_iw % 2 != 0:
-            sys.exit(f"Invalid value n_iw={self.n_iw}: Only even number is allowed for n_iw in JO/cthyb-seg solver")
+        assert delta_iw.shape == (self.n_iw, self.n_orb * 2, self.n_orb * 2)
 
         # TODO: check delta_iw
         #    Delta_{ab}(iw) must be diagonal
 
-        print(delta_iw.shape)
         delta_iw_diagonal = numpy.einsum("wii->wi", delta_iw)
-        print(delta_iw_diagonal.shape)
+        assert delta_iw_diagonal.shape == (self.n_iw, self.n_orb * 2)
 
         with open('./delta.in', 'w') as f:
             for iw in range(self.n_iw):
@@ -366,12 +275,10 @@ class JOCTHYBSEGSolver(SolverBase):
             for i in range(self.n_flavors):
                 print('{:.15e}'.format(vsq[i]), file=f)
 
-
         # (1c) Set U_{ijkl} for the solver
         # Set up input parameters and files for ALPS/CTHYB-SEG
 
         U, Uprime, J = dcore2alpscore(u_mat_rotated)
-        # write_Umatrix(U, Uprime, J, self.n_orb)
         Udd = convert_Umatrix(U, Uprime, J, self.n_orb)
         assert Udd.shape == (self.n_flavors, self.n_flavors)
 
@@ -380,7 +287,6 @@ class JOCTHYBSEGSolver(SolverBase):
                 for j in range(self.n_flavors):
                     print(' {:.15e}'.format(Udd[i, j].real), file=f, end="")
                 print("", file=f)
-
 
         # (1d) Set parameters for the solver
 
@@ -431,16 +337,12 @@ class JOCTHYBSEGSolver(SolverBase):
         #   self._Gimp_iw
 
         data = numpy.loadtxt("self_w.dat")
-        print(data.shape)
         sigma_data = data[:, 1::2] + 1j * data[:, 2::2]
-        print(sigma_data.shape)
         assert sigma_data.shape == (self.n_iw, self.n_flavors)
         assign_from_numpy_array(self._Sigma_iw, sigma_data, self.block_names)
 
         data = numpy.loadtxt("Gf_w.dat")
-        print(data.shape)
         gf_data = data[:, 1::2] + 1j * data[:, 2::2]
-        print(gf_data.shape)
         assert gf_data.shape == (self.n_iw, self.n_flavors)
         assign_from_numpy_array(self._Gimp_iw, gf_data, self.block_names)
 
@@ -450,7 +352,7 @@ class JOCTHYBSEGSolver(SolverBase):
             # rotate_basis(rot, self.use_spin_orbit, None, self._Gimp_iw, direction='backward')
 
         #   self.quant_to_save['nn_equal_time']
-        # nn_equal_time = self._get_results("nn", 1, orbital_symmetrize=True, stop_if_data_not_exist=False)
+        # nn_equal_time =
         # [(s1,o1), (s2,o2), 0]
         # self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
