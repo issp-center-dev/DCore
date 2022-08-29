@@ -149,9 +149,10 @@ def eval_tail(g_iw, beta, n_ave=10):
     assert g_iw.ndim == 2
 
     n_iw, n_flavors = g_iw.shape
-    iw = (2*numpy.arange(n_iw) + 1) * numpy.pi / beta
+    wn = (2*numpy.arange(n_iw) + 1) * numpy.pi / beta
 
-    tails = numpy.mean(g_iw[-n_ave:, :] * iw[-n_ave:, None], axis=0).real
+    # average of Re[ G(iw) * iw ]
+    tails = numpy.mean(-g_iw[-n_ave:, :].imag * wn[-n_ave:, None], axis=0)
     assert tails.shape == (n_flavors,)
 
     return tails
