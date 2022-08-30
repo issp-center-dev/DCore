@@ -263,7 +263,7 @@ class JOCTHYBSEGSolver(SolverBase):
         delta_iw_diagonal = numpy.einsum("wii->wi", delta_iw)
         assert delta_iw_diagonal.shape == (self.n_iw, self.n_orb * 2)
 
-        with open('./delta.in', 'w') as f:
+        with open('./delta_w.in', 'w') as f:
             for iw in range(self.n_iw):
                 for f1 in range(self.n_flavors):
                     val = delta_iw_diagonal[iw, f1]
@@ -294,7 +294,7 @@ class JOCTHYBSEGSolver(SolverBase):
         params_solver = OrderedDict()
         params_solver['model'] = {
             'n_s' : self.n_orb*2,
-            'file_Delta' : 'delta.in',
+            'file_Delta_iw' : 'delta_w.in',
             'file_Vsq' : 'vsq.in',
             'file_U' : 'u.in',
             'file_ef' : 'ef.in',
