@@ -29,6 +29,9 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
                 sys.exit("ERROR: Failed in adjusting chemical potential")
             if mpi.is_master_node():
                 results['mu'] = float(sk.chemical_potential)
+            results['total_charge'] = sk.density_required
+        else:
+            results['total_charge'] = sk.total_density() + sk.charge_below
 
         # Local Green's function and Density matrix
         Gloc = sk.extract_G_loc(with_dc=with_dc)
