@@ -134,7 +134,7 @@ class DMFTPostSolver(DMFTCoreSolver):
         solver_name = self._params['impurity_solver']['name']
         Solver = impurity_solvers.solver_classes[solver_name]
         if Solver.is_gf_realomega_available():
-            Gloc_iw_sh, _ = self.calc_Gloc()
+            Gloc_iw_sh, _, _ = self.calc_Gloc()
             _, _, sigma_w = self.solve_impurity_models(Gloc_iw_sh, -1, mesh)
             return sigma_w
         else:

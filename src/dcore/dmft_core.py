@@ -615,7 +615,7 @@ class DMFTCoreSolver(object):
             diff = make_hermite_conjugate(g)
             if diff > 1e-8:
                 print('Warning Gloc_iw at ish {} is not hermite conjugate: {}'.format(ish, diff))
-        return r['Gloc_iw_sh'], r['dm_sh']
+        return r['Gloc_iw_sh'], r['dm_sh'], r['total_charge']
 
 
     def print_density_matrix(self, dm_sh, smoment_sh):
@@ -821,7 +821,10 @@ class DMFTCoreSolver(object):
             sys.stdout.flush()
 
             # Compute Gloc_iw where the chemical potential is adjusted if needed
-            Gloc_iw_sh, dm_sh = self.calc_Gloc()
+            Gloc_iw_sh, dm_sh, total_charge = self.calc_Gloc()
+            print("\n  Total charge : %.6f" % total_charge)
+            self._quant_to_save_history['total_charge'] = total_charge
+
             smoment_sh = spin_moments_sh(dm_sh)
             self.print_density_matrix(dm_sh, smoment_sh)
             self._quant_to_save_history['density_matrix'] = dm_sh
