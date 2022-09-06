@@ -482,7 +482,7 @@ class DMFTBSESolver(DMFTCoreSolver):
             print(" skip")
             return
 
-        Gloc_iw_sh, _ = self.calc_Gloc()
+        Gloc_iw_sh, _, _ = self.calc_Gloc()
         solver_name = self._params['impurity_solver']['name']
 
         # generate sampling points of Matsubara frequencies
