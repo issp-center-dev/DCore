@@ -908,7 +908,7 @@ def expand_path(exec_path):
     full_path = os.path.expandvars(exec_path)  # expand environment variables
     full_path = shutil.which(full_path)  # return full path
     if full_path is None:
-        print(f"ERROR: {exec_path} does not exist. Set exec_path properly!", file=sys.stderr)
+        print(f"ERROR: '{exec_path}' does not exist. Set exec_path properly!", file=sys.stderr)
         sys.exit(1)
 
     return full_path
