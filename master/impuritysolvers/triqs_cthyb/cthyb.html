@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>CT-QMC: TRIQS/cthyb &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -14,7 +14,9 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -43,9 +45,9 @@
           <div class="body" role="main">
             
   <section id="ct-qmc-triqs-cthyb">
-<span id="howtocthyb"></span><h1>CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code><a class="headerlink" href="#ct-qmc-triqs-cthyb" title="Permalink to this headline">¶</a></h1>
+<span id="howtocthyb"></span><h1>CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code><a class="headerlink" href="#ct-qmc-triqs-cthyb" title="Permalink to this heading">¶</a></h1>
 <section id="install">
-<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this heading">¶</a></h2>
 <p>Follow the installation guide in <a class="reference external" href="https://triqs.github.io/cthyb/latest/">TRIQS/cthyb</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -61,7 +63,7 @@ it must be built with the following CMake options:</p>
 </div>
 </section>
 <section id="basic-parameters-for-qmc">
-<h2>Basic parameters for QMC<a class="headerlink" href="#basic-parameters-for-qmc" title="Permalink to this headline">¶</a></h2>
+<h2>Basic parameters for QMC<a class="headerlink" href="#basic-parameters-for-qmc" title="Permalink to this heading">¶</a></h2>
 <p>The accuracy of the TRIQS/cthyb calculation depends on mainly the following
 three parameters.</p>
 <blockquote>
@@ -152,7 +154,7 @@ we have to increase <code class="docutils literal notranslate"><span class="pre"
 (In almost cases, <code class="docutils literal notranslate"><span class="pre">n_warmup_cycles</span></code> has minor effect).</p>
 </section>
 <section id="high-frequency-tail-fit">
-<h2>High-frequency tail fit<a class="headerlink" href="#high-frequency-tail-fit" title="Permalink to this headline">¶</a></h2>
+<h2>High-frequency tail fit<a class="headerlink" href="#high-frequency-tail-fit" title="Permalink to this heading">¶</a></h2>
 <p>The self energy computed with QMC becomes noisy at the high frequency region.
 This high-frequency tail can be fitted by using the following function:</p>
 <div class="math notranslate nohighlight">
@@ -214,7 +216,7 @@ After the energy range is fixed, we again perform the QMC calculation by <code c
 above figure.</p>
 </section>
 <section id="multi-band-system">
-<h2>Multi-band system<a class="headerlink" href="#multi-band-system" title="Permalink to this headline">¶</a></h2>
+<h2>Multi-band system<a class="headerlink" href="#multi-band-system" title="Permalink to this heading">¶</a></h2>
 <p>For the multi-band systems, <strong>we have to include the two-pairs insertion/removal move</strong>
 in the QMC cycles as</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span><span class="w"></span>
@@ -225,7 +227,7 @@ in the QMC cycles as</p>
 <p>because these moves are disabled in the default setting.</p>
 </section>
 <section id="pade-approximation-for-dos-and-spectrum-function">
-<h2>Pade approximation for DOS and spectrum function<a class="headerlink" href="#pade-approximation-for-dos-and-spectrum-function" title="Permalink to this headline">¶</a></h2>
+<h2>Pade approximation for DOS and spectrum function<a class="headerlink" href="#pade-approximation-for-dos-and-spectrum-function" title="Permalink to this heading">¶</a></h2>
 <p>To obtain spectral functions, we need to perform analytical continuation from Matsubara frequency to real frequency.
 Currently, the Pade approximation is the only choice for the analytical continuation.</p>
 <p>There is one control parameter for Pade approximation, <code class="docutils literal notranslate"><span class="pre">omega_pade</span></code> in the <code class="docutils literal notranslate"><span class="pre">[tool]</span></code> block. It specifies an energy cutoff for Matsubara frequency.
@@ -234,7 +236,7 @@ before the self energy becomes noisy.
 For example, in the case of figure (a) above, we can find that <code class="docutils literal notranslate"><span class="pre">omega_pade=4.0</span></code> is reasonable.</p>
 </section>
 <section id="legendre-filter">
-<h2>Legendre filter<a class="headerlink" href="#legendre-filter" title="Permalink to this headline">¶</a></h2>
+<h2>Legendre filter<a class="headerlink" href="#legendre-filter" title="Permalink to this heading">¶</a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Do not use it together with the tail-fit.</p>
@@ -391,7 +393,7 @@ plot \
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>

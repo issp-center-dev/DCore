@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>The first example: 2D Hubbard model &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -14,7 +14,9 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -32,7 +34,7 @@
           <div class="body" role="main">
             
   <section id="the-first-example-2d-hubbard-model">
-<h1>The first example: 2D Hubbard model<a class="headerlink" href="#the-first-example-2d-hubbard-model" title="Permalink to this headline">¶</a></h1>
+<h1>The first example: 2D Hubbard model<a class="headerlink" href="#the-first-example-2d-hubbard-model" title="Permalink to this heading">¶</a></h1>
 <p>The first example is the two-dimensional Hubbard model.
 We use the Hubbard-I approximation for solving the effective impurity problem and see the emergence of the Mott gap.
 The input file is given below.</p>
@@ -68,7 +70,7 @@ The input file is given below.</p>
 </pre></div>
 </div>
 <section id="pre-process-dcore-pre">
-<h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this headline">¶</a></h2>
+<h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this heading">¶</a></h2>
 <p>We first generate an HDF5 file that is necessary for DMFT calculations.
 The script <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre dmft_square.ini
@@ -77,7 +79,7 @@ The script <code class="docutils literal notranslate"><span class="pre">dcore_pr
 <p>Then, an HDF5 file named <em>seedname</em>.h5 (<code class="docutils literal notranslate"><span class="pre">square.h5</span></code> in the present case) will be generated.</p>
 </section>
 <section id="dmft-loop-dcore">
-<h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this headline">¶</a></h2>
+<h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this heading">¶</a></h2>
 <p>One can perform a DMFT self-consistent calculation with <code class="docutils literal notranslate"><span class="pre">dcore</span></code> program.
 In this tutorial, we use the Hubbard-I solver just for simplicity.
 One can run the program by</p>
@@ -118,7 +120,7 @@ For instance, <code class="docutils literal notranslate"><span class="pre">check
 <a class="reference internal image-reference" href="../../_images/iter_sigma-ish03.png"><img alt="../../_images/iter_sigma-ish03.png" class="align-center" src="../../_images/iter_sigma-ish03.png" style="width: 800px;" /></a>
 </section>
 <section id="spectral-function-dcore-post">
-<h2>Spectral function : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectral-function-dcore-post" title="Permalink to this headline">¶</a></h2>
+<h2>Spectral function : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectral-function-dcore-post" title="Permalink to this heading">¶</a></h2>
 <p>We can calculate the density of states and the momentum-dependent single-particle excitations using <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> program.
 In the Hubbard-I solver, the self-energy on the real-frequency axis can be directly computed (no analytical continuation is required).
 Hence, the impurity problem is solved once more in <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
@@ -145,7 +147,7 @@ We can plot it using gnuplot as follows:</p>
 <a class="reference internal image-reference" href="../../_images/dos.png"><img alt="../../_images/dos.png" class="align-center" src="../../_images/dos.png" style="width: 700px;" /></a>
 </section>
 <section id="another-impurity-solver-cthyb-seg">
-<h2>Another impurity solver: CTHYB-SEG<a class="headerlink" href="#another-impurity-solver-cthyb-seg" title="Permalink to this headline">¶</a></h2>
+<h2>Another impurity solver: CTHYB-SEG<a class="headerlink" href="#another-impurity-solver-cthyb-seg" title="Permalink to this heading">¶</a></h2>
 <p>The input file for ALPS/cthyb-seg is given as below.</p>
 <p><a class="reference download internal" download="" href="../../_downloads/e10fb35b0c2ca5e981350e32076f2c59/dmft_square_ctseg.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_square_ctseg.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
@@ -219,7 +221,7 @@ We can plot it using gnuplot as follows:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>

@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Input-file format &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -14,7 +14,9 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -42,16 +44,16 @@
           <div class="body" role="main">
             
   <section id="input-file-format">
-<h1>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this headline">¶</a></h1>
+<h1>Input-file format<a class="headerlink" href="#input-file-format" title="Permalink to this heading">¶</a></h1>
 <p>The input file consists of six parameter blocks named [model], [system], [impurity_solver], [control], [tool], and [mpi].</p>
 <p>The following table shows which blocks are used by each program.</p>
-<table class="colwidths-given docutils align-default">
+<table class="docutils align-default">
 <colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"></th>
@@ -102,7 +104,7 @@
 </table>
 <p>For example, we can see that <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> reads only [model] block. Therefore, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> needs to be re-executed only when the parameters in [model] block are changed.</p>
 <p>The parameters included in each block are explained below.</p>
-<div class="contents local topic" id="contents">
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#model-block" id="id1">[model] block</a></p>
 <ul>
@@ -118,17 +120,11 @@
 <li><p><a class="reference internal" href="#tool-block" id="id9">[tool] block</a></p></li>
 <li><p><a class="reference internal" href="#mpi-block" id="id10">[mpi] block</a></p></li>
 </ul>
-</div>
+</nav>
 <section id="model-block">
-<h2><a class="toc-backref" href="#id1">[model] block</a><a class="headerlink" href="#model-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">[model] block</a><a class="headerlink" href="#model-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes parameters for defining a model to be solved.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 12%" />
-<col style="width: 5%" />
-<col style="width: 22%" />
-<col style="width: 61%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Type</p></th>
@@ -251,28 +247,22 @@
 </table>
 <p>See separate pages from the link below for detailed descriptions of some parameters.</p>
 <section id="lattice">
-<h3><a class="toc-backref" href="#id2"><a class="reference internal" href="lattice.html"><span class="doc">lattice parameter</span></a></a><a class="headerlink" href="#lattice" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id2" role="doc-backlink"><a class="reference internal" href="lattice.html"><span class="doc">lattice parameter</span></a></a><a class="headerlink" href="#lattice" title="Permalink to this heading">¶</a></h3>
 </section>
 <section id="interaction">
-<h3><a class="toc-backref" href="#id3"><a class="reference internal" href="interaction.html"><span class="doc">interaction parameter</span></a></a><a class="headerlink" href="#interaction" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id3" role="doc-backlink"><a class="reference internal" href="interaction.html"><span class="doc">interaction parameter</span></a></a><a class="headerlink" href="#interaction" title="Permalink to this heading">¶</a></h3>
 </section>
 <section id="slater-basis">
-<h3><a class="toc-backref" href="#id4"><a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis parameter</span></a></a><a class="headerlink" href="#slater-basis" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id4" role="doc-backlink"><a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis parameter</span></a></a><a class="headerlink" href="#slater-basis" title="Permalink to this heading">¶</a></h3>
 </section>
 <section id="local-potential">
-<h3><a class="toc-backref" href="#id5"><a class="reference internal" href="local_potential.html"><span class="doc">local_potential_* parameters</span></a></a><a class="headerlink" href="#local-potential" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id5" role="doc-backlink"><a class="reference internal" href="local_potential.html"><span class="doc">local_potential_* parameters</span></a></a><a class="headerlink" href="#local-potential" title="Permalink to this heading">¶</a></h3>
 </section>
 </section>
 <section id="system-block">
-<h2><a class="toc-backref" href="#id6">[system] block</a><a class="headerlink" href="#system-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">[system] block</a><a class="headerlink" href="#system-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 15%" />
-<col style="width: 7%" />
-<col style="width: 7%" />
-<col style="width: 72%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Type</p></th>
@@ -347,15 +337,9 @@ U_{\alpha \gamma \delta \beta}
 <p>where <span class="math notranslate nohighlight">\(\langle \cdots \rangle_0\)</span> indicates the expectation value at the initial (Kohn-Sham) state.</p>
 </section>
 <section id="impurity-solver-block">
-<h2><a class="toc-backref" href="#id7">[impurity_solver] block</a><a class="headerlink" href="#impurity-solver-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">[impurity_solver] block</a><a class="headerlink" href="#impurity-solver-block" title="Permalink to this heading">¶</a></h2>
 <p>This block specifies an impurity solver to be used and necessary parameters for running the solver program.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 11%" />
-<col style="width: 6%" />
-<col style="width: 5%" />
-<col style="width: 77%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Type</p></th>
@@ -380,15 +364,9 @@ U_{\alpha \gamma \delta \beta}
 For details, see <a class="reference internal" href="../impuritysolvers.html"><span class="doc">the reference manual for each solver</span></a>.</p>
 </section>
 <section id="control-block">
-<h2><a class="toc-backref" href="#id8">[control] block</a><a class="headerlink" href="#control-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">[control] block</a><a class="headerlink" href="#control-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes parameters that control the self-consistency loop of DMFT.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 15%" />
-<col style="width: 6%" />
-<col style="width: 5%" />
-<col style="width: 74%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Type</p></th>
@@ -451,15 +429,9 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </table>
 </section>
 <section id="tool-block">
-<h2><a class="toc-backref" href="#id9">[tool] block</a><a class="headerlink" href="#tool-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">[tool] block</a><a class="headerlink" href="#tool-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes parameters that are solely used by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 3%" />
-<col style="width: 2%" />
-<col style="width: 6%" />
-<col style="width: 89%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Type</p></th>
@@ -577,15 +549,9 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </table>
 </section>
 <section id="mpi-block">
-<h2><a class="toc-backref" href="#id10">[mpi] block</a><a class="headerlink" href="#mpi-block" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">[mpi] block</a><a class="headerlink" href="#mpi-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes parameters which are read by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 9%" />
-<col style="width: 8%" />
-<col style="width: 13%" />
-<col style="width: 69%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Type</p></th>
@@ -648,7 +614,7 @@ The default value of <code class="docutils literal notranslate"><span class="pre
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
