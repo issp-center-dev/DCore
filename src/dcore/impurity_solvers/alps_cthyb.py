@@ -299,9 +299,9 @@ class ALPSCTHYBSolver(SolverBase):
             G_l = make_block_gf(GfLegendre, self.gf_struct, self.beta, n_points=Nl)
             assign_from_numpy_array_legendre(G_l, gl_data, self.block_names)
 
-            # G_iw with 1/iwn tail
+            # G_iw
             for name in self.block_names:
-                self._Gimp_iw[name] << LegendreToMatsubara(G_l[name])
+                legendre_to_matsubara(G_l[name], self._Gimp_iw[name])
             make_hermite_conjugate(self._Gimp_iw)
 
             # Two-particle GF
