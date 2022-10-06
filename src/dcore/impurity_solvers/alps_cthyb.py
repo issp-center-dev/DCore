@@ -301,7 +301,10 @@ class ALPSCTHYBSolver(SolverBase):
 
             # G_iw
             for name in self.block_names:
-                legendre_to_matsubara(G_l[name], self._Gimp_iw[name])
+                if TRIQS_COMPAT:
+                    legendre_to_matsubara(G_l[name], self._Gimp_iw[name])
+                else:
+                    self._Gimp_iw[name] << LegendreToMatsubara(G_l[name])
             make_hermite_conjugate(self._Gimp_iw)
 
             # Two-particle GF
