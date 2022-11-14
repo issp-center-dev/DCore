@@ -92,18 +92,23 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
 
     # Check results for x_loc
     print("\n Checking x_loc...")
-    assert isinstance(xloc, dict)
-    for key, data in list(xloc.items()):
-        # print("  ", key)
-        if flag_box:
-            assert data.shape == (num_wb, 2*num_wf, 2*num_wf)
-        else:
-            assert data.shape == (freqs.shape[0],)
-    print(" OK")
+    if xloc is None:
+        print("   not computed")
+    else:
+        assert isinstance(xloc, dict)
+        for key, data in list(xloc.items()):
+            # print("  ", key)
+            if flag_box:
+                assert data.shape == (num_wb, 2*num_wf, 2*num_wf)
+            else:
+                assert data.shape == (freqs.shape[0],)
+        print(" OK")
 
     # Check results for chi_loc
-    if chiloc is not None:
-        print("\n Checking chi_loc...")
+    print("\n Checking chi_loc...")
+    if chiloc is None:
+        print("   not computed")
+    else:
         assert isinstance(chiloc, dict)
         for key, data in list(chiloc.items()):
             # print("  ", key)
@@ -500,7 +505,8 @@ class DMFTBSESolver(DMFTCoreSolver):
                                                               self._params['bse']['num_wb'],
                                                               self._params['bse']['num_wf'], ish, freqs=freqs)
 
-            subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
+            if x_loc is not None:
+                subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
 
             # Open HDF5 file to improve performance. Close manually.
             bse.h5bse.open('a')
@@ -509,7 +515,8 @@ class DMFTBSESolver(DMFTCoreSolver):
             for icrsh in range(self._n_corr_shells):
                 if ish == self._sk.corr_to_inequiv[icrsh]:
                     # X_loc
-                    bse.save_xloc(x_loc, icrsh=icrsh)
+                    if x_loc is not None:
+                        bse.save_xloc(x_loc, icrsh=icrsh)
                     # chi_loc
                     if chi_loc is not None:
                         bse.save_chiloc(chi_loc, icrsh=icrsh)

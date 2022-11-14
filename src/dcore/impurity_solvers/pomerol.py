@@ -317,20 +317,35 @@ class PomerolSolver(SolverBase):
             val = numpy.ndarray(n_w2b)
         """
 
-        params_kw['flag_vx'] = 1
-        params_kw['n_w2f'] = num_wf
-        params_kw['n_w2b'] = num_wb
+        # Set parameters
+        only_chiloc = True
+        if only_chiloc:
+            print("\n Calc only chi_loc (X_loc is not computed)\n")
+            params_kw['flag_vx'] = 0
+        else:
+            params_kw['flag_vx'] = 1
+            params_kw['n_w2f'] = num_wf
+            params_kw['n_w2b'] = num_wb
+
         params_kw['flag_suscep'] = 1
         params_kw['n_wb'] = num_wb
 
+        # Run the impurity solver
         self.solve(rot, mpirun_command, params_kw)
 
-        g2_loc = self._read_g2loc(params_kw)
-        # 1d array --> (wb, wf1, wf2)
-        for key, data in list(g2_loc.items()):
-            g2_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
+        # Get results if computed
+        g2_loc = chi_loc = None
 
-        chi_loc = self._read_chiloc(params_kw)
+        # X_loc
+        if params_kw['flag_vx']:
+            g2_loc = self._read_g2loc(params_kw)
+            # 1d array --> (wb, wf1, wf2)
+            for key, data in list(g2_loc.items()):
+                g2_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
+
+        # chi_loc
+        if params_kw['flag_suscep']:
+            chi_loc = self._read_chiloc(params_kw)
 
         return g2_loc, chi_loc
 
