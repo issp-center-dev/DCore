@@ -27,7 +27,7 @@ import time
 
 from dcore._dispatcher import HDFArchive, dyson
 from dcore.dmft_core import DMFTCoreSolver
-from dcore.program_options import create_parser, parse_parameters
+from dcore.program_options import create_parser, parse_parameters, delete_parameters, print_parameters
 from dcore.tools import *
 from dcore import impurity_solvers
 from .sumkdft_workers.launcher import run_sumkdft
@@ -625,7 +625,7 @@ def dcore_bse(filename, np=1):
     #
     # Construct a parser with default values
     #
-    pars = create_parser()
+    pars = create_parser(['model', 'system', 'impurity_solver', 'mpi', 'bse'])
 
     #
     # Parse keywords and store
@@ -636,6 +636,13 @@ def dcore_bse(filename, np=1):
     seedname = p["model"]["seedname"]
     p["mpi"]["num_processes"] = np
 
+    # Delete unnecessary parameters
+    delete_parameters(p, block='model', delete=['bvec'])
+    delete_parameters(p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'prec_mu', 'with_dc', 'no_tail_fit'])
+
+    # Summary of input parameters
+    print_parameters(p)
+
     #
     # Load DMFT data
     #
@@ -645,14 +652,11 @@ def dcore_bse(filename, np=1):
     print("Number of iterations :", solver.iteration_number)
 
     #
-    # Compute data for BSE
+    # Calculate quantities necessary for BSE
     #
     solver.calc_bse()
 
-
-    #
     # Finish
-    #
     print("\n#################  Done  #####################\n")
 
 
