@@ -293,7 +293,7 @@ class PomerolSolver(SolverBase):
         dir_suscep = params_kw.get('dir_suscep', './susceptibility')
         return self._read_common(dir_suscep)
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
         """
         compute local G2 in p-h channel
             X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
@@ -305,6 +305,7 @@ class PomerolSolver(SolverBase):
         num_wf
         num_wb
         params_kw
+        only_chiloc
 
         Returns
         -------
@@ -318,7 +319,6 @@ class PomerolSolver(SolverBase):
         """
 
         # Set parameters
-        only_chiloc = True
         if only_chiloc:
             print("\n Calc only chi_loc (X_loc is not computed)\n")
             params_kw['flag_vx'] = 0

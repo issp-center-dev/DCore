@@ -52,7 +52,7 @@ def compare_str_list(list1, list2):
 
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
-                              Sigma_iw, Gloc_iw, num_wb, num_wf, ish, freqs=None):
+                              Sigma_iw, Gloc_iw, num_wb, num_wf, only_chiloc, ish, freqs=None):
     """
 
     Calculate G2 in an impurity model
@@ -86,7 +86,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     # Solve the model
     rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     if flag_box:
-        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
+        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params, only_chiloc)
     else:
         xloc, chiloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, num_wb, s_params)
 
@@ -503,7 +503,9 @@ class DMFTBSESolver(DMFTCoreSolver):
                                                               self._beta, self._n_iw,
                                                               self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                                                               self._params['bse']['num_wb'],
-                                                              self._params['bse']['num_wf'], ish, freqs=freqs)
+                                                              self._params['bse']['num_wf'],
+                                                              self._params['bse']['calc_only_chiloc'],
+                                                              ish, freqs=freqs)
 
             if x_loc is not None:
                 subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)

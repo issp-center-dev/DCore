@@ -147,7 +147,7 @@ class SolverBase(object):
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
         """
         Compute Xloc(m, n, n') in p-h channel
                 and chi_loc(m) (optional)
@@ -155,10 +155,12 @@ class SolverBase(object):
 
         Parameters
         ----------
-        num_wf:
+        num_wf: int
             Number of non-negative fermionic frequencies
-        num_wb:
+        num_wb: int
             Number of non-negative bosonic frequencies
+        only_chiloc: bool
+            If True, only chi_loc is computed (no Xloc).
 
         The other parameters are the same as for solve().
 
@@ -167,9 +169,11 @@ class SolverBase(object):
 
         Xloc(m, n, n') : 3d ndarray of complex type
             Data for -num_wf <= n, n' < num_wf and m = 0, 1, ..., num_wb-1.
+            None is returned when only_chiloc=True.
 
         chi_loc(m) : 1d ndarray of complex type
-            return None if not computed
+            Local susceptibility with one bosonic frequency.
+            Return None if not computed.
 
         """
         return NotImplementedError()
