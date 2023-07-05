@@ -68,6 +68,7 @@ setup(
             "dcore_gk = dcore.dcore_gk:run",
             "dcore_mpicheck = dcore.dcore_mpicheck:run",
             "dcore_anacont_pade = dcore.dcore_anacont_pade:run",
+            "dcore_anacont_spm = dcore.dcore_anacont_spm:run",
         ]
     },
 
