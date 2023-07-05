@@ -111,14 +111,16 @@ def _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies):
 def _integral_kramers_kronig(energies_imagpart, energy_realpart, gf_imag_interp, energy_threshold):
     enum1 = gf_imag_interp(energies_imagpart) - gf_imag_interp(energy_realpart)
     enum2 = np.gradient(gf_imag_interp(energies_imagpart), energies_imagpart)
-    den =  energies_imagpart - energy_realpart
+    den = energies_imagpart - energy_realpart
     mask = np.where(np.abs(den) < energy_threshold, 1, 0) #1 if den is below threshold
     #avoid divide by zero with mask * energy_threshold, in this case (1 - mask == 0)
-    kernel = enum1 / (den + mask * energy_threshold) * (1 - mask) + enum2 * mask 
+    term1 = enum1 / (den + mask * energy_threshold) * (1 - mask)
+    term2 = enum2 * mask 
+    kernel = term1 + term2
     integral = np.trapz(y=kernel, x=energies_imagpart)
     return integral
 
-def get_kramers_kronig_realpart(energies, gf_imag, energy_threshold=1e-10, dos_threshold=1e-7):
+def get_kramers_kronig_realpart(energies, gf_imag, energy_threshold=1e-10, dos_threshold=1e-5):
     if np.abs(gf_imag[0]) > dos_threshold:
         print('Warning! DOS at left interval end exceeds {}.'.format(dos_threshold))
     if np.abs(gf_imag[-1]) > dos_threshold:
@@ -139,7 +141,7 @@ def dos_to_gf_imag(dos):
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
     tau_grid, gf_tau, sum_rule_const = _calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
     density, gf_tau_fit, energies_extract, density_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, params['spm']['lambda'], verbose=params['spm']['verbose_opt'], max_iters=params['spm']['max_iters_opt'])
-    energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies_extract, energies_extract, dos_to_gf_imag(density))
+    energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies_extract, dos_to_gf_imag(density))
     return energies, gf_real, gf_imag
 
 def dcore_anacont_spm(seedname):
