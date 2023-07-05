@@ -17,13 +17,14 @@
 #
 
 import argparse
+import toml
 from dcore._dispatcher import MeshReFreq, MeshImFreq, GfReFreq, GfImFreq
 from dcore.version import version, print_header
 import numpy as np
 import cvxpy as cp
-from scipy.sparse.linalg import svds
-import toml
+from scipy.interpolate import interp1d
 from scipy.optimize import least_squares
+from scipy.sparse.linalg import svds
 
 def _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, c0=1.0, show_fit=False):
     wntail = matsubara_frequencies[-ntail:]
@@ -107,15 +108,39 @@ def _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies):
     U, S, Vt = _getSVD(kernel, nsv=nsv)
     return U, S, Vt, delta_energy, energies_extract
 
-# https://triqs.github.io/triqs/latest/documentation/manual/triqs/plotting_protocols/fit/fit.html
+def _integral_kramers_kronig(energies_imagpart, energy_realpart, gf_imag_interp, energy_threshold):
+    enum1 = gf_imag_interp(energies_imagpart) - gf_imag_interp(energy_realpart)
+    enum2 = np.gradient(gf_imag_interp(energies_imagpart), energies_imagpart)
+    den =  energies_imagpart - energy_realpart
+    mask = np.where(np.abs(den) < energy_threshold, 1, 0) #1 if den is below threshold
+    #avoid divide by zero with mask * energy_threshold, in this case (1 - mask == 0)
+    kernel = enum1 / (den + mask * energy_threshold) * (1 - mask) + enum2 * mask 
+    integral = np.trapz(y=kernel, x=energies_imagpart)
+    return integral
+
+def get_kramers_kronig_realpart(energies, gf_imag, energy_threshold=1e-10, dos_threshold=1e-7):
+    if np.abs(gf_imag[0]) > dos_threshold:
+        print('Warning! DOS at left interval end exceeds {}.'.format(dos_threshold))
+    if np.abs(gf_imag[-1]) > dos_threshold:
+        print('Warning! DOS at right interval end exceeds {}.'.format(dos_threshold))
+    gf_real = np.zeros(energies.shape, dtype=np.float64)
+    gf_imag_interp = interp1d(energies, gf_imag, kind='linear', bounds_error=False, fill_value=0.0)
+    energies_noend = energies[1:-1]
+    a, b = energies[0], energies[-1]
+    gf_real[1:-1] = gf_imag_interp(energies_noend) / np.pi * np.log((b - energies_noend) / (energies_noend - a)) #assume zero DOS at endpoints
+    integral_func = lambda y : _integral_kramers_kronig(energies, y, gf_imag_interp, energy_threshold) #intentionally use energies for integration grid
+    gf_real += np.vectorize(integral_func)(energies) / np.pi
+    gf_imag_resampled = gf_imag_interp(energies)
+    return energies, gf_real, gf_imag_resampled
+
+def dos_to_gf_imag(dos):
+    return -np.pi * dos
+
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
-    import matplotlib.pyplot as plt
-    print(matsubara_frequencies)
-    plt.plot(matsubara_frequencies, np.imag(gf_matsubara))
-    plt.plot(matsubara_frequencies, -6.0 / matsubara_frequencies)
-    plt.show()
     tau_grid, gf_tau, sum_rule_const = _calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
-    rho, gf_tau_fit, energies_extract, rho_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, params['spm']['lambda'], verbose=True, max_iters=100)
+    density, gf_tau_fit, energies_extract, density_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, params['spm']['lambda'], verbose=params['spm']['verbose_opt'], max_iters=params['spm']['max_iters_opt'])
+    energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies_extract, energies_extract, dos_to_gf_imag(density))
+    return energies, gf_real, gf_imag
 
 def dcore_anacont_spm(seedname):
     print('Reading ', seedname + '_anacont.toml...')
@@ -129,31 +154,29 @@ def dcore_anacont_spm(seedname):
     mesh_w = MeshReFreq(params['omega_min'], params['omega_max'], params['Nomega'])
 
     data_w = {}
-
     num_data = np.sum([key.startswith('data') for key in npz.keys()])
     for idata in range(num_data):
         key = f'data{idata}'
         data = npz[key]
-        print(data.shape)
         n_matsubara = data.shape[0]//2
         mesh_iw = MeshImFreq(params['beta'], 'Fermion', n_matsubara)
         gf_iw = GfImFreq(data=data, beta=params['beta'], mesh=mesh_iw)
         n_orbitals = gf_iw.data.shape[1]
         matsubara_frequencies = np.imag(gf_iw.mesh.values()[n_matsubara:])
+        sigma_w_data = np.zeros((n_orbitals, n_orbitals, params['Nomega']), dtype=np.complex128)
         for i_orb in range(n_orbitals):
-            gf_imag = gf_iw.data[n_matsubara:, i_orb, i_orb]
-            _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag)
-        #mesh_iw = MeshImFreq(params['beta'], 'Fermion', data.shape[0]//2)
-        #sigma_iw = GfImFreq(data=data, beta=params['beta'], mesh=mesh_iw)
-        #sigma_w = GfReFreq(mesh=mesh_w, target_shape=data.shape[1:])
-        #sigma_w.set_from_pade(sigma_iw, n_points=n_pade, freq_offset=params['pade']['eta'])
-        #data_w[key] = sigma_w.data
-
+            print(f'Working on data index {idata} and orbital index {i_orb}...')
+            gf_imag_matsubara = gf_iw.data[n_matsubara:, i_orb, i_orb]
+            energies, gf_real, gf_imag = _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag_matsubara)
+            sigma_w_data[i_orb, i_orb, :] = gf_real + 1j * gf_imag
+        sigma_w = GfReFreq(mesh=mesh_w, data=sigma_w_data)
+        data_w[key] = sigma_w.data
 
     print('Writing to', seedname + '_sigma_w.npz...')
     np.savez(seedname + '_sigma_w.npz', **data_w)
 
 def run():
+    # install test code with pip3 install .
     # test with DCORE_TRIQS_COMPAT=1 dcore_anacont_spm crgete3
     print_header()
 
