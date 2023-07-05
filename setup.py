@@ -67,7 +67,7 @@ setup(
             "dcore_bse = dcore.dcore_bse:run",
             "dcore_gk = dcore.dcore_gk:run",
             "dcore_mpicheck = dcore.dcore_mpicheck:run",
-            "dcore_pade = dcore.dcore_pade:run",
+            "dcore_anacont_pade = dcore.dcore_anacont_pade:run",
         ]
     },
 
