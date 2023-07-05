@@ -59,9 +59,9 @@ def _calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_wn, ntau, ntail, be
     tau_grid, gf_tau = _calc_gf_tau(matsubara_frequencies, gf_wn, beta, sum_rule_const, ntau)
     return tau_grid, gf_tau, sum_rule_const
 
-def get_single_continuation(tau_grid, gf_tau, nsv, beta, emin, emax, num_energies, sum_rule_const, lambd, verbose=True, max_iters=100):
+def get_single_continuation(tau_grid, gf_tau, nsv, beta, emin, emax, num_energies, sum_rule_const, lambd, verbose=True, max_iters=100, solver='ECOS'):
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
-    rho_prime, gf_tau_fit, chi2 = _solveProblem(delta_energy, U, S, Vt, gf_tau, sum_rule_const, lambd, verbose=verbose, max_iters=max_iters)
+    rho_prime, gf_tau_fit, chi2 = _solveProblem(delta_energy, U, S, Vt, gf_tau, sum_rule_const, lambd, verbose=verbose, max_iters=max_iters, solver=solver)
     rho = np.dot(Vt.T, rho_prime)
     rho_integrated = np.trapz(y=rho, x=energies_extract)
     return rho, gf_tau_fit, energies_extract, rho_integrated, chi2
@@ -85,7 +85,7 @@ def _getSVD(matrix, nsv=None):
     Vt = np.flip(V, axis=0)
     return U, S, Vt
 
-def _solveProblem(delta_energy, U, S, Vt, gf_tau, sum_rule_const, lambd, verbose=True, max_iters=100):
+def _solveProblem(delta_energy, U, S, Vt, gf_tau, sum_rule_const, lambd, verbose=True, max_iters=100, solver='ECOS'):
     Q = len(S)
     Smat = np.diag(S)
     rho_prime = cp.Variable(Q)
@@ -96,7 +96,7 @@ def _solveProblem(delta_energy, U, S, Vt, gf_tau, sum_rule_const, lambd, verbose
     V_mod[-1, :] *= 0.5
     constraints = [Vt.T @ rho_prime >= 0, cp.sum(delta_energy * V_mod @ rho_prime) == sum_rule_const]
     prob = cp.Problem(objective, constraints)
-    _ = prob.solve(verbose=verbose, solver='ECOS', max_iters=max_iters)
+    _ = prob.solve(verbose=verbose, solver=solver, max_iters=max_iters)
     gf_tau_fit = np.dot(U, np.dot(Smat, rho_prime.value))
     chi2 = 0.5 * np.linalg.norm(gf_tau - gf_tau_fit, ord=2) ** 2
     return rho_prime.value, gf_tau_fit, chi2
@@ -140,7 +140,7 @@ def dos_to_gf_imag(dos):
 
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
     tau_grid, gf_tau, sum_rule_const = _calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
-    density, gf_tau_fit, energies_extract, density_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, params['spm']['lambda'], verbose=params['spm']['verbose_opt'], max_iters=params['spm']['max_iters_opt'])
+    density, gf_tau_fit, energies_extract, density_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, params['spm']['lambda'], verbose=params['spm']['verbose_opt'], max_iters=params['spm']['max_iters_opt'], solver=params['spm']['solver_opt'])
     energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies_extract, dos_to_gf_imag(density))
     return energies, gf_real, gf_imag
 
