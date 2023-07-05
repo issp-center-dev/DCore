@@ -109,10 +109,11 @@ def _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies):
 
 # https://triqs.github.io/triqs/latest/documentation/manual/triqs/plotting_protocols/fit/fit.html
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
-    #import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
     print(matsubara_frequencies)
-    #plt.plot(matsubara_frequencies, np.imag(gf_matsubara))
-    #plt.show()
+    plt.plot(matsubara_frequencies, np.imag(gf_matsubara))
+    plt.plot(matsubara_frequencies, -6.0 / matsubara_frequencies)
+    plt.show()
     tau_grid, gf_tau, sum_rule_const = _calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
     rho, gf_tau_fit, energies_extract, rho_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, params['spm']['lambda'], verbose=True, max_iters=100)
 
@@ -153,7 +154,7 @@ def dcore_anacont_spm(seedname):
     np.savez(seedname + '_sigma_w.npz', **data_w)
 
 def run():
-
+    # test with DCORE_TRIQS_COMPAT=1 dcore_anacont_spm crgete3
     print_header()
 
     parser = argparse.ArgumentParser(
