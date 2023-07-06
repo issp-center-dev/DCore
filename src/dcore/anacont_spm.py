@@ -33,10 +33,11 @@ def _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, c0=1.0, show_fit=F
     if show_fit:
         import matplotlib.pyplot as plt
         z = np.linspace(wntail[0], wntail[-1], num=1000)
-        plt.scatter(wntail, y, zorder=5, color='C0')
-        plt.plot(z, -result / z, zorder=10, color='C1')
+        plt.scatter(wntail, y, zorder=5, color='C0', label='data')
+        plt.plot(z, -result / z, zorder=10, color='C1', label='fit')
         plt.xlabel(r'$\omega_n$')
         plt.ylabel(r'Im $G( \omega_n )$')
+        plt.legend()
         plt.tight_layout()
         plt.show()
     return result
