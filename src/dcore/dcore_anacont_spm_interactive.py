@@ -19,14 +19,47 @@
 import argparse
 import toml
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 from dcore._dispatcher import MeshReFreq, MeshImFreq, GfReFreq, GfImFreq
 from dcore.version import version, print_header
-from dcore.anacont_spm import calc_gf_tau_from_gf_matsubara, get_single_continuation, get_kramers_kronig_realpart, dos_to_gf_imag
+from dcore.anacont_spm import calc_gf_tau_from_gf_matsubara, get_single_continuation, get_multiple_continuations, get_kramers_kronig_realpart, dos_to_gf_imag
+
+def _plot_overview(lambdas, chi2_values, energies, densities, nrows=3, ncols=5):
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=False, figsize=(10, 10))
+    
+    axes[0, 0].plot(np.log10(lambdas), chi2_values, '-o', color='k')
+    axes[0, 0].set_yscale('log')
+    axes[0, 0].set_xlabel(r'$\log_{10} \lambda$')
+    axes[0, 0].set_ylabel(r'$\log_{10} \chi^2 $')
+    axes[0, 0].xaxis.set_minor_locator(MultipleLocator(1))
+
+    for i, (d, lambd) in enumerate(zip(densities, np.log10(lambdas)), start=1):
+        j = i // ncols
+        k = i % ncols
+        ax = axes[j, k]
+        ax.plot(energies, d)
+        ax.set_xlim(energies[0], energies[-1])
+        ax.set_ylim(0, None)
+        ax.set_xlabel(r'$\omega$')
+        ax.set_ylabel(r'$\rho(\omega)$')
+        ax.text(0.98, 0.87, r'$\log_{{10}} \lambda = {0:1.1f}$'.format(lambd), horizontalalignment='right', transform = ax.transAxes)
+
+    plt.tight_layout()
+    plt.show()
+    plt.close()
 
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
-    tau_grid, gf_tau, sum_rule_const = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
-    density, gf_tau_fit, energies_extract, density_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, params['spm']['lambda'], verbose=params['spm']['verbose_opt'], max_iters=params['spm']['max_iters_opt'], solver=params['spm']['solver_opt'])
-    energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies_extract, dos_to_gf_imag(density))
+    tau_grid, gf_tau, sum_rule_const = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm_interactive']['n_tau'], params['spm_interactive']['n_tail'], params['beta'], show_fit=params['spm_interactive']['show_fit'])
+    lambda_values = np.logspace(start=params['spm_interactive']['lambda_min_log10'], stop=params['spm_interactive']['lambda_max_log10'], num=14, base=10, endpoint=True)
+    energies, densities, chi2_values, rho_integrated_values = get_multiple_continuations(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, lambda_values, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
+
+    _plot_overview(lambda_values, chi2_values, energies, densities)
+    lambd = input('Please enter desired value for log10(lambda): ')
+
+    density, _, energies, _, _ = get_single_continuation(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, lambd, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
+    
+    energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies, dos_to_gf_imag(density))
     return energies, gf_real, gf_imag
 
 def dcore_anacont_spm_interactive(seedname):
@@ -56,7 +89,7 @@ def dcore_anacont_spm_interactive(seedname):
             gf_imag_matsubara = gf_iw.data[n_matsubara:, i_orb, i_orb]
             energies, gf_real, gf_imag = _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag_matsubara)
             sigma_w_data[i_orb, i_orb, :] = gf_real + 1j * gf_imag
-            if params['spm']['show_result']:
+            if params['spm_interactive']['show_result']:
                 import matplotlib.pyplot as plt
                 plt.axhline(y=0, xmin=energies[0], xmax=energies[-1], color='lightgrey')
                 plt.plot(energies, gf_real, label=r'Re $G( \omega )$')
