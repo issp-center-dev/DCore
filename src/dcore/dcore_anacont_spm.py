@@ -94,7 +94,7 @@ def _solveProblem(delta_energy, U, S, Vt, gf_tau, sum_rule_const, lambd, verbose
     V_mod = np.copy(Vt.T)
     V_mod[0, :] *= 0.5
     V_mod[-1, :] *= 0.5
-    constraints = [Vt.T @ rho_prime >= 0, cp.sum(delta_energy * V_mod @ rho_prime) == sum_rule_const]
+    constraints = [Vt.T @ rho_prime >= 0, cp.sum(delta_energy * V_mod @ rho_prime) == sum_rule_const] #uniform real energy grid is assumed here
     prob = cp.Problem(objective, constraints)
     _ = prob.solve(verbose=verbose, solver=solver, max_iters=max_iters)
     gf_tau_fit = np.dot(U, np.dot(Smat, rho_prime.value))
