@@ -49,6 +49,7 @@ setup(
         'toml>=0.10',
         'dcorelib>=0.9.1',
         'sympy',
+        'cvxpy'
         ],
 
     extras_require={
