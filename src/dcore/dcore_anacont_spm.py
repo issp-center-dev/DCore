@@ -130,10 +130,9 @@ def _get_kramers_kronig_realpart(energies, gf_imag, energy_threshold=1e-10, dos_
     energies_noend = energies[1:-1]
     a, b = energies[0], energies[-1]
     gf_real[1:-1] = gf_imag_interp(energies_noend) / np.pi * np.log((b - energies_noend) / (energies_noend - a)) #assume zero DOS at endpoints
-    integral_func = lambda y : _integral_kramers_kronig(energies, y, gf_imag_interp, energy_threshold) #intentionally use energies for integration grid
+    integral_func = lambda y : _integral_kramers_kronig(energies, y, gf_imag_interp, energy_threshold)
     gf_real += np.vectorize(integral_func)(energies) / np.pi
-    gf_imag_resampled = gf_imag_interp(energies)
-    return energies, gf_real, gf_imag_resampled
+    return energies, gf_real, gf_imag
 
 def _dos_to_gf_imag(dos):
     return -np.pi * dos
@@ -171,6 +170,17 @@ def dcore_anacont_spm(seedname):
             gf_imag_matsubara = gf_iw.data[n_matsubara:, i_orb, i_orb]
             energies, gf_real, gf_imag = _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag_matsubara)
             sigma_w_data[i_orb, i_orb, :] = gf_real + 1j * gf_imag
+            if params['spm']['show_result']:
+                import matplotlib.pyplot as plt
+                plt.axhline(y=0, xmin=energies[0], xmax=energies[-1], color='lightgrey')
+                plt.plot(energies, gf_real, label=r'Re $G( \omega )$')
+                plt.plot(energies, gf_imag, label=r'Im $G( \omega )$')
+                plt.xlim(energies[0], energies[-1])
+                plt.xlabel(r'$\omega$')
+                plt.legend()
+                plt.tight_layout()
+                plt.show()
+                plt.close()
         sigma_w = GfReFreq(mesh=mesh_w, data=sigma_w_data)
         data_w[key] = sigma_w.data
 
