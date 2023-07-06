@@ -114,16 +114,19 @@ def dcore_anacont_spm_interactive(seedname):
 # omega_min = -6.0
 # omega_max = 6.2
 
-# [spm]
+#[spm_interactive]
 # n_tail = 100
 # n_tau = 10000
-# n_sv = 30 # number of retained singular values
+# n_sv = 30
 # show_fit = false
-# show_result = false
-# lambda = 1e-6
-# verbose_opt = true
+# show_result = true
+# lambda_min_log10 = -10
+# lambda_max_log10 = 2
+# verbose_opt = false
 # max_iters_opt = 100
 # solver_opt = 'ECOS'
+# n_rows_overview = 3
+# n_cols_overview = 5
 
 def run():
     print_header()
