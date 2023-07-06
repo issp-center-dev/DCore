@@ -62,6 +62,20 @@ def get_single_continuation(tau_grid, gf_tau, nsv, beta, emin, emax, num_energie
     rho_integrated = np.trapz(y=rho, x=energies_extract)
     return rho, gf_tau_fit, energies_extract, rho_integrated, chi2
 
+def get_multiple_continuations(tau_grid, gf_tau, nsv, beta, emin, emax, num_energies, sum_rule_const, lambdas, verbose=True, max_iters=100, solver='ECOS'):
+    U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
+    continued_densities = []
+    chi2_values = []
+    rho_values = []
+    for lambd in lambdas:
+        rho_prime, _, chi2 = _solveProblem(delta_energy, U, S, Vt, gf_tau, sum_rule_const, lambd, verbose=verbose, max_iters=max_iters, solver=solver)
+        rho = np.dot(Vt.T, rho_prime)
+        rho_integrated = np.trapz(y=rho, x=energies_extract)
+        continued_densities.append(rho)
+        chi2_values.append(chi2)
+        rho_values.append(rho_integrated)
+    return energies_extract, continued_densities, chi2_values, rho_values
+
 def _get_kernel_matrix(energies, tau_grid, beta, delta_energy):
     assert tau_grid[0] == 0
     assert tau_grid[-1] == beta
