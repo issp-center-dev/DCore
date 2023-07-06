@@ -26,7 +26,7 @@ from dcore.version import version, print_header
 from dcore.anacont_spm import calc_gf_tau_from_gf_matsubara, get_single_continuation, get_multiple_continuations, get_kramers_kronig_realpart, dos_to_gf_imag
 
 def _plot_overview(lambdas, chi2_values, energies, densities, nrows=3, ncols=5):
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=False, figsize=(10, 10))
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=False, figsize=(15, 10))
     
     axes[0, 0].plot(np.log10(lambdas), chi2_values, '-o', color='k')
     axes[0, 0].set_yscale('log')
@@ -55,7 +55,8 @@ def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
     energies, densities, chi2_values, rho_integrated_values = get_multiple_continuations(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, lambda_values, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
 
     _plot_overview(lambda_values, chi2_values, energies, densities)
-    lambd = input('Please enter desired value for log10(lambda): ')
+    lambd = input('\nPlease enter desired value for log10(lambda): ')
+    lambd = 10 ** float(lambd)
 
     density, _, energies, _, _ = get_single_continuation(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, lambd, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
     
