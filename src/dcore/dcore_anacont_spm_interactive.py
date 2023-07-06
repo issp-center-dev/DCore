@@ -51,10 +51,11 @@ def _plot_overview(lambdas, chi2_values, energies, densities, nrows=3, ncols=5):
 
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
     tau_grid, gf_tau, sum_rule_const = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm_interactive']['n_tau'], params['spm_interactive']['n_tail'], params['beta'], show_fit=params['spm_interactive']['show_fit'])
-    lambda_values = np.logspace(start=params['spm_interactive']['lambda_min_log10'], stop=params['spm_interactive']['lambda_max_log10'], num=14, base=10, endpoint=True)
+    num_lambdas = params['spm_interactive']['n_rows_overview'] * params['spm_interactive']['n_cols_overview'] - 1
+    lambda_values = np.logspace(start=params['spm_interactive']['lambda_min_log10'], stop=params['spm_interactive']['lambda_max_log10'], num=num_lambdas, base=10, endpoint=True)
     energies, densities, chi2_values, rho_integrated_values = get_multiple_continuations(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, lambda_values, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
 
-    _plot_overview(lambda_values, chi2_values, energies, densities)
+    _plot_overview(lambda_values, chi2_values, energies, densities, nrows=params['spm_interactive']['n_rows_overview'], ncols=params['spm_interactive']['n_cols_overview'])
     lambd = input('\nPlease enter desired value for log10(lambda): ')
     lambd = 10 ** float(lambd)
 
