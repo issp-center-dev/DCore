@@ -82,7 +82,7 @@ def dcore_anacont_spm(seedname):
 # [spm]
 # n_tail = 100
 # n_tau = 10000
-# n_sv = 30
+# n_sv = 30 # number of retained singular values
 # show_fit = false
 # show_result = false
 # lambda = 1e-6
@@ -91,8 +91,6 @@ def dcore_anacont_spm(seedname):
 # solver_opt = 'ECOS'
 
 def run():
-    # install test code with pip3 install .
-    # test with DCORE_TRIQS_COMPAT=1 dcore_anacont_spm crgete3
     print_header()
 
     parser = argparse.ArgumentParser(
