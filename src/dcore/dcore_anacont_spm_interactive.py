@@ -116,7 +116,7 @@ def dcore_anacont_spm_interactive(seedname):
 # omega_min = -6.0
 # omega_max = 6.2
 
-#[spm_interactive]
+# [spm_interactive]
 # n_tail = 100
 # n_tau = 10000
 # n_sv = 30
