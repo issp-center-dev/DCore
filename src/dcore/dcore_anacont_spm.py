@@ -52,7 +52,7 @@ def dcore_anacont_spm(seedname):
         matsubara_frequencies = np.imag(gf_iw.mesh.values()[n_matsubara:])
         sigma_w_data = np.zeros((n_orbitals, n_orbitals, params['Nomega']), dtype=np.complex128)
         for i_orb in range(n_orbitals):
-            print(f'Working on data index {idata} and orbital index {i_orb}...')
+            print(f'Performing analytic continuation for data index {idata} and orbital index {i_orb}...')
             gf_imag_matsubara = gf_iw.data[n_matsubara:, i_orb, i_orb]
             energies, gf_real, gf_imag = _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag_matsubara)
             sigma_w_data[i_orb, i_orb, :] = gf_real + 1j * gf_imag
