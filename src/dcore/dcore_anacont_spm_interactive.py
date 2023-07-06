@@ -57,7 +57,9 @@ def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
 
     _plot_overview(lambda_values, chi2_values, energies, densities, nrows=params['spm_interactive']['n_rows_overview'], ncols=params['spm_interactive']['n_cols_overview'])
     lambd = input('\nPlease enter desired value for log10(lambda): ')
-    lambd = 10 ** float(lambd)
+    lambd = float(lambd)
+    print(f'Calculating result with log10(lambda)={lambd}...')
+    lambd = 10 ** lambd
 
     density, _, energies, _, _ = get_single_continuation(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, lambd, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
     
