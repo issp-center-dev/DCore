@@ -50,10 +50,10 @@ def _plot_overview(lambdas, chi2_values, energies, densities, nrows=3, ncols=5):
     plt.close()
 
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
-    tau_grid, gf_tau, sum_rule_const = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm_interactive']['n_tau'], params['spm_interactive']['n_tail'], params['beta'], show_fit=params['spm_interactive']['show_fit'])
+    tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm_interactive']['n_tau'], params['spm_interactive']['n_tail'], params['beta'], show_fit=params['spm_interactive']['show_fit'])
     num_lambdas = params['spm_interactive']['n_rows_overview'] * params['spm_interactive']['n_cols_overview'] - 1
     lambda_values = np.logspace(start=params['spm_interactive']['lambda_min_log10'], stop=params['spm_interactive']['lambda_max_log10'], num=num_lambdas, base=10, endpoint=True)
-    energies, densities, chi2_values, rho_integrated_values = get_multiple_continuations(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, lambda_values, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
+    energies, densities, chi2_values, rho_integrated_values = get_multiple_continuations(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], const_imag_tail, lambda_values, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
 
     _plot_overview(lambda_values, chi2_values, energies, densities, nrows=params['spm_interactive']['n_rows_overview'], ncols=params['spm_interactive']['n_cols_overview'])
     lambd = input('\nPlease enter desired value for log10(lambda): ')
@@ -61,9 +61,10 @@ def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
     print(f'Calculating result with log10(lambda)={lambd}...')
     lambd = 10 ** lambd
 
-    density, _, energies, _, _ = get_single_continuation(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, lambd, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
+    density, _, energies, _, _ = get_single_continuation(tau_grid, gf_tau, params['spm_interactive']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], const_imag_tail, lambd, verbose=params['spm_interactive']['verbose_opt'], max_iters=params['spm_interactive']['max_iters_opt'], solver=params['spm_interactive']['solver_opt'])
     
     energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies, dos_to_gf_imag(density))
+    gf_real += const_real_tail
     return energies, gf_real, gf_imag
 
 def dcore_anacont_spm_interactive(seedname):
@@ -90,11 +91,24 @@ def dcore_anacont_spm_interactive(seedname):
         sigma_w_data = np.zeros((n_orbitals, n_orbitals, params['Nomega']), dtype=np.complex128)
         for i_orb in range(n_orbitals):
             print(f'Performing analytic continuation for data index {idata} and orbital index {i_orb}...')
-            gf_imag_matsubara = gf_iw.data[n_matsubara:, i_orb, i_orb]
-            energies, gf_real, gf_imag = _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag_matsubara)
+            gf_matsubara = gf_iw.data[n_matsubara:, i_orb, i_orb]
+            plt.plot(matsubara_frequencies, -np.imag(gf_matsubara))
+            plt.title('Please determine energy up to which high-energy tail behaves linearly.')
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.xlabel(r'$ \omega_n $')
+            plt.ylabel(r'-Im $G( \omega_n )$')
+            plt.show()
+            plt.close()
+            tail_cutoff_energy = input('\nPlease enter energy up to which high-energy tail behaves linearly: ')
+            tail_cutoff_energy = float(tail_cutoff_energy)
+            i_cutoff_energy = np.searchsorted(matsubara_frequencies, tail_cutoff_energy)
+            print('Retaining {} Matsubara frequencies.'.format(i_cutoff_energy))
+            retained_matsubara_frequencies = matsubara_frequencies[:i_cutoff_energy]
+            gf_matsubara = gf_matsubara[:i_cutoff_energy]
+            energies, gf_real, gf_imag = _anacont_spm_per_gf(params, retained_matsubara_frequencies, gf_matsubara)
             sigma_w_data[i_orb, i_orb, :] = gf_real + 1j * gf_imag
             if params['spm_interactive']['show_result']:
-                import matplotlib.pyplot as plt
                 plt.axhline(y=0, xmin=energies[0], xmax=energies[-1], color='lightgrey')
                 plt.plot(energies, gf_real, label=r'Re $G( \omega )$')
                 plt.plot(energies, gf_imag, label=r'Im $G( \omega )$')
