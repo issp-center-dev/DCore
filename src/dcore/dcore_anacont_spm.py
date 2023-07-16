@@ -24,9 +24,10 @@ from dcore.version import version, print_header
 from dcore.anacont_spm import calc_gf_tau_from_gf_matsubara, get_single_continuation, get_kramers_kronig_realpart, dos_to_gf_imag
 
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
-    tau_grid, gf_tau, sum_rule_const = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
-    density, gf_tau_fit, energies_extract, density_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], sum_rule_const, params['spm']['lambda'], verbose=params['spm']['verbose_opt'], max_iters=params['spm']['max_iters_opt'], solver=params['spm']['solver_opt'])
+    tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
+    density, gf_tau_fit, energies_extract, density_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], const_imag_tail, params['spm']['lambda'], verbose=params['spm']['verbose_opt'], max_iters=params['spm']['max_iters_opt'], solver=params['spm']['solver_opt'])
     energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies_extract, dos_to_gf_imag(density))
+    gf_real += const_real_tail
     return energies, gf_real, gf_imag
 
 def dcore_anacont_spm(seedname):
@@ -40,20 +41,30 @@ def dcore_anacont_spm(seedname):
     assert params['omega_min'] < params['omega_max']
     mesh_w = MeshReFreq(params['omega_min'], params['omega_max'], params['Nomega'])
 
+    assert params['spm']['n_matsubara'] > 0
+
     data_w = {}
     num_data = np.sum([key.startswith('data') for key in npz.keys()])
     for idata in range(num_data):
         key = f'data{idata}'
         data = npz[key]
         n_matsubara = data.shape[0]//2
-        mesh_iw = MeshImFreq(params['beta'], 'Fermion', n_matsubara)
+        n_matsubara_retain = min(n_matsubara, params['spm']['n_matsubara'])
+        print(n_matsubara, n_matsubara_retain)
+        mesh_iw = MeshImFreq(params['beta'], 'Fermion', n_matsubara_retain)
         gf_iw = GfImFreq(data=data, beta=params['beta'], mesh=mesh_iw)
         n_orbitals = gf_iw.data.shape[1]
-        matsubara_frequencies = np.imag(gf_iw.mesh.values()[n_matsubara:])
+        matsubara_frequencies = np.imag(gf_iw.mesh.values()[n_matsubara_retain:])
+        print(matsubara_frequencies)
         sigma_w_data = np.zeros((n_orbitals, n_orbitals, params['Nomega']), dtype=np.complex128)
         for i_orb in range(n_orbitals):
             print(f'Performing analytic continuation for data index {idata} and orbital index {i_orb}...')
-            gf_imag_matsubara = gf_iw.data[n_matsubara:, i_orb, i_orb]
+            gf_imag_matsubara = gf_iw.data[n_matsubara:n_matsubara + n_matsubara_retain, i_orb, i_orb]
+            #gf_imag_matsubara = 1j * np.imag(gf_imag_matsubara)
+            import matplotlib.pyplot as plt
+            plt.plot(matsubara_frequencies, np.real(gf_imag_matsubara))
+            plt.show()
+            plt.close()
             energies, gf_real, gf_imag = _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag_matsubara)
             sigma_w_data[i_orb, i_orb, :] = gf_real + 1j * gf_imag
             if params['spm']['show_result']:
@@ -80,6 +91,7 @@ def dcore_anacont_spm(seedname):
 # omega_max = 6.2
 
 # [spm]
+# n_matsubara = 300 #number of retained Matsubara frequencies
 # n_tail = 100
 # n_tau = 10000
 # n_sv = 30 # number of retained singular values

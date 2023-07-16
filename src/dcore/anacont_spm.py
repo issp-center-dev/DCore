@@ -38,19 +38,19 @@ def _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, c0=1.0, show_fit=F
         plt.show()
     return const_realpart, const_imagpart
 
-def _calc_gf_tau(matsubara_frequencies, gf_wn, beta, sum_rule_const, ntau):
+def _calc_gf_tau(matsubara_frequencies, gf_wn, beta, const_real_tail, const_imag_tail, ntau):
     tau_grid = np.linspace(0, beta, num=ntau)
-    gf_tau = -0.5 * sum_rule_const * np.ones(tau_grid.shape, dtype=np.float64)
-    kernel = lambda tau : np.sum(np.real(gf_wn) * np.cos(matsubara_frequencies * tau) + (np.imag(gf_wn) + sum_rule_const / matsubara_frequencies) * np.sin(matsubara_frequencies * tau))
+    gf_tau = -0.5 * const_imag_tail * np.ones(tau_grid.shape, dtype=np.float64)
+    kernel = lambda tau : np.sum((np.real(gf_wn) - const_real_tail) * np.cos(matsubara_frequencies * tau) + (np.imag(gf_wn) + const_imag_tail / matsubara_frequencies) * np.sin(matsubara_frequencies * tau))
     gf_tau += 2 / beta * np.vectorize(kernel)(tau_grid)
     gf_tau *= -1
     return tau_grid, gf_tau
 
 def calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_wn, ntau, ntail, beta, show_fit=False):
-    _, sum_rule_const = _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, show_fit=show_fit)
-    print('Determined sum rule constant: {}'.format(sum_rule_const))
-    tau_grid, gf_tau = _calc_gf_tau(matsubara_frequencies, gf_wn, beta, sum_rule_const, ntau)
-    return tau_grid, gf_tau, sum_rule_const
+    const_real_tail, const_imag_tail = _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, show_fit=show_fit)
+    print('Determined tail constants: {}, {}'.format(const_real_tail, const_imag_tail))
+    tau_grid, gf_tau = _calc_gf_tau(matsubara_frequencies, gf_wn, beta, const_real_tail, const_imag_tail, ntau)
+    return tau_grid, gf_tau, const_real_tail, const_imag_tail
 
 def get_single_continuation(tau_grid, gf_tau, nsv, beta, emin, emax, num_energies, sum_rule_const, lambd, verbose=True, max_iters=100, solver='ECOS'):
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
