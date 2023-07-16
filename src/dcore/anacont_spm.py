@@ -23,19 +23,20 @@ from scipy.sparse.linalg import svds
 
 def _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, c0=1.0, show_fit=False):
     wntail = matsubara_frequencies[-ntail:]
-    y = np.imag(gf_wn[-ntail:])
-    sum_rule_const_imagpart = -np.mean(y * wntail)
+    gftail = gf_wn[-ntail:]
+    const_imagpart = -np.mean(np.imag(gftail) * wntail)
+    const_realpart = np.mean(np.real(gftail))
     if show_fit:
         import matplotlib.pyplot as plt
         z = np.linspace(wntail[0], wntail[-1], num=1000)
-        plt.scatter(wntail, y, zorder=5, color='C0', label='data')
-        plt.plot(z, -sum_rule_const_imagpart / z, zorder=10, color='C1', label='fit')
+        plt.scatter(wntail, np.imag(gftail), zorder=5, color='C0', label='data')
+        plt.plot(z, -const_imagpart / z, zorder=10, color='C1', label='fit')
         plt.xlabel(r'$\omega_n$')
         plt.ylabel(r'Im $G( \omega_n )$')
         plt.legend()
         plt.tight_layout()
         plt.show()
-    return sum_rule_const_imagpart
+    return const_realpart, const_imagpart
 
 def _calc_gf_tau(matsubara_frequencies, gf_wn, beta, sum_rule_const, ntau):
     tau_grid = np.linspace(0, beta, num=ntau)
@@ -46,7 +47,7 @@ def _calc_gf_tau(matsubara_frequencies, gf_wn, beta, sum_rule_const, ntau):
     return tau_grid, gf_tau
 
 def calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_wn, ntau, ntail, beta, show_fit=False):
-    sum_rule_const = _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, show_fit=show_fit)
+    _, sum_rule_const = _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, show_fit=show_fit)
     print('Determined sum rule constant: {}'.format(sum_rule_const))
     tau_grid, gf_tau = _calc_gf_tau(matsubara_frequencies, gf_wn, beta, sum_rule_const, ntau)
     return tau_grid, gf_tau, sum_rule_const
