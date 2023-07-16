@@ -54,12 +54,12 @@ def dcore_anacont_spm(seedname):
         gf_iw = GfImFreq(data=data, beta=params['beta'], mesh=mesh_iw)
         n_orbitals = gf_iw.data.shape[1]
         matsubara_frequencies = np.imag(gf_iw.mesh.values()[n_matsubara_retain:])
-        sigma_w_data = np.zeros((n_orbitals, n_orbitals, params['Nomega']), dtype=np.complex128)
+        sigma_w_data = np.zeros((params['Nomega'], n_orbitals, n_orbitals), dtype=np.complex128)
         for i_orb in range(n_orbitals):
             print(f'Performing analytic continuation for data index {idata} and orbital index {i_orb}...')
             gf_imag_matsubara = gf_iw.data[n_matsubara:n_matsubara + n_matsubara_retain, i_orb, i_orb]
             energies, gf_real, gf_imag = _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag_matsubara)
-            sigma_w_data[i_orb, i_orb, :] = gf_real + 1j * gf_imag
+            sigma_w_data[:, i_orb, i_orb] = gf_real + 1j * gf_imag
             if params['spm']['show_result']:
                 import matplotlib.pyplot as plt
                 plt.axhline(y=0, xmin=energies[0], xmax=energies[-1], color='lightgrey')

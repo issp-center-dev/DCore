@@ -88,7 +88,7 @@ def dcore_anacont_spm_interactive(seedname):
         gf_iw = GfImFreq(data=data, beta=params['beta'], mesh=mesh_iw)
         n_orbitals = gf_iw.data.shape[1]
         matsubara_frequencies = np.imag(gf_iw.mesh.values()[n_matsubara:])
-        sigma_w_data = np.zeros((n_orbitals, n_orbitals, params['Nomega']), dtype=np.complex128)
+        sigma_w_data = np.zeros((params['Nomega'], n_orbitals, n_orbitals), dtype=np.complex128)
         for i_orb in range(n_orbitals):
             print(f'Performing analytic continuation for data index {idata} and orbital index {i_orb}...')
             gf_matsubara = gf_iw.data[n_matsubara:, i_orb, i_orb]
@@ -107,7 +107,7 @@ def dcore_anacont_spm_interactive(seedname):
             retained_matsubara_frequencies = matsubara_frequencies[:i_cutoff_energy]
             gf_matsubara = gf_matsubara[:i_cutoff_energy]
             energies, gf_real, gf_imag = _anacont_spm_per_gf(params, retained_matsubara_frequencies, gf_matsubara)
-            sigma_w_data[i_orb, i_orb, :] = gf_real + 1j * gf_imag
+            sigma_w_data[:, i_orb, i_orb] = gf_real + 1j * gf_imag
             if params['spm_interactive']['show_result']:
                 plt.axhline(y=0, xmin=energies[0], xmax=energies[-1], color='lightgrey')
                 plt.plot(energies, gf_real, label=r'Re $G( \omega )$')
