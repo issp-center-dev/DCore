@@ -19,28 +19,23 @@
 import numpy as np
 import cvxpy as cp
 from scipy.interpolate import interp1d
-from scipy.optimize import least_squares
 from scipy.sparse.linalg import svds
 
 def _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, c0=1.0, show_fit=False):
     wntail = matsubara_frequencies[-ntail:]
-    x = 1.0 / wntail
     y = np.imag(gf_wn[-ntail:])
-    result = least_squares(lambda c: y + c * x, c0)
-    if not result.success:
-        print('Finding sum rule constant failed.')
-    result = result.x[0]
+    sum_rule_const_imagpart = -np.mean(y * wntail)
     if show_fit:
         import matplotlib.pyplot as plt
         z = np.linspace(wntail[0], wntail[-1], num=1000)
         plt.scatter(wntail, y, zorder=5, color='C0', label='data')
-        plt.plot(z, -result / z, zorder=10, color='C1', label='fit')
+        plt.plot(z, -sum_rule_const_imagpart / z, zorder=10, color='C1', label='fit')
         plt.xlabel(r'$\omega_n$')
         plt.ylabel(r'Im $G( \omega_n )$')
         plt.legend()
         plt.tight_layout()
         plt.show()
-    return result
+    return sum_rule_const_imagpart
 
 def _calc_gf_tau(matsubara_frequencies, gf_wn, beta, sum_rule_const, ntau):
     tau_grid = np.linspace(0, beta, num=ntau)
