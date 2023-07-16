@@ -60,7 +60,6 @@ def dcore_anacont_spm(seedname):
         for i_orb in range(n_orbitals):
             print(f'Performing analytic continuation for data index {idata} and orbital index {i_orb}...')
             gf_imag_matsubara = gf_iw.data[n_matsubara:n_matsubara + n_matsubara_retain, i_orb, i_orb]
-            #gf_imag_matsubara = 1j * np.imag(gf_imag_matsubara)
             import matplotlib.pyplot as plt
             plt.plot(matsubara_frequencies, np.real(gf_imag_matsubara))
             plt.show()
