@@ -161,7 +161,7 @@ def convert_to_built_in_scalar_type(data):
         return data
     elif numpy.issubdtype(type(data), numpy.integer):
         return int(data)
-    elif numpy.issubdtype(type(data), numpy.float):
+    elif numpy.issubdtype(type(data), numpy.float64):
         return float(data)
     elif numpy.issubdtype(type(data), numpy.bool_):
         return bool(data)

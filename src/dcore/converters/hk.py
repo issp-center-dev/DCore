@@ -193,7 +193,7 @@ class HkConverter(ConverterTools):
 
             # now define the arrays for weights and hopping ...
             # w(k_index),  default normalisation
-            bz_weights = numpy.ones([n_k], numpy.float_) / float(n_k)
+            bz_weights = numpy.ones([n_k], numpy.float64) / float(n_k)
             hopping = numpy.zeros([n_k, n_spin_blocs, numpy.max(
                 n_orbitals), numpy.max(n_orbitals)], numpy.complex128)
 
