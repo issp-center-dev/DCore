@@ -49,7 +49,7 @@ def res2wan(name_in, name_out):
     print("    Number of bands : ", norb)
 
     irvec = numpy.zeros((nr, 3), numpy.int_)
-    hopping = numpy.zeros((nr, norb, norb), numpy.complex_)
+    hopping = numpy.zeros((nr, norb, norb), numpy.complex128)
 
     for ir in range(nr):
         for ii in range(3):
@@ -89,7 +89,7 @@ def ref2geom(filename):
     #
     # Geometry (for HPhi and mVMC)
     #
-    avec = numpy.zeros((3, 3), numpy.float_)
+    avec = numpy.zeros((3, 3), numpy.float64)
     with open("./dir-wfn/dat.lattice", 'r') as fi:
         for ii in range(3):
             line = fi.readline()
@@ -106,7 +106,7 @@ def ref2geom(filename):
             print("    " + line, end="")
         line = fi.readlines()
     nwan = len(line)
-    centre = numpy.zeros((nwan, 3), numpy.float_)
+    centre = numpy.zeros((nwan, 3), numpy.float64)
     for iwan in range(nwan):
         itemlist = line[iwan].split()
         for ii in range(3):
