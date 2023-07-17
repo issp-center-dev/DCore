@@ -165,7 +165,7 @@ def convert_to_built_in_scalar_type(data):
         return float(data)
     elif numpy.issubdtype(type(data), numpy.bool_):
         return bool(data)
-    elif numpy.issubdtype(type(data), numpy.complex):
+    elif numpy.issubdtype(type(data), numpy.complex128):
         return complex(data)
 
 
@@ -500,9 +500,9 @@ def set_potential(input_str, name, n_inequiv_shells, dim_sh, spin_orbit):
 
     # init potential matrix
     if spin_orbit:
-        pot = [numpy.zeros((1, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
+        pot = [numpy.zeros((1, dim_sh[ish], dim_sh[ish]), numpy.complex128) for ish in range(n_inequiv_shells)]
     else:
-        pot = [numpy.zeros((2, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
+        pot = [numpy.zeros((2, dim_sh[ish], dim_sh[ish]), numpy.complex128) for ish in range(n_inequiv_shells)]
 
     # read potential matrix
     if input_str != 'None':

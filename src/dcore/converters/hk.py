@@ -131,7 +131,7 @@ class HkConverter(ConverterTools):
 
             use_rotations = 0
             rot_mat = [numpy.identity(
-                corr_shells[icrsh]['dim'], numpy.complex_) for icrsh in range(n_corr_shells)]
+                corr_shells[icrsh]['dim'], numpy.complex128) for icrsh in range(n_corr_shells)]
             rot_mat_time_inv = [0 for i in range(n_corr_shells)]
 
             # Representative representations are read from file
@@ -149,7 +149,7 @@ class HkConverter(ConverterTools):
                 # Wien2k)
                 ll = 2 * corr_shells[inequiv_to_corr[ish]]['l'] + 1
                 lmax = ll * (corr_shells[inequiv_to_corr[ish]]['SO'] + 1)
-                T.append(numpy.zeros([lmax, lmax], numpy.complex_))
+                T.append(numpy.zeros([lmax, lmax], numpy.complex128))
 
                 T[ish] = numpy.array([[0.0, 0.0, 1.0, 0.0, 0.0],
                                       [1.0 / sqrt(2.0), 0.0, 0.0,
@@ -171,7 +171,7 @@ class HkConverter(ConverterTools):
 
             # Initialise the projectors:
             proj_mat = numpy.zeros([n_k, n_spin_blocs, n_corr_shells, max(
-                [crsh['dim'] for crsh in corr_shells]), numpy.max(n_orbitals)], numpy.complex_)
+                [crsh['dim'] for crsh in corr_shells]), numpy.max(n_orbitals)], numpy.complex128)
 
             # Read the projectors from the file:
             for ik in range(n_k):
@@ -195,7 +195,7 @@ class HkConverter(ConverterTools):
             # w(k_index),  default normalisation
             bz_weights = numpy.ones([n_k], numpy.float_) / float(n_k)
             hopping = numpy.zeros([n_k, n_spin_blocs, numpy.max(
-                n_orbitals), numpy.max(n_orbitals)], numpy.complex_)
+                n_orbitals), numpy.max(n_orbitals)], numpy.complex128)
 
             if (weights_in_file):
                 # weights in the file

@@ -49,7 +49,7 @@ def res2wan(name_in, name_out):
     print("    Number of bands : ", norb)
 
     irvec = numpy.zeros((nr, 3), numpy.int_)
-    hopping = numpy.zeros((nr, norb, norb), numpy.complex_)
+    hopping = numpy.zeros((nr, norb, norb), numpy.complex128)
 
     for ir in range(nr):
         for ii in range(3):
