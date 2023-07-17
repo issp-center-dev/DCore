@@ -167,7 +167,7 @@ class HkConverter(ConverterTools):
             # define the number of n_orbitals for all k points: it is the
             # number of total bands and independent of k!
             n_orbitals = numpy.ones(
-                [n_k, n_spin_blocs], numpy.int) * sum([sh['dim'] for sh in shells])
+                [n_k, n_spin_blocs], numpy.int64) * sum([sh['dim'] for sh in shells])
 
             # Initialise the projectors:
             proj_mat = numpy.zeros([n_k, n_spin_blocs, n_corr_shells, max(
