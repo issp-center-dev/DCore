@@ -286,7 +286,7 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs):
         rot_spin_full = rot['ud']
     else:
         n_orb = rot['up'].shape[0]
-        rot_spin_full = numpy.zeros((2*n_orb, 2*n_orb), dtype=complex)
+        rot_spin_full = numpy.zeros((2*n_orb, 2*n_orb), dtype=numpy.complex128)
         rot_spin_full[0:n_orb, 0:n_orb] = rot['up']
         rot_spin_full[n_orb:, n_orb:] = rot['down']
 
@@ -370,11 +370,11 @@ def compute_basis_rot(basis_rot, solver):
         if not os.path.exists(basis_rot):
             raise RuntimeError("Invalid basis_rot : {}".format(basis_rot))
         if solver.use_spin_orbit:
-            rot = numpy.zeros((1, nflavors, nflavors), dtype=numpy.complex)
+            rot = numpy.zeros((1, nflavors, nflavors), dtype=numpy.complex128)
             read_potential(basis_rot, rot)
             rot = {'ud' : rot[0,:,:]}
         else:
-            rot = numpy.zeros((2, nflavors//2, nflavors//2), dtype=numpy.complex)
+            rot = numpy.zeros((2, nflavors//2, nflavors//2), dtype=numpy.complex128)
             read_potential(basis_rot, rot)
             rot = {'up' : rot[0,:,:], 'down': rot[1,:,:]}
     return rot

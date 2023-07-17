@@ -9,9 +9,9 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            numpy: 1.16
-            scipy: 1.4
-            python: 3.6
+            numpy: 1.24
+            scipy: 1.6
+            python: 3.8
           #- os: ubuntu-latest
             #numpy: auto
             #scipy: auto
