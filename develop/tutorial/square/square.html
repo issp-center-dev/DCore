@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>The first example: 2D Hubbard model &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -12,9 +11,6 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
@@ -48,41 +44,41 @@
 We first use the exact diagonalization solver <a class="reference internal" href="../../impuritysolvers/pomerol/pomerol.html"><span class="doc">pomerol</span></a> and see the influence of the Coulomb repulsion U on the single-particle excitations. A better result can be obtained using the CT-QMC solver, which will be explained later.</p>
 <p>The file below shows the full input file for solving the 2D Hubbard model:</p>
 <p><a class="reference download internal" download="" href="../../_downloads/9ed299cdde367d92cf6cce9fcc00018a/dmft_square_pomerol.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_square_pomerol.ini</span></code></a></p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
-<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
-<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
-<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
-<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
-<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span><span class="w"></span>
-<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span><span class="w"></span>
-<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
-<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
-<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span>
+<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
 
-<span class="k">[system]</span><span class="w"></span>
-<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span><span class="w"></span>
-<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span><span class="w"></span>
-<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
-<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span><span class="w"></span>
+<span class="k">[system]</span>
+<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
 
-<span class="k">[impurity_solver]</span><span class="w"></span>
-<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol</span><span class="w"></span>
-<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol2dcore</span><span class="w"></span>
-<span class="na">n_bath{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span><span class="w"></span>
-<span class="na">fit_gtol{float}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-6</span><span class="w"></span>
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol2dcore</span>
+<span class="na">n_bath{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+<span class="na">fit_gtol{float}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-6</span>
 
-<span class="k">[control]</span><span class="w"></span>
-<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
-<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span><span class="w"></span>
-<span class="na">converge_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span><span class="w"></span>
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+<span class="na">converge_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span>
 
-<span class="k">[tool]</span><span class="w"></span>
-<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0,0,0),(X,0.5,0,0),(M,0.5,0.5,0),(G,0,0,0)]</span><span class="w"></span>
-<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
-<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span><span class="w"></span>
-<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span><span class="w"></span>
-<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span><span class="w"></span>
-<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.4</span><span class="w"></span>
+<span class="k">[tool]</span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0,0,0),(X,0.5,0,0),(M,0.5,0.5,0),(G,0,0,0)]</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.4</span>
 </pre></div>
 </div>
 <p>The parameter <code class="docutils literal notranslate"><span class="pre">exec_path{str}</span></code> in <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span></code> block needs to be edited, if <code class="docutils literal notranslate"><span class="pre">pomerol2dcore</span></code> executable is not in your path: Please specify the full path to <code class="docutils literal notranslate"><span class="pre">pomerol2dcore</span></code>.</p>
@@ -90,7 +86,7 @@ We first use the exact diagonalization solver <a class="reference internal" href
 <h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this heading">¶</a></h2>
 <p>We first generate an HDF5 file that is necessary for DMFT calculations.
 The script <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre dmft_square.ini
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_pre<span class="w"> </span>dmft_square.ini
 </pre></div>
 </div>
 <p>Then, an HDF5 file named <em>seedname</em>.h5 (<code class="docutils literal notranslate"><span class="pre">square.h5</span></code> in the present case) is generated.</p>
@@ -100,14 +96,14 @@ The script <code class="docutils literal notranslate"><span class="pre">dcore_pr
 <p>One can perform a DMFT self-consistent calculation with <code class="docutils literal notranslate"><span class="pre">dcore</span></code> program.
 In this tutorial, we use the exact diagonalization solver just for simplicity.
 One can run the program by</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore dmft_square.ini --np <span class="m">1</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore<span class="w"> </span>dmft_square.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
 <p>with a single process.</p>
 <p>It takes several minutes. You may run it with MPI to reduce the computational time.
 Results for the self-energy and Green’s function in each iteration are accumulated into an HDF5 file named <em>seedname</em>.out.h5 (<code class="docutils literal notranslate"><span class="pre">square.out.h5</span></code> in the present case).</p>
 <p>One can check the convergence of DMFT iterations using <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> program as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_check dmft_square.ini
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_check<span class="w"> </span>dmft_square.ini
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> program prints the value of the chemical potential at each iteration on the standard output:</p>
@@ -150,14 +146,14 @@ For instance, <code class="docutils literal notranslate"><span class="pre">check
 <p>We can calculate real-frequency quantities such as the density of states and the momentum-dependent single-particle excitations using <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> program.
 The analytical continuation from Matsubara frequency to real frequencies is performed using the Pade approximation.</p>
 <p>The calculation is done by the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post dmft_square.ini --np <span class="m">1</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_post<span class="w"> </span>dmft_square.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
 <p>After finishing the calculation,
 results are stored in <code class="docutils literal notranslate"><span class="pre">post</span></code> directory.
 The data of momentum-resolved spectral functions are output into <code class="docutils literal notranslate"><span class="pre">square_akw.dat</span></code>.
 We can easily plot the result by using the script file <code class="docutils literal notranslate"><span class="pre">square_akw.gp</span></code> for gnuplot:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ gnuplot square_akw.gp
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>gnuplot<span class="w"> </span>square_akw.gp
 </pre></div>
 </div>
 <p>In the graph shown below, the left and right panels correspond to up-spin and down-spin components, respectively.</p>
@@ -166,9 +162,9 @@ We can easily plot the result by using the script file <code class="docutils lit
 The band width seems reduced than the noninteracting one, 8, but the artificial structure around E=1 and -1 makes it difficult to judge.</p>
 <p>The numerical result for the density of states is stored in <code class="docutils literal notranslate"><span class="pre">square_dos.dat</span></code>.
 We can plot it using gnuplot as follows:</p>
-<div class="highlight-gnuplot notranslate"><div class="highlight"><pre><span></span><span class="k">set</span><span class="w"> </span><span class="nb">xlabel</span><span class="w"> </span><span class="s">&quot;Energy&quot;</span><span class="w"></span>
-<span class="k">set</span><span class="w"> </span><span class="nb">ylabel</span><span class="w"> </span><span class="s">&quot;DOS&quot;</span><span class="w"></span>
-<span class="k">plot</span><span class="w"> </span><span class="s">&quot;square_dos.dat&quot;</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"></span>
+<div class="highlight-gnuplot notranslate"><div class="highlight"><pre><span></span><span class="k">set</span><span class="w"> </span><span class="nb">xlabel</span><span class="w"> </span><span class="s">&quot;Energy&quot;</span>
+<span class="k">set</span><span class="w"> </span><span class="nb">ylabel</span><span class="w"> </span><span class="s">&quot;DOS&quot;</span>
+<span class="k">plot</span><span class="w"> </span><span class="s">&quot;square_dos.dat&quot;</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span>
 </pre></div>
 </div>
 <p>The result is shown below.</p>
@@ -179,46 +175,46 @@ We can plot it using gnuplot as follows:</p>
 <p>The spectrum presented above shows some artificial features due to a limited number of the bath sites. The infinite limit of the baths (a continuous hybridization function) can be treated with the CT-QMC method. Here, we use the hybridization expansion CT-QMC solver <a class="reference internal" href="../../impuritysolvers/alpscore_ctseg/ctseg.html"><span class="doc">ALPS/cthyb-seg</span></a>.</p>
 <p>The file below shows the input file for ALPS/cthyb-seg:</p>
 <p><a class="reference download internal" download="" href="../../_downloads/acfea0960af5e7261073915619a15d3c/dmft_square_ctseg.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_square_ctseg.ini</span></code></a></p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
-<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
-<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
-<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
-<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
-<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span><span class="w"></span>
-<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span><span class="w"></span>
-<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
-<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
-<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span>
+<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
 
-<span class="k">[system]</span><span class="w"></span>
-<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span><span class="w"></span>
-<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span><span class="w"></span>
-<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
-<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span><span class="w"></span>
+<span class="k">[system]</span>
+<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
 
-<span class="k">[impurity_solver]</span><span class="w"></span>
-<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb-seg</span><span class="w"></span>
-<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/path/to/alps_cthyb</span><span class="w"></span>
-<span class="na">cthyb.TEXT_OUTPUT{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
-<span class="na">cthyb.MEASUREMENT_freq{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
-<span class="na">MEASURE_gw{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
-<span class="na">MAX_TIME{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">60</span><span class="w"></span>
-<span class="na">cthyb.N_MEAS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span><span class="w"></span>
-<span class="na">cthyb.THERMALIZATION{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000</span><span class="w"></span>
-<span class="na">cthyb.SWEEPS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000000</span><span class="w"></span>
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb-seg</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/path/to/alps_cthyb</span>
+<span class="na">cthyb.TEXT_OUTPUT{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">cthyb.MEASUREMENT_freq{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">MEASURE_gw{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">MAX_TIME{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">60</span>
+<span class="na">cthyb.N_MEAS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+<span class="na">cthyb.THERMALIZATION{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000</span>
+<span class="na">cthyb.SWEEPS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000000</span>
 
-<span class="k">[control]</span><span class="w"></span>
-<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">20</span><span class="w"></span>
-<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span><span class="w"></span>
-<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">20</span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
 
-<span class="k">[tool]</span><span class="w"></span>
-<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span><span class="w"></span>
-<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span><span class="w"></span>
-<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
-<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span><span class="w"></span>
-<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span><span class="w"></span>
-<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span><span class="w"></span>
+<span class="k">[tool]</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">/path/to/alps_cthyb</span></code> in <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span> <span class="pre">exec_path{str}</span></code> should be replaced with a full path to <code class="docutils literal notranslate"><span class="pre">alps_cthyb</span></code> executable in your environment.

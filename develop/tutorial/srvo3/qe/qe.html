@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Wanniernization using Quantum ESPRESSO &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
@@ -12,9 +11,6 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/dcore.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -73,7 +69,7 @@
 <a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/Sr.pbe-spn-kjpaw_psl.0.2.3.upf">Sr.pbe-spn-kjpaw_psl.0.2.3.upf</a>,
 <a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/V.pbe-spn-kjpaw_psl.0.2.3.upf">V.pbe-spn-kjpaw_psl.0.2.3.upf</a>, and
 <a class="reference external" href="http://theossrv1.epfl.ch/uploads/Main/NoBackup/O.pbe-n-kjpaw_psl.0.1.upf">O.pbe-n-kjpaw_psl.0.1.upf</a>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in scf_srvo3.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>pw.x<span class="w"> </span>-in<span class="w"> </span>scf_srvo3.in
 </pre></div>
 </div>
 </section>
@@ -180,12 +176,12 @@ in the wannierization.</p>
 </pre></div>
 </div>
 <p>This <em>k</em>-grid is generated as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>kmesh.pl<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">4</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">kmesh.pl</span></code> is located in the <cite>utility/</cite> directory of Wannier90.</p>
 <p>Then, run <code class="docutils literal notranslate"><span class="pre">pw.x</span></code> as</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in nscf_srvo3.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>pw.x<span class="w"> </span>-in<span class="w"> </span>nscf_srvo3.in
 </pre></div>
 </div>
 </section>
@@ -309,10 +305,10 @@ end kpoints
 </pre></div>
 </div>
 <p>This <em>k</em> grid is generated as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kmesh.pl <span class="m">4</span> <span class="m">4</span> <span class="m">4</span> wan
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>kmesh.pl<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">4</span><span class="w"> </span>wan
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wannier90.x -pp srvo3
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>wannier90.x<span class="w"> </span>-pp<span class="w"> </span>srvo3
 </pre></div>
 </div>
 </section>
@@ -332,7 +328,7 @@ end kpoints
 <span class="o">/</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw2wan.x -in pw2wan_srvo3.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>pw2wan.x<span class="w"> </span>-in<span class="w"> </span>pw2wan_srvo3.in
 </pre></div>
 </div>
 </section>
@@ -340,7 +336,7 @@ end kpoints
 <h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this heading">¶</a></h3>
 <p>Execute <code class="docutils literal notranslate"><span class="pre">wannier90.x</span></code> for the actual wannierization.
 The input file is the same as that for the pre-processing run.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wannier90.x srvo3
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>wannier90.x<span class="w"> </span>srvo3
 </pre></div>
 </div>
 </section>
@@ -431,7 +427,7 @@ you can plot the original and the wannier-interpolated band structure simultaneo
         <span class="mf">0.5000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">0.5000000000</span>    <span class="mf">1.0</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> pw.x -in band_srvo3.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>pw.x<span class="w"> </span>-in<span class="w"> </span>band_srvo3.in
 </pre></div>
 </div>
 <p><a class="reference download internal" download="" href="../../../_downloads/b7c0a744734ec13b6f191c706fe2ff2d/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
@@ -443,7 +439,7 @@ outdir = &quot;./&quot;,
 /
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> bands.x -in bands_srvo3.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>bands.x<span class="w"> </span>-in<span class="w"> </span>bands_srvo3.in
 </pre></div>
 </div>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;srvo3_band.dat&quot; u ($1*0.6146):2 tit &quot;Wannier&quot; w l

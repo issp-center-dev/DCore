@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Installation &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,9 +11,6 @@
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/dcore.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -72,14 +68,14 @@ See <a class="reference internal" href="impuritysolvers.html"><span class="doc">
 <h2>Installation<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
 <p>You can install the latest version of DCore using <code class="docutils literal notranslate"><span class="pre">pip</span></code> command as follows.</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install dcore -U
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>dcore<span class="w"> </span>-U
 </pre></div>
 </div>
 </div></blockquote>
 <p>Here, <code class="docutils literal notranslate"><span class="pre">-U</span></code> stands for ‘’Upgrade’’. The installed packages are upgraded to the latest version, if you already have packages installed.
 Further, if you do not have root privileges, you need to add <code class="docutils literal notranslate"><span class="pre">--user</span></code> option as</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install dcore -U --user
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>dcore<span class="w"> </span>-U<span class="w"> </span>--user
 </pre></div>
 </div>
 </div></blockquote>
@@ -92,54 +88,54 @@ Further, if you do not have root privileges, you need to add <code class="docuti
 <li><p><strong>[Release version]</strong></p>
 <p>Go to the <a class="reference external" href="https://github.com/issp-center-dev/DCore/releases">release page</a> and download the latest tar or zip file.
 You can unpack, for example, the tar file by</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ tar zxvf v3.x.x.tar.gz
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>tar<span class="w"> </span>zxvf<span class="w"> </span>v3.x.x.tar.gz
 </pre></div>
 </div>
 </li>
 <li><p><strong>[Develop version]</strong></p>
 <p>Newly implemented features are available in the source code in GitHub repository. You can clone the repository by</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/issp-center-dev/DCore.git dcore.src
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/issp-center-dev/DCore.git<span class="w"> </span>dcore.src
 </pre></div>
 </div>
 <p>The master branch basically corresponds to the latest released package, and the develop branch includes new features.
 Note that develop branches may not be well tested and contains some bugs.</p>
 <p>Please execute the following command in the source directory to install DCore.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install .
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 <p>If you do not have root privileges, please try</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install . --user
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>.<span class="w"> </span>--user
 </pre></div>
 </div>
 <p>If both of them did not work, you could build a binary package and install it as follows</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ rm -rf dist
-$ python3 setup.py bdist_wheel
-$ pip3 install dist/dcore-*.whl
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>dist
+$<span class="w"> </span>python3<span class="w"> </span>setup.py<span class="w"> </span>bdist_wheel
+$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>dist/dcore-*.whl
 </pre></div>
 </div>
 <p>One can run unit tests using the installed DCore by executing the following commands.</p>
 <p>Executables such as dcore_pre may be installed into $HOME/.local/bin/dcore if you install DCore with the “–user” option.
 Please add this directory to your PATH environment if needed.</p>
 <p>You can build documentations as follows.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install sphinx wild_sphinx_theme matplotlib
-$ python3 -m dcore.option_tables doc/reference
-$ sphinx-build -b html doc html
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>sphinx<span class="w"> </span>wild_sphinx_theme<span class="w"> </span>matplotlib
+$<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>dcore.option_tables<span class="w"> </span>doc/reference
+$<span class="w"> </span>sphinx-build<span class="w"> </span>-b<span class="w"> </span>html<span class="w"> </span>doc<span class="w"> </span>html
 </pre></div>
 </div>
 <p>Non-MPI tests can be run as follows.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip3 install pytest
-$ pytest tests/non-mpi/*/*.py
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>pytest
+$<span class="w"> </span>pytest<span class="w"> </span>tests/non-mpi/*/*.py
 </pre></div>
 </div>
 <p>MPI tests can be run as follows.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pytest tests/mpi/*/*.py
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pytest<span class="w"> </span>tests/mpi/*/*.py
 </pre></div>
 </div>
 <p>MPI tests invoke MPI parallelized impourity solvers.
 If your system MPI command is not “mpirun”, please provide the name of the correct one to DCore at runtime in an input file.
 The default value is “mpirun -np #” (# is replaced by the number of processors).
 For instance, if the MPI command of your system is “mpijob”, please set the environment variable “DCORE_MPIRUN_COMMAND” as folows.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">DCORE_MPIRUN_COMMAND</span><span class="o">=</span><span class="s2">&quot;mpijob -np #&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">DCORE_MPIRUN_COMMAND</span><span class="o">=</span><span class="s2">&quot;mpijob -np #&quot;</span>
 </pre></div>
 </div>
 <p>Note that it is not allowed to run MPI programs interactively on some system.

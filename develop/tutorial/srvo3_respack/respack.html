@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Downfolding with RESPACK (SrVO3) &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -12,9 +11,6 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -93,7 +89,7 @@ If you encounter some problem, see the release note of ver.2.0 and check the dif
 For the downfolding with RESPACK, we should use the norm-conserving pseudopotentials rather than
 the ultrasoft pseudopotentials or PAW.</p>
 <p>The SCF calculation of the electronic charge is performed as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in scf_srvo3.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>pw.x<span class="w"> </span>-in<span class="w"> </span>scf_srvo3.in
 </pre></div>
 </div>
 </section>
@@ -138,11 +134,11 @@ in the wannierization.</p>
 </pre></div>
 </div>
 <p>Then, run <code class="docutils literal notranslate"><span class="pre">pw.x</span></code> as</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpirun -np <span class="m">4</span> pw.x -in nscf_respack.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>pw.x<span class="w"> </span>-in<span class="w"> </span>nscf_respack.in
 </pre></div>
 </div>
 <p>and convert outputs so that RESPACK can read them.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ qe2respack.sh srvo3.save/
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>qe2respack.sh<span class="w"> </span>srvo3.save/
 </pre></div>
 </div>
 <p>This program locates in the <code class="docutils literal notranslate"><span class="pre">util/qe2respack/</span></code> directory of RESPACK.</p>
@@ -191,7 +187,7 @@ with the following input file:</p>
 <span class="o">/</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ calc_wannier &lt; respack.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>calc_wannier<span class="w"> </span>&lt;<span class="w"> </span>respack.in
 </pre></div>
 </div>
 <section id="optional-check-wannierization">
@@ -283,7 +279,7 @@ you can plot the original and the wannier-interpolated band structure simultaneo
         <span class="mf">0.5000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">0.0000000000</span>    <span class="mf">1.0</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> pw.x -in band_srvo3_r.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>pw.x<span class="w"> </span>-in<span class="w"> </span>band_srvo3_r.in
 </pre></div>
 </div>
 <p><a class="reference download internal" download="" href="../../_downloads/b7c0a744734ec13b6f191c706fe2ff2d/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
@@ -295,7 +291,7 @@ outdir = &quot;./&quot;,
 /
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np <span class="m">4</span> bands.x -in bands_srvo3.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>bands.x<span class="w"> </span>-in<span class="w"> </span>bands_srvo3.in
 </pre></div>
 </div>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;dir-wan/dat.iband&quot; u ($1*2.5731):2 tit &quot;Wannier&quot; w l
@@ -308,18 +304,18 @@ outdir = &quot;./&quot;,
 <h2>Dielectric matrix and Effective interaction<a class="headerlink" href="#dielectric-matrix-and-effective-interaction" title="Permalink to this heading">¶</a></h2>
 <p>Next, we move on the calculation of the dielectric matrix with cRPA.
 We use the program <code class="docutils literal notranslate"><span class="pre">calc_chiqw</span></code> (in <code class="docutils literal notranslate"><span class="pre">src/calc_chiqw</span></code> in RESPACK) as</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mpiexec calc_chiqw &lt; respack.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpiexec<span class="w"> </span>calc_chiqw<span class="w"> </span>&lt;<span class="w"> </span>respack.in
 </pre></div>
 </div>
 <p>where the input file is the same as above.</p>
 <p>After we compute the dielectric matrix, we calculate the effective interaction <span class="math notranslate nohighlight">\(U\)</span> and <span class="math notranslate nohighlight">\(J\)</span> as</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ calc_w3d &lt; respack.in
-$ calc_j3d &lt; respack.in
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>calc_w3d<span class="w"> </span>&lt;<span class="w"> </span>respack.in
+$<span class="w"> </span>calc_j3d<span class="w"> </span>&lt;<span class="w"> </span>respack.in
 </pre></div>
 </div>
 <p>The output of these program should be transformed into the wannier90 format by using the utility program
 <code class="docutils literal notranslate"><span class="pre">respack2wan90.py</span></code> in <code class="docutils literal notranslate"><span class="pre">bin/</span></code> directory of triqs.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ respack2wan90.py srvo3
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>respack2wan90.py<span class="w"> </span>srvo3
 </pre></div>
 </div>
 <p>The command-line argument (<code class="docutils literal notranslate"><span class="pre">&quot;srvo3&quot;</span></code> in this case) must be the same as <code class="docutils literal notranslate"><span class="pre">seedname</span></code> in the DCore input.</p>
@@ -327,47 +323,47 @@ $ calc_j3d &lt; respack.in
 <section id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/10fc7c42a65156219ff44a58832511f2/srvo3_respack.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
-<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span><span class="w"></span>
-<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">srvo3</span><span class="w"></span>
-<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
-<span class="na">ncor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
-<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span><span class="w"></span>
-<span class="na">interaction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">respack</span><span class="w"></span>
-<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span><span class="w"></span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">srvo3</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">ncor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+<span class="na">interaction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">respack</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span>
 
-<span class="k">[system]</span><span class="w"></span>
-<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span><span class="w"></span>
-<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span><span class="w"></span>
-<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span><span class="w"></span>
-<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span><span class="w"></span>
-<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">12.572260</span><span class="w"></span>
-<span class="na">with_dc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
-<span class="na">perform_tail_fit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
-<span class="na">fit_max_moment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
-<span class="na">fit_min_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">7.0</span><span class="w"></span>
-<span class="na">fit_max_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">18.0</span><span class="w"></span>
+<span class="k">[system]</span>
+<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span>
+<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span>
+<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">12.572260</span>
+<span class="na">with_dc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">perform_tail_fit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">fit_max_moment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">fit_min_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">7.0</span>
+<span class="na">fit_max_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">18.0</span>
 
-<span class="k">[impurity_solver]</span><span class="w"></span>
-<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span><span class="w"></span>
-<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span><span class="w"></span>
-<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span><span class="w"></span>
-<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">500</span><span class="w"></span>
-<span class="na">move_double{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span>
+<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span>
+<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span>
+<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">500</span>
+<span class="na">move_double{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
 
-<span class="k">[control]</span><span class="w"></span>
-<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
 
-<span class="k">[tool]</span><span class="w"></span>
-<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span><span class="w"></span>
-<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span><span class="w"></span>
-<span class="na">nnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6</span><span class="w"></span>
-<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5),(X,0.5,0.0,0.0),]</span><span class="w"></span>
-<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">2.0</span><span class="w"></span>
-<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-2.0</span><span class="w"></span>
-<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span><span class="w"></span>
-<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span><span class="w"></span>
-<span class="na">omega_pade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span><span class="w"></span>
+<span class="k">[tool]</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+<span class="na">nnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5),(X,0.5,0.0,0.0),]</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">2.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-2.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span>
+<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span>
+<span class="na">omega_pade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
 </pre></div>
 </div>
 <p>Please see <a class="reference internal" href="../../impuritysolvers/triqs_cthyb/cthyb.html#howtocthyb"><span class="std std-ref">CT-QMC: TRIQS/cthyb</span></a> for the details of the parameter setting.</p>
@@ -381,21 +377,21 @@ If we want to compute by using 32 MPI processes at the same accuracy,
 </div>
 <section id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3_respack.ini
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_pre<span class="w"> </span>srvo3_respack.ini
 </pre></div>
 </div>
 </section>
 <section id="running-the-dmft-calculation-dcore">
 <h3>Running the DMFT calculation: dcore<a class="headerlink" href="#running-the-dmft-calculation-dcore" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3_respack.ini
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore<span class="w"> </span>srvo3_respack.ini
 </pre></div>
 </div>
 </section>
 <section id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3_respack.ini
-$ sed -e <span class="s2">&quot;s/every 10/every 3/g&quot;</span> srvo3_akw.gp
-$ gnuplot nis_akw.gp
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_post<span class="w"> </span>srvo3_respack.ini
+$<span class="w"> </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;s/every 10/every 3/g&quot;</span><span class="w"> </span>srvo3_akw.gp
+$<span class="w"> </span>gnuplot<span class="w"> </span>nis_akw.gp
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/akw_srvo33.png"><img alt="../../_images/akw_srvo33.png" class="align-center" src="../../_images/akw_srvo33.png" style="width: 500px;" /></a>

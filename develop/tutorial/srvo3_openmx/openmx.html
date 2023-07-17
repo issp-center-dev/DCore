@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>OpenMX &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -12,9 +11,6 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
@@ -136,59 +132,59 @@ In this tutorial, we demonstrate the calculation of SrVO<sub>3</sub>.</p>
 <span class="n">Wannier</span><span class="o">.</span><span class="n">Function</span><span class="o">.</span><span class="n">Plot</span><span class="o">.</span><span class="n">SuperCells</span>      <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span>       <span class="c1"># default=0 0 0</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ openmx scf.dat
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>openmx<span class="w"> </span>scf.dat
 </pre></div>
 </div>
 <p>Then, convert the OpenMX output to the wannier90 format.
 It can be performed with <code class="docutils literal notranslate"><span class="pre">openmx2dcore</span></code> utility as:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ openmx2dcore.py SrVO3 srvo3
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>openmx2dcore.py<span class="w"> </span>SrVO3<span class="w"> </span>srvo3
 </pre></div>
 </div>
 </section>
 <section id="dmft-calculation">
 <h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/00c8a87a9b06604eae86356032d591d3/srvo3_openmx.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
-<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span><span class="w"></span>
-<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">srvo3</span><span class="w"></span>
-<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
-<span class="na">ncor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
-<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span><span class="w"></span>
-<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(3.419, 2.315, 0.530)]</span><span class="w"></span>
-<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span><span class="w"></span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">srvo3</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">ncor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(3.419, 2.315, 0.530)]</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span>
 
-<span class="k">[system]</span><span class="w"></span>
-<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span><span class="w"></span>
-<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span><span class="w"></span>
-<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span><span class="w"></span>
-<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span><span class="w"></span>
-<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span><span class="w"></span>
-<span class="na">with_dc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
-<span class="na">perform_tail_fit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
-<span class="na">fit_max_moment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
-<span class="na">fit_min_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5.0</span><span class="w"></span>
-<span class="na">fit_max_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">19.0</span><span class="w"></span>
+<span class="k">[system]</span>
+<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span>
+<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span>
+<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+<span class="na">with_dc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">perform_tail_fit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">fit_max_moment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">fit_min_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5.0</span>
+<span class="na">fit_max_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">19.0</span>
 
-<span class="k">[impurity_solver]</span><span class="w"></span>
-<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span><span class="w"></span>
-<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span><span class="w"></span>
-<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span><span class="w"></span>
-<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">500</span><span class="w"></span>
-<span class="na">move_double{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span>
+<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span>
+<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span>
+<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">500</span>
+<span class="na">move_double{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
 
-<span class="k">[control]</span><span class="w"></span>
-<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
 
-<span class="k">[tool]</span><span class="w"></span>
-<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span><span class="w"></span>
-<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span><span class="w"></span>
-<span class="na">nnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span><span class="w"></span>
-<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5)]</span><span class="w"></span>
-<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">2.0</span><span class="w"></span>
-<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-2.0</span><span class="w"></span>
-<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span><span class="w"></span>
-<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span><span class="w"></span>
-<span class="na">omega_pade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5.0</span><span class="w"></span>
+<span class="k">[tool]</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+<span class="na">nnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5)]</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">2.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-2.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span>
+<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span>
+<span class="na">omega_pade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5.0</span>
 </pre></div>
 </div>
 <p>Please see <a class="reference internal" href="../../impuritysolvers/triqs_cthyb/cthyb.html#howtocthyb"><span class="std std-ref">CT-QMC: TRIQS/cthyb</span></a> for the details of the parameter setting.</p>
@@ -202,21 +198,21 @@ If we want to compute by using 32 MPI processes at the same accuracy,
 </div>
 <section id="dmft-setup-dcore-pre">
 <h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre srvo3.ini
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_pre<span class="w"> </span>srvo3.ini
 </pre></div>
 </div>
 </section>
 <section id="running-self-consistent-dmft-calculation-dcore">
 <h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore srvo3.ini
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore<span class="w"> </span>srvo3.ini
 </pre></div>
 </div>
 </section>
 <section id="post-processing-and-data-analysis-dcore-post">
 <h3>Post-processing and data analysis: dcore_post<a class="headerlink" href="#post-processing-and-data-analysis-dcore-post" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post srvo3.ini
-$ sed -e <span class="s2">&quot;s/every 10/every 1/g&quot;</span> srvo3_akw.gp
-$ gnuplot nis_akw.gp
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_post<span class="w"> </span>srvo3.ini
+$<span class="w"> </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;s/every 10/every 1/g&quot;</span><span class="w"> </span>srvo3_akw.gp
+$<span class="w"> </span>gnuplot<span class="w"> </span>nis_akw.gp
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/akw_srvo32.png"><img alt="../../_images/akw_srvo32.png" class="align-center" src="../../_images/akw_srvo32.png" style="width: 500px;" /></a>

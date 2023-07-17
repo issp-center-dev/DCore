@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>CT-QMC with segment implementation: ALPS/CT-HYB-SEGMENT &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -12,9 +11,6 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
@@ -50,29 +46,29 @@ Only density-density interactions are taken into account.</p>
 <p>A minimum working example is the following. Please be sure to turn on density_density option in model block (otherwise the simulation fails).
 We assumed that the executable is installed at “$HOME/opt/CT-HYB/bin/alps_cthyb”.
 The solver terminates after MAX_TIME (300 seconds in the following example) or the total number of SWEEPS has been reached.</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
-<span class="na">density_density</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
-<span class="k">[impurity_solver]</span><span class="w"></span>
-<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb-seg</span><span class="w"></span>
-<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">$HOME/opt/CT-HYB/bin/alps_cthyb</span><span class="w"></span>
-<span class="na">MAX_TIME{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300</span><span class="w"></span>
-<span class="na">cthyb.N_MEAS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span><span class="w"></span>
-<span class="na">cthyb.THERMALIZATION{int}</span><span class="o">=</span><span class="s">1000</span><span class="w"></span>
-<span class="na">cthyb.SWEEPS{int}</span><span class="o">=</span><span class="s">100000000</span><span class="w"></span>
-<span class="na">cthyb.TEXT_OUTPUT{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span><span class="w"></span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">density_density</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb-seg</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">$HOME/opt/CT-HYB/bin/alps_cthyb</span>
+<span class="na">MAX_TIME{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300</span>
+<span class="na">cthyb.N_MEAS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+<span class="na">cthyb.THERMALIZATION{int}</span><span class="o">=</span><span class="s">1000</span>
+<span class="na">cthyb.SWEEPS{int}</span><span class="o">=</span><span class="s">100000000</span>
+<span class="na">cthyb.TEXT_OUTPUT{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
 </pre></div>
 </div>
 <p>ALPS/CT-HYB-SEGMENT has many input parameters.
 A complete list of the parameters can be obtained by the help command</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$HOME</span>/opt/CT-HYB/bin/alps_cthyb --help
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$HOME</span>/opt/CT-HYB/bin/alps_cthyb<span class="w"> </span>--help
 </pre></div>
 </div>
 <p>The following optional parameters may be useful:</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span><span class="w"></span>
-<span class="na">cthyb.MEASURE_nn{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True   # static density-density correlation functions</span><span class="w"></span>
-<span class="na">cthyb.MEASURE_nnw{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True  # density-density correlation functions in frequency domain</span><span class="w"></span>
-<span class="na">cthyb.MEASURE_nnt{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True  # density-density correlation functions &lt;n(0) n(t)&gt;</span><span class="w"></span>
-<span class="na">cthyb.MEASURE_g2w{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True  # measure two-particle Green&#39;s function in frequency space</span><span class="w"></span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
+<span class="na">cthyb.MEASURE_nn{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w">   </span><span class="c1"># static density-density correlation functions</span>
+<span class="na">cthyb.MEASURE_nnw{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w">  </span><span class="c1"># density-density correlation functions in frequency domain</span>
+<span class="na">cthyb.MEASURE_nnt{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w">  </span><span class="c1"># density-density correlation functions &lt;n(0) n(t)&gt;</span>
+<span class="na">cthyb.MEASURE_g2w{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w">  </span><span class="c1"># measure two-particle Green&#39;s function in frequency space</span>
 </pre></div>
 </div>
 <p>Please also refer to <a class="reference external" href="https://github.com/ALPSCore/CT-HYB-SEGMENT/wiki/Changes-of-Parameters">the wiki page</a> for some descriptions on parameters.</p>

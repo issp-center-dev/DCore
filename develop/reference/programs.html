@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Programs &#8212; DCore  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -12,9 +11,6 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -152,12 +148,12 @@ in the <code class="docutils literal notranslate"><span class="pre">[tool]</span
 <section id="post-processing-dcore-post">
 <span id="program-dcore-post"></span><h2>Post-processing : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this heading">¶</a></h2>
 <p>This program computes the total DOS (<em>seedname</em>_dos.dat) and momenum-resolved spectral function (<em>seedname</em>_akw.dat) reading the DMFT results in <em>seedname</em>.out.h5.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post input.ini --np <span class="m">4</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_post<span class="w"> </span>input.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">4</span>
 </pre></div>
 </div>
 <p>Here, please specify the number of MPI processes.
 The computed spectral function can be drawn by</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ gnuplot <span class="o">[</span>seedname<span class="o">]</span>_akw.gp
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>gnuplot<span class="w"> </span><span class="o">[</span>seedname<span class="o">]</span>_akw.gp
 </pre></div>
 </div>
 <p>Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
