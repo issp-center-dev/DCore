@@ -17,7 +17,6 @@
 #
 
 import numpy as np
-from dcore.anacont_spm import *
 
 def test_find_sum_rule_const():
     from dcore.anacont_spm import _find_sum_rule_const
