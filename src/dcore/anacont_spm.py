@@ -21,7 +21,7 @@ import cvxpy as cp
 from scipy.interpolate import interp1d
 from scipy.sparse.linalg import svds
 
-def _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, c0=1.0, show_fit=False):
+def _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, show_fit=False):
     wntail = matsubara_frequencies[-ntail:]
     gftail = gf_wn[-ntail:]
     const_imagpart = -np.mean(np.imag(gftail) * wntail)
