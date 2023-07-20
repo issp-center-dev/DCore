@@ -17,6 +17,7 @@
 #
 
 import numpy as np
+from scipy.stats import norm
 
 def _get_matsubara_frequencies_fermionic(n_matsubara, beta):
     return np.pi / beta * (2 * np.arange(0, n_matsubara, 1) + 1)
@@ -116,7 +117,7 @@ def test_get_kernel_matrix():
     delta_energy = energies[1] - energies[0]
     tau_grid = np.linspace(0, beta, num=3)
     kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
-    kernel_expected = np.array([[1.35363854e-35, 3.09173043e-09, 1.76538950e+17, 3.53077900e+17, 1.76538950e+17], [6.06658705e-35, 6.54519338e-09, 1.76538950e+17, 1.66782191e+17, 3.93911642e+16], [2.71885569e-34, 1.38561745e-08, 1.76538950e+17, 7.87823284e+16, 8.78935678e+15]])
+    kernel_expected = np.array([[5.75073606e-53, 1.31347661e-26, 7.50000000e-01, 1.50000000e+00, 7.50000000e-01], [6.56738307e-27, 1.40364345e-13, 7.50000000e-01, 1.40364345e-13, 6.56738307e-27], [7.50000000e-01, 1.50000000e+00, 7.50000000e-01, 1.31347661e-26, 5.75073606e-53]])
     assert np.allclose(kernel, kernel_expected, atol=1e-10)
 
 def test_getSVD():
@@ -128,9 +129,9 @@ def test_getSVD():
     tau_grid = np.linspace(0, beta, num=3)
     kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
     U, S, Vt = _getSVD(kernel, nsv=nsv)
-    U_expected = np.array([[-0.82897594, -0.5160465], [-0.46366012, 0.41851176], [-0.31275899, 0.74735796]])
-    S_expected = np.array([5.13899032e+17, 1.43721900e+17])
-    Vt_expected = np.array([[-2.42040421e-52, -1.93255052e-26, -5.51498911e-01, -7.67978126e-01, -3.25666315e-01], [1.54186536e-51, 8.00106734e-26, 7.98202003e-01, -3.72425544e-01, -4.73468875e-01]])
+    U_expected = np.array([[6.90024281e-01, -7.07106781e-01], [2.18478793e-01, 1.83989109e-16], [6.90024281e-01, 7.07106781e-01]])
+    S_expected = np.array([2.02869452, 1.67705098])
+    Vt_expected = np.array([[2.55099132e-01, 5.10198264e-01, 5.90968974e-01, 5.10198264e-01, 2.55099132e-01], [3.16227766e-01, 6.32455532e-01, 1.65502277e-16, -6.32455532e-01, -3.16227766e-01]])
     assert np.allclose(U, U_expected, atol=1e-10)
     assert np.allclose(S, S_expected, atol=1e-10)
     assert np.allclose(Vt, Vt_expected, atol=1e-10)
@@ -149,37 +150,45 @@ def test_get_svd_for_continuation():
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
 
     energies_extract_expected = np.linspace(emin, emax, num_energies)
-    U_expected = np.array([[0.9273743, 0.37279142], [0.34485335, -0.818888], [0.14509679, -0.43640464]])
+    U_expected = np.array([[-1.20839106e-01, 9.92672106e-01], [2.44249065e-15, 2.94209102e-15], [9.92672106e-01, 1.20839106e-01]])
     assert np.allclose(U, U_expected, atol=1e-10)
-    S_expected = np.array([9.44496948e+17, 1.29378052e+17])
+    S_expected = np.array([3.72677996, 3.72677996])
     assert np.allclose(S, S_expected, atol=1e-10)
-    Vt_expected = np.array([[1.53262951e-86, 2.30426322e-29, 9.17662575e-01, 3.97360540e-01], [-3.12088352e-85, -2.58298279e-28, -3.97360540e-01, 9.17662575e-01]])
+    Vt_expected = np.array([[0.44393646, 0.88787292, -0.10808178, -0.05404089], [0.05404089, 0.10808178, 0.88787292, 0.44393646]])
     assert np.allclose(Vt, Vt_expected, atol=1e-10)
     assert np.allclose(delta_energy, (emax - emin) / (num_energies - 1), atol=1e-10)
     assert np.allclose(energies_extract, energies_extract_expected, atol=1e-10)
 
 def test_solveProblem():
-    from dcore.anacont_spm import _solveProblem, _getSVD, _get_kernel_matrix, _find_sum_rule_const, _calc_gf_tau
+    from dcore.anacont_spm import _solveProblem, _find_sum_rule_const, _calc_gf_tau, _get_svd_for_continuation
     beta = 40
-    nsv = 35
+    nsv = 100
     n_matsubara = 1000
     n_matsubara_tail = 100
-    lambd = 1e-7
+    lambd = 1e-5
     ntau = 1000
 
-    energies = np.linspace(-5, 5, num=1000)
-    delta_energy = energies[1] - energies[0]
-    dos = _get_dos_semicircular(energies, 4)
+    emin = -6
+    emax = 6
+    num_energies = 1000
+    energies = np.linspace(emin, emax, num=num_energies)
+    dos = 0.4 * norm.pdf(energies, loc=0.0, scale=0.15)
+    dos += 0.3 * norm.pdf(energies, loc=-1.0, scale=0.4)
+    dos += 0.3 * norm.pdf(energies, loc=+1.0, scale=0.4)
 
     wn, gf_wn = _calc_gf_matsubara(energies, dos, beta, n_matsubara)
     a_test, b_test = _find_sum_rule_const(wn, gf_wn, n_matsubara_tail, False)
     tau_grid, gf_tau = _calc_gf_tau(wn, gf_wn, beta, a_test, b_test, ntau)
 
-    kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
-    U, S, Vt = _getSVD(kernel, nsv=nsv)
+    U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
 
-    #rho_prime, gf_tau_fit, chi2 = _solveProblem(delta_energy, U, S, Vt, gf_tau, b_test, lambd, verbose=True, max_iters=100, solver='ECOS')
-    #assert np.allclose(chi2, 1.0, atol=1e-10)
+    rho_prime, gf_tau_fit, chi2 = _solveProblem(delta_energy, U, S, Vt, gf_tau, b_test, lambd, verbose=False, max_iters=100, solver='ECOS')
+    rho = np.dot(Vt.T, rho_prime)
+
+    d_bhatt = np.trapz(y=np.sqrt(np.multiply(rho, dos)), x=energies_extract)
+    assert np.allclose(d_bhatt, 1.0, atol=1e-2)
+    assert np.allclose(gf_tau_fit, gf_tau, rtol=1e-3)
+    assert np.allclose(chi2, 3.4763690885418575e-06, atol=1e-5)
 
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
