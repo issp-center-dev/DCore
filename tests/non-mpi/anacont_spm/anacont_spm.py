@@ -71,7 +71,7 @@ def test_calc_gf_tau_nontrivial():
 
     ntau = 11
     wn = _get_matsubara_frequencies_fermionic(n_matsubara, beta)
-    matsubara_freq, gf_wn = _calc_gf_matsubara(energies_real, dos, beta, n_matsubara)
+    _, gf_wn = _calc_gf_matsubara(energies_real, dos, beta, n_matsubara)
     a = 1.123
     gf_wn += a
 
@@ -98,7 +98,6 @@ def test_calc_gf_tau_from_gf_matsubara():
     assert np.allclose(dos_integrated, 1, atol=1e-13)
 
     ntau = 11
-    wn = _get_matsubara_frequencies_fermionic(n_matsubara, beta)
     matsubara_freq, gf_wn = _calc_gf_matsubara(energies_real, dos, beta, n_matsubara)
 
     tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(matsubara_freq, gf_wn, ntau, n_matsubara_tail, beta, False)
