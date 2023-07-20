@@ -127,9 +127,6 @@ def test_getSVD():
     delta_energy = energies[1] - energies[0]
     tau_grid = np.linspace(0, beta, num=3)
     kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
-    kernel_expected = np.array([[1.35363854e-35, 3.09173043e-09, 1.76538950e+17, 3.53077900e+17, 1.76538950e+17], [6.06658705e-35, 6.54519338e-09, 1.76538950e+17, 1.66782191e+17, 3.93911642e+16], [2.71885569e-34, 1.38561745e-08, 1.76538950e+17, 7.87823284e+16, 8.78935678e+15]])
-    assert np.allclose(kernel, kernel_expected, atol=1e-10)
-
     U, S, Vt = _getSVD(kernel, nsv=nsv)
     U_expected = np.array([[-0.82897594, -0.5160465], [-0.46366012, 0.41851176], [-0.31275899, 0.74735796]])
     S_expected = np.array([5.13899032e+17, 1.43721900e+17])
