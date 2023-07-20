@@ -120,8 +120,28 @@ def test_get_kernel_matrix():
     kernel_expected = np.array([[1.35363854e-35, 3.09173043e-09, 1.76538950e+17, 3.53077900e+17, 1.76538950e+17], [6.06658705e-35, 6.54519338e-09, 1.76538950e+17, 1.66782191e+17, 3.93911642e+16], [2.71885569e-34, 1.38561745e-08, 1.76538950e+17, 7.87823284e+16, 8.78935678e+15]])
     assert np.allclose(kernel, kernel_expected, atol=1e-10)
 
+def test_getSVD():
+    from dcore.anacont_spm import _getSVD, _get_kernel_matrix
+    beta = 40
+    nsv = 2
+    energies = np.linspace(-3, 3, num=5)
+    delta_energy = energies[1] - energies[0]
+    tau_grid = np.linspace(0, beta, num=3)
+    kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
+    kernel_expected = np.array([[1.35363854e-35, 3.09173043e-09, 1.76538950e+17, 3.53077900e+17, 1.76538950e+17], [6.06658705e-35, 6.54519338e-09, 1.76538950e+17, 1.66782191e+17, 3.93911642e+16], [2.71885569e-34, 1.38561745e-08, 1.76538950e+17, 7.87823284e+16, 8.78935678e+15]])
+    assert np.allclose(kernel, kernel_expected, atol=1e-10)
+
+    U, S, Vt = _getSVD(kernel, nsv=nsv)
+    U_expected = np.array([[-0.82897594, -0.5160465], [-0.46366012, 0.41851176], [-0.31275899, 0.74735796]])
+    S_expected = np.array([5.13899032e+17, 1.43721900e+17])
+    Vt_expected = np.array([[-2.42040421e-52, -1.93255052e-26, -5.51498911e-01, -7.67978126e-01, -3.25666315e-01], [1.54186536e-51, 8.00106734e-26, 7.98202003e-01, -3.72425544e-01, -4.73468875e-01]])
+    assert np.allclose(U, U_expected, atol=1e-10)
+    assert np.allclose(S, S_expected, atol=1e-10)
+    assert np.allclose(Vt, Vt_expected, atol=1e-10)
+
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
 test_calc_gf_tau_nontrivial()
 test_calc_gf_tau_from_gf_matsubara()
 test_get_kernel_matrix()
+test_getSVD()
