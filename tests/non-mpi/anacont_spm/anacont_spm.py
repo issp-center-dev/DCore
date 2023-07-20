@@ -136,7 +136,7 @@ def test_getSVD():
     assert np.allclose(Vt, Vt_expected, atol=1e-10)
 
 def test_get_svd_for_continuation():
-    from dcore.anacont_spm import _get_svd_for_continuation, _find_sum_rule_const, _calc_gf_tau
+    from dcore.anacont_spm import _get_svd_for_continuation
     beta = 40
     nsv = 2
     ntau = 3
