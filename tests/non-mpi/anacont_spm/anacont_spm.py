@@ -110,7 +110,18 @@ def test_calc_gf_tau_from_gf_matsubara():
     gf_tau_expected = np.array([0.49991359, 0.04029338, 0.02124658, 0.01544472, 0.0131402, 0.01249759, 0.0131402, 0.01544472, 0.02124658, 0.04029338, 0.49991359])
     assert np.allclose(gf_tau, gf_tau_expected, atol=1e-10)
 
+def test_get_kernel_matrix():
+    from dcore.anacont_spm import _get_kernel_matrix
+    beta = 40
+    energies = np.linspace(-3, 3, num=5)
+    delta_energy = energies[1] - energies[0]
+    tau_grid = np.linspace(0, beta, num=3)
+    kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
+    kernel_expected = np.array([[1.35363854e-35, 3.09173043e-09, 1.76538950e+17, 3.53077900e+17, 1.76538950e+17], [6.06658705e-35, 6.54519338e-09, 1.76538950e+17, 1.66782191e+17, 3.93911642e+16], [2.71885569e-34, 1.38561745e-08, 1.76538950e+17, 7.87823284e+16, 8.78935678e+15]])
+    assert np.allclose(kernel, kernel_expected, atol=1e-10)
+
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
 test_calc_gf_tau_nontrivial()
 test_calc_gf_tau_from_gf_matsubara()
+test_get_kernel_matrix()
