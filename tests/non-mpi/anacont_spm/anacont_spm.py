@@ -85,6 +85,32 @@ def test_calc_gf_tau_nontrivial():
     gf_tau_expected = np.array([0.49991359, 0.04029338, 0.02124658, 0.01544472, 0.0131402, 0.01249759, 0.0131402, 0.01544472, 0.02124658, 0.04029338, 0.49991359])
     assert np.allclose(gf_tau, gf_tau_expected, atol=1e-10)
 
+def test_calc_gf_tau_from_gf_matsubara():
+    from dcore.anacont_spm import calc_gf_tau_from_gf_matsubara
+    ntau = 11
+    n_matsubara = 1000
+    n_matsubara_tail = 100
+    beta = 40
+
+    energies_real = np.linspace(-5, 5, num=1000)
+    dos = _get_dos_semicircular(energies_real, 4)
+    dos_integrated = np.trapz(dos, energies_real)
+    assert np.allclose(dos_integrated, 1, atol=1e-13)
+
+    ntau = 11
+    wn = _get_matsubara_frequencies_fermionic(n_matsubara, beta)
+    matsubara_freq, gf_wn = _calc_gf_matsubara(energies_real, dos, beta, n_matsubara)
+
+    tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(matsubara_freq, gf_wn, ntau, n_matsubara_tail, beta, False)
+
+    tau_grid_expected = np.linspace(0, beta, num=ntau)
+    assert np.allclose(const_real_tail, 0, atol=1e-10)
+    assert np.allclose(const_imag_tail, 1.0, atol=1e-3)
+    assert np.allclose(tau_grid, tau_grid_expected, atol=1e-10)
+    gf_tau_expected = np.array([0.49991359, 0.04029338, 0.02124658, 0.01544472, 0.0131402, 0.01249759, 0.0131402, 0.01544472, 0.02124658, 0.04029338, 0.49991359])
+    assert np.allclose(gf_tau, gf_tau_expected, atol=1e-10)
+
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
 test_calc_gf_tau_nontrivial()
+test_calc_gf_tau_from_gf_matsubara()
