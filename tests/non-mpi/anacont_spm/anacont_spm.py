@@ -135,9 +135,57 @@ def test_getSVD():
     assert np.allclose(S, S_expected, atol=1e-10)
     assert np.allclose(Vt, Vt_expected, atol=1e-10)
 
+def test_get_svd_for_continuation():
+    from dcore.anacont_spm import _get_svd_for_continuation, _find_sum_rule_const, _calc_gf_tau
+    beta = 40
+    nsv = 2
+    ntau = 3
+    num_energies = 4
+
+    emin = -5
+    emax = 5
+    tau_grid = np.linspace(0, beta, num=ntau)
+
+    U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
+
+    energies_extract_expected = np.linspace(emin, emax, num_energies)
+    U_expected = np.array([[0.9273743, 0.37279142], [0.34485335, -0.818888], [0.14509679, -0.43640464]])
+    assert np.allclose(U, U_expected, atol=1e-10)
+    S_expected = np.array([9.44496948e+17, 1.29378052e+17])
+    assert np.allclose(S, S_expected, atol=1e-10)
+    Vt_expected = np.array([[1.53262951e-86, 2.30426322e-29, 9.17662575e-01, 3.97360540e-01], [-3.12088352e-85, -2.58298279e-28, -3.97360540e-01, 9.17662575e-01]])
+    assert np.allclose(Vt, Vt_expected, atol=1e-10)
+    assert np.allclose(delta_energy, (emax - emin) / (num_energies - 1), atol=1e-10)
+    assert np.allclose(energies_extract, energies_extract_expected, atol=1e-10)
+
+def test_solveProblem():
+    from dcore.anacont_spm import _solveProblem, _getSVD, _get_kernel_matrix, _find_sum_rule_const, _calc_gf_tau
+    beta = 40
+    nsv = 35
+    n_matsubara = 1000
+    n_matsubara_tail = 100
+    lambd = 1e-7
+    ntau = 1000
+
+    energies = np.linspace(-5, 5, num=1000)
+    delta_energy = energies[1] - energies[0]
+    dos = _get_dos_semicircular(energies, 4)
+
+    wn, gf_wn = _calc_gf_matsubara(energies, dos, beta, n_matsubara)
+    a_test, b_test = _find_sum_rule_const(wn, gf_wn, n_matsubara_tail, False)
+    tau_grid, gf_tau = _calc_gf_tau(wn, gf_wn, beta, a_test, b_test, ntau)
+
+    kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
+    U, S, Vt = _getSVD(kernel, nsv=nsv)
+
+    #rho_prime, gf_tau_fit, chi2 = _solveProblem(delta_energy, U, S, Vt, gf_tau, b_test, lambd, verbose=True, max_iters=100, solver='ECOS')
+    #assert np.allclose(chi2, 1.0, atol=1e-10)
+
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
 test_calc_gf_tau_nontrivial()
 test_calc_gf_tau_from_gf_matsubara()
 test_get_kernel_matrix()
 test_getSVD()
+test_get_svd_for_continuation()
+test_solveProblem()
