@@ -76,8 +76,8 @@ def get_multiple_continuations(tau_grid, gf_tau, nsv, beta, emin, emax, num_ener
 def _get_kernel_matrix(energies, tau_grid, beta, delta_energy):
     assert tau_grid[0] == 0
     assert tau_grid[-1] == beta
-    den = 1.0 / (1.0 + np.exp(-beta * energies))
-    kernel = den * np.exp(np.multiply.outer(-tau_grid, energies))
+    den = 0.5 / np.cosh(0.5 * beta * energies)
+    kernel = den * np.exp(np.multiply.outer(0.5 * beta - tau_grid, energies))
     kernel[:, 0] *= 0.5
     kernel[:, -1] *= 0.5
     kernel *= delta_energy
