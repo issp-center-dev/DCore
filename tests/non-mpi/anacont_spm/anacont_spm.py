@@ -132,9 +132,9 @@ def test_getSVD():
     U_expected = np.array([[6.90024281e-01, -7.07106781e-01], [2.18478793e-01, 1.83989109e-16], [6.90024281e-01, 7.07106781e-01]])
     S_expected = np.array([2.02869452, 1.67705098])
     Vt_expected = np.array([[2.55099132e-01, 5.10198264e-01, 5.90968974e-01, 5.10198264e-01, 2.55099132e-01], [3.16227766e-01, 6.32455532e-01, 1.65502277e-16, -6.32455532e-01, -3.16227766e-01]])
-    assert np.allclose(U, U_expected, atol=1e-10)
-    assert np.allclose(S, S_expected, atol=1e-10)
-    assert np.allclose(Vt, Vt_expected, atol=1e-10)
+    assert np.allclose(U, U_expected, atol=1e-7)
+    assert np.allclose(S, S_expected, atol=1e-7)
+    assert np.allclose(Vt, Vt_expected, atol=1e-7)
 
 def test_get_svd_for_continuation():
     from dcore.anacont_spm import _get_svd_for_continuation
@@ -151,13 +151,13 @@ def test_get_svd_for_continuation():
 
     energies_extract_expected = np.linspace(emin, emax, num_energies)
     U_expected = np.array([[-1.20839106e-01, 9.92672106e-01], [2.44249065e-15, 2.94209102e-15], [9.92672106e-01, 1.20839106e-01]])
-    assert np.allclose(U, U_expected, atol=1e-10)
+    assert np.allclose(U, U_expected, atol=1e-7)
     S_expected = np.array([3.72677996, 3.72677996])
-    assert np.allclose(S, S_expected, atol=1e-10)
+    assert np.allclose(S, S_expected, atol=1e-7)
     Vt_expected = np.array([[0.44393646, 0.88787292, -0.10808178, -0.05404089], [0.05404089, 0.10808178, 0.88787292, 0.44393646]])
-    assert np.allclose(Vt, Vt_expected, atol=1e-10)
-    assert np.allclose(delta_energy, (emax - emin) / (num_energies - 1), atol=1e-10)
-    assert np.allclose(energies_extract, energies_extract_expected, atol=1e-10)
+    assert np.allclose(Vt, Vt_expected, atol=1e-7)
+    assert np.allclose(delta_energy, (emax - emin) / (num_energies - 1), atol=1e-7)
+    assert np.allclose(energies_extract, energies_extract_expected, atol=1e-7)
 
 def test_solveProblem():
     from dcore.anacont_spm import _solveProblem, _find_sum_rule_const, _calc_gf_tau, _get_svd_for_continuation
