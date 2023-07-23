@@ -203,6 +203,29 @@ def test_solveProblem():
     assert np.allclose(gf_tau_fit, gf_tau, rtol=1e-3)
     assert np.allclose(chi2, 3.4763690885418575e-06, atol=1e-5)
 
+def test_integral_kramers_kronig():
+    from dcore.anacont_spm import _integral_kramers_kronig, dos_to_gf_imag
+    from scipy.interpolate import interp1d
+
+    energies_real = np.linspace(-5, 5, num=1000)
+    dos = _get_dos_semicircular(energies_real, 4)
+    gf_imag = dos_to_gf_imag(dos)
+    ip = interp1d(energies_real, gf_imag, fill_value=0, assume_sorted=True)
+
+    results = [
+        _integral_kramers_kronig(energies_real, -3, ip, 1e-10),
+        _integral_kramers_kronig(energies_real, -2, ip, 1e-10),
+        _integral_kramers_kronig(energies_real,  0, ip, 1e-10),
+        _integral_kramers_kronig(energies_real,  2, ip, 1e-10),
+        _integral_kramers_kronig(energies_real,  3, ip, 1e-10)
+    ]
+    expected_results = [-0.7196181351109775, 
+                        -0.4185049136590478, 
+                        5.551115123125783e-17, 
+                        0.41850491365904774, 
+                        0.7196181351109775]
+    assert np.allclose(results, expected_results, atol=1e-7)
+
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
 test_calc_gf_tau_nontrivial()
@@ -212,3 +235,4 @@ test_get_kernel_matrix_extreme_energies()
 test_getSVD()
 test_get_svd_for_continuation()
 test_solveProblem()
+test_integral_kramers_kronig()
