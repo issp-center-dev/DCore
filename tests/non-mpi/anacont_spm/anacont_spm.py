@@ -120,6 +120,19 @@ def test_get_kernel_matrix():
     kernel_expected = np.array([[5.75073606e-53, 1.31347661e-26, 7.50000000e-01, 1.50000000e+00, 7.50000000e-01], [6.56738307e-27, 1.40364345e-13, 7.50000000e-01, 1.40364345e-13, 6.56738307e-27], [7.50000000e-01, 1.50000000e+00, 7.50000000e-01, 1.31347661e-26, 5.75073606e-53]])
     assert np.allclose(kernel, kernel_expected, atol=1e-10)
 
+def test_get_kernel_matrix_extreme_energies():
+    from dcore.anacont_spm import _get_kernel_matrix
+    beta = 40
+    energies = np.linspace(-30, 30, num=5)
+    delta_energy = energies[1] - energies[0]
+    tau_grid = np.linspace(0, beta, num=3)
+    kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
+    kernel_expected = np.array([
+        [0.00000000e+000, 3.97559483e-260, 7.50000000e+000, 1.50000000e+001, 7.50000000e+000], 
+        [1.98779741e-260, 7.72230033e-130, 7.50000000e+000, 7.72230033e-130, 1.98779741e-260], 
+        [7.50000000e+000, 1.50000000e+001, 7.50000000e+000, 3.97559483e-260, 0.00000000e+000]])
+    assert np.allclose(kernel, kernel_expected, atol=1e-10)
+
 def test_getSVD():
     from dcore.anacont_spm import _getSVD, _get_kernel_matrix
     beta = 40
@@ -195,6 +208,7 @@ test_calc_gf_tau_trivial()
 test_calc_gf_tau_nontrivial()
 test_calc_gf_tau_from_gf_matsubara()
 test_get_kernel_matrix()
+test_get_kernel_matrix_extreme_energies()
 test_getSVD()
 test_get_svd_for_continuation()
 test_solveProblem()
