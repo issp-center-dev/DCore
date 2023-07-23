@@ -73,11 +73,17 @@ def get_multiple_continuations(tau_grid, gf_tau, nsv, beta, emin, emax, num_ener
         rho_values.append(rho_integrated)
     return energies_extract, continued_densities, chi2_values, rho_values
 
-def _get_kernel_matrix(energies, tau_grid, beta, delta_energy):
+def _get_kernel_matrix(energies, tau_grid, beta, delta_energy, z_critical=20):
     assert tau_grid[0] == 0
     assert tau_grid[-1] == beta
-    den = 0.5 / np.cosh(0.5 * beta * energies)
-    kernel = den * np.exp(np.multiply.outer(0.5 * beta - tau_grid, energies))
+    i_lc = np.searchsorted(energies, -z_critical / beta)
+    i_rc = np.searchsorted(energies, +z_critical / beta)
+    kernel = np.zeros((len(tau_grid), len(energies)))
+    kernel[:, i_lc:i_rc + 1] = 0.5 * np.exp(np.multiply.outer(0.5 * beta - tau_grid, energies[i_lc:i_rc + 1])) / np.cosh(0.5 * beta * energies[i_lc:i_rc + 1])
+    if i_lc > 0: #asymptote for kernel for w -> -inf
+        kernel[:, 0:i_lc] = np.exp(np.multiply.outer(beta - tau_grid, energies[0:i_lc]))
+    if i_rc < len(energies) - 1: #asymptote for kernel for w -> +inf
+        kernel[:, i_rc+1:len(energies)] = np.exp(np.multiply.outer(-tau_grid, energies[i_rc+1:len(energies)]))
     kernel[:, 0] *= 0.5
     kernel[:, -1] *= 0.5
     kernel *= delta_energy
