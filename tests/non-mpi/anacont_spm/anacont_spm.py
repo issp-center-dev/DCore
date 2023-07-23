@@ -238,6 +238,41 @@ def test_get_kramers_kronig_realpart():
     gf_real_expected = [-0.27741992, -0.38657675, -0.35563321, -0.20813572, -0.06925385, 0.06925385, 0.20813572, 0.35563321, 0.38657675, 0.27741992]
     assert np.allclose(gf_real_result, gf_real_expected, atol=1e-7)
 
+def test_get_single_continuation():
+    from dcore.anacont_spm import get_single_continuation, calc_gf_tau_from_gf_matsubara, _calc_gf_tau, calc_gf_tau_from_gf_matsubara
+    beta = 40
+    nsv = 24
+    emin = -10
+    emax = +10
+    num_energies = 100
+    lambd = 1e-5
+    n_matsubara = 1000
+    n_matsubara_tail = 100
+    ntau = 25
+
+    energies_dos = np.linspace(-5, 5, num=1000)
+    dos = _get_dos_semicircular(energies_dos, 4)
+    dos_integrated = np.trapz(dos, energies_dos)
+    assert np.allclose(dos_integrated, 1, atol=1e-13)
+
+    matsubara_freq, gf_wn = _calc_gf_matsubara(energies_dos, dos, beta, n_matsubara)
+
+    tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(matsubara_freq, gf_wn, ntau, n_matsubara_tail, beta, False)
+
+    rho, gf_tau_fit, energies_extract, rho_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, nsv, beta, emin, emax, num_energies, const_imag_tail, lambd, verbose=False)
+
+    assert np.allclose(energies_extract, np.linspace(emin, emax, num=num_energies), atol=1e-7)
+    gf_tau_expected = [0.49991358,0.09333313,0.04778339,0.03272457,0.02555529,0.02121236,0.01818985,0.01594869,0.01426303,0.01302357,0.01217094,0.01167125,0.01150657,0.01167125,0.01217094,0.01302357,0.01426303,0.01594869,0.01818985,0.02121236,0.0255553,0.03272457,0.04778339,0.09333313,0.4999136]
+    assert np.allclose(gf_tau_fit, gf_tau_expected, atol=1e-7)
+    rho_expected = [1.07775066e-02, 2.15550441e-02, 2.15550870e-02, 2.15551471e-02, 2.15552316e-02, 2.15553497e-02, 2.15555150e-02, 2.15557466e-02, 2.15560709e-02, 2.15565250e-02, 2.15571609e-02, 2.15580514e-02, 2.15592984e-02, 2.15610444e-02, 2.15634895e-02, 2.15669134e-02, 2.15717080e-02, 2.15784219e-02, 2.15878231e-02, 2.16009876e-02, 2.16194217e-02, 2.16452342e-02, 2.16813780e-02, 2.17319868e-02, 2.18028475e-02, 2.19020594e-02, 2.20409578e-02, 2.22354006e-02, 2.25075661e-02, 2.28884565e-02, 2.34213769e-02, 2.41667567e-02, 2.52088009e-02, 2.66646059e-02, 2.86965353e-02, 3.15287768e-02, 3.54689939e-02, 4.09355828e-02, 4.84896786e-02, 5.88674767e-02, 7.29997831e-02, 9.19856400e-02, 1.16940499e-01, 1.48531250e-01, 1.85753022e-01, 2.22880063e-01, 2.42065567e-01, 1.96807911e-01, 1.14185563e-09, 2.18439045e-01, 2.18439043e-01, 1.05573341e-09, 1.96807909e-01, 2.42065565e-01, 2.22880061e-01, 1.85753020e-01, 1.48531248e-01, 1.16940497e-01, 9.19856382e-02, 7.29997814e-02, 5.88674750e-02, 4.84896769e-02, 4.09355810e-02, 3.54689923e-02, 3.15287750e-02, 2.86965336e-02, 2.66646041e-02, 2.52087992e-02, 2.41667550e-02, 2.34213750e-02, 2.28884548e-02, 2.25075642e-02, 2.22353988e-02, 2.20409560e-02, 2.19020576e-02, 2.18028457e-02, 2.17319849e-02, 2.16813762e-02, 2.16452325e-02, 2.16194200e-02, 2.16009858e-02, 2.15878213e-02, 2.15784200e-02, 2.15717062e-02, 2.15669117e-02, 2.15634878e-02, 2.15610426e-02, 2.15592965e-02, 2.15580496e-02, 2.15571593e-02, 2.15565232e-02, 2.15560691e-02, 2.15557448e-02, 2.15555132e-02, 2.15553478e-02, 2.15552298e-02, 2.15551454e-02, 2.15550851e-02, 2.15550421e-02, 1.07775057e-02]
+    assert np.allclose(rho, rho_expected, atol=1e-3)
+    assert np.allclose(rho_integrated, const_imag_tail, atol=1e-3)
+    assert np.allclose(chi2, 3.4611947346021525e-06, atol=1e-6)
+
+
+def test_get_multiple_continuations():
+    pass
+
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
 test_calc_gf_tau_nontrivial()
@@ -249,3 +284,5 @@ test_get_svd_for_continuation()
 test_solveProblem()
 test_integral_kramers_kronig()
 test_get_kramers_kronig_realpart()
+test_get_single_continuation()
+test_get_multiple_continuations()
