@@ -207,17 +207,17 @@ def test_integral_kramers_kronig():
     from dcore.anacont_spm import _integral_kramers_kronig, dos_to_gf_imag
     from scipy.interpolate import interp1d
 
-    energies_real = np.linspace(-5, 5, num=1000)
-    dos = _get_dos_semicircular(energies_real, 4)
+    energies = np.linspace(-5, 5, num=1000)
+    dos = _get_dos_semicircular(energies, 4)
     gf_imag = dos_to_gf_imag(dos)
-    ip = interp1d(energies_real, gf_imag, fill_value=0, assume_sorted=True)
+    ip = interp1d(energies, gf_imag, fill_value=0, assume_sorted=True)
 
     results = [
-        _integral_kramers_kronig(energies_real, -3, ip, 1e-10),
-        _integral_kramers_kronig(energies_real, -2, ip, 1e-10),
-        _integral_kramers_kronig(energies_real,  0, ip, 1e-10),
-        _integral_kramers_kronig(energies_real,  2, ip, 1e-10),
-        _integral_kramers_kronig(energies_real,  3, ip, 1e-10)
+        _integral_kramers_kronig(energies, -3, ip, 1e-10),
+        _integral_kramers_kronig(energies, -2, ip, 1e-10),
+        _integral_kramers_kronig(energies,  0, ip, 1e-10),
+        _integral_kramers_kronig(energies,  2, ip, 1e-10),
+        _integral_kramers_kronig(energies,  3, ip, 1e-10)
     ]
     expected_results = [-0.7196181351109775, 
                         -0.4185049136590478, 
@@ -225,6 +225,18 @@ def test_integral_kramers_kronig():
                         0.41850491365904774, 
                         0.7196181351109775]
     assert np.allclose(results, expected_results, atol=1e-7)
+
+def test_get_kramers_kronig_realpart():
+    from dcore.anacont_spm import get_kramers_kronig_realpart, dos_to_gf_imag
+    energies = np.linspace(-5, 5, num=10)
+    dos = _get_dos_semicircular(energies, 4)
+    gf_imag = dos_to_gf_imag(dos)
+
+    energies_result, gf_real_result, gf_imag_result = get_kramers_kronig_realpart(energies, gf_imag)
+    assert np.allclose(energies_result, energies, atol=1e-7)
+    assert np.allclose(gf_imag_result, gf_imag, atol=1e-7)
+    gf_real_expected = [-0.27741992, -0.38657675, -0.35563321, -0.20813572, -0.06925385, 0.06925385, 0.20813572, 0.35563321, 0.38657675, 0.27741992]
+    assert np.allclose(gf_real_result, gf_real_expected, atol=1e-7)
 
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
@@ -236,3 +248,4 @@ test_getSVD()
 test_get_svd_for_continuation()
 test_solveProblem()
 test_integral_kramers_kronig()
+test_get_kramers_kronig_realpart()
