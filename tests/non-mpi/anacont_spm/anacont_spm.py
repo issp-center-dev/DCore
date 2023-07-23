@@ -239,7 +239,7 @@ def test_get_kramers_kronig_realpart():
     assert np.allclose(gf_real_result, gf_real_expected, atol=1e-7)
 
 def test_get_single_continuation():
-    from dcore.anacont_spm import get_single_continuation, calc_gf_tau_from_gf_matsubara, _calc_gf_tau, calc_gf_tau_from_gf_matsubara
+    from dcore.anacont_spm import get_single_continuation, calc_gf_tau_from_gf_matsubara, calc_gf_tau_from_gf_matsubara
     beta = 40
     nsv = 24
     emin = -10
@@ -271,7 +271,34 @@ def test_get_single_continuation():
 
 
 def test_get_multiple_continuations():
-    pass
+    from dcore.anacont_spm import get_multiple_continuations, calc_gf_tau_from_gf_matsubara, calc_gf_tau_from_gf_matsubara
+    beta = 40
+    nsv = 24
+    emin = -10
+    emax = +10
+    num_energies = 100
+    lambdas = np.logspace(-10, 3, num=3)
+    n_matsubara = 1000
+    n_matsubara_tail = 100
+    ntau = 25
+
+    energies_dos = np.linspace(-5, 5, num=1000)
+    dos = _get_dos_semicircular(energies_dos, 4)
+    dos_integrated = np.trapz(dos, energies_dos)
+    assert np.allclose(dos_integrated, 1, atol=1e-13)
+
+    matsubara_freq, gf_wn = _calc_gf_matsubara(energies_dos, dos, beta, n_matsubara)
+
+    tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(matsubara_freq, gf_wn, ntau, n_matsubara_tail, beta, False)
+
+    energies_extract, continued_densities, chi2_values, rho_values = get_multiple_continuations(tau_grid, gf_tau, nsv, beta, emin, emax, num_energies, const_imag_tail, lambdas, verbose=False)
+
+    assert np.allclose(energies_extract, np.linspace(emin, emax, num=num_energies), atol=1e-7)
+    chi2_expected = [2.4602174332077003e-06, 7.553104010527706e-05, 0.006548520565913404]
+    assert np.allclose(chi2_values, chi2_expected, atol=1e-7)
+    assert np.allclose(rho_values, const_imag_tail * np.ones(len(rho_values)), atol=1e-7)
+
+    
 
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
