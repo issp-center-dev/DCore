@@ -73,7 +73,7 @@ def get_multiple_continuations(tau_grid, gf_tau, nsv, beta, emin, emax, num_ener
         rho_values.append(rho_integrated)
     return energies_extract, continued_densities, chi2_values, rho_values
 
-def _get_kernel_matrix(energies, tau_grid, beta, delta_energy, z_critical=20):
+def _get_kernel_matrix(energies, tau_grid, beta, delta_energy, z_critical=20): #with z_critical=20 error of asymptote is below 1e-10
     assert tau_grid[0] == 0
     assert tau_grid[-1] == beta
     i_lc = np.searchsorted(energies, -z_critical / beta)
