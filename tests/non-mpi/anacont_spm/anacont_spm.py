@@ -297,8 +297,8 @@ def test_get_multiple_continuations():
     chi2_expected = [2.4602174332077003e-06, 7.553104010527706e-05, 0.006548520565913404]
     assert np.allclose(chi2_values, chi2_expected, atol=1e-7)
     assert np.allclose(rho_values, const_imag_tail * np.ones(len(rho_values)), atol=1e-7)
-
-    
+    assert len(lambdas) == len(continued_densities)
+    assert np.all([num_energies == len(cd) for cd in continued_densities])
 
 test_find_sum_rule_const()
 test_calc_gf_tau_trivial()
