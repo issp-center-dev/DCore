@@ -163,7 +163,6 @@ def test_get_svd_for_continuation():
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
 
     energies_extract_expected = np.linspace(emin, emax, num_energies)
-    print(U)
     U_expected = np.array([
         [-1.00000000e+00, -5.55111512e-17],
         [-2.01777466e-05, -1.08420217e-19],
