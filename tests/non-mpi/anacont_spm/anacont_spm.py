@@ -153,21 +153,29 @@ def test_get_svd_for_continuation():
     from dcore.anacont_spm import _get_svd_for_continuation
     beta = 40
     nsv = 2
-    ntau = 3
-    num_energies = 4
+    ntau = 5
+    num_energies = 5
 
-    emin = -5
-    emax = 5
+    emin = -4
+    emax = 6
     tau_grid = np.linspace(0, beta, num=ntau)
 
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
 
     energies_extract_expected = np.linspace(emin, emax, num_energies)
-    U_expected = np.array([[-1.20839106e-01, 9.92672106e-01], [2.44249065e-15, 2.94209102e-15], [9.92672106e-01, 1.20839106e-01]])
+    print(U)
+    U_expected = np.array([
+        [-1.00000000e+00, -5.55111512e-17],
+        [-2.01777466e-05, -1.08420217e-19],
+        [-9.16068221e-10, -7.46069873e-14],
+        [-4.15778523e-14, -2.44721856e-07],
+        [ 7.80569051e-17, -1.00000000e+00]])
     assert np.allclose(U, U_expected, atol=1e-7)
-    S_expected = np.array([3.72677996, 3.72677996])
+    S_expected = np.array([3.75, 2.79508497])
     assert np.allclose(S, S_expected, atol=1e-7)
-    Vt_expected = np.array([[0.44393646, 0.88787292, -0.10808178, -0.05404089], [0.05404089, 0.10808178, 0.88787292, 0.44393646]])
+    Vt_expected = np.array([
+        [ 2.60189684e-17,  5.20294000e-17, -6.66666667e-01, -6.66666666e-01, -3.33333333e-01],
+        [-4.47213595e-01, -8.94427191e-01, -5.34711511e-17, -4.96506831e-17, -2.48253415e-17]])
     assert np.allclose(Vt, Vt_expected, atol=1e-7)
     assert np.allclose(delta_energy, (emax - emin) / (num_energies - 1), atol=1e-7)
     assert np.allclose(energies_extract, energies_extract_expected, atol=1e-7)
