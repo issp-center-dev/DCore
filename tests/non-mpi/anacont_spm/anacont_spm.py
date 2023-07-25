@@ -163,19 +163,20 @@ def test_get_svd_for_continuation():
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
 
     energies_extract_expected = np.linspace(emin, emax, num_energies)
+    S_expected = np.array([3.75, 2.79508497])
     U_expected = np.array([
         [-1.00000000e+00, -5.55111512e-17],
         [-2.01777466e-05, -1.08420217e-19],
         [-9.16068221e-10, -7.46069873e-14],
         [-4.15778523e-14, -2.44721856e-07],
         [ 7.80569051e-17, -1.00000000e+00]])
-    assert np.allclose(U, U_expected, atol=1e-7)
-    S_expected = np.array([3.75, 2.79508497])
-    assert np.allclose(S, S_expected, atol=1e-7)
     Vt_expected = np.array([
         [ 2.60189684e-17,  5.20294000e-17, -6.66666667e-01, -6.66666666e-01, -3.33333333e-01],
         [-4.47213595e-01, -8.94427191e-01, -5.34711511e-17, -4.96506831e-17, -2.48253415e-17]])
-    assert np.allclose(Vt, Vt_expected, atol=1e-7)
+    assert np.allclose(S, S_expected, atol=1e-7)
+    case1 = np.allclose(U, U_expected, atol=1e-7) and np.allclose(Vt, Vt_expected, atol=1e-7)
+    case2 = np.allclose(-U, -U_expected, atol=1e-7) and np.allclose(-Vt, -Vt_expected, atol=1e-7)
+    assert case1 or case2
     assert np.allclose(delta_energy, (emax - emin) / (num_energies - 1), atol=1e-7)
     assert np.allclose(energies_extract, energies_extract_expected, atol=1e-7)
 
