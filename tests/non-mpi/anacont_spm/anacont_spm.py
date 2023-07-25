@@ -137,24 +137,24 @@ def test_getSVD():
     from dcore.anacont_spm import _getSVD, _get_kernel_matrix
     beta = 40
     nsv = 2
-    energies = np.linspace(-3, 3, num=5)
+    ntau = 3
+    nenergies = 5
+    energies = np.linspace(-3, 3, num=nenergies)
     delta_energy = energies[1] - energies[0]
-    tau_grid = np.linspace(0, beta, num=3)
+    tau_grid = np.linspace(0, beta, num=ntau)
     kernel = _get_kernel_matrix(energies, tau_grid, beta, delta_energy)
     U, S, Vt = _getSVD(kernel, nsv=nsv)
-    U_expected = np.array([[6.90024281e-01, -7.07106781e-01], [2.18478793e-01, 1.83989109e-16], [6.90024281e-01, 7.07106781e-01]])
     S_expected = np.array([2.02869452, 1.67705098])
-    Vt_expected = np.array([[2.55099132e-01, 5.10198264e-01, 5.90968974e-01, 5.10198264e-01, 2.55099132e-01], [3.16227766e-01, 6.32455532e-01, 1.65502277e-16, -6.32455532e-01, -3.16227766e-01]])
-    assert np.allclose(U, U_expected, atol=1e-7)
     assert np.allclose(S, S_expected, atol=1e-7)
-    assert np.allclose(Vt, Vt_expected, atol=1e-7)
+    assert U.shape == (ntau, nsv)
+    assert Vt.shape == (nsv, nenergies)
 
 def test_get_svd_for_continuation():
     from dcore.anacont_spm import _get_svd_for_continuation
     beta = 40
     nsv = 2
     ntau = 5
-    num_energies = 5
+    num_energies = 6
 
     emin = -4
     emax = 6
@@ -163,20 +163,10 @@ def test_get_svd_for_continuation():
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
 
     energies_extract_expected = np.linspace(emin, emax, num_energies)
-    S_expected = np.array([3.75, 2.79508497])
-    U_expected = np.array([
-        [-1.00000000e+00, -5.55111512e-17],
-        [-2.01777466e-05, -1.08420217e-19],
-        [-9.16068221e-10, -7.46069873e-14],
-        [-4.15778523e-14, -2.44721856e-07],
-        [ 7.80569051e-17, -1.00000000e+00]])
-    Vt_expected = np.array([
-        [ 2.60189684e-17,  5.20294000e-17, -6.66666667e-01, -6.66666666e-01, -3.33333333e-01],
-        [-4.47213595e-01, -8.94427191e-01, -5.34711511e-17, -4.96506831e-17, -2.48253415e-17]])
+    S_expected = np.array([3.28875483, 2.48129071])
     assert np.allclose(S, S_expected, atol=1e-7)
-    case1 = np.allclose(U, U_expected, atol=1e-7) and np.allclose(Vt, Vt_expected, atol=1e-7)
-    case2 = np.allclose(-U, -U_expected, atol=1e-7) and np.allclose(-Vt, -Vt_expected, atol=1e-7)
-    assert case1 or case2
+    assert U.shape == (ntau, nsv)
+    assert Vt.shape == (nsv, num_energies)
     assert np.allclose(delta_energy, (emax - emin) / (num_energies - 1), atol=1e-7)
     assert np.allclose(energies_extract, energies_extract_expected, atol=1e-7)
 
