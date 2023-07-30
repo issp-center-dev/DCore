@@ -1,4 +1,4 @@
-name: Run all tests
+name: Run tests with triqs
 on: [push, pull_request]
 jobs:
   all-tests:

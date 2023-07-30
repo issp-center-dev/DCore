@@ -47,7 +47,7 @@ setup(
         # Import h5py imports mpi4py automatically.
         'h5py!=2.10.0',
         'toml>=0.10',
-        'dcorelib>=0.7.1',
+        'dcorelib>=0.9.1',
         'sympy',
         ],
 

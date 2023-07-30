@@ -244,7 +244,7 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit, dc_orbit
     if dc_type == "HF_DFT" or dc_type == "HF_imp":
         if use_spin_orbit:
             dim_tot = dens_mat["ud"].shape[0]  # 2 * num_orb
-            dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex_)
+            dc_imp_sh["ud"] = numpy.zeros((dim_tot, dim_tot), numpy.complex128)
             dc_imp_sh["ud"] += numpy.einsum("ijkl, jl->ik", u_mat, dens_mat["ud"], optimize=True)  # Hartree
             dc_imp_sh["ud"] -= numpy.einsum("ijkl, jk->il", u_mat, dens_mat["ud"], optimize=True)  # Fock
         else:
@@ -252,7 +252,7 @@ def calc_dc(dc_type, u_mat, dens_mat, spin_block_names, use_spin_orbit, dc_orbit
                 u_mat_reduce = u_mat[0:num_orb, 0:num_orb, 0:num_orb, 0:num_orb]  # TODO: make a function
                 dens_mat_tot = sum(dens_mat.values())  # spin-sum of density matrix
 
-                dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex_)
+                dc_imp_sh[sp1] = numpy.zeros((num_orb, num_orb), numpy.complex128)
                 dc_imp_sh[sp1] += numpy.einsum("ijkl, jl->ik", u_mat_reduce, dens_mat_tot, optimize=True)  # Hartree
                 dc_imp_sh[sp1] -= numpy.einsum("ijkl, jk->il", u_mat_reduce, dens_mat[sp1], optimize=True)  # Fock
     #
@@ -615,7 +615,7 @@ class DMFTCoreSolver(object):
             diff = make_hermite_conjugate(g)
             if diff > 1e-8:
                 print('Warning Gloc_iw at ish {} is not hermite conjugate: {}'.format(ish, diff))
-        return r['Gloc_iw_sh'], r['dm_sh']
+        return r['Gloc_iw_sh'], r['dm_sh'], r['total_charge']
 
 
     def print_density_matrix(self, dm_sh, smoment_sh):
@@ -821,7 +821,10 @@ class DMFTCoreSolver(object):
             sys.stdout.flush()
 
             # Compute Gloc_iw where the chemical potential is adjusted if needed
-            Gloc_iw_sh, dm_sh = self.calc_Gloc()
+            Gloc_iw_sh, dm_sh, total_charge = self.calc_Gloc()
+            print("\n  Total charge : %.6f" % total_charge)
+            self._quant_to_save_history['total_charge'] = total_charge
+
             smoment_sh = spin_moments_sh(dm_sh)
             self.print_density_matrix(dm_sh, smoment_sh)
             self._quant_to_save_history['density_matrix'] = dm_sh

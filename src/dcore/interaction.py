@@ -120,7 +120,7 @@ def _coefficients_ls_j(l: int, verbose: bool=False, prefix: str=''):
     j_jz = numpy.array(j_jz + [[j, -jz] for j, jz in j_jz])
 
     # matrix elements < L Lz S Sz | J Jz >
-    mat_ls_j = numpy.zeros((len(j_jz), len(j_jz)), dtype=numpy.float)
+    mat_ls_j = numpy.zeros((len(j_jz), len(j_jz)), dtype=numpy.float64)
     mat_for_print = []
     for i1, (m, ss) in enumerate(m_s):
         for i2, (j, jz) in enumerate(j_jz):
@@ -294,7 +294,7 @@ def _generate_umat_slater_uj(p: Dict):
 
     def _U_J_to_F(_l, _u, _j):
         if _l == 0:
-            return numpy.array([_u,], dtype=numpy.float_)
+            return numpy.array([_u,], dtype=numpy.float64)
         else:
             return U_J_to_radial_integrals(_l, _u, _j)
 
@@ -316,7 +316,7 @@ def _generate_umat_slater_f(p: Dict):
     nsh = p['model']['n_inequiv_shells']
     slater_sh = _parse_interaction_parameters(p["model"]["slater_f"], name='slater_f', nsh=nsh, n_inner=5)
     l_sh = [int(l) for l, *_ in slater_sh]
-    f_sh = [numpy.array(f[0:l+1], dtype=numpy.float_) for l, *f in slater_sh]
+    f_sh = [numpy.array(f[0:l+1], dtype=numpy.float64) for l, *f in slater_sh]
 
     # Warn if non-zero values are neglected from slater_f
     slater_f_neglected = [numpy.any(numpy.array(f[l+1:]) != 0) for l, *f in slater_sh]

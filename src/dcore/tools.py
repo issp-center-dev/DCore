@@ -163,11 +163,11 @@ def convert_to_built_in_scalar_type(data):
         return data
     elif numpy.issubdtype(type(data), numpy.integer):
         return int(data)
-    elif numpy.issubdtype(type(data), numpy.float):
+    elif numpy.issubdtype(type(data), numpy.float64):
         return float(data)
     elif numpy.issubdtype(type(data), numpy.bool_):
         return bool(data)
-    elif numpy.issubdtype(type(data), numpy.complex):
+    elif numpy.issubdtype(type(data), numpy.complex128):
         return complex(data)
 
 
@@ -502,9 +502,9 @@ def set_potential(input_str, name, n_inequiv_shells, dim_sh, spin_orbit):
 
     # init potential matrix
     if spin_orbit:
-        pot = [numpy.zeros((1, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
+        pot = [numpy.zeros((1, dim_sh[ish], dim_sh[ish]), numpy.complex128) for ish in range(n_inequiv_shells)]
     else:
-        pot = [numpy.zeros((2, dim_sh[ish], dim_sh[ish]), numpy.complex_) for ish in range(n_inequiv_shells)]
+        pot = [numpy.zeros((2, dim_sh[ish], dim_sh[ish]), numpy.complex128) for ish in range(n_inequiv_shells)]
 
     # read potential matrix
     if input_str != 'None':
@@ -910,7 +910,7 @@ def expand_path(exec_path):
     full_path = os.path.expandvars(exec_path)  # expand environment variables
     full_path = shutil.which(full_path)  # return full path
     if full_path is None:
-        print(f"ERROR: {exec_path} does not exist. Set exec_path properly!", file=sys.stderr)
+        print(f"ERROR: '{exec_path}' does not exist. Set exec_path properly!", file=sys.stderr)
         sys.exit(1)
 
     return full_path

@@ -20,6 +20,7 @@ import os
 import shutil
 import sys
 from itertools import product
+from collections import OrderedDict
 from dcore._dispatcher import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size, expand_path
 from .base import SolverBase, rotate_basis
@@ -41,7 +42,7 @@ def to_numpy_array(g, names):
     # FIXME: Bit ugly
     n_data = g[names[0]].data.shape[0]
 
-    data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=numpy.complex128)
+    data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=complex)
     offset = 0
     for name in names:
         block = g[name]
@@ -59,40 +60,12 @@ def to_numpy_array(g, names):
     return (data[:, :, index])[:, index, :]
 
 
-# def assign_from_numpy_array(g, data, names):
-#     """
-#     Does inversion of to_numpy_array
-#     data[spin,orb,iw]
-#     g[spin].data[iw,orb1,orb2]
-#     """
-#     # print(g.n_blocks)
-#     if g.n_blocks != 2:
-#         raise RuntimeError("n_blocks={} must be 1 or 2.".format(g.n_blocks))
-#
-#     norb = data.shape[1]
-#     niw = data.shape[2]
-#     # print(data.shape)
-#     # print("norb:", norb)
-#
-#     # check number of Matsubara frequency
-#     assert data.shape[2]*2 == g[names[0]].data.shape[0]
-#     # print(g[names[0]].data.shape)
-#
-#     for spin in range(2):
-#         for orb in range(norb):
-#             # print(orb, spin, names[spin])
-#             # positive frequency
-#             g[names[spin]].data[niw:, orb, orb] = data[spin][orb][:]
-#             # negative frequency
-#             g[names[spin]].data[:niw, orb, orb] = numpy.conj(data[spin][orb][::-1])
-
-
 def assign_from_numpy_array(g, data, names):
     """
     Does inversion of to_numpy_array
 
     assign from
-        data[i, iw]  (i=(orb,spin))
+        data[iw, i]  (i=(orb,spin))
     to
         g[spin].data[iw,orb1,orb2] (w/o SO) (spin='up', 'down')
         g['ud'].data[iw,i1,i2]     (w/  SO)
@@ -105,13 +78,13 @@ def assign_from_numpy_array(g, data, names):
     # (n_sp, n_inner) = (2, n_orb)    w/o SO
     #                   (1, 2*n_orb)  w/  SO
     n_sp = g.n_blocks
-    n_inner = data.shape[0] // n_sp
-    niw = data.shape[1]
+    n_inner = data.shape[1] // n_sp
+    niw = data.shape[0]
 
     # array which data are assigned from
-    # (orb, spin, iw) -> (spin, orb, iw) -> (spin, orb, iw)  w/o SO
-    #                                       (1, inner, iw)   w/  SO
-    data_from = data.reshape((-1, 2, niw)).transpose((1, 0, 2)).reshape(n_sp, n_inner, niw)
+    # (iw, orb, spin) -> (iw, spin, orb) -> (iw, spin, orb)  w/o SO
+    #                                       (iw, 1, inner)   w/  SO
+    data_from = data.reshape((niw, -1, 2)).transpose((0, 2, 1)).reshape(niw, n_sp, n_inner)
 
     # assign data_from to g
     for sp, name in enumerate(names):
@@ -120,9 +93,9 @@ def assign_from_numpy_array(g, data, names):
         assert data_to.shape == (2*niw, n_inner, n_inner)
         for i in range(n_inner):
             # positive frequency
-            data_to[niw:, i, i] = data_from[sp, i, :]
+            data_to[niw:, i, i] = data_from[:, sp, i]
             # negative frequency
-            data_to[:niw, i, i] = numpy.conj(data_from[sp, i, ::-1])
+            data_to[:niw, i, i] = numpy.conj(data_from[::-1, sp, i])
 
 
 def dcore2alpscore(dcore_U):
@@ -139,7 +112,7 @@ def dcore2alpscore(dcore_U):
         alps_J[i, j] = dcore_U[i, j, j, i].real
     return alps_U, alps_Uprime, alps_J
 
-def write_Umatrix(U, Uprime, J, norb):
+def convert_Umatrix(U, Uprime, J, norb):
     Uout = numpy.zeros((norb, 2, norb, 2))
 
     # from (up,orb1), (up,orb2), ..., (down,orb1), (down,orb2), ...
@@ -159,80 +132,42 @@ def write_Umatrix(U, Uprime, J, norb):
             else:
                 Uout[a1, s1, a2, s2] = Uprime_four[a1, s1, a2, s2] - J_four[a1, s1, a2, s2]
 
-    Uout = Uout.reshape((2*norb, 2*norb))
-    with open('./Umatrix', 'w') as f:
-        for i in range(2*norb):
-            for j in range(2*norb):
-                print('{:.15e} '.format(Uout[i, j].real), file=f, end="")
-            print("", file=f)
+    return Uout.reshape((2*norb, 2*norb))
 
 
+def eval_tail(g_iw, beta, n_ave=10):
+    """Evaluate the coeeficients of 1/iw
 
-class ALPSCTHYBSEGSolver(SolverBase):
+    Args:
+        g_iw (ndarray(n_iw, n_flavors)): Matsubara Green's function G(iw) for w>0.
+        beta (float): Inverse temperature
+        n_ave (int, optional): The number of frequency points to average. Defaults to 10.
+
+    Returns:
+        ndarray(n_flavors,): The coefficients of 1/iw
+    """
+    assert g_iw.ndim == 2
+
+    n_iw, n_flavors = g_iw.shape
+    wn = (2*numpy.arange(n_iw) + 1) * numpy.pi / beta
+
+    # average of Re[ G(iw) * iw ]
+    tails = numpy.mean(-g_iw[-n_ave:, :].imag * wn[-n_ave:, None], axis=0)
+    assert tails.shape == (n_flavors,)
+
+    return tails
+
+
+class JOCTHYBSEGSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
         """
         Initialize the solver.
         """
 
-        super(ALPSCTHYBSEGSolver, self).__init__(beta, gf_struct, u_mat, n_iw)
+        super().__init__(beta, gf_struct, u_mat, n_iw)
 
-        self.n_tau = max(10001, 5 * n_iw)
-
-    def _get_occupation(self):
-        """
-        Read the spin-orbital-dependent occupation number from HDF5 file
-
-        Returns
-        -------
-        numpy.ndarray of size (2*self.n_orb)
-
-        """
-
-        array = numpy.zeros(2*self.n_orb, dtype=float)
-        with HDFArchive('sim.h5', 'r') as f:
-            results = f["simulation"]["results"]
-            for i1 in range(2*self.n_orb):
-                group = "density_%d" % i1
-                if group in results:
-                    array[i1] = results[group]["mean"]["value"]
-
-        # [(o1,s1)] -> [o1, s1] -> [s1, o1] -> [(s1, o1)]
-        array = array.reshape((self.n_orb, 2))\
-                     .transpose((1, 0))\
-                     .reshape((2*self.n_orb))
-        return array
-
-    def _get_results(self, group_prefix, n_data, orbital_symmetrize, dtype=float, stop_if_data_not_exist=True):
-        """
-        Read results with two spin-orbital indices from HDF5 file
-
-        Returns
-        -------
-        numpy.ndarray of size (2*self.n_orb, 2*self.n_orb, n_data)
-
-        """
-
-        data_shape = (2*self.n_orb, 2*self.n_orb, n_data)
-
-        array = numpy.zeros(data_shape, dtype=dtype)
-        with HDFArchive('sim.h5', 'r') as f:
-            results = f["simulation"]["results"]
-            for i1, i2 in product(range(2*self.n_orb), repeat=2):
-                group = "%s_%d_%d" % (group_prefix, i1, i2)
-                if group in results:
-                    array[i1, i2, :] = results[group]["mean"]["value"]
-                    if orbital_symmetrize:  # Only i1>i2 is computed in CTQMC.
-                        array[i2, i1, :] = array[i1, i2, :]
-                elif stop_if_data_not_exist:
-                    raise Exception("data does not exist in sim.h5/simulation/results/{}. alps_cthyb might be old.".format(group))
-
-
-        # [(o1,s1), (o2,s2)] -> [o1, s1, o2, s2] -> [s1, o1, s2, o2] -> [(s1,o1), (s2,o2)]
-        array = array.reshape((self.n_orb, 2, self.n_orb, 2, -1))\
-                     .transpose((1, 0, 3, 2, 4))\
-                     .reshape((2*self.n_orb, 2*self.n_orb, -1))
-        return array
+        # self.n_tau = max(10001, 5 * n_iw)
 
     def solve(self, rot, mpirun_command, params_kw):
         """
@@ -243,7 +178,6 @@ class ALPSCTHYBSEGSolver(SolverBase):
         """
         internal_params = {
             'exec_path'           : '',
-            'random_seed_offset'  : 0,
             'dry_run'             : False,
             'neglect_offdiagonal' : True,
         }
@@ -253,10 +187,21 @@ class ALPSCTHYBSEGSolver(SolverBase):
                 return params_kw[key]
             else:
                 return internal_params[key]
-        print (params_kw)
+        # print (params_kw)
 
         umat_check = umat2dd(self.u_mat)
         assert numpy.allclose(umat_check, self.u_mat), "Please set density_density = True when you run ALPS/cthyb-seg!"
+
+        if self.n_iw % 2 != 0:
+            sys.exit(f"Invalid value n_iw={self.n_iw}: Only even number is allowed for n_iw in JO/cthyb-seg solver")
+
+        # (0) Rotate H0 and Delta_tau if rot is given
+        g0_iw_rotated = self._G0_iw.copy()
+        if rot is None:
+            u_mat_rotated = self.u_mat
+        else:
+            assert isinstance(rot, dict)
+            u_mat_rotated = rotate_basis(rot, self.use_spin_orbit, self.u_mat, [g0_iw_rotated,], direction='forward')
 
         # (1) Set configuration for the impurity solver
         # input:
@@ -266,16 +211,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
         #
         # Additionally, the following variables may used:
         #   self.n_orb
-        #   self.n_flavor
+        #   self.n_flavors
         #   self.gf_struct
-
-        # (0) Rotate H0 and Delta_tau if rot is given
-        g0_iw_rotated = self._G0_iw.copy()
-        if rot is None:
-            u_mat_rotated = self.u_mat
-        else:
-            assert isinstance(rot, dict)
-            u_mat_rotated = rotate_basis(rot, self.use_spin_orbit, self.u_mat, [g0_iw_rotated,], direction='forward')
 
         # (1a) If H0 is necessary:
         # Non-interacting part of the local Hamiltonian including chemical potential
@@ -289,17 +226,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         index[0::2] = numpy.arange(self.n_orb)
         index[1::2] = numpy.arange(self.n_orb) + self.n_orb
         # Swap cols and rows
-        H0 = (H0[:, index])[index, :]
-
-        # (1b) If Delta(iw) and/or Delta(tau) are necessary:
-        # Compute the hybridization function from G0:
-        #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
-        # H0 is extracted from the tail of the Green's function.
-        self._Delta_iw = delta(g0_iw_rotated)
-        Delta_tau = make_block_gf(GfImTime, self.gf_struct, self.beta, self.n_tau)
-        for name in self.block_names:
-            Delta_tau[name] << Fourier(self._Delta_iw[name])
-        Delta_tau_data = to_numpy_array(Delta_tau, self.block_names)
+        H0 = H0[numpy.ix_(index, index)]
 
         # check if H0 is diagonal
         H0_offdiag = H0.copy()
@@ -314,64 +241,91 @@ class ALPSCTHYBSEGSolver(SolverBase):
                 print("--> exit. To neglect this warning, set neglect_offdiagonal{bool}=True", file=sys.stderr)
                 sys.exit(1)
 
-        # TODO: check Delta_tau_data
-        #    Delta_{ab}(tau) should be diagonal, real, negative
+        with open('./ef.in', 'w') as f:
+            for i in range(2*self.n_orb):
+                print('{:.15e}'.format(H0[i, i].real), file=f)
+
+
+        # (1b) If Delta(iw) and/or Delta(tau) are necessary:
+        # Compute the hybridization function from G0:
+        #     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)
+
+        # H0 is extracted from the tail of the Green's function.
+        self._Delta_iw = delta(g0_iw_rotated)
+        delta_iw = to_numpy_array(self._Delta_iw, self.block_names)
+        assert delta_iw.shape == (self.n_iw * 2, self.n_orb * 2, self.n_orb * 2)
+        delta_iw = delta_iw[self.n_iw:, :, :]  # only positive frequency
+        assert delta_iw.shape == (self.n_iw, self.n_orb * 2, self.n_orb * 2)
+
+        # TODO: check delta_iw
+        #    Delta_{ab}(iw) must be diagonal
+
+        delta_iw_diagonal = numpy.einsum("wii->wi", delta_iw)
+        assert delta_iw_diagonal.shape == (self.n_iw, self.n_orb * 2)
+
+        with open('./delta_w.in', 'w') as f:
+            for iw in range(self.n_iw):
+                for f1 in range(self.n_flavors):
+                    val = delta_iw_diagonal[iw, f1]
+                    print(' {:.15e} {:.15e}'.format(val.real, val.imag), file=f, end="")
+                print("", file=f)
+
+        # tail of Delta(iw)
+        vsq = eval_tail(delta_iw_diagonal, self.beta)
+        with open('./vsq.in', 'w') as f:
+            for i in range(self.n_flavors):
+                print('{:.15e}'.format(vsq[i]), file=f)
 
         # (1c) Set U_{ijkl} for the solver
         # Set up input parameters and files for ALPS/CTHYB-SEG
 
-        p_run = {
-            'SEED'                            : params_kw['random_seed_offset'],
-            'FLAVORS'                         : self.n_orb*2,
-            'BETA'                            : self.beta,
-            'N'                               : self.n_tau - 1,
-            'NMATSUBARA'                      : self.n_iw,
-            'U_MATRIX'                        : 'Umatrix',
-            'MU_VECTOR'                       : 'MUvector',
-            'cthyb.DELTA'                     : 'delta',
-        }
+        U, Uprime, J = dcore2alpscore(u_mat_rotated)
+        Udd = convert_Umatrix(U, Uprime, J, self.n_orb)
+        assert Udd.shape == (self.n_flavors, self.n_flavors)
 
-        if os.path.exists('./input.out.h5'):
-            shutil.move('./input.out.h5', './input_prev.out.h5')
-        # Set parameters specified by the user
-        for k, v in params_kw.items():
-            if k in internal_params:
-                continue
-            if k in p_run:
-                raise RuntimeError("Cannot override input parameter for ALPS/CTHYB-SEG: " + k)
-            p_run[k] = v
-
-        with open('./input.ini', 'w') as f:
-            for k, v in p_run.items():
-                print(k, " = ", v, file=f)
-
-        with open('./delta', 'w') as f:
-            for itau in range(self.n_tau):
-                print('{}'.format(itau), file=f, end="")
-                for f1 in range(self.n_flavors):
-                    if Delta_tau_data[itau, f1, f1].real >0:
-                        Delta_tau_data[itau, f1, f1] = 0
-                    print(' {:.15e}'.format(Delta_tau_data[itau, f1, f1].real), file=f, end="")
+        with open('./u.in', 'w') as f:
+            for i in range(self.n_flavors):
+                for j in range(self.n_flavors):
+                    print(' {:.15e}'.format(Udd[i, j].real), file=f, end="")
                 print("", file=f)
 
-        U, Uprime, J = dcore2alpscore(u_mat_rotated)
-        write_Umatrix(U, Uprime, J, self.n_orb)
+        # (1d) Set parameters for the solver
 
-        with open('./MUvector', 'w') as f:
-            # for orb in range(self.n_orb):
-            #     for spin in range(2):
-            #         print('{:.15e} '.format(-H0[2*orb+spin][2*orb+spin].real), file=f, end="")
-            for i in range(2*self.n_orb):
-                print('{:.15e} '.format(-H0[i, i].real), file=f, end="")
-            print("", file=f)
+        params_solver = OrderedDict()
+        params_solver['model'] = {
+            'n_s' : self.n_orb*2,
+            'file_Delta_iw' : 'delta_w.in',
+            'file_Vsq' : 'vsq.in',
+            'file_U' : 'u.in',
+            'file_ef' : 'ef.in',
+            'beta' : self.beta,
+        }
+        params_solver['control'] = {
+            'n_tau' : self.n_iw * 2,
+        }
+        params_solver['MC'] = {}
+
+        # Set parameters specified by the user
+        for prefix in ['control', 'MC']:
+            for k, v in params_kw.items():
+                # Convert, e.g., MC.n_msr -> n_msr
+                if k.startswith(prefix + '.'):
+                    key = k[len(prefix)+1:]
+                    if key in params_solver[prefix]:
+                        sys.exit(f"ERROR: Cannot override parameter '{key}'")
+                    params_solver[prefix][key] = v
+
+        with open('./input.ini', 'w') as f:
+            for prefix, params in params_solver.items():
+                print(f"\n[{prefix}]", file=f)
+                for k, v in params.items():
+                    print(f"{k} = {v}", file=f)
 
         if _read('dry_run'):
             return
 
-        # Invoke subprocess
-        exec_path = expand_path(_read('exec_path'))
-
         # (2) Run a working horse
+        exec_path = expand_path(_read('exec_path'))
         with open('./output', 'w') as output_f:
             launch_mpi_subprocesses(mpirun_command, [exec_path, './input.ini'], output_f)
 
@@ -383,25 +337,15 @@ class ALPSCTHYBSEGSolver(SolverBase):
         #   self._Sigma_iw
         #   self._Gimp_iw
 
-        def set_blockgf_from_h5(sigma, group):
-            # swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=numpy.complex128)
-            swdata = numpy.zeros((2*self.n_orb, self.n_iw), dtype=numpy.complex128)
-            with HDFArchive('sim.h5', 'r') as f:
-                # for orb in range(self.n_orb):
-                #     for spin in range(2):
-                #         swdata_array = f[group][str(orb*2+spin)]["mean"]["value"]
-                #         assert swdata_array.dtype == numpy.complex128
-                #         assert swdata_array.shape == (self.n_iw,)
-                #         swdata[spin, orb, :] = swdata_array
-                for i in range(2*self.n_orb):
-                    swdata_array = f[group][str(i)]["mean"]["value"]
-                    assert swdata_array.dtype == numpy.complex128
-                    assert swdata_array.shape == (self.n_iw,)
-                    swdata[i, :] = swdata_array
-            assign_from_numpy_array(sigma, swdata, self.block_names)
+        data = numpy.loadtxt("self_w.dat")
+        sigma_data = data[:, 1::2] + 1j * data[:, 2::2]
+        assert sigma_data.shape == (self.n_iw, self.n_flavors)
+        assign_from_numpy_array(self._Sigma_iw, sigma_data, self.block_names)
 
-        set_blockgf_from_h5(self._Sigma_iw, "S_omega")
-        set_blockgf_from_h5(self._Gimp_iw, "G_omega")
+        data = numpy.loadtxt("Gf_w.dat")
+        gf_data = data[:, 1::2] + 1j * data[:, 2::2]
+        assert gf_data.shape == (self.n_iw, self.n_flavors)
+        assign_from_numpy_array(self._Gimp_iw, gf_data, self.block_names)
 
         # Rotate Sigma and Gimp back to the original basis
         if rot is not None:
@@ -409,9 +353,9 @@ class ALPSCTHYBSEGSolver(SolverBase):
             # rotate_basis(rot, self.use_spin_orbit, None, self._Gimp_iw, direction='backward')
 
         #   self.quant_to_save['nn_equal_time']
-        nn_equal_time = self._get_results("nn", 1, orbital_symmetrize=True, stop_if_data_not_exist=False)
+        # nn_equal_time =
         # [(s1,o1), (s2,o2), 0]
-        self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
+        # self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
     def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
@@ -436,6 +380,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
             key = (i1, i2, i3, i4)
             val = numpy.ndarray(n_w2b)
         """
+        raise NotImplementedError
+
         if rot is not None:
             # TODO
             raise NotImplementedError
@@ -473,7 +419,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
                 return 0
 
         # Convert G2_iijj -> G2_ijij
-        g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=numpy.complex128)
+        g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=complex)
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
             for wb in range(num_wb):
                 for wf1, wf2 in product(range(2 * num_wf), repeat=2):
@@ -509,4 +455,4 @@ class ALPSCTHYBSEGSolver(SolverBase):
         raise Exception("This solver does not support the sparse sampling.")
 
     def name(self):
-        return "ALPS/cthyb-seg"
+        return "JO/cthyb-seg"

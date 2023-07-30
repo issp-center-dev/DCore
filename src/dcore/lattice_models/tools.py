@@ -151,7 +151,7 @@ def gen_kpath(params):
     nnode = len(knode)
     n_k = (nnode - 1) * nk_line + 1
     # print("\n   Total number of k =", str(n_k))
-    kvec = numpy.zeros((n_k, 3), numpy.float_)
+    kvec = numpy.zeros((n_k, 3), numpy.float64)
     ikk = 0
     for inode in range(nnode - 1):
         for ik in range(nk_line + 1):
@@ -164,7 +164,7 @@ def gen_kpath(params):
     # Generate x values on the k-path (horizontal axis in a band plot)
     #   knode --> xk, xnode
     #
-    xk = numpy.zeros(n_k, numpy.float_)
+    xk = numpy.zeros(n_k, numpy.float64)
     xnode = []
     xk[0] = 0.0
     ikk = 0
