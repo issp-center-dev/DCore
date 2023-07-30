@@ -81,7 +81,7 @@ def dcore_pyspmac(seedname):
             st[i, j, :] = numpy.real(st_ij[:])
         params_spmac["output"] = f"output{idata}"
         solver, rho, loglambda = spmac.run(params_spmac, Gtau=st)
-        solver.write_rho(solver.ws, rho, loglambda, outdir=solver.outdir)
+        solver.write_rho(solver.ws, rho, loglambda=loglambda, outdir=solver.outdir)
         if nflavors == 1:
             rho = rho.reshape(-1, 1, 1)
         else:
