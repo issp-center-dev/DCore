@@ -21,7 +21,7 @@ import toml
 import numpy as np
 from dcore._dispatcher import MeshReFreq, MeshImFreq, GfReFreq, GfImFreq
 from dcore.version import version, print_header
-from dcore.anacont_spm import calc_gf_tau_from_gf_matsubara, get_single_continuation, get_kramers_kronig_realpart, dos_to_gf_imag
+from dcore.anacont_spm import set_default_values, calc_gf_tau_from_gf_matsubara, get_single_continuation, get_kramers_kronig_realpart, dos_to_gf_imag
 
 def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
     tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
@@ -30,10 +30,22 @@ def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
     gf_real += const_real_tail
     return energies, gf_real, gf_imag
 
+def set_default_config(params):
+    default_values = {'show_fit' : False,
+                      'show_result' : False,
+                      'show_fit': False,
+                      'verbose_opt' : False,
+                      'max_iters_opt' : 100,
+                      'solver_opt' : 'ECOS'}
+    params['spm'] = set_default_values(params['spm'], default_values)
+    return params
+
 def dcore_anacont_spm(seedname):
     print('Reading ', seedname + '_anacont.toml...')
     with open(seedname + '_anacont.toml', 'r') as f:
         params = toml.load(f)
+    params = set_default_config(params)
+    print('Using configuration: ', params)
  
     print('Reading ', seedname + '_sigma_iw.npz...')
     npz = np.load(seedname + '_sigma_iw.npz')

@@ -21,6 +21,12 @@ import cvxpy as cp
 from scipy.interpolate import interp1d
 from scipy.sparse.linalg import svds
 
+def set_default_values(dictionary, default_values_dict):
+    for key, value in default_values_dict.items():
+        if key not in dictionary:
+            dictionary[key] = value
+    return dictionary
+
 def _find_sum_rule_const(matsubara_frequencies, gf_wn, ntail, show_fit=False):
     wntail = matsubara_frequencies[-ntail:]
     gftail = gf_wn[-ntail:]
