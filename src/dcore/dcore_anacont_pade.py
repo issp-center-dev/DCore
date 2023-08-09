@@ -34,7 +34,7 @@ def _set_n_pade(omega_cutoff, beta, n_min, n_max):
     print("n_pade = {}".format(n_pade))
     return n_pade
 
-def dcore_pade(seedname):
+def dcore_anacont_pade(seedname):
     print("Reading ", seedname + "_anacont.toml...")
     with open(seedname + "_anacont.toml", "r") as f:
         params = toml.load(f)
@@ -66,9 +66,9 @@ def run():
     print_header()
 
     parser = argparse.ArgumentParser(
-        prog='dcore_pade.py',
+        prog='dcore_anacont_pade.py',
         description='pre script for dcore.',
-        usage='$ dcore_pade input',
+        usage='$ dcore_anacont_pade input',
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
         #epilog=generate_all_description()
@@ -83,4 +83,4 @@ def run():
 
     args = parser.parse_args()
 
-    dcore_pade(args.seedname)
+    dcore_anacont_pade(args.seedname)
