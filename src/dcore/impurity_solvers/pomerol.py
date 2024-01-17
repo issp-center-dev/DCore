@@ -92,6 +92,31 @@ def decompose_index(index, n_orb):
     return spn, orb
 
 
+def calc_g0imp_from_h0(h0_full, gf_struct, block_names, beta, n_iw, n_bath):
+
+    # Cut H0 into block structure
+    n_block = len(gf_struct)
+    n_inner = h0_full.shape[0] // n_block
+    h0_block = [h0_full[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
+
+    # Construct G0 including bath sites
+    bath_names = ["bath" + str(i_bath) for i_bath in range(n_bath)]
+    gf_struct_full = {block: list(inner_names) + bath_names for block, inner_names in list(gf_struct.items())}
+    g0_full = make_block_gf(GfImFreq, gf_struct_full, beta, n_iw)
+    g0_full << iOmega_n
+    for i, block in enumerate(block_names):
+        g0_full[block] -= h0_block[i]
+    g0_full.invert()
+
+    # Project G0 onto impurity site
+    g0_imp = make_block_gf(GfImFreq, gf_struct, beta, n_iw)
+    for block in block_names:
+        for o1, o2 in product(gf_struct[block], repeat=2):
+            g0_imp[block].data[:, o1, o2] = g0_full[block].data[:, o1, o2]
+
+    return g0_imp
+
+
 class PomerolSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
@@ -246,25 +271,7 @@ class PomerolSolver(SolverBase):
         index_order = numpy.array(index_order)
         h0_updn = h0_full[index_order, :][:, index_order]
 
-        # Cut H0 into block structure
-        n_block = len(self.gf_struct)
-        n_inner = h0_full.shape[0] // n_block
-        h0_block = [h0_updn[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
-
-        # Construct G0 including bath sites
-        bath_names = [ "bath" + str(i_bath) for i_bath in range(n_bath)]
-        gf_struct_full = { block: list(inner_names) + bath_names for block, inner_names in list(self.gf_struct.items())}
-        g0_full = make_block_gf(GfImFreq, gf_struct_full, self.beta, self.n_iw)
-        g0_full << iOmega_n
-        for i, block in enumerate(self.block_names):
-            g0_full[block] -= h0_block[i]
-        g0_full.invert()
-
-        # Project G0 onto impurity site
-        g0_imp = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
-        for block in self.block_names:
-            for o1, o2 in product(self.gf_struct[block], repeat=2):
-                g0_imp[block].data[:, o1, o2] = g0_full[block].data[:, o1, o2]
+        g0_imp = calc_g0imp_from_h0(h0_updn, self.gf_struct, self.block_names, self.beta, self.n_iw, n_bath)
 
         self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)
 

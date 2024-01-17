@@ -28,7 +28,7 @@ from dcore._dispatcher import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params, expand_path
 from .base import SolverBase
 from .hphi_spectrum import calc_one_body_green_core_parallel
-from .pomerol import assign_from_numpy_array
+from .pomerol import assign_from_numpy_array, calc_g0imp_from_h0
 
 
 namelist_def = """\
@@ -151,11 +151,14 @@ class HPhiSolver(SolverBase):
             np = None
             print("A check of np is skipped.")
         else:
-            if not math.log(np, 4).is_integer():  # check if np = 4^m
+            np_ext = params_kw.get('np', None)  # set np manually
+            if np_ext:
+                commands[-1] = str(np_ext)
+            elif not math.log(np, 4).is_integer():  # check if np = 4^m
                 np_new = 4**int(math.log(np, 4))
                 print(f"Warning: np must be a power of 4 in HPhi. np is set to {np_new} in eigenenergies calculations. Note that np={np} is used for Gf calculations.", file=sys.stderr)
                 commands[-1] = str(np_new)
-                mpirun_command_power4 = " ".join(commands)
+            mpirun_command_power4 = " ".join(commands)
 
         # Matsubara frequencies omega_n = (2*n+1)*pi*T
         omega_min = numpy.pi / self.beta  # n=0
@@ -338,38 +341,16 @@ class HPhiSolver(SolverBase):
         # if triqs_major_version == 1:
         #     set_tail(self._Gimp_iw)
 
-        if self.use_spin_orbit:
-            print("Sigma is not implemented for SOC")
-            raise NotImplementedError
-
         # Make H0 matrix
         h0_full = numpy.zeros((2, n_site, 2, n_site), dtype=complex)
         for t in transfer:
             h0_full[t.s1, t.i1, t.s2, t.i2] = -t.t
         h0_full = h0_full.reshape((2*n_site, 2*n_site))
 
-        # TODO: move into a function -- begin
-        # Cut H0 into block structure
-        n_block = len(self.gf_struct)
-        n_inner = h0_full.shape[0] // n_block
-        h0_block = [h0_full[s*n_inner:(s+1)*n_inner, s*n_inner:(s+1)*n_inner] for s in range(n_block)]
+        # The order of indices is (imp_up, bath_up, imp_dn, bath_dn)
+        #   no need to rearrange
 
-        # Construct G0 including bath sites
-        bath_names = ["bath" + str(i_bath) for i_bath in range(n_bath)]
-        bath_names = ["bath" + str(i_bath) for i_bath in range(n_bath)]
-        gf_struct_full = {block: list(inner_names) + bath_names for block, inner_names in self.gf_struct.items()}
-        g0_full = make_block_gf(GfImFreq, gf_struct_full, self.beta, self.n_iw)
-        g0_full << iOmega_n
-        for i, block in enumerate(self.block_names):
-            g0_full[block] -= h0_block[i]
-        g0_full.invert()
-
-        # Project G0 onto impurity site
-        g0_imp = make_block_gf(GfImFreq, self.gf_struct, self.beta, self.n_iw)
-        for block in self.block_names:
-            for o1, o2 in product(self.gf_struct[block], repeat=2):
-                g0_imp[block].data[:, o1, o2] = g0_full[block].data[:, o1, o2]
-        # TODO: move into a function -- end
+        g0_imp = calc_g0imp_from_h0(h0_full, self.gf_struct, self.block_names, self.beta, self.n_iw, n_bath)
 
         self._Sigma_iw << inverse(g0_imp) - inverse(self._Gimp_iw)
 
