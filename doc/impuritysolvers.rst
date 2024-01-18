@@ -9,5 +9,6 @@ Impurity solvers
    impuritysolvers/alpscore_ctseg/ctseg
    impuritysolvers/triqs_hubbard_one/hubbard_one
    impuritysolvers/pomerol/pomerol
+   impuritysolvers/hphi/hphi
    impuritysolvers/null
    impuritysolvers/how_to_integrate
