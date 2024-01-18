@@ -50,17 +50,17 @@ CDataFileHead  zvo
 CParaFileHead  zqp
 --------------------
 Nsite          {0}
-Lanczos_max    2000
+Lanczos_max    {1}
 initial_iv     -1
-exct           {1}
-LanczosEps     14
-LanczosTarget  2
+exct           {2}
+LanczosEps     {3}
+LanczosTarget  {4}
 LargeValue     4.000000000000000e+00
 NumAve         5
 ExpecInterval  20
-NOmega         {2}
-OmegaMax       0.0     {3}
-OmegaMin       0.0     {4}
+NOmega         {5}
+OmegaMax       0.0     {6}
+OmegaMin       0.0     {7}
 OmegaOrg       0.0     0.0
 """
 
@@ -169,7 +169,6 @@ class HPhiSolver(SolverBase):
 
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
-        exct = params_kw.get('exct', 1)  # number of states to be computed
 
         fit_params = {}
         for key in ['fit_gtol',]:
@@ -178,10 +177,22 @@ class HPhiSolver(SolverBase):
 
         n_site = self.n_orb + n_bath
 
+        exct = params_kw.get('exct', 1)  # number of states to be computed
         exct_max = 4**n_site
         if exct > exct_max:
             print(f"Warning: exct={exct} is larger than {exct_max}. exct is set to {exct_max}", file=sys.stderr)
             exct = exct_max
+
+        modpara_opt = [
+            n_site,
+            params_kw.get('Lanczos_max', 2000),
+            exct,
+            params_kw.get('LanczosEps', 14),
+            params_kw.get('LanczosTarget', 2),
+            self.n_iw,
+            omega_max,
+            omega_min,
+        ]
 
         # Output namelist.def
         with open('./namelist.def', 'w') as f:
@@ -189,7 +200,7 @@ class HPhiSolver(SolverBase):
 
         # Output modpara.def
         with open('./modpara.def', 'w') as f:
-            print(modpara_def.format(n_site, exct, self.n_iw, omega_max, omega_min), end="", file=f)
+            print(modpara_def.format(*modpara_opt), end="", file=f)
 
         # Output calcmod.def
         with open('./calcmod.def', 'w') as f:
