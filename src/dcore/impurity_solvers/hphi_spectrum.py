@@ -39,7 +39,7 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
             for idx in range(n_flg):
                 for ex_state in range(n_excitation):
                     dir_path = "{}_{}_{}_{}_{}_{}".format(sitei, sigmai, sitej, sigmaj, ex_state, idx)
-                    shutil.rmtree(dir_path)
+                    shutil.rmtree(dir_path, ignore_errors=True)
 
     return one_body_green
 
