@@ -39,4 +39,4 @@ def test_hphi(request):
     dcore_check(input_ini, 'check/', 'png', 100)  # generate sigma.dat
     sigma = numpy.loadtxt("check/sigma.dat")
     sigma_ref = numpy.loadtxt("sigma.dat.ref")
-    numpy.allclose(sigma, sigma_ref, atol=1e-5)
+    assert numpy.allclose(sigma, sigma_ref, atol=1e-5)
