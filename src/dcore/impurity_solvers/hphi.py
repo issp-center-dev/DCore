@@ -177,7 +177,7 @@ class HPhiSolver(SolverBase):
 
         n_site = self.n_orb + n_bath
 
-        exct = params_kw.get('exct', 1)  # number of states to be computed
+        exct = params_kw.get('exct', 10)  # number of states to be computed
         exct_max = 4**n_site
         if exct > exct_max:
             print(f"Warning: exct={exct} is larger than {exct_max}. exct is set to {exct_max}", file=sys.stderr)
