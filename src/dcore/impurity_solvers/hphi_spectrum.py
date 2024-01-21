@@ -22,6 +22,7 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
     def gen_p():
         for sitei, sigmai in itertools.product(range(n_site), range(n_sigma)):
             for sitej, sigmaj in itertools.product(range(n_site), range(n_sigma)):
+                    # True a_{ij} = c_i + c_j, False: b_{ij} = c_i + i c_j
                     for idx, flg in enumerate([True, False]):
                         for ex_state in range(n_excitation):
                             yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
@@ -60,69 +61,102 @@ def check_eta(p_common):
                                            output_dir=output_dir)
     calc_spectrum_core.set_energies(check_eta=True)
 
+# def calc_one_body_green(one_body_green_core):
+#     n_site, n_sigma, n_site, n_sigma, n_excitation, n_flg, n_T, n_omega = one_body_green_core.shape
+#     n_excitation = 2
+#     n_flg = 2
+#     n_sigma = 2
+#     one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, n_T, n_omega), dtype=np.complex128)
+#     # Diagonal
+#     for sitei, sigmai, ex_state in itertools.product(range(n_site), range(n_sigma), range(n_excitation)):
+#         one_body_green[sitei][sigmai][sitei][sigmai] += one_body_green_core[sitei][sigmai][sitei][sigmai][0][ex_state]
+
+#     # Off diagonal
+#     for sitei, sigmai, sitej, sigmaj  in itertools.product(range(n_site), range(n_sigma), range(n_site), range(n_sigma)):
+#         one_body_green_tmp = np.zeros((n_flg, n_T, n_omega), dtype=np.complex128)
+#         for idx in range(n_flg):
+#             for ex_state in range(n_excitation):
+#                 one_body_green_tmp[idx] += one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state]
+#             one_body_green_tmp[1] -= one_body_green[sitei][sigmai][sitei][sigmai] + \
+#                                      one_body_green[sitej][sigmaj][sitej][sigmaj]
+#             one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] + 1J * one_body_green_tmp[
+#                 1]) / 2.0
+#             one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] - 1J * one_body_green_tmp[
+#                 1]) / 2.0
+#     return one_body_green
+
 def calc_one_body_green(one_body_green_core):
-    n_site, n_sigma, n_site, n_sigma, n_excitation, n_flg, n_T, n_omega = one_body_green_core.shape
-    n_excitation = 2
-    n_flg = 2
-    n_sigma = 2
-    one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, n_T, n_omega), dtype=np.complex128)
+    # n_site, n_sigma, n_site, n_sigma, n_excitation, n_flg, n_T, n_omega = one_body_green_core.shape
+    n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, n_T, n_omega = one_body_green_core.shape
+
+    # one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, n_T, n_omega), dtype=np.complex128)
+    G_shape = (n_site*n_sigma, n_site*n_sigma, n_T, n_omega)
+
+    # sum over ex_states
+    temp = np.sum(one_body_green_core, axis=5).reshape(n_site*n_sigma, n_site*n_sigma, n_flg, n_T, n_omega)
+    A = temp[:, :, 0, :, :]  # flg=0: A_{ij} = <a_{ij}^+ ; a_{ij}>
+    B = temp[:, :, 1, :, :]  # flg=1: B_{ij} = <b_{ij}^+ ; b_{ij}>
+    assert A.shape == B.shape == G_shape
+
     # Diagonal
-    for sitei, sigmai, ex_state in itertools.product(range(n_site), range(n_sigma), range(n_excitation)):
-        one_body_green[sitei][sigmai][sitei][sigmai] += one_body_green_core[sitei][sigmai][sitei][sigmai][0][ex_state]
+    G_diag = np.einsum('iitw->itw', B) / 2.
+    assert G_diag.shape == (n_site*n_sigma, n_T, n_omega)
 
     # Off diagonal
-    for sitei, sigmai, sitej, sigmaj  in itertools.product(range(n_site), range(n_sigma), range(n_site), range(n_sigma)):
-        one_body_green_tmp = np.zeros((n_flg, n_T, n_omega), dtype=np.complex128)
-        for idx in range(n_flg):
-            for ex_state in range(n_excitation):
-                one_body_green_tmp[idx] += one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state]
-            one_body_green_tmp[1] -= one_body_green[sitei][sigmai][sitei][sigmai] + \
-                                     one_body_green[sitej][sigmaj][sitej][sigmaj]
-            one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] + 1J * one_body_green_tmp[
-                1]) / 2.0
-            one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] - 1J * one_body_green_tmp[
-                1]) / 2.0
-    return one_body_green
+    A2 = A - G_diag[:, None, ...] - G_diag[None, :, ...]  # A_{ij} - G_{ii} - G_{jj}
+    B2 = B - G_diag[:, None, ...] - G_diag[None, :, ...]  # B_{ij} - G_{ii} - G_{jj}
+    G_ij = (A2 - 1J * B2) / 2.  # upper triangle (i<j)
+    G_ji = (A2 + 1J * B2) / 2.  # lower triangle (i>j)
+
+    # diagonal elements -> diagonal matrix
+    # G = np.einsum('itw->iitw', G_diag)
+    G = np.zeros(G_shape, dtype=np.complex128)
+    for i in range(G.shape[0]):
+        G[i, i] = G_diag[i]
+    assert G.shape == G_shape
+
+    G += np.triu(G_ij, k=1) + np.triu(G_ji, k=1).transpose(1, 0, 2, 3)
+    return G.reshape(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
 
 
-class CalcSpectrum:
-    def __init__(self, T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
-        self.T_list = T_list
-        self.exct = exct
-        self.eta = eta
-        self.header = header
-        self.output_dir = output_dir
-        self.path_to_HPhi = os.path.abspath(path_to_HPhi)
-        self.calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output")
-        self.nomega = n_iw
+# class CalcSpectrum:
+#     def __init__(self, T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
+#         self.T_list = T_list
+#         self.exct = exct
+#         self.eta = eta
+#         self.header = header
+#         self.output_dir = output_dir
+#         self.path_to_HPhi = os.path.abspath(path_to_HPhi)
+#         self.calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output")
+#         self.nomega = n_iw
 
-    def get_one_body_green_core(self, n_site, exct_cut):
-        self.calc_spectrum_core.set_energies()
-        n_excitation = 2 # type of excitation operator
-        n_flg = 2
-        n_sigma = 2
-        one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, len(self.T_list), self.nomega), dtype=np.complex128)
-        one_body_green_core = np.zeros((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(self.T_list), self.nomega), dtype=np.complex128)
+#     def get_one_body_green_core(self, n_site, exct_cut):
+#         self.calc_spectrum_core.set_energies()
+#         n_excitation = 2 # type of excitation operator
+#         n_flg = 2
+#         n_sigma = 2
+#         one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, len(self.T_list), self.nomega), dtype=np.complex128)
+#         one_body_green_core = np.zeros((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(self.T_list), self.nomega), dtype=np.complex128)
 
-        for sitei, sigmai, sitej, sigmaj  in itertools.product(range(n_site), range(n_sigma), range(n_site), range(n_sigma)):
-            for idx, flg in enumerate([True, False]):
-                for ex_state in range(n_excitation):
-                    one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state] = self.calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut)
+#         for sitei, sigmai, sitej, sigmaj  in itertools.product(range(n_site), range(n_sigma), range(n_site), range(n_sigma)):
+#             for idx, flg in enumerate([True, False]):
+#                 for ex_state in range(n_excitation):
+#                     one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state] = self.calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut)
 
-        #Diagonal
-        for sitei, sigmai, ex_state in itertools.product(range(n_site), range(n_sigma), range(n_excitation)):
-            one_body_green[sitei][sigmai][sitei][sigmai] += one_body_green_core[sitei][sigmai][sitei][sigmai][0][ex_state]
+#         #Diagonal
+#         for sitei, sigmai, ex_state in itertools.product(range(n_site), range(n_sigma), range(n_excitation)):
+#             one_body_green[sitei][sigmai][sitei][sigmai] += one_body_green_core[sitei][sigmai][sitei][sigmai][0][ex_state]
 
-        # Off diagonal
-        for sitei, sigmai, sitej, sigmaj in itertools.product(range(n_site), range(n_sigma),range(n_site), range(n_sigma)):
-            one_body_green_tmp = np.zeros((n_flg, len(self.T_list), self.nomega), dtype=np.complex128)
-            for idx in range(n_flg):
-                for ex_state in range(n_excitation):
-                    one_body_green_tmp[idx] += one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state]
-                one_body_green_tmp[1] -= one_body_green[sitei][sigmai][sitei][sigmai] + one_body_green[sitej][sigmaj][sitej][sigmaj]
-                one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] + 1J * one_body_green_tmp[1]) / 2.0
-                one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] - 1J * one_body_green_tmp[1]) / 2.0
-        return one_body_green
+#         # Off diagonal
+#         for sitei, sigmai, sitej, sigmaj in itertools.product(range(n_site), range(n_sigma),range(n_site), range(n_sigma)):
+#             one_body_green_tmp = np.zeros((n_flg, len(self.T_list), self.nomega), dtype=np.complex128)
+#             for idx in range(n_flg):
+#                 for ex_state in range(n_excitation):
+#                     one_body_green_tmp[idx] += one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state]
+#                 one_body_green_tmp[1] -= one_body_green[sitei][sigmai][sitei][sigmai] + one_body_green[sitej][sigmaj][sitej][sigmaj]
+#                 one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] + 1J * one_body_green_tmp[1]) / 2.0
+#                 one_body_green[sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[0] - 1J * one_body_green_tmp[1]) / 2.0
+#         return one_body_green
 
 class CalcSpectrumCore:
     def __init__(self, T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
