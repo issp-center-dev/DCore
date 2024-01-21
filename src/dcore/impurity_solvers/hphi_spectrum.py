@@ -22,7 +22,7 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
     def gen_p():
         for sitei, sigmai in itertools.product(range(n_site), range(n_sigma)):
             for sitej, sigmaj in itertools.product(range(n_site), range(n_sigma)):
-                    # True a_{ij} = c_i + c_j, False: b_{ij} = c_i + i c_j
+                    # True(0)): b_{ij} = c_i + i c_j; False(1): a_{ij} = c_i + c_j
                     for idx, flg in enumerate([True, False]):
                         for ex_state in range(n_excitation):
                             yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
@@ -94,12 +94,13 @@ def calc_one_body_green(one_body_green_core):
 
     # sum over ex_states
     temp = np.sum(one_body_green_core, axis=5).reshape(n_site*n_sigma, n_site*n_sigma, n_flg, n_T, n_omega)
-    A = temp[:, :, 0, :, :]  # flg=0: A_{ij} = <a_{ij}^+ ; a_{ij}>
-    B = temp[:, :, 1, :, :]  # flg=1: B_{ij} = <b_{ij}^+ ; b_{ij}>
+    A = temp[:, :, 1, :, :]  # flg=1: A_{ij} = <a_{ij}^+ ; a_{ij}>
+    B = temp[:, :, 0, :, :]  # flg=0: B_{ij} = <b_{ij}^+ ; b_{ij}>
     assert A.shape == B.shape == G_shape
 
     # Diagonal
-    G_diag = np.einsum('iitw->itw', B) / 2.
+    # G_diag = np.einsum('iitw->itw', B) / 2.
+    G_diag = np.einsum('iitw->itw', B)
     assert G_diag.shape == (n_site*n_sigma, n_T, n_omega)
 
     # Off diagonal
@@ -111,11 +112,18 @@ def calc_one_body_green(one_body_green_core):
     # diagonal elements -> diagonal matrix
     # G = np.einsum('itw->iitw', G_diag)
     G = np.zeros(G_shape, dtype=np.complex128)
-    for i in range(G.shape[0]):
+    for i in range(G_shape[0]):
         G[i, i] = G_diag[i]
     assert G.shape == G_shape
 
-    G += np.triu(G_ij, k=1) + np.triu(G_ji, k=1).transpose(1, 0, 2, 3)
+    # G += np.triu(G_ij, k=1) + np.triu(G_ji, k=1).transpose(1, 0, 2, 3)
+
+    # for i, j in product(range(n_site*n_spin), repeat=2):
+    for i in range(G_shape[0]):
+        for j in range(i+1, G_shape[1]):  # i<j
+            G[i, j] = G_ij[i, j]
+            G[j, i] = G_ji[i, j]
+
     return G.reshape(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
 
 
