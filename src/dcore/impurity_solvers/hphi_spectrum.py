@@ -124,6 +124,14 @@ def calc_one_body_green(one_body_green_core):
             G[i, j] = G_ij[i, j]
             G[j, i] = G_ji[i, j]
 
+    # for i in range(G_shape[0]):
+    #     for j in range(i+1, G_shape[1]):  # i<j
+    #         g_iijj = G_diag[i] - G_diag[j]
+    #         A2 = A[i, j] - g_iijj
+    #         B2 = B[i, j] - g_iijj
+    #         G[i, j] = (A2 - 1J * B2) / 2.
+    #         G[j, i] = (A2 + 1J * B2) / 2.
+
     return G.reshape(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
 
 

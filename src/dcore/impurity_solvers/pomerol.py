@@ -83,14 +83,16 @@ def assign_from_numpy_array(g_block, data, block_names):
     for b in range(data.shape[0]):
         for o1 in range(data.shape[1]):
             for o2 in range(data.shape[2]):
-                ax.plot(data[b, o1, o2, :30].real, marker='.')
+                ax.plot(data[b, o1, o2, :30].real, marker='.', label=f"{b}, ({o1},{o2})")
+    ax.legend()
     fig.savefig("test_gf_re.pdf")
 
     fig, ax = plt.subplots()
     for b in range(data.shape[0]):
         for o1 in range(data.shape[1]):
             for o2 in range(data.shape[2]):
-                ax.plot(data[b, o1, o2, :30].imag, marker='.')
+                ax.plot(data[b, o1, o2, :30].imag, marker='.', label=f"{b}, ({o1},{o2})")
+    ax.legend()
     fig.savefig("test_gf_im.pdf")
 
 
