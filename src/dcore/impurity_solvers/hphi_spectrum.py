@@ -101,8 +101,10 @@ def calc_one_body_green(one_body_green_core):
     assert G_diag.shape == (n_site*n_sigma, n_T, n_omega)
 
     # Off-diagonal
-    A2 = A - G_diag[:, None, ...] - G_diag[None, :, ...]  # A_{ij} - G_{ii} - G_{jj}
-    B2 = B - G_diag[:, None, ...] - G_diag[None, :, ...]  # B_{ij} - G_{ii} - G_{jj}
+    G_iijj = G_diag[:, None, ...] - G_diag[None, :, ...]  # G_{ii} - G_{jj}
+    assert G_iijj.shape == G_shape
+    A2 = A - G_iijj  # A_{ij} - G_{ii} - G_{jj}
+    B2 = B - G_iijj  # B_{ij} - G_{ii} - G_{jj}
     G_ij = (A2 - 1J * B2) / 2.  # upper triangle (i<j)
     G_ji = (A2 + 1J * B2) / 2.  # lower triangle (i>j)
     assert G_ij.shape == G_ji.shape == G_shape
