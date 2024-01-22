@@ -86,10 +86,8 @@ def check_eta(p_common):
 #     return one_body_green
 
 def calc_one_body_green(one_body_green_core):
-    # n_site, n_sigma, n_site, n_sigma, n_excitation, n_flg, n_T, n_omega = one_body_green_core.shape
     n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, n_T, n_omega = one_body_green_core.shape
 
-    # one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, n_T, n_omega), dtype=np.complex128)
     G_shape = (n_site*n_sigma, n_site*n_sigma, n_T, n_omega)
 
     # sum over ex_states
@@ -99,26 +97,21 @@ def calc_one_body_green(one_body_green_core):
     assert A.shape == B.shape == G_shape
 
     # Diagonal
-    # G_diag = np.einsum('iitw->itw', B) / 2.
-    G_diag = np.einsum('iitw->itw', B)
+    G_diag = np.einsum('iitw->itw', B)  # extract diagonal
     assert G_diag.shape == (n_site*n_sigma, n_T, n_omega)
 
-    # Off diagonal
+    # Off-diagonal
     A2 = A - G_diag[:, None, ...] - G_diag[None, :, ...]  # A_{ij} - G_{ii} - G_{jj}
     B2 = B - G_diag[:, None, ...] - G_diag[None, :, ...]  # B_{ij} - G_{ii} - G_{jj}
     G_ij = (A2 - 1J * B2) / 2.  # upper triangle (i<j)
     G_ji = (A2 + 1J * B2) / 2.  # lower triangle (i>j)
+    assert G_ij.shape == G_ji.shape == G_shape
 
-    # diagonal elements -> diagonal matrix
-    # G = np.einsum('itw->iitw', G_diag)
     G = np.zeros(G_shape, dtype=np.complex128)
-    for i in range(G_shape[0]):
+    assert G_diag.shape[0] == G_shape[0] == G_shape[1]
+    for i in range(G_diag.shape[0]):
         G[i, i] = G_diag[i]
-    assert G.shape == G_shape
 
-    # G += np.triu(G_ij, k=1) + np.triu(G_ji, k=1).transpose(1, 0, 2, 3)
-
-    # for i, j in product(range(n_site*n_spin), repeat=2):
     for i in range(G_shape[0]):
         for j in range(i+1, G_shape[1]):  # i<j
             G[i, j] = G_ij[i, j]
