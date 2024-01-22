@@ -22,10 +22,10 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
     def gen_p():
         for sitei, sigmai in itertools.product(range(n_site), range(n_sigma)):
             for sitej, sigmaj in itertools.product(range(n_site), range(n_sigma)):
-                    # True(0)): b_{ij} = c_i + i c_j; False(1): a_{ij} = c_i + c_j
-                    for idx, flg in enumerate([True, False]):
-                        for ex_state in range(n_excitation):
-                            yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
+                # True(0)): b_{ij} = c_i + i c_j; False(1): a_{ij} = c_i + c_j
+                for idx, flg in enumerate([True, False]):
+                    for ex_state in range(n_excitation):
+                        yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
 
     from concurrent.futures import ProcessPoolExecutor
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
@@ -47,13 +47,18 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
 def calc_one_body_green_core(p):
     #unpack parameters
     sitei, sigmai, sitej, sigmaj, i_flg, ex_state, p_common = p
+    n_sigma = 2
+
+    # skip calc if i>j
+    skip = sitei*n_sigma + sigmai > sitej*n_sigma + sigmaj
+
     n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut = p_common
     calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi=path_to_HPhi, header=header,
                                            output_dir=output_dir)
 
     calc_spectrum_core.set_energies()
     flg = True if i_flg == 0 else False
-    return calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut)
+    return calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut, skip)
 
 def check_eta(p_common):
     _, T_list, exct, eta, path_to_HPhi, header, output_dir, _ = p_common
@@ -337,11 +342,13 @@ class CalcSpectrumCore:
             subprocess.call(cmd, shell=True)
         os.chdir(self.parent_dir)
 
-    def get_one_body_green_core(self, sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut):
+    def get_one_body_green_core(self, sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut, skip=False):
         calc_dir = os.path.join(self.parent_dir, "{}_{}_{}_{}_{}_{}".format(sitei,sigmai,sitej,sigmaj, ex_state, 0 if flg is True else 1))
         os.makedirs(calc_dir, exist_ok=True)
         self.Make_Spectrum_Input(calc_dir)
         one_body_green = np.zeros((len(self.T_list), self.nomega), dtype=np.complex128)
+        if skip:
+            return one_body_green
         # print("Calculate G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitej, "u" if sigmaj == 0 else "d"))
         self._make_single_excitation(sitei, sigmai, sitej, sigmaj, ex_state=ex_state, flg_complex=flg, calc_dir=calc_dir)
         # Run HPhi
