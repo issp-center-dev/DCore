@@ -290,7 +290,7 @@ def _generate_umat_slater(p: Dict, l_sh: List[int], f_sh: List[numpy.ndarray]):
 
 def _generate_umat_slater_uj(p: Dict):
     assert isinstance(p, Dict)
-    _check_parameters(p['model'], required=['slater_uj'], unused=['slater_f', 'kanamori'])
+    _check_parameters(p['model'], required=['slater_uj'], unused=['slater_f', 'kanamori', 'interaction_file'])
 
     def _U_J_to_F(_l, _u, _j):
         if _l == 0:
@@ -310,7 +310,7 @@ def _generate_umat_slater_uj(p: Dict):
 
 def _generate_umat_slater_f(p: Dict):
     assert isinstance(p, Dict)
-    _check_parameters(p['model'], required=['slater_f'], unused=['slater_uj', 'kanamori'])
+    _check_parameters(p['model'], required=['slater_f'], unused=['slater_uj', 'kanamori', 'interaction_file'])
 
     # parse slater parameters
     nsh = p['model']['n_inequiv_shells']
@@ -329,7 +329,7 @@ def _generate_umat_slater_f(p: Dict):
 
 def _generate_umat_respack(p: Dict):
     assert isinstance(p, Dict)
-    _check_parameters(p['model'], required=[], unused=['kanamori', 'slater_f', 'slater_uj'])
+    _check_parameters(p['model'], required=[], unused=['kanamori', 'slater_f', 'slater_uj', 'interaction_file'])
 
     nsh = p['model']['n_inequiv_shells']
     norb = p['model']['norb_inequiv_sh']
@@ -382,6 +382,62 @@ def _generate_umat_respack(p: Dict):
     return u_mat_so_sh
 
 
+def _parse_filenames(input_str: str, name, nsh: int):
+    try:
+        files = ast.literal_eval(input_str)
+        assert isinstance(files, list), f"interpreted as {type(files)}. List is required!"
+        assert len(files) == nsh, f"length={len(files)} must be {nsh} (# of inequivalent shells)"
+    except Exception as e:
+        print(f"\nError: {name} = {repr(input_str)}", file=sys.stderr)
+        print(e, file=sys.stderr)
+        exit(1)
+    print(f" {name} = {repr(files)}")
+    return files
+
+
+def _generate_umat_file(p: Dict):
+    assert isinstance(p, Dict)
+    _check_parameters(p['model'], required=['interaction_file'], unused=['slater_f', 'slater_uj', 'kanamori'])
+
+    nsh = p["model"]['n_inequiv_shells']
+    norb_sh = p['model']['norb_inequiv_sh']
+    spin_orbit = p["model"]["spin_orbit"]
+
+    # str -> List[str]
+    filenames = _parse_filenames(p["model"]["interaction_file"], name='interaction_file', nsh=nsh)
+
+    u_mat_so_sh = []
+    print(f"\n Reading U-matrix from file(s)")
+    for ish, file in enumerate(filenames):
+        norb = norb_sh[ish]
+        print(f"   ish={ish} : '{file}'")
+
+        u_shape = (2*norb, 2*norb, 2*norb, 2*norb) if spin_orbit else (norb, norb, norb, norb)
+
+        # read file
+        try:
+            if os.path.splitext(file)[1] == ".npy":
+                umat = numpy.load(file)
+                assert umat.shape == u_shape
+            else:
+                umat_1d = numpy.loadtxt(file)
+                umat = umat_1d.reshape(u_shape)
+        except Exception as e:
+            print(f"\nError in reading file '{file}' for ish={ish}", file=sys.stderr)
+            print(e, file=sys.stderr)
+            exit(1)
+
+        if spin_orbit:
+            umat_so = umat
+        else:
+            umat_so = to_spin_full_U_matrix(umat)
+            assert umat_so.shape == (2*norb, 2*norb, 2*norb, 2*norb)
+
+        u_mat_so_sh.append(umat)
+
+    return u_mat_so_sh
+
+
 def generate_umat(p: Dict):
     """
     Add U-matrix block (Tentative)
@@ -401,6 +457,7 @@ def generate_umat(p: Dict):
         'slater_uj': _generate_umat_slater_uj,
         'slater_f': _generate_umat_slater_f,
         'respack': _generate_umat_respack,
+        'file': _generate_umat_file,
     }.get(interaction)
     if func_umat is None:
         sys.exit(f"Error ! Invalid interaction : {interaction}")
