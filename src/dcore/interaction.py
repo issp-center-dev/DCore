@@ -418,7 +418,7 @@ def _generate_umat_file(p: Dict):
         try:
             if os.path.splitext(file)[1] == ".npy":
                 umat = numpy.load(file)
-                assert umat.shape == u_shape
+                assert umat.shape == u_shape, f"inconsistent shape: require {u_shape}, but {umat.shape} is given"
             else:
                 umat_1d = numpy.loadtxt(file)
                 umat = umat_1d.reshape(u_shape)
@@ -433,7 +433,7 @@ def _generate_umat_file(p: Dict):
             umat_so = to_spin_full_U_matrix(umat)
             assert umat_so.shape == (2*norb, 2*norb, 2*norb, 2*norb)
 
-        u_mat_so_sh.append(umat)
+        u_mat_so_sh.append(umat_so)
 
     return u_mat_so_sh
 
