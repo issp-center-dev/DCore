@@ -14,6 +14,7 @@ Model Hamiltonian is defined as
 where
 
 .. math::
+   :label: H_int
 
    {\hat H}_{\rm int} = \frac{1}{2}
    \sum_{i, \alpha \beta \gamma \delta,\sigma \sigma'}
@@ -135,6 +136,54 @@ The basis can be specified by ``slater_basis`` parameter. See :doc:`slater_basis
 
 Use the output by `RESPACK <https://sites.google.com/view/kazuma7k6r>`_.
 **Under construction.**
+
+``interaction = file``
+------------------------------------
+
+One can set the U tensor :math:`U^{i}_{\alpha \beta \gamma \delta}` from an external file.
+The input parameters for this are
+
+::
+
+    interaction = file
+    interaction_file = ['file1.npy', 'file2.npy',]
+
+The filenames for all inequivalent shells are listed in ``interaction_file`` parameter.
+The suppored formats are
+
+- **NumPy .npy format (binary file)**: Four dimensional NumPy array corresponding to :math:`U^{i}_{\alpha \beta \gamma \delta}` for shell :math:`i` is save by ``numpy.save`` command.
+
+- **text file**: :math:`U^{i}_{\alpha \beta \gamma \delta}` for each shell :math:`i` is written in a one dimansional manner as follows
+
+  ::
+
+      Re(U[0,0,0,0])
+      Re(U[0,0,0,1])
+      Re(U[0,0,0,2])
+
+  or
+
+  ::
+
+      Re(U[0,0,0,0]) Im(U[0,0,0,0])
+      Re(U[0,0,0,1]) Im(U[0,0,0,1])
+      Re(U[0,0,0,2]) Im(U[0,0,0,2])
+
+  No space should be put between different blocks. Lines beginning with `#` are skipped.
+
+The definition of U tensor depends on the ``spin_orbit`` parameter.
+For ``spin_orbit=False``, :math:`U^{i}_{\alpha \beta \gamma \delta}` is defined by Eq. :eq:`H_int`. The shape of the U tensor is ``(norb, norb, norb, norb)``.
+
+For ``spin_orbit=True``, on the other hand, :math:`U^{i}_{\alpha \beta \gamma \delta}` is defined by
+
+.. math::
+   {\hat H}_{\rm int} = \frac{1}{2}
+   \sum_{i, \alpha \beta \gamma \delta}
+   U^{i}_{\alpha \beta \gamma \delta}
+   c_{i \alpha}^\dagger c_{i \beta}^\dagger c_{i \delta} c_{i \gamma}.
+
+In this case, the indices :math:`\alpha, \beta, \gamma, \delta` include spin.
+The shape of the U tensor is therefore ``(2*norb, 2*norb, 2*norb, 2*norb)``.
 
 
 ``density_density`` option
