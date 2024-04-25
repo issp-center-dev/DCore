@@ -153,13 +153,15 @@ The suppored formats are
 
 - **NumPy .npy format (binary file)**: Four dimensional NumPy array corresponding to :math:`U^{i}_{\alpha \beta \gamma \delta}` for shell :math:`i` is save by ``numpy.save`` command.
 
-- **text file**: :math:`U^{i}_{\alpha \beta \gamma \delta}` for each shell :math:`i` is written in a one dimansional manner as follows
+- **text file**: :math:`U^{i}_{\alpha \beta \gamma \delta}` for each shell :math:`i` is written in a one dimansional manner as follows (example for ``norb=3`` without spin-orbit coupling)
 
   ::
 
       Re(U[0,0,0,0])
       Re(U[0,0,0,1])
       Re(U[0,0,0,2])
+      Re(U[0,0,1,0])
+      ...
 
   or
 
@@ -168,10 +170,12 @@ The suppored formats are
       Re(U[0,0,0,0]) Im(U[0,0,0,0])
       Re(U[0,0,0,1]) Im(U[0,0,0,1])
       Re(U[0,0,0,2]) Im(U[0,0,0,2])
+      Re(U[0,0,1,0]) Im(U[0,0,1,0])
+      ...
 
-  No space should be put between different blocks. Lines beginning with `#` are skipped.
+  No blank line should be put between consecutive elements. Lines beginning with `#` are skipped.
 
-The definition of U tensor depends on the ``spin_orbit`` parameter.
+The definition of the U tensor depends on the ``spin_orbit`` parameter.
 For ``spin_orbit=False``, :math:`U^{i}_{\alpha \beta \gamma \delta}` is defined by Eq. :eq:`H_int`. The shape of the U tensor is ``(norb, norb, norb, norb)``.
 
 For ``spin_orbit=True``, on the other hand, :math:`U^{i}_{\alpha \beta \gamma \delta}` is defined by

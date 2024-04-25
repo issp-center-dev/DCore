@@ -427,7 +427,7 @@ def _generate_umat_file(p: Dict):
                     # float (norb^4, 2) -> complex (norb^4, 1) -> complex (norb,norb,norb,norb)
                     umat = umat_1d.view(complex).reshape(u_shape)
                 else:
-                    raise Exception(f"inconsisten shape: require {(numpy.prod(u_shape),)} for real U or {(numpy.prod(u_shape), 2)} for complex U, but {umat_1d.shape} is given.")
+                    raise Exception(f"inconsistent shape: require {(numpy.prod(u_shape),)} for real U or {(numpy.prod(u_shape), 2)} for complex U, but {umat_1d.shape} is given.")
         except Exception as e:
             print(f"\nError in reading file '{file}' for ish={ish}", file=sys.stderr)
             print(e, file=sys.stderr)
