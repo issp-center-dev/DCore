@@ -202,7 +202,7 @@
 <tr class="row-even"><td><p>interaction</p></td>
 <td><p>String</p></td>
 <td><p>kanamori</p></td>
-<td><p>Chosen from “slater_uj”, “slater_f”, “kanamori”, “respack” (See below)</p></td>
+<td><p>Chosen from “slater_uj”, “slater_f”, “kanamori”, “respack”, “file” (See below)</p></td>
 </tr>
 <tr class="row-odd"><td><p>density_density</p></td>
 <td><p>Bool</p></td>
@@ -229,12 +229,17 @@
 <td><p>cubic</p></td>
 <td><p>Basis of the Slater interaction (See below).</p></td>
 </tr>
-<tr class="row-even"><td><p>local_potential_matrix</p></td>
+<tr class="row-even"><td><p>interaction_file</p></td>
+<td><p>String</p></td>
+<td><p>None</p></td>
+<td><p>list of filenames that contain U tensor for each inequivalent shell</p></td>
+</tr>
+<tr class="row-odd"><td><p>local_potential_matrix</p></td>
 <td><p>String</p></td>
 <td><p>None</p></td>
 <td><p>dict of {ish: ‘filename’} to specify local potential matrix of ish-th shell</p></td>
 </tr>
-<tr class="row-odd"><td><p>local_potential_factor</p></td>
+<tr class="row-even"><td><p>local_potential_factor</p></td>
 <td><p>String</p></td>
 <td><p>1.0</p></td>
 <td><p>Prefactors to the local potential matrix (float or list with len=ncor)</p></td>
