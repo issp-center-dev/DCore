@@ -19,77 +19,48 @@
 import argparse
 import toml
 import numpy as np
-from dcore._dispatcher import MeshReFreq, MeshImFreq, GfReFreq, GfImFreq
+from dcore._dispatcher import MeshReFreq
 from dcore.version import version, print_header
-from dcore.anacont_spm import set_default_values, calc_gf_tau_from_gf_matsubara, get_single_continuation, get_kramers_kronig_realpart, dos_to_gf_imag
+from dcore.anacont.spm import set_default_values, anacont
 
-def _anacont_spm_per_gf(params, matsubara_frequencies, gf_matsubara):
-    tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(matsubara_frequencies, gf_matsubara, params['spm']['n_tau'], params['spm']['n_tail'], params['beta'], show_fit=params['spm']['show_fit'])
-    density, gf_tau_fit, energies_extract, density_integrated, chi2 = get_single_continuation(tau_grid, gf_tau, params['spm']['n_sv'], params['beta'], params['omega_min'], params['omega_max'], params['Nomega'], const_imag_tail, params['spm']['lambda'], verbose=params['spm']['verbose_opt'], max_iters=params['spm']['max_iters_opt'], solver=params['spm']['solver_opt'])
-    energies, gf_real, gf_imag = get_kramers_kronig_realpart(energies_extract, dos_to_gf_imag(density))
-    gf_real += const_real_tail
-    return energies, gf_real, gf_imag
 
 def set_default_config(params):
-    default_values = {'show_fit' : False,
-                      'show_result' : False,
-                      'show_fit': False,
-                      'verbose_opt' : False,
-                      'max_iters_opt' : 100,
-                      'solver_opt' : 'ECOS'}
-    params['spm'] = set_default_values(params['spm'], default_values)
+    default_values = {
+        "show_fit": False,
+        "show_result": False,
+        "show_fit": False,
+        "verbose_opt": False,
+        "max_iters_opt": 100,
+        "solver_opt": "ECOS",
+    }
+    params["spm"] = set_default_values(params["spm"], default_values)
     return params
 
-def dcore_anacont_spm(seedname):
-    print('Reading ', seedname + '_anacont.toml...')
-    with open(seedname + '_anacont.toml', 'r') as f:
+
+def dcore_anacont_spm_from_seedname(seedname):
+    print("Reading ", seedname + "_anacont.toml...")
+    with open(seedname + "_anacont.toml", "r") as f:
         params = toml.load(f)
     params = set_default_config(params)
-    print('Using configuration: ', params)
- 
-    print('Reading ', seedname + '_sigma_iw.npz...')
-    npz = np.load(seedname + '_sigma_iw.npz')
+    print("Using configuration: ", params)
 
-    assert params['omega_min'] < params['omega_max']
-    mesh_w = MeshReFreq(params['omega_min'], params['omega_max'], params['Nomega'])
+    print("Reading ", seedname + "_sigma_iw.npz...")
+    npz = np.load(seedname + "_sigma_iw.npz")
 
-    assert params['spm']['n_matsubara'] > 0
+    assert params["omega_min"] < params["omega_max"]
+    mesh_w = MeshReFreq(params["omega_min"], params["omega_max"], params["Nomega"])
 
-    data_w = {}
-    num_data = np.sum([key.startswith('data') for key in npz.keys()])
-    for idata in range(num_data):
-        key = f'data{idata}'
-        data = npz[key]
-        n_matsubara = data.shape[0]//2
-        n_matsubara_retain = min(n_matsubara, params['spm']['n_matsubara'])
-        mesh_iw = MeshImFreq(params['beta'], 'Fermion', n_matsubara_retain)
-        gf_iw = GfImFreq(data=data, beta=params['beta'], mesh=mesh_iw)
-        n_orbitals = gf_iw.data.shape[1]
-        matsubara_frequencies = np.imag(gf_iw.mesh.values()[n_matsubara_retain:])
-        sigma_w_data = np.zeros((params['Nomega'], n_orbitals, n_orbitals), dtype=np.complex128)
-        for i_orb in range(n_orbitals):
-            print(f'Performing analytic continuation for data index {idata} and orbital index {i_orb}...')
-            gf_imag_matsubara = gf_iw.data[n_matsubara:n_matsubara + n_matsubara_retain, i_orb, i_orb]
-            energies, gf_real, gf_imag = _anacont_spm_per_gf(params, matsubara_frequencies, gf_imag_matsubara)
-            sigma_w_data[:, i_orb, i_orb] = gf_real + 1j * gf_imag
-            if params['spm']['show_result']:
-                import matplotlib.pyplot as plt
-                plt.axhline(y=0, xmin=energies[0], xmax=energies[-1], color='lightgrey')
-                plt.plot(energies, gf_real, label=r'Re $G( \omega )$')
-                plt.plot(energies, gf_imag, label=r'Im $G( \omega )$')
-                plt.xlim(energies[0], energies[-1])
-                plt.xlabel(r'$\omega$')
-                plt.legend()
-                plt.tight_layout()
-                plt.show()
-                plt.close()
-        sigma_w = GfReFreq(mesh=mesh_w, data=sigma_w_data)
-        data_w[key] = sigma_w.data
+    assert params["spm"]["n_matsubara"] > 0
 
-    print('Writing to', seedname + '_sigma_w.npz...')
-    np.savez(seedname + '_sigma_w.npz', **data_w)
+    beta = params["beta"]
+    params_spm = params["spm"]
+    data_w = anacont(npz, beta, mesh_w, params_spm)
 
-#example file for 'seedname_anacont.toml'
+    print("Writing to", seedname + "_sigma_w.npz...")
+    np.savez(seedname + "_sigma_w.npz", **data_w)
+
+
+# example file for 'seedname_anacont.toml'
 # beta = 40.0
 # Nomega = 4000
 # omega_min = -6.0
@@ -107,25 +78,25 @@ def dcore_anacont_spm(seedname):
 # max_iters_opt = 100
 # solver_opt = 'ECOS'
 
+
 def run():
     print_header()
 
     parser = argparse.ArgumentParser(
-        prog='dcore_anacont_spm.py',
-        description='pre script for dcore.',
-        usage='$ dcore_anacont_spm input',
+        prog="dcore_anacont_spm.py",
+        description="pre script for dcore.",
+        usage="$ dcore_anacont_spm input",
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
-        #epilog=generate_all_description()
+        # epilog=generate_all_description()
     )
-    parser.add_argument('seedname',
-                        action='store',
-                        default=None,
-                        type=str,
-                        help='seedname'
-                        )
-    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
+    parser.add_argument(
+        "seedname", action="store", default=None, type=str, help="seedname"
+    )
+    parser.add_argument(
+        "--version", action="version", version="DCore {}".format(version)
+    )
 
     args = parser.parse_args()
 
-    dcore_anacont_spm(args.seedname)
+    dcore_anacont_spm_from_seedname(args.seedname)

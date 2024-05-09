@@ -17,70 +17,59 @@
 #
 
 import argparse
-from dcore._dispatcher import MeshReFreq, MeshImFreq, GfReFreq, GfImFreq
-from dcore.version import version, print_header
 import numpy
 import toml
 
-def _set_n_pade(omega_cutoff, beta, n_min, n_max):
-    """
-    Return (int)n_pade: the number of Matsubara frequencies below the cutoff frequency.
-    n_pade is bounded between n_min and n_max
-    """
-    n_pade = int((beta * omega_cutoff + numpy.pi) / (2.0 * numpy.pi))
-    print("n_pade = {} (evaluated from omega_pade)".format(n_pade))
-    n_pade = max(n_pade, n_min)
-    n_pade = min(n_pade, n_max)
-    print("n_pade = {}".format(n_pade))
-    return n_pade
+from dcore._dispatcher import MeshReFreq
+from dcore.version import version, print_header
+from dcore.anacont.pade import anacont
 
-def dcore_anacont_pade(seedname):
+
+def dcore_anacont_pade_from_seedname(seedname):
     print("Reading ", seedname + "_anacont.toml...")
     with open(seedname + "_anacont.toml", "r") as f:
         params = toml.load(f)
- 
+
     print("Reading ", seedname + "_sigma_iw.npz...")
-    npz = numpy.load(seedname + "_sigma_iw.npz")
+    sigma_iw_npz = numpy.load(seedname + "_sigma_iw.npz")
 
     assert params["omega_min"] < params["omega_max"]
     mesh_w = MeshReFreq(params["omega_min"], params["omega_max"], params["Nomega"])
 
-    n_pade = _set_n_pade(params["pade"]["omega_max"], params['beta'], n_min=params["pade"]["n_min"], n_max=params["pade"]["n_max"])
+    beta = params["beta"]
+    params_pade = params.get("pade", {})
+    params_pade["iomega_max"] = params_pade.get("omega_max", -1.0)
+    params_pade["eta"] = params_pade.get("eta", 0.01)
+    params_pade["n_min"] = params_pade.get("n_min", 0)
+    params_pade["n_max"] = params_pade.get("n_max", 100000000)
 
-    data_w = {}
+    data_w = anacont(
+        sigma_iw_npz, beta=beta, mesh_w=mesh_w, params_pade=params_pade
+    )
 
-    num_data = numpy.sum([key.startswith("data") for key in npz.keys()])
-    for idata in range(num_data):
-        key = f"data{idata}"
-        data = npz[key]
-        mesh_iw = MeshImFreq(params["beta"], "Fermion", data.shape[0]//2)
-        sigma_iw = GfImFreq(data=data, beta=params["beta"], mesh=mesh_iw)
-        sigma_w = GfReFreq(mesh=mesh_w, target_shape=data.shape[1:])
-        sigma_w.set_from_pade(sigma_iw, n_points=n_pade, freq_offset=params["pade"]["eta"])
-        data_w[key] = sigma_w.data
     print("Writing to", seedname + "_sigma_w.npz...")
     numpy.savez(seedname + "_sigma_w.npz", **data_w)
+
 
 def run():
 
     print_header()
 
     parser = argparse.ArgumentParser(
-        prog='dcore_anacont_pade.py',
-        description='pre script for dcore.',
-        usage='$ dcore_anacont_pade input',
+        prog="dcore_anacont_pade.py",
+        description="pre script for dcore.",
+        usage="$ dcore_anacont_pade input",
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
-        #epilog=generate_all_description()
+        # epilog=generate_all_description()
     )
-    parser.add_argument('seedname',
-                        action='store',
-                        default=None,
-                        type=str,
-                        help="seedname"
-                        )
-    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
+    parser.add_argument(
+        "seedname", action="store", default=None, type=str, help="seedname"
+    )
+    parser.add_argument(
+        "--version", action="version", version="DCore {}".format(version)
+    )
 
     args = parser.parse_args()
 
-    dcore_anacont_pade(args.seedname)
+    dcore_anacont_pade_from_seedname(args.seedname)

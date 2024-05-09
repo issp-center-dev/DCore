@@ -46,7 +46,7 @@ def create_parser(target_sections=None):
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'bse', 'vertex', 'sparse_bse'])
+        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'post', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
 
@@ -142,6 +142,36 @@ def create_parser(target_sections=None):
         "For gk_smpl_freqs = dense, all fermionic frequencies in the range of [-n_iw, n_iw] are used. A valid text file must contain the number of sampling frequencies in its first line."
         "Each line after the first line must contain two integer numbers: The first one is an sequential index of a sampling frequency (start from 0), and the second one is a fermionic sampling frequency (i.e, -1, 0, 1)."
     )
+
+    # [post]
+    parser.add_option("post", "omega_min", float, -1, "Minimum value of real frequency")
+    parser.add_option("post", "omega_max", float, 1, "Max value of real frequency")
+    parser.add_option("post", "Nomega", int, 100, "Number of real frequencies")
+    # parser.add_option("post", "file_sigma_iw", str, "sigma_iw.npz", "Filename of the self-energy in Matsubara frequency")
+    parser.add_option("post", "dir_post", str, "post", "Directory to which results of dcore_post are stored.")
+    parser.add_option("post", "dir_work", str, "work/post", "Directory to which temporary files of dcore_post are stored.")
+
+    # [post.anacont]
+    parser.add_option("post.anacont", "solver", str, "algorithm", "Algorithm for analytic continuation")
+
+    # [post.anacont.pade]
+    parser.add_option( "post.anacont.pade", "iomega_max", float, -1.0, "Cut-off frequency of the Matsubara frequency",)
+    parser.add_option( "post.anacont.pade", "n_min", int, 0, "lower bound of the order of Pade approximation",)
+    parser.add_option( "post.anacont.pade", "n_max", int, 100000000, "upper bound of the order of Pade approximation",)
+    parser.add_option( "post.anacont.pade", "eta", float, 0.01, "Imaginary Frequency shift to avoid divergence",)
+
+    # [post.anacont.spm]
+    parser.add_option("post.anacont.spm", "n_matsubara", int, 100000, "number of tau points")
+    parser.add_option("post.anacont.spm", "n_tau", int, -1, "number of tau points")
+    parser.add_option("post.anacont.spm", "n_tail", int, 10, "number of matsubara points for tail-fitting")
+    parser.add_option("post.anacont.spm", "n_sv", int, 50, "number of singular values to be used")
+    parser.add_option("post.anacont.spm", "lambda", float, 1e-5, "coefficient of L1 regularization")
+    parser.add_option("post.anacont.spm", "max_iters_opt", int, 100, "maximum number of iterations")
+    parser.add_option("post.anacont.spm", "solver_opt", str, "ECOS", "solver to be used")
+
+    parser.add_option("post.anacont.spm", "verbose_opt", bool, False, "show optimization progress")
+    parser.add_option("post.anacont.spm", "show_fit", bool, False, "plot result of tail-fitting")
+    parser.add_option("post.anacont.spm", "show_result", bool, False, "plot result of analytic continuation")
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")

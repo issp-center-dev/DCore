@@ -32,7 +32,7 @@ def _get_dos_semicircular(energies, r):
     return 2.0 / np.pi / r * np.sqrt(np.maximum(1 - np.square(energies / r), 0))
 
 def test_find_sum_rule_const():
-    from dcore.anacont_spm import _find_sum_rule_const
+    from dcore.anacont.spm import _find_sum_rule_const
     a = 1.123
     b = 2.234
     beta = 40
@@ -45,7 +45,7 @@ def test_find_sum_rule_const():
     assert np.allclose(b_test, b, atol=1e-9)
 
 def test_calc_gf_tau_trivial():
-    from dcore.anacont_spm import _calc_gf_tau
+    from dcore.anacont.spm import _calc_gf_tau
     a = 1.123
     b = 2.234
     beta = 40
@@ -60,7 +60,7 @@ def test_calc_gf_tau_trivial():
     assert np.allclose(gf_tau, gf_tau_expected, atol=1e-10)
 
 def test_calc_gf_tau_nontrivial():
-    from dcore.anacont_spm import _calc_gf_tau, _find_sum_rule_const
+    from dcore.anacont.spm import _calc_gf_tau, _find_sum_rule_const
     beta = 40
     n_matsubara = 1000
     n_matsubara_tail = 100
@@ -87,7 +87,7 @@ def test_calc_gf_tau_nontrivial():
     assert np.allclose(gf_tau, gf_tau_expected, atol=1e-10)
 
 def test_calc_gf_tau_from_gf_matsubara():
-    from dcore.anacont_spm import calc_gf_tau_from_gf_matsubara
+    from dcore.anacont.spm import calc_gf_tau_from_gf_matsubara
     ntau = 11
     n_matsubara = 1000
     n_matsubara_tail = 100
@@ -111,7 +111,7 @@ def test_calc_gf_tau_from_gf_matsubara():
     assert np.allclose(gf_tau, gf_tau_expected, atol=1e-10)
 
 def test_get_kernel_matrix():
-    from dcore.anacont_spm import _get_kernel_matrix
+    from dcore.anacont.spm import _get_kernel_matrix
     beta = 40
     energies = np.linspace(-3, 3, num=5)
     delta_energy = energies[1] - energies[0]
@@ -121,7 +121,7 @@ def test_get_kernel_matrix():
     assert np.allclose(kernel, kernel_expected, atol=1e-10)
 
 def test_get_kernel_matrix_extreme_energies():
-    from dcore.anacont_spm import _get_kernel_matrix
+    from dcore.anacont.spm import _get_kernel_matrix
     beta = 40
     energies = np.linspace(-30, 30, num=5)
     delta_energy = energies[1] - energies[0]
@@ -134,7 +134,7 @@ def test_get_kernel_matrix_extreme_energies():
     assert np.allclose(kernel, kernel_expected, atol=1e-10)
 
 def test_getSVD():
-    from dcore.anacont_spm import _getSVD, _get_kernel_matrix
+    from dcore.anacont.spm import _getSVD, _get_kernel_matrix
     beta = 40
     nsv = 2
     ntau = 3
@@ -150,7 +150,7 @@ def test_getSVD():
     assert Vt.shape == (nsv, nenergies)
 
 def test_get_svd_for_continuation():
-    from dcore.anacont_spm import _get_svd_for_continuation
+    from dcore.anacont.spm import _get_svd_for_continuation
     beta = 40
     nsv = 2
     ntau = 5
@@ -171,7 +171,7 @@ def test_get_svd_for_continuation():
     assert np.allclose(energies_extract, energies_extract_expected, atol=1e-7)
 
 def test_solveProblem():
-    from dcore.anacont_spm import _solveProblem, _find_sum_rule_const, _calc_gf_tau, _get_svd_for_continuation
+    from dcore.anacont.spm import _solveProblem, _find_sum_rule_const, _calc_gf_tau, _get_svd_for_continuation
     beta = 40
     nsv = 100
     n_matsubara = 1000
@@ -202,7 +202,7 @@ def test_solveProblem():
     assert np.allclose(chi2, 3.4763690885418575e-06, atol=1e-5)
 
 def test_integral_kramers_kronig():
-    from dcore.anacont_spm import _integral_kramers_kronig, dos_to_gf_imag
+    from dcore.anacont.spm import _integral_kramers_kronig, dos_to_gf_imag
     from scipy.interpolate import interp1d
 
     energies = np.linspace(-5, 5, num=1000)
@@ -225,7 +225,7 @@ def test_integral_kramers_kronig():
     assert np.allclose(results, expected_results, atol=1e-7)
 
 def test_get_kramers_kronig_realpart():
-    from dcore.anacont_spm import get_kramers_kronig_realpart, dos_to_gf_imag
+    from dcore.anacont.spm import get_kramers_kronig_realpart, dos_to_gf_imag
     energies = np.linspace(-5, 5, num=10)
     dos = _get_dos_semicircular(energies, 4)
     gf_imag = dos_to_gf_imag(dos)
@@ -237,7 +237,7 @@ def test_get_kramers_kronig_realpart():
     assert np.allclose(gf_real_result, gf_real_expected, atol=1e-7)
 
 def test_get_single_continuation():
-    from dcore.anacont_spm import get_single_continuation, calc_gf_tau_from_gf_matsubara, calc_gf_tau_from_gf_matsubara
+    from dcore.anacont.spm import get_single_continuation, calc_gf_tau_from_gf_matsubara, calc_gf_tau_from_gf_matsubara
     beta = 40
     nsv = 24
     emin = -10
@@ -269,7 +269,7 @@ def test_get_single_continuation():
 
 
 def test_get_multiple_continuations():
-    from dcore.anacont_spm import get_multiple_continuations, calc_gf_tau_from_gf_matsubara, calc_gf_tau_from_gf_matsubara
+    from dcore.anacont.spm import get_multiple_continuations, calc_gf_tau_from_gf_matsubara, calc_gf_tau_from_gf_matsubara
     beta = 40
     nsv = 24
     emin = -10

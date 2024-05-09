@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from dcore._dispatcher import MeshReFreq, MeshImFreq, GfReFreq, GfImFreq
 from dcore.version import version, print_header
-from dcore.anacont_spm import set_default_values, calc_gf_tau_from_gf_matsubara, get_single_continuation, get_multiple_continuations, get_kramers_kronig_realpart, dos_to_gf_imag
+from dcore.anacont.spm import set_default_values, calc_gf_tau_from_gf_matsubara, get_single_continuation, get_multiple_continuations, get_kramers_kronig_realpart, dos_to_gf_imag
 
 def _plot_overview(lambdas, chi2_values, energies, densities, nrows=3, ncols=5):
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=False, figsize=(15, 10))
