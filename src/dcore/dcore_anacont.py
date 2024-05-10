@@ -17,7 +17,9 @@
 #
 
 import argparse
+import sys
 import os.path
+import itertools
 import numpy
 from dcore._dispatcher import MeshReFreq
 from dcore.version import version, print_header
@@ -34,9 +36,6 @@ def dcore_anacont(inifile):
 
     omega_min = params["post"]["omega_min"]
     omega_max = params["post"]["omega_max"]
-    if omega_min >= omega_max:
-        # ToDo: stop the program properly
-        assert omega_min < omega_max
 
     Nomega = params["post"]["Nomega"]
     mesh_w = MeshReFreq(omega_min, omega_max, Nomega)
@@ -45,7 +44,7 @@ def dcore_anacont(inifile):
     file_sigma_iw = seedname + "_sigma_iw.npz"
     # file_sigma_iw = params["post"]["file_sigma_iw"]
     if not os.path.exists(file_sigma_iw):
-        assert False, "File not found: " + file_sigma_iw
+        sys.exit("File not found: " + file_sigma_iw)
     sigma_iw_npz = numpy.load(file_sigma_iw)
 
     dir_work = params["post"]["dir_work"]
@@ -61,8 +60,34 @@ def dcore_anacont(inifile):
         data_w = spm.anacont(sigma_iw_npz, beta, mesh_w, params_ac)
     else:
         assert False, "Unknown solver: " + solver
+    
+    if params["post.anacont"]["show_result"] or params["post.anacont"]["save_result"]:
+        import matplotlib.pyplot as plt
 
-    file_sigma_w = os.path.join(dir_work, "sigma_w.npz")
+        ndata = len(data_w)
+        for idata in range(ndata):
+            sigma_w = data_w[f"data{idata}"]
+            for iorb, jorb in itertools.product(range(sigma_w.shape[1]), range(sigma_w.shape[2])):
+                plt.axhline(y=0, xmin=omega_min, xmax=omega_max, color="lightgrey")
+                plt.plot(mesh_w.points, sigma_w[:,iorb,jorb].real, label="Real")
+                plt.plot(mesh_w.points, sigma_w[:,iorb,jorb].imag, label="Imag")
+                plt.xlim(omega_min, omega_max)
+                plt.xlabel(r"$\omega$")
+                plt.legend()
+                plt.title(rf"$\Sigma_{{{iorb}{jorb}}}( \omega )$ of shell {idata}")
+                plt.tight_layout()
+                if params["post.anacont"]["save_result"]:
+                    file_result = os.path.join(dir_work, f"sigma_w_{idata}_{iorb}_{jorb}.png")
+                    print("Writing to", file_result + "...")
+                    plt.savefig(file_result)
+                if params["post.anacont"]["show_result"]:
+                    plt.show()
+                plt.close()
+
+    dir_post = params["post"]["dir_post"]
+    if not os.path.exists(dir_post):
+        os.makedirs(dir_post)
+    file_sigma_w = os.path.join(dir_post, "sigma_w.npz")
     print("Writing to", file_sigma_w + "...")
     numpy.savez(file_sigma_w, **data_w)
 

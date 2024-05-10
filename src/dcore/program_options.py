@@ -154,6 +154,8 @@ def create_parser(target_sections=None):
 
     # [post.anacont]
     parser.add_option("post.anacont", "solver", str, "algorithm", "Algorithm for analytic continuation")
+    parser.add_option("post.anacont", "show_result", bool, False, "plot result of analytic continuation")
+    parser.add_option("post.anacont", "save_result", bool, False, "plot result of analytic continuation")
 
     # [post.anacont.pade]
     parser.add_option( "post.anacont.pade", "iomega_max", float, -1.0, "Cut-off frequency of the Matsubara frequency",)
@@ -172,7 +174,6 @@ def create_parser(target_sections=None):
 
     parser.add_option("post.anacont.spm", "verbose_opt", bool, False, "show optimization progress")
     parser.add_option("post.anacont.spm", "show_fit", bool, False, "plot result of tail-fitting")
-    parser.add_option("post.anacont.spm", "show_result", bool, False, "plot result of analytic continuation")
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")

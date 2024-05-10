@@ -335,7 +335,7 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm):
             gf_real += const_real_tail
 
             sigma_w_data[:, i_orb, i_orb] = gf_real + 1j * gf_imag
-            if params_spm["show_result"]:
+            if params_spm.get("show_result", False):
                 import matplotlib.pyplot as plt
 
                 plt.axhline(y=0, xmin=energies[0], xmax=energies[-1], color="lightgrey")
