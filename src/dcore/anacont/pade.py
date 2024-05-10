@@ -59,4 +59,5 @@ def parameters_from_ini(inifile):
     parser = create_parser(["post.anacont.pade"])
     parser.read(inifile)
     params = parser.as_dict()
+    parse_parameters(params)
     return params["post.anacont.pade"]

@@ -268,7 +268,33 @@ def parse_parameters(params):
     if 'tool' in params:
         if params['tool']['n_pade_max'] < 0:
             params['tool']['n_pade_max'] = params['system']['n_iw']
+            
+    if 'post' in params:
+        if params['post']['omega_min'] >= params['post']['omega_max']:
+            sys.exit(f"ERROR: omega_min={params['post']['omega_min']} must be less than omega_max={params['post']['omega_max']}.")
+        if params['post']['Nomega'] <= 0:
+            sys.exit(f"ERROR: Nomega={params['post']['Nomega']} must be a positive integer.")
 
+    if 'post.anacont.pade' in params:
+        if params['post.anacont.pade']['iomega_max'] < 0:
+            sys.exit(f"ERROR: iomega_max={params['post.anacont.pade']['iomega_max']} must be a positive float.")
+        if params['post.anacont.pade']['n_min'] < 0:
+            sys.exit(f"ERROR: n_min={params['post.anacont.pade']['n_min']} must be a positive integer.")
+        if params['post.anacont.pade']['n_max'] < params['post.anacont.pade']['n_min']:
+            sys.exit(f"ERROR: n_max={params['post.anacont.pade']['n_max']} must be greater than or equals to n_min={params['post.anacont.pade']['n_min']}.")
+
+    if 'post.anacont.spm' in params:
+        if params['post.anacont.spm']['n_matsubara'] <= 0:
+            sys.exit(f"ERROR: n_matsubara={params['post.anacont.spm']['n_matsubara']} must be a positive integer.")
+        if params['post.anacont.spm']['n_tail'] <= 0:
+            sys.exit(f"ERROR: n_tail={params['post.anacont.spm']['n_tail']} must be a positive integer.")
+        if params['post.anacont.spm']['n_sv'] <= 0:
+            sys.exit(f"ERROR: n_sv={params['post.anacont.spm']['n_sv']} must be a positive integer.")
+        if params['post.anacont.spm']['lambda'] < 0:
+            sys.exit(f"ERROR: lambda={params['post.anacont.spm']['lambda']} must be a non-negative float.")
+        if params['post.anacont.spm']['max_iters_opt'] <= 0:
+            sys.exit(f"ERROR: max_iters_opt={params['post.anacont.spm']['max_iters_opt']} must be a positive integer.")
+        
 
 def parse_knode(knode_string):
     """

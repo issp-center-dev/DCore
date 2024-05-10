@@ -24,7 +24,7 @@ from scipy.interpolate import interp1d
 from scipy.sparse.linalg import svds
 
 from dcore._dispatcher import MeshImFreq, GfImFreq, GfReFreq
-from dcore.program_options import create_parser
+from dcore.program_options import create_parser, parse_parameters
 
 def set_default_values(dictionary, default_values_dict):
     for key, value in default_values_dict.items():
@@ -285,6 +285,7 @@ def parameters_from_ini(inifile):
     parser = create_parser(["post.anacont.spm"])
     parser.read(inifile)
     params = parser.as_dict()
+    parse_parameters(params)
     return params["post.anacont.spm"]
 
 def anacont(sigma_iw_npz, beta, mesh_w, params_spm):
