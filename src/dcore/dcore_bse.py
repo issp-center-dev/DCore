@@ -337,7 +337,7 @@ class SaveBSE:
         self._save_common(xloc_ijkl, icrsh, 'X_loc')
 
     def save_chiloc(self, chiloc_ijkl, icrsh):
-        self._save_common(chiloc_ijkl, icrsh, 'chi_loc')
+        self._save_common(chiloc_ijkl, icrsh, 'chi_loc_in')
 
     def save_gamma0(self, u_mat, icrsh):
 
