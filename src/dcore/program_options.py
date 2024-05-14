@@ -154,8 +154,10 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")
     parser.add_option("bse", "num_wf", int, 10, "Number of fermionic frequencies (>0)")
     parser.add_option("bse", "h5_output_file", str, 'dmft_bse.h5', "Output HDF5 file for bse data")
-    parser.add_option("bse", "skip_X0q_if_exists", bool, False, "Skip X_0(q) calc if file already exists")
-    parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
+    parser.add_option("bse", "skip_X0q_if_exists", bool, False, "[NOT USED] Skip X_0(q) calc if file already exists", OptionStatus.RETIRED)
+    parser.add_option("bse", "skip_Xloc", bool, False, "[DEPRECATED] Skip X_loc calc (for RPA)", OptionStatus.DEPRECATED)
+    parser.add_option("bse", "flag_X0q", bool, True, "Whether X_0(q) is calculated.")
+    parser.add_option("bse", "flag_Xloc", bool, True, "Whether X_loc is calculated. Set False for RPA")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
 
@@ -245,6 +247,11 @@ def parse_parameters(params):
     if 'tool' in params:
         if params['tool']['n_pade_max'] < 0:
             params['tool']['n_pade_max'] = params['system']['n_iw']
+
+    if 'bse' in params:
+        # skip_Xloc is dreprecated.
+        if params['bse']['skip_Xloc'] == True:
+            params['bse']['flag_Xloc'] = False
 
 
 def parse_knode(knode_string):

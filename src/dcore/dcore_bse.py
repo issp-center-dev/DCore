@@ -42,13 +42,10 @@ def to_str(x):
     return x
 
 
-def compare_str_list(list1, list2):
-    if len(list1) != len(list2):
-        return False
+def _compare_str_list(list1, list2):
+    assert len(list1) == len(list2), f"len({list1}) != len({list2})"
     for x, y in zip(list1, list2):
-        if to_str(x) != to_str(y):
-            return False
-    return True
+        assert to_str(x) == to_str(y), f"{to_str(x)} != {to_str(y)}"
 
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
@@ -274,7 +271,7 @@ class SaveBSE:
         assert n_block == len(spin_names)
 
         # NOTE: change the order of spins in HDF5 to meet SumkDFTChi
-        self.block2 = IndexPair2(list(range(n_corr_shells)), sorted(spin_names), only_diagonal1=only_diagonal)
+        self.block2 = IndexPair2(list(range(n_corr_shells)), spin_names, only_diagonal1=only_diagonal)
         self.inner2 = IndexPair(list(range(n_inner)), convert_to_int=True)
         print(" block2 namelist =", self.block2.namelist)
         print(" inner2 namelist =", self.inner2.namelist)
@@ -284,8 +281,8 @@ class SaveBSE:
         self.h5bse = h5BSE(h5_file, bse_grp)
         if bse_info == 'check':
             # check equivalence of info
-            #assert compare_str_list(h5bse.get(key=('block_name',)), self.block2.namelist)
-            #assert compare_str_list(h5bse.get(key=('inner_name',)), self.inner2.namelist)
+            _compare_str_list(self.h5bse.get(key=('block_name',)), self.block2.namelist)
+            _compare_str_list(self.h5bse.get(key=('inner_name',)), self.inner2.namelist)
             assert self.h5bse.get(key=('beta',)) == beta
         elif bse_info == 'save':
             # save info
@@ -406,7 +403,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         Calc X_0(q)
         """
         print("\n--- dcore_bse - X_0(q)")
-        if self._params['bse']['skip_X0q_if_exists'] and os.path.exists(self._params['bse']['h5_output_file']):
+        if self._params['bse']['flag_X0q'] == False:
             print(" skip")
             return
 
@@ -452,10 +449,16 @@ class DMFTBSESolver(DMFTCoreSolver):
         # init for saving data into HDF5
         #
         print("\n--- dcore_bse - invoking h5BSE...")
+
+        if os.path.isfile(self._params['bse']['h5_output_file']):
+            bse_info = 'check'
+        else:
+            bse_info = 'save'
+
         bse = SaveBSE(
             n_corr_shells=self._n_corr_shells,
             h5_file=os.path.abspath(self._params['bse']['h5_output_file']),
-            bse_info='check',
+            bse_info=bse_info,
             nonlocal_order_parameter=False,
             use_spin_orbit=self._use_spin_orbit,
             beta=self._beta,
@@ -478,7 +481,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         # X_loc
         #
         print("\n--- dcore_bse - X_loc")
-        if self._params['bse']['skip_Xloc']:
+        if self._params['bse']['flag_Xloc'] == False:
             print(" skip")
             return
 
