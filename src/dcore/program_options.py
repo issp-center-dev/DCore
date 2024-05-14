@@ -84,6 +84,12 @@ def create_parser(target_sections=None):
     parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: 'filename'} to specify local potential matrix of ish-th shell")
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
+    # [pre]
+    parser.add_option("pre", "flag_lattice", bool, True, "Whether lattice model including H(k) is generated in dcore_pre. If False, data in seedname.h5/dft_input are kept.")
+    parser.add_option("pre", "flag_umat", bool, True, "Whether U matrix is generated in dcore_pre. If False, data in seedname.h5/DCore/Umat are kept.")
+    parser.add_option("pre", "flag_local_potential", bool, True, "Whether local potential is generated in dcore_pre. If False, data in seedname.h5/DCore/LocalPotential are kept.")
+    parser.add_option("pre", "overwrite", bool, True, "Whether seedname.h5 is overwritten. If False, the existing seedname.h5 is repalced.")
+
     # [system]
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature. This parameter is overwritten, if T is given.")
     parser.add_option("system", "T", float, -1.0, "Temperature. If this parameter is given, beta is overwritten by 1/T.")

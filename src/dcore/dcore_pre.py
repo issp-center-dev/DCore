@@ -44,7 +44,12 @@ def __generate_local_potential(p):
     spin_orbit = p["model"]["spin_orbit"]
 
     # read parameters from DFT data
-    skc = SumkDFTCompat(p["model"]["seedname"] + '.h5')
+    try:
+        skc = SumkDFTCompat(p["model"]["seedname"] + '.h5')
+    except RuntimeError as e:
+        print(f"\nERROR: {e}", file=sys.stderr)
+        print("Generate lattice model by running dcore_pre with flag_lattice=True before generating local potential.", file=sys.stderr)
+        sys.exit(1)
 
     assert skc.n_inequiv_shells == n_inequiv_shells
 
@@ -122,7 +127,7 @@ def dcore_pre(input_filenames):
     #
     # Construct a parser with default values
     #
-    pars = create_parser(['model'])
+    pars = create_parser(['model', 'pre'])
     #
     # Parse keywords and store
     #
@@ -140,44 +145,73 @@ def dcore_pre(input_filenames):
     #
     print_parameters(p)
 
+    print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@")
     #
     # remove HDF5 file if exists
     #
     h5_file = p['model']['seedname'] + '.h5'
-    if p['model']['lattice'] != 'external':
-        if os.path.exists(h5_file):
-            print("\nRemoving the existing model HDF5 file...")
+    if os.path.exists(h5_file):
+        print(f"\nFile '{h5_file}' found")
+        if p['pre']['overwrite']:
+            print("  --> overwritten (overwrite=True)")
+        else:
+            print("  --> replaced (overwrite=False)")
             os.remove(h5_file)
+    else:
+        print(f"\nFile '{h5_file}' is created")
+
 
     #
     # Lattice information
     #   -> create h5_file/dft_input
     #
-    print("\n@@@@@@@@@@@@@@@@@@@  Generate Model-HDF5 File  @@@@@@@@@@@@@@@@@@@@\n")
-    lattice_model = create_lattice_model(p)
-    lattice_model.generate_model_file()
+    print("\nGenerating lattice model including H(k)")
+    print(f"  in {h5_file}/dft_input")
+    if p['pre']['flag_lattice']:
+        lattice_model = create_lattice_model(p)
+        lattice_model.generate_model_file()
+    else:
+        print("skip")
 
     #
     # Interaction
     #   -> create h5_file/DCore/umat
     #
     print("\nGenerating U-matrix")
-    generate_umat(p)
+    print(f"  in {h5_file}/DCore/Umat")
+    if p['pre']['flag_umat']:
+        generate_umat(p)
+    else:
+        print("skip")
 
     #
     # Local potential
     #   -> create h5_file/DCore/local_potential
     #
     print("\nGenerating local potential")
-    __generate_local_potential(p)
+    print(f"  in {h5_file}/DCore/LocalPotential")
+    if p['pre']['flag_local_potential']:
+        __generate_local_potential(p)
+    else:
+        print("skip")
 
     #
     # Check HDF5 file
     #
     print('')
     print('@@@@@@@@@@@@@@@@@@@ Check Model-HDF5 file @@@@@@@@@@@@@@@@@@@@')
-    __check_if_Hk_is_hermite(h5_file)
-    print_local_fields(h5_file)
+
+    print("\nChecking H(k)")
+    if p['pre']['flag_lattice']:
+        __check_if_Hk_is_hermite(h5_file)
+    else:
+        print("skip")
+
+    print("\nLocal Fields")
+    if p['pre']['flag_lattice']:
+        print_local_fields(h5_file)
+    else:
+        print("skip")
 
     #
     # Finish
