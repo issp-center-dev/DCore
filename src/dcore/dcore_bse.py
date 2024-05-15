@@ -27,7 +27,7 @@ import time
 
 from dcore._dispatcher import HDFArchive, dyson
 from dcore.dmft_core import DMFTCoreSolver
-from dcore.program_options import create_parser, parse_parameters
+from dcore.program_options import create_parser, parse_parameters, print_parameters, delete_parameters
 from dcore.tools import *
 from dcore import impurity_solvers
 from .sumkdft_workers.launcher import run_sumkdft
@@ -621,21 +621,28 @@ def dcore_bse(filename, np=1):
     #
     # Construct a parser with default values
     #
-    pars = create_parser()
-
+    pars = create_parser(["model", "system", "impurity_solver", "mpi", "bse"])
     #
     # Parse keywords and store
     #
     pars.read(filename)
-    p = pars.as_dict()
-    parse_parameters(p)
-    seedname = p["model"]["seedname"]
-    p["mpi"]["num_processes"] = np
+    params = pars.as_dict()
+    parse_parameters(params)
+
+    params["mpi"]["num_processes"] = np
+
+    # Delete unnecessary parameters
+    delete_parameters(params, block='model', delete=['interaction', 'density_density', 'kanamori', 'slater_f', 'slater_uj', 'slater_basis', 'interaction_file', 'local_potential_matrix', 'local_potential_factor'])
+    delete_parameters(params, block='model', delete=['bvec'])
+
+    # Summary of input parameters
+    print_parameters(params)
 
     #
     # Load DMFT data
     #
-    solver = DMFTBSESolver(seedname, p, output_file=seedname + '.out.h5')
+    seedname = params["model"]["seedname"]
+    solver = DMFTBSESolver(seedname, params, output_file=seedname + '.out.h5')
     if solver.iteration_number == 0:
         raise RuntimeError("Number of iterations is zero!")
     print("Number of iterations :", solver.iteration_number)

@@ -477,7 +477,7 @@ def dcore_post(filename, np=1, prefix=None):
     #
     # Delete unnecessary parameters
     #
-    delete_parameters(p, block='model', delete=['interaction', 'density_density', 'kanamori', 'slater_f', 'slater_uj', 'slater_basis', 'local_potential_matrix', 'local_potential_factor'])
+    delete_parameters(p, block='model', delete=['interaction', 'density_density', 'kanamori', 'slater_f', 'slater_uj', 'slater_basis', 'interaction_file', 'local_potential_matrix', 'local_potential_factor'])
 
     # Summary of input parameters
     print_parameters(p)
