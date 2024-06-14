@@ -46,7 +46,7 @@ def create_parser(target_sections=None):
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'post', 'bse', 'vertex', 'sparse_bse'])
+        parser = TypedParser(['mpi', 'model', 'system', 'impurity_solver', 'control', 'tool', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.spectrum', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
 
@@ -143,6 +143,7 @@ def create_parser(target_sections=None):
         "For gk_smpl_freqs = dense, all fermionic frequencies in the range of [-n_iw, n_iw] are used. A valid text file must contain the number of sampling frequencies in its first line."
         "Each line after the first line must contain two integer numbers: The first one is an sequential index of a sampling frequency (start from 0), and the second one is a fermionic sampling frequency (i.e, -1, 0, 1)."
     )
+    # end of [tool]
 
     # [post]
     parser.add_option("post", "omega_min", float, -1, "Minimum value of real frequency")
@@ -174,6 +175,19 @@ def create_parser(target_sections=None):
 
     parser.add_option("post.anacont.spm", "verbose_opt", bool, False, "show optimization progress")
     parser.add_option("post.anacont.spm", "show_fit", bool, False, "plot result of tail-fitting")
+
+    # [post.spectrum]
+
+    parser.add_option("post.spectrum", "nk_line", int, 8, "Number of *k* along each line")
+    parser.add_option("post.spectrum", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]",
+                      "The name and the fractional coordinate of each k-node.")
+
+    parser.add_option("post.spectrum", "broadening", float, 0.0, "An additional Lorentzian broadening")
+
+    parser.add_option("post.spectrum", "nk_mesh", int, 0, "Number of k points along each axis for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("post.spectrum", "nk0_mesh", int, 0, "Number of k points along b_0 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("post.spectrum", "nk1_mesh", int, 0, "Number of k points along b_1 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("post.spectrum", "nk2_mesh", int, 0, "Number of k points along b_2 for computation of A(k,omega) on a 3D mesh")
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")

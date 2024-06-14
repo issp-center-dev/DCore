@@ -1,9 +1,10 @@
 from .wannier90_model import Wannier90Model
+from .base import LatticeModel
 from .predefined_models import ChainModel, SquareModel, CubicModel, BetheModel
 from .external_model import ExternalModel
 import sys
 
-def create_lattice_model(params):
+def create_lattice_model(params) -> LatticeModel:
     model_name =  params["model"]["lattice"]
 
     for c in all_lattice_models:
