@@ -293,44 +293,41 @@ class PomerolSolver(SolverBase):
         dir_suscep = params_kw.get('dir_suscep', './susceptibility')
         return self._read_common(dir_suscep)
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
         """
-        compute local G2 in p-h channel
-            X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
+        Compute local G2 in p-h channel
 
-        Parameters
-        ----------
-        rot
-        mpirun_command
-        num_wf
-        num_wb
-        params_kw
-
-        Returns
-        -------
-        G2_loc : dict
-            key = (i1, i2, i3, i4)
-            val = numpy.ndarray(n_w2b, 2*n_w2f, 2*n_w2f)
-
-        chi_loc : dict (None if not computed)
-            key = (i1, i2, i3, i4)
-            val = numpy.ndarray(n_w2b)
+        For details, see SolverBase.calc_Xloc_ph
         """
 
-        params_kw['flag_vx'] = 1
-        params_kw['n_w2f'] = num_wf
-        params_kw['n_w2b'] = num_wb
+        # Set parameters
+        if only_chiloc:
+            print("\n Calc only chi_loc (X_loc is not computed)\n")
+            params_kw['flag_vx'] = 0
+        else:
+            params_kw['flag_vx'] = 1
+            params_kw['n_w2f'] = num_wf
+            params_kw['n_w2b'] = num_wb
+
         params_kw['flag_suscep'] = 1
         params_kw['n_wb'] = num_wb
 
+        # Run the impurity solver
         self.solve(rot, mpirun_command, params_kw)
 
-        g2_loc = self._read_g2loc(params_kw)
-        # 1d array --> (wb, wf1, wf2)
-        for key, data in list(g2_loc.items()):
-            g2_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
+        # Get results if computed
+        g2_loc = chi_loc = None
 
-        chi_loc = self._read_chiloc(params_kw)
+        # X_loc
+        if params_kw['flag_vx']:
+            g2_loc = self._read_g2loc(params_kw)
+            # 1d array --> (wb, wf1, wf2)
+            for key, data in list(g2_loc.items()):
+                g2_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
+
+        # chi_loc
+        if params_kw['flag_suscep']:
+            chi_loc = self._read_chiloc(params_kw)
 
         return g2_loc, chi_loc
 
