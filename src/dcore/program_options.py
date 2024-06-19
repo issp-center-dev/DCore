@@ -72,7 +72,7 @@ def create_parser(target_sections=None):
     parser.add_option("model", "nk2", int, 0, "Number of *k* along b_2 (for lattice = wannier90, external)")
     parser.add_option("model", "spin_orbit", bool, False, "Whether the spin-orbit case.")
     parser.add_option("model", "interaction", str, "kanamori",
-                      'Chosen from "slater_uj", "slater_f", "kanamori", "respack" (See below)')
+                      'Chosen from "slater_uj", "slater_f", "kanamori", "respack", "file" (See below)')
     parser.add_option("model", "density_density", bool, False,
                       "If true, only the density-density part of the interaction is used (See below).")
     parser.add_option("model", "kanamori", str, "None",
@@ -80,6 +80,7 @@ def create_parser(target_sections=None):
     parser.add_option("model", "slater_f", str, "None", "Angular momentum, Slater integrals F (See below).")
     parser.add_option("model", "slater_uj", str, "None", "Angular momentum, Slater integrals in U and J (See below).")
     parser.add_option("model", "slater_basis", str, "cubic", "Basis of the Slater interaction (See below).")
+    parser.add_option("model", "interaction_file", str, "None", "list of filenames that contain U tensor for each inequivalent shell")
     parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: 'filename'} to specify local potential matrix of ish-th shell")
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 

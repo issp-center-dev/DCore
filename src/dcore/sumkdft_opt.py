@@ -211,7 +211,7 @@ class SumkDFT_opt(SumkDFT):
         print_time("G_latt << iOmega_n")
 
         idmat = [numpy.identity(
-            self.n_orbitals[ik, ntoi[sp]], numpy.complex_) for sp in spn]
+            self.n_orbitals[ik, ntoi[sp]], numpy.complex128) for sp in spn]
         M = copy.deepcopy(idmat)
         for ibl in range(self.n_spin_blocks[self.SO]):
             ind = ntoi[spn[ibl]]
@@ -556,7 +556,7 @@ class SumkDFT_opt(SumkDFT):
         for icrsh in range(self.n_corr_shells):
             for sp in self.spin_block_names[self.corr_shells[icrsh]['SO']]:
                 dens_mat[icrsh][sp] = numpy.zeros(
-                    [self.corr_shells[icrsh]['dim'], self.corr_shells[icrsh]['dim']], numpy.complex_)
+                    [self.corr_shells[icrsh]['dim'], self.corr_shells[icrsh]['dim']], numpy.complex128)
 
         ikarray = numpy.array(list(range(self.n_k)))
         for ik in mpi.slice_array(ikarray):
@@ -574,7 +574,7 @@ class SumkDFT_opt(SumkDFT):
                 ntoi = self.spin_names_to_ind[self.SO]
                 spn = self.spin_block_names[self.SO]
                 dims = {sp:self.n_orbitals[ik, ntoi[sp]] for sp in spn}
-                MMat = [numpy.zeros([dims[sp], dims[sp]], numpy.complex_) for sp in spn]
+                MMat = [numpy.zeros([dims[sp], dims[sp]], numpy.complex128) for sp in spn]
 
                 for isp, sp in enumerate(spn):
                     ind = ntoi[sp]
@@ -647,7 +647,7 @@ class SumkDFT_opt(SumkDFT):
         for icrsh in range(self.n_corr_shells):
             for sp in self.spin_block_names[self.corr_shells[icrsh]['SO']]:
                 dens_mat[icrsh][sp] = numpy.zeros(
-                    [self.corr_shells[icrsh]['dim'], self.corr_shells[icrsh]['dim']], numpy.complex_)
+                    [self.corr_shells[icrsh]['dim'], self.corr_shells[icrsh]['dim']], numpy.complex128)
 
         ikarray = numpy.array(list(range(self.n_k)))
         for ik in mpi.slice_array(ikarray):
@@ -668,7 +668,7 @@ class SumkDFT_opt(SumkDFT):
                 ntoi = self.spin_names_to_ind[self.SO]
                 spn = self.spin_block_names[self.SO]
                 dims = {sp:self.n_orbitals[ik, ntoi[sp]] for sp in spn}
-                MMat = [numpy.zeros([dims[sp], dims[sp]], numpy.complex_) for sp in spn]
+                MMat = [numpy.zeros([dims[sp], dims[sp]], numpy.complex128) for sp in spn]
 
                 for isp, sp in enumerate(spn):
                     ind = ntoi[sp]

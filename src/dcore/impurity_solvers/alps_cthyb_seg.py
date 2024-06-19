@@ -41,7 +41,7 @@ def to_numpy_array(g, names):
     # FIXME: Bit ugly
     n_data = g[names[0]].data.shape[0]
 
-    data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=complex)
+    data = numpy.zeros((n_data, n_spin_orbital, n_spin_orbital), dtype=numpy.complex128)
     offset = 0
     for name in names:
         block = g[name]
@@ -384,18 +384,18 @@ class ALPSCTHYBSEGSolver(SolverBase):
         #   self._Gimp_iw
 
         def set_blockgf_from_h5(sigma, group):
-            # swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=complex)
-            swdata = numpy.zeros((2*self.n_orb, self.n_iw), dtype=complex)
+            # swdata = numpy.zeros((2, self.n_orb, self.n_iw), dtype=numpy.complex128)
+            swdata = numpy.zeros((2*self.n_orb, self.n_iw), dtype=numpy.complex128)
             with HDFArchive('sim.h5', 'r') as f:
                 # for orb in range(self.n_orb):
                 #     for spin in range(2):
                 #         swdata_array = f[group][str(orb*2+spin)]["mean"]["value"]
-                #         assert swdata_array.dtype == numpy.complex
+                #         assert swdata_array.dtype == numpy.complex128
                 #         assert swdata_array.shape == (self.n_iw,)
                 #         swdata[spin, orb, :] = swdata_array
                 for i in range(2*self.n_orb):
                     swdata_array = f[group][str(i)]["mean"]["value"]
-                    assert swdata_array.dtype == numpy.complex
+                    assert swdata_array.dtype == numpy.complex128
                     assert swdata_array.shape == (self.n_iw,)
                     swdata[i, :] = swdata_array
             assign_from_numpy_array(sigma, swdata, self.block_names)
@@ -457,7 +457,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
                 return 0
 
         # Convert G2_iijj -> G2_ijij
-        g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=complex)
+        g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=numpy.complex128)
         for i1, i2 in product(range(2*self.n_orb), repeat=2):
             for wb in range(num_wb):
                 for wf1, wf2 in product(range(2 * num_wf), repeat=2):

@@ -47,7 +47,7 @@ class SumkDFTDCorePost(SumkDFTTools, SumkDFT_opt):
         value_read = self.read_input_from_hdf(
             subgrp=self.bands_data, things_to_read=things_to_read)
 
-        den = numpy.zeros([self.n_k, 2-self.SO, self.n_orbitals[0, 0], self.n_orbitals[0, 0]], numpy.complex_)
+        den = numpy.zeros([self.n_k, 2-self.SO, self.n_orbitals[0, 0], self.n_orbitals[0, 0]], numpy.complex128)
 
         spn = self.spin_block_names[self.SO]
 

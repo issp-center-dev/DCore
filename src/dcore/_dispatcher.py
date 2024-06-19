@@ -1,5 +1,5 @@
 import os, sys
-import importlib
+import importlib.util
 
 
 if 'DCORE_TRIQS_COMPAT' in os.environ and int(os.environ['DCORE_TRIQS_COMPAT']) == 1:

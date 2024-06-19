@@ -51,7 +51,7 @@ def openmx2dcore(system_name, seedname):
         #
         cell = numpy.zeros([ncell, 3], numpy.int_)
         eqcell = numpy.zeros(ncell, numpy.int_)
-        hopping = numpy.zeros([ncell, nwan, nwan], numpy.complex_)
+        hopping = numpy.zeros([ncell, nwan, nwan], numpy.complex128)
         #
         for ii in range(5):
             line = f.readline()

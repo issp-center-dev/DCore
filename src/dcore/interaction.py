@@ -120,7 +120,7 @@ def _coefficients_ls_j(l: int, verbose: bool=False, prefix: str=''):
     j_jz = numpy.array(j_jz + [[j, -jz] for j, jz in j_jz])
 
     # matrix elements < L Lz S Sz | J Jz >
-    mat_ls_j = numpy.zeros((len(j_jz), len(j_jz)), dtype=numpy.float)
+    mat_ls_j = numpy.zeros((len(j_jz), len(j_jz)), dtype=numpy.float64)
     mat_for_print = []
     for i1, (m, ss) in enumerate(m_s):
         for i2, (j, jz) in enumerate(j_jz):
@@ -290,11 +290,11 @@ def _generate_umat_slater(p: Dict, l_sh: List[int], f_sh: List[numpy.ndarray]):
 
 def _generate_umat_slater_uj(p: Dict):
     assert isinstance(p, Dict)
-    _check_parameters(p['model'], required=['slater_uj'], unused=['slater_f', 'kanamori'])
+    _check_parameters(p['model'], required=['slater_uj'], unused=['slater_f', 'kanamori', 'interaction_file'])
 
     def _U_J_to_F(_l, _u, _j):
         if _l == 0:
-            return numpy.array([_u,], dtype=numpy.float_)
+            return numpy.array([_u,], dtype=numpy.float64)
         else:
             return U_J_to_radial_integrals(_l, _u, _j)
 
@@ -310,13 +310,13 @@ def _generate_umat_slater_uj(p: Dict):
 
 def _generate_umat_slater_f(p: Dict):
     assert isinstance(p, Dict)
-    _check_parameters(p['model'], required=['slater_f'], unused=['slater_uj', 'kanamori'])
+    _check_parameters(p['model'], required=['slater_f'], unused=['slater_uj', 'kanamori', 'interaction_file'])
 
     # parse slater parameters
     nsh = p['model']['n_inequiv_shells']
     slater_sh = _parse_interaction_parameters(p["model"]["slater_f"], name='slater_f', nsh=nsh, n_inner=5)
     l_sh = [int(l) for l, *_ in slater_sh]
-    f_sh = [numpy.array(f[0:l+1], dtype=numpy.float_) for l, *f in slater_sh]
+    f_sh = [numpy.array(f[0:l+1], dtype=numpy.float64) for l, *f in slater_sh]
 
     # Warn if non-zero values are neglected from slater_f
     slater_f_neglected = [numpy.any(numpy.array(f[l+1:]) != 0) for l, *f in slater_sh]
@@ -329,7 +329,7 @@ def _generate_umat_slater_f(p: Dict):
 
 def _generate_umat_respack(p: Dict):
     assert isinstance(p, Dict)
-    _check_parameters(p['model'], required=[], unused=['kanamori', 'slater_f', 'slater_uj'])
+    _check_parameters(p['model'], required=[], unused=['kanamori', 'slater_f', 'slater_uj', 'interaction_file'])
 
     nsh = p['model']['n_inequiv_shells']
     norb = p['model']['norb_inequiv_sh']
@@ -382,6 +382,68 @@ def _generate_umat_respack(p: Dict):
     return u_mat_so_sh
 
 
+def _parse_filenames(input_str: str, name, nsh: int):
+    try:
+        files = ast.literal_eval(input_str)
+        assert isinstance(files, list), f"interpreted as {type(files)}. List is required!"
+        assert len(files) == nsh, f"length={len(files)} must be {nsh} (# of inequivalent shells)"
+    except Exception as e:
+        print(f"\nError: {name} = {repr(input_str)}", file=sys.stderr)
+        print(e, file=sys.stderr)
+        exit(1)
+    print(f" {name} = {repr(files)}")
+    return files
+
+
+def _generate_umat_file(p: Dict):
+    assert isinstance(p, Dict)
+    _check_parameters(p['model'], required=['interaction_file'], unused=['slater_f', 'slater_uj', 'kanamori'])
+
+    nsh = p["model"]['n_inequiv_shells']
+    norb_sh = p['model']['norb_inequiv_sh']
+    spin_orbit = p["model"]["spin_orbit"]
+
+    # str -> List[str]
+    filenames = _parse_filenames(p["model"]["interaction_file"], name='interaction_file', nsh=nsh)
+
+    u_mat_so_sh = []
+    print(f"\n Reading U-matrix from file(s)")
+    for ish, file in enumerate(filenames):
+        norb = norb_sh[ish]
+        print(f"   ish={ish} : '{file}'")
+
+        u_shape = (2*norb, 2*norb, 2*norb, 2*norb) if spin_orbit else (norb, norb, norb, norb)
+
+        # read file
+        try:
+            if os.path.splitext(file)[1] == ".npy":
+                umat = numpy.load(file)
+                assert umat.shape == u_shape, f"inconsistent shape: require {u_shape}, but {umat.shape} is given."
+            else:
+                umat_1d = numpy.loadtxt(file)
+                if umat_1d.shape == (numpy.prod(u_shape),):  # real U
+                    umat = umat_1d.reshape(u_shape)
+                elif umat_1d.shape == (numpy.prod(u_shape), 2):  # complex U
+                    # float (norb^4, 2) -> complex (norb^4, 1) -> complex (norb,norb,norb,norb)
+                    umat = umat_1d.view(complex).reshape(u_shape)
+                else:
+                    raise Exception(f"inconsistent shape: require {(numpy.prod(u_shape),)} for real U or {(numpy.prod(u_shape), 2)} for complex U, but {umat_1d.shape} is given.")
+        except Exception as e:
+            print(f"\nError in reading file '{file}' for ish={ish}", file=sys.stderr)
+            print(e, file=sys.stderr)
+            exit(1)
+
+        if spin_orbit:
+            umat_so = umat
+        else:
+            umat_so = to_spin_full_U_matrix(umat)
+            assert umat_so.shape == (2*norb, 2*norb, 2*norb, 2*norb)
+
+        u_mat_so_sh.append(umat_so)
+
+    return u_mat_so_sh
+
+
 def generate_umat(p: Dict):
     """
     Add U-matrix block (Tentative)
@@ -401,6 +463,7 @@ def generate_umat(p: Dict):
         'slater_uj': _generate_umat_slater_uj,
         'slater_f': _generate_umat_slater_f,
         'respack': _generate_umat_respack,
+        'file': _generate_umat_file,
     }.get(interaction)
     if func_umat is None:
         sys.exit(f"Error ! Invalid interaction : {interaction}")

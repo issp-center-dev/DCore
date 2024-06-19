@@ -304,7 +304,7 @@ class CalcSpectrumCore:
         calc_dir = os.path.join(self.parent_dir, "{}_{}_{}_{}_{}_{}".format(sitei,sigmai,sitej,sigmaj, ex_state, 0 if flg is True else 1))
         os.makedirs(calc_dir, exist_ok=True)
         self.Make_Spectrum_Input(calc_dir)
-        one_body_green = np.zeros((len(self.T_list), self.nomega), dtype=np.complex)
+        one_body_green = np.zeros((len(self.T_list), self.nomega), dtype=np.complex128)
         # print("Calculate G[{},{}][{},{}]".format(sitei, "u" if sigmai == 0 else "d", sitej, "u" if sigmaj == 0 else "d"))
         self._make_single_excitation(sitei, sigmai, sitej, sigmaj, ex_state=ex_state, flg_complex=flg, calc_dir=calc_dir)
         # Run HPhi
