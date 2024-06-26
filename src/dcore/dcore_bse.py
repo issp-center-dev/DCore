@@ -49,7 +49,7 @@ def _compare_str_list(list1, list2):
 
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
-                              Sigma_iw, Gloc_iw, num_wb, num_wf, ish, freqs=None):
+                              Sigma_iw, Gloc_iw, num_wb, num_wf, only_chiloc, ish, freqs=None):
     """
 
     Calculate G2 in an impurity model
@@ -83,24 +83,29 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     # Solve the model
     rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     if flag_box:
-        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
+        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params, only_chiloc)
     else:
         xloc, chiloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, num_wb, s_params)
 
     # Check results for x_loc
     print("\n Checking x_loc...")
-    assert isinstance(xloc, dict)
-    for key, data in list(xloc.items()):
-        # print("  ", key)
-        if flag_box:
-            assert data.shape == (num_wb, 2*num_wf, 2*num_wf)
-        else:
-            assert data.shape == (freqs.shape[0],)
-    print(" OK")
+    if xloc is None:
+        print("   not computed")
+    else:
+        assert isinstance(xloc, dict)
+        for key, data in list(xloc.items()):
+            # print("  ", key)
+            if flag_box:
+                assert data.shape == (num_wb, 2*num_wf, 2*num_wf)
+            else:
+                assert data.shape == (freqs.shape[0],)
+        print(" OK")
 
     # Check results for chi_loc
-    if chiloc is not None:
-        print("\n Checking chi_loc...")
+    print("\n Checking chi_loc...")
+    if chiloc is None:
+        print("   not computed")
+    else:
         assert isinstance(chiloc, dict)
         for key, data in list(chiloc.items()):
             # print("  ", key)
@@ -501,9 +506,12 @@ class DMFTBSESolver(DMFTCoreSolver):
                                                               self._beta, self._n_iw,
                                                               self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                                                               self._params['bse']['num_wb'],
-                                                              self._params['bse']['num_wf'], ish, freqs=freqs)
+                                                              self._params['bse']['num_wf'],
+                                                              self._params['bse']['calc_only_chiloc'],
+                                                              ish, freqs=freqs)
 
-            subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
+            if x_loc is not None:
+                subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
 
             # Open HDF5 file to improve performance. Close manually.
             bse.h5bse.open('a')
@@ -512,7 +520,8 @@ class DMFTBSESolver(DMFTCoreSolver):
             for icrsh in range(self._n_corr_shells):
                 if ish == self._sk.corr_to_inequiv[icrsh]:
                     # X_loc
-                    bse.save_xloc(x_loc, icrsh=icrsh)
+                    if x_loc is not None:
+                        bse.save_xloc(x_loc, icrsh=icrsh)
                     # chi_loc
                     if chi_loc is not None:
                         bse.save_chiloc(chi_loc, icrsh=icrsh)
@@ -638,6 +647,13 @@ def dcore_bse(filename, np=1):
     # Summary of input parameters
     print_parameters(params)
 
+    # Delete unnecessary parameters
+    delete_parameters(p, block='model', delete=['bvec'])
+    delete_parameters(p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'prec_mu', 'with_dc', 'no_tail_fit'])
+
+    # Summary of input parameters
+    print_parameters(p)
+
     #
     # Load DMFT data
     #
@@ -648,14 +664,11 @@ def dcore_bse(filename, np=1):
     print("Number of iterations :", solver.iteration_number)
 
     #
-    # Compute data for BSE
+    # Calculate quantities necessary for BSE
     #
     solver.calc_bse()
 
-
-    #
     # Finish
-    #
     print("\n#################  Done  #####################\n")
 
 

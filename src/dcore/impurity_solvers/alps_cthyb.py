@@ -43,7 +43,7 @@ def to_numpy_array(g, block_names):
     Rearrange spins and orbitals so that up and down spins appear alternatingly.
     If there is a single block, we assume that spin and down spins appear alternatignly.
     If there are two blocks, we assume that they are spin1 and spin2 sectors.
-    
+
     Note by HS: The comment above may be wrong. The correct one may be
        If there is a single block, we assume that a up-spin block is followed by a down-spin block.
     """
@@ -125,7 +125,7 @@ class ALPSCTHYBSolver(SolverBase):
 
         self._solve_impl(rot, mpirun_command, None, params_kw)
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
         raise RuntimeError("calc_Xloc_ph is not implemented!")
 
     def calc_G2loc_ph_sparse(self, rot, mpirun_command, wsample_ph, params_kw):

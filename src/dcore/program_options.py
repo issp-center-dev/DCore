@@ -158,6 +158,7 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "skip_Xloc", bool, False, "[DEPRECATED] Skip X_loc calc (for RPA)", OptionStatus.DEPRECATED)
     parser.add_option("bse", "flag_X0q", bool, True, "Whether X_0(q) is calculated.")
     parser.add_option("bse", "flag_Xloc", bool, True, "Whether X_loc is calculated. Set False for RPA")
+    parser.add_option("bse", "calc_only_chiloc", bool, False, "Calculate only chi_loc but no X_loc (for SCL, rRPA).")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
 
@@ -252,6 +253,7 @@ def parse_parameters(params):
         # skip_Xloc is dreprecated.
         if params['bse']['skip_Xloc'] == True:
             params['bse']['flag_Xloc'] = False
+        # two_options_incompatible(params, ('bse', 'skip_Xloc'), ('bse', 'calc_only_chiloc'))
 
 
 def parse_knode(knode_string):

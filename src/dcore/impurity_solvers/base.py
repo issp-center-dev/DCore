@@ -147,29 +147,32 @@ class SolverBase(object):
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
         """
-        Compute Xloc(m, n, n') in p-h channel
-                and chi_loc(m) (optional)
-
+        Compute local G2 in p-h channel
+            X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >,  and
+            chi_loc = < c_{i1}^+ c_{i2} ; c_{i4}^+ c_{i3} >  (optional)
 
         Parameters
         ----------
-        num_wf:
+        num_wf: int
             Number of non-negative fermionic frequencies
-        num_wb:
+        num_wb: int
             Number of non-negative bosonic frequencies
+        only_chiloc: bool
+            If True, only chi_loc is computed (no Xloc).
 
         The other parameters are the same as for solve().
 
         Returns
         -------
+        X_loc : dict
+            key : (i1, i2, i3, i4)
+            val : numpy.ndarray(n_w2b, 2*n_w2f, 2*n_w2f)
 
-        Xloc(m, n, n') : 3d ndarray of complex type
-            Data for -num_wf <= n, n' < num_wf and m = 0, 1, ..., num_wb-1.
-
-        chi_loc(m) : 1d ndarray of complex type
-            return None if not computed
+        chi_loc : dict (None if not computed)
+            key : (i1, i2, i3, i4)
+            val : numpy.ndarray(n_w2b)
 
         """
         return NotImplementedError()
