@@ -48,7 +48,7 @@ def __generate_local_potential(p):
         skc = SumkDFTCompat(p["model"]["seedname"] + '.h5')
     except RuntimeError as e:
         print(f"\nERROR: {e}", file=sys.stderr)
-        print("Generate lattice model by running dcore_pre with flag_lattice=True before generating local potential.", file=sys.stderr)
+        print("Generate lattice model by running dcore_pre with skip_lattice=False (default) before generating local potential.", file=sys.stderr)
         sys.exit(1)
 
     assert skc.n_inequiv_shells == n_inequiv_shells
@@ -167,11 +167,11 @@ def dcore_pre(input_filenames):
     #
     print("\nGenerating lattice model including H(k)")
     print(f"  in {h5_file}/dft_input")
-    if p['pre']['flag_lattice']:
+    if p['pre']['skip_lattice']:
+        print("skip")
+    else:
         lattice_model = create_lattice_model(p)
         lattice_model.generate_model_file()
-    else:
-        print("skip")
 
     #
     # Interaction
@@ -179,10 +179,10 @@ def dcore_pre(input_filenames):
     #
     print("\nGenerating U-matrix")
     print(f"  in {h5_file}/DCore/Umat")
-    if p['pre']['flag_umat']:
-        generate_umat(p)
-    else:
+    if p['pre']['skip_umat']:
         print("skip")
+    else:
+        generate_umat(p)
 
     #
     # Local potential
@@ -190,10 +190,10 @@ def dcore_pre(input_filenames):
     #
     print("\nGenerating local potential")
     print(f"  in {h5_file}/DCore/LocalPotential")
-    if p['pre']['flag_local_potential']:
-        __generate_local_potential(p)
-    else:
+    if p['pre']['skip_local_potential']:
         print("skip")
+    else:
+        __generate_local_potential(p)
 
     #
     # Check HDF5 file
@@ -202,16 +202,16 @@ def dcore_pre(input_filenames):
     print('@@@@@@@@@@@@@@@@@@@ Check Model-HDF5 file @@@@@@@@@@@@@@@@@@@@')
 
     print("\nChecking H(k)")
-    if p['pre']['flag_lattice']:
-        __check_if_Hk_is_hermite(h5_file)
-    else:
+    if p['pre']['skip_lattice']:
         print("skip")
+    else:
+        __check_if_Hk_is_hermite(h5_file)
 
     print("\nLocal Fields")
-    if p['pre']['flag_lattice']:
-        print_local_fields(h5_file)
-    else:
+    if p['pre']['skip_lattice']:
         print("skip")
+    else:
+        print_local_fields(h5_file)
 
     #
     # Finish

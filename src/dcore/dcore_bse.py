@@ -408,7 +408,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         Calc X_0(q)
         """
         print("\n--- dcore_bse - X_0(q)")
-        if self._params['bse']['flag_X0q'] == False:
+        if self._params['bse']['skip_X0q']:
             print(" skip")
             return
 
@@ -486,7 +486,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         # X_loc
         #
         print("\n--- dcore_bse - X_loc")
-        if self._params['bse']['flag_Xloc'] == False:
+        if self._params['bse']['skip_Xloc']:
             print(" skip")
             return
 
@@ -643,16 +643,10 @@ def dcore_bse(filename, np=1):
     # Delete unnecessary parameters
     delete_parameters(params, block='model', delete=['interaction', 'density_density', 'kanamori', 'slater_f', 'slater_uj', 'slater_basis', 'interaction_file', 'local_potential_matrix', 'local_potential_factor'])
     delete_parameters(params, block='model', delete=['bvec'])
+    delete_parameters(params, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'prec_mu', 'with_dc', 'no_tail_fit'])
 
     # Summary of input parameters
     print_parameters(params)
-
-    # Delete unnecessary parameters
-    delete_parameters(p, block='model', delete=['bvec'])
-    delete_parameters(p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'prec_mu', 'with_dc', 'no_tail_fit'])
-
-    # Summary of input parameters
-    print_parameters(p)
 
     #
     # Load DMFT data
