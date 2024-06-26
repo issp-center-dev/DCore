@@ -84,6 +84,12 @@ def create_parser(target_sections=None):
     parser.add_option("model", "local_potential_matrix", str, "None", "dict of {ish: 'filename'} to specify local potential matrix of ish-th shell")
     parser.add_option("model", "local_potential_factor", str, "1.0", "Prefactors to the local potential matrix (float or list with len=ncor)")
 
+    # [pre]
+    parser.add_option("pre", "skip_lattice", bool, False, "Skip generation of lattice model including H(k) in dcore_pre. If True, data in seedname.h5/dft_input are kept.")
+    parser.add_option("pre", "skip_umat", bool, False, "Skip generation of U matrix in dcore_pre. If True, data in seedname.h5/DCore/Umat are kept.")
+    parser.add_option("pre", "skip_local_potential", bool, False, "Skip generation of local potential in dcore_pre. If True, data in seedname.h5/DCore/LocalPotential are kept.")
+    parser.add_option("pre", "overwrite", bool, True, "Whether seedname.h5 is overwritten. If False, the existing seedname.h5 is repalced.")
+
     # [system]
     parser.add_option("system", "beta", float, 1.0, "Inverse temperature. This parameter is overwritten, if T is given.")
     parser.add_option("system", "T", float, -1.0, "Temperature. If this parameter is given, beta is overwritten by 1/T.")
@@ -148,9 +154,10 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")
     parser.add_option("bse", "num_wf", int, 10, "Number of fermionic frequencies (>0)")
     parser.add_option("bse", "h5_output_file", str, 'dmft_bse.h5', "Output HDF5 file for bse data")
-    parser.add_option("bse", "skip_X0q_if_exists", bool, False, "Skip X_0(q) calc if file already exists")
+    parser.add_option("bse", "skip_X0q_if_exists", bool, False, "[NOT USED] Skip X_0(q) calc if file already exists", OptionStatus.RETIRED)
+    parser.add_option("bse", "skip_X0q", bool, False, "Skip X_0(q) calc")
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
-    parser.add_option("bse", "calc_only_chiloc", bool, False, "Calculate only chi_loc but no X_loc (for SCL, rRPA).")
+    parser.add_option("bse", "calc_only_chiloc", bool, False, "Calculate only chi_loc but no X_loc (for SCL, rRPA). Do not activate skip_Xloc when using this option.")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
 

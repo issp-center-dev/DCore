@@ -27,7 +27,7 @@ import time
 
 from dcore._dispatcher import HDFArchive, dyson
 from dcore.dmft_core import DMFTCoreSolver
-from dcore.program_options import create_parser, parse_parameters, delete_parameters, print_parameters
+from dcore.program_options import create_parser, parse_parameters, print_parameters, delete_parameters
 from dcore.tools import *
 from dcore import impurity_solvers
 from .sumkdft_workers.launcher import run_sumkdft
@@ -42,13 +42,10 @@ def to_str(x):
     return x
 
 
-def compare_str_list(list1, list2):
-    if len(list1) != len(list2):
-        return False
+def _compare_str_list(list1, list2):
+    assert len(list1) == len(list2), f"len({list1}) != len({list2})"
     for x, y in zip(list1, list2):
-        if to_str(x) != to_str(y):
-            return False
-    return True
+        assert to_str(x) == to_str(y), f"{to_str(x)} != {to_str(y)}"
 
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
@@ -279,7 +276,7 @@ class SaveBSE:
         assert n_block == len(spin_names)
 
         # NOTE: change the order of spins in HDF5 to meet SumkDFTChi
-        self.block2 = IndexPair2(list(range(n_corr_shells)), sorted(spin_names), only_diagonal1=only_diagonal)
+        self.block2 = IndexPair2(list(range(n_corr_shells)), spin_names, only_diagonal1=only_diagonal)
         self.inner2 = IndexPair(list(range(n_inner)), convert_to_int=True)
         print(" block2 namelist =", self.block2.namelist)
         print(" inner2 namelist =", self.inner2.namelist)
@@ -289,8 +286,8 @@ class SaveBSE:
         self.h5bse = h5BSE(h5_file, bse_grp)
         if bse_info == 'check':
             # check equivalence of info
-            #assert compare_str_list(h5bse.get(key=('block_name',)), self.block2.namelist)
-            #assert compare_str_list(h5bse.get(key=('inner_name',)), self.inner2.namelist)
+            _compare_str_list(self.h5bse.get(key=('block_name',)), self.block2.namelist)
+            _compare_str_list(self.h5bse.get(key=('inner_name',)), self.inner2.namelist)
             assert self.h5bse.get(key=('beta',)) == beta
         elif bse_info == 'save':
             # save info
@@ -342,7 +339,7 @@ class SaveBSE:
         self._save_common(xloc_ijkl, icrsh, 'X_loc')
 
     def save_chiloc(self, chiloc_ijkl, icrsh):
-        self._save_common(chiloc_ijkl, icrsh, 'chi_loc')
+        self._save_common(chiloc_ijkl, icrsh, 'chi_loc_in')
 
     def save_gamma0(self, u_mat, icrsh):
 
@@ -411,7 +408,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         Calc X_0(q)
         """
         print("\n--- dcore_bse - X_0(q)")
-        if self._params['bse']['skip_X0q_if_exists'] and os.path.exists(self._params['bse']['h5_output_file']):
+        if self._params['bse']['skip_X0q']:
             print(" skip")
             return
 
@@ -457,10 +454,16 @@ class DMFTBSESolver(DMFTCoreSolver):
         # init for saving data into HDF5
         #
         print("\n--- dcore_bse - invoking h5BSE...")
+
+        if os.path.isfile(self._params['bse']['h5_output_file']):
+            bse_info = 'check'
+        else:
+            bse_info = 'save'
+
         bse = SaveBSE(
             n_corr_shells=self._n_corr_shells,
             h5_file=os.path.abspath(self._params['bse']['h5_output_file']),
-            bse_info='check',
+            bse_info=bse_info,
             nonlocal_order_parameter=False,
             use_spin_orbit=self._use_spin_orbit,
             beta=self._beta,
@@ -627,28 +630,29 @@ def dcore_bse(filename, np=1):
     #
     # Construct a parser with default values
     #
-    pars = create_parser(['model', 'system', 'impurity_solver', 'mpi', 'bse'])
-
+    pars = create_parser(["model", "system", "impurity_solver", "mpi", "bse"])
     #
     # Parse keywords and store
     #
     pars.read(filename)
-    p = pars.as_dict()
-    parse_parameters(p)
-    seedname = p["model"]["seedname"]
-    p["mpi"]["num_processes"] = np
+    params = pars.as_dict()
+    parse_parameters(params)
+
+    params["mpi"]["num_processes"] = np
 
     # Delete unnecessary parameters
-    delete_parameters(p, block='model', delete=['bvec'])
-    delete_parameters(p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'prec_mu', 'with_dc', 'no_tail_fit'])
+    delete_parameters(params, block='model', delete=['interaction', 'density_density', 'kanamori', 'slater_f', 'slater_uj', 'slater_basis', 'interaction_file', 'local_potential_matrix', 'local_potential_factor'])
+    delete_parameters(params, block='model', delete=['bvec'])
+    delete_parameters(params, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'prec_mu', 'with_dc', 'no_tail_fit'])
 
     # Summary of input parameters
-    print_parameters(p)
+    print_parameters(params)
 
     #
     # Load DMFT data
     #
-    solver = DMFTBSESolver(seedname, p, output_file=seedname + '.out.h5')
+    seedname = params["model"]["seedname"]
+    solver = DMFTBSESolver(seedname, params, output_file=seedname + '.out.h5')
     if solver.iteration_number == 0:
         raise RuntimeError("Number of iterations is zero!")
     print("Number of iterations :", solver.iteration_number)
