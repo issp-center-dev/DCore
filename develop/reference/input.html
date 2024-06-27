@@ -66,31 +66,37 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 </tr>
-<tr class="row-odd"><td><p>[system]</p></td>
+<tr class="row-odd"><td><p>[pre]</p></td>
+<td><p>Yes</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>[system]</p></td>
 <td></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 </tr>
-<tr class="row-even"><td><p>[impurity_solver]</p></td>
+<tr class="row-odd"><td><p>[impurity_solver]</p></td>
 <td></td>
 <td><p>Yes</p></td>
 <td></td>
 <td><p>Yes</p></td>
 </tr>
-<tr class="row-odd"><td><p>[control]</p></td>
+<tr class="row-even"><td><p>[control]</p></td>
 <td></td>
 <td><p>Yes</p></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>[tool]</p></td>
+<tr class="row-odd"><td><p>[tool]</p></td>
 <td></td>
 <td></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 </tr>
-<tr class="row-odd"><td><p>[mpi]</p></td>
+<tr class="row-even"><td><p>[mpi]</p></td>
 <td></td>
 <td><p>Yes</p></td>
 <td></td>
@@ -98,7 +104,7 @@
 </tr>
 </tbody>
 </table>
-<p>For example, we can see that <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> reads only [model] block. Therefore, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> needs to be re-executed only when the parameters in [model] block are changed.</p>
+<p>For example, we can see that <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> reads only [model] and [pre] blocks. Therefore, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> needs to be re-executed only when the parameters in [model] and [pre] blocks are changed.</p>
 <p>The parameters included in each block are explained below.</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
@@ -110,11 +116,12 @@
 <li><p><a class="reference internal" href="#local-potential" id="id5"><a class="reference internal" href="local_potential.html"><span class="doc">local_potential_* parameters</span></a></a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#system-block" id="id6">[system] block</a></p></li>
-<li><p><a class="reference internal" href="#impurity-solver-block" id="id7">[impurity_solver] block</a></p></li>
-<li><p><a class="reference internal" href="#control-block" id="id8">[control] block</a></p></li>
-<li><p><a class="reference internal" href="#tool-block" id="id9">[tool] block</a></p></li>
-<li><p><a class="reference internal" href="#mpi-block" id="id10">[mpi] block</a></p></li>
+<li><p><a class="reference internal" href="#pre-block" id="id6">[pre] block</a></p></li>
+<li><p><a class="reference internal" href="#system-block" id="id7">[system] block</a></p></li>
+<li><p><a class="reference internal" href="#impurity-solver-block" id="id8">[impurity_solver] block</a></p></li>
+<li><p><a class="reference internal" href="#control-block" id="id9">[control] block</a></p></li>
+<li><p><a class="reference internal" href="#tool-block" id="id10">[tool] block</a></p></li>
+<li><p><a class="reference internal" href="#mpi-block" id="id11">[mpi] block</a></p></li>
 </ul>
 </nav>
 <section id="model-block">
@@ -260,8 +267,43 @@
 <h3><a class="toc-backref" href="#id5" role="doc-backlink"><a class="reference internal" href="local_potential.html"><span class="doc">local_potential_* parameters</span></a></a><a class="headerlink" href="#local-potential" title="Permalink to this heading">¶</a></h3>
 </section>
 </section>
+<section id="pre-block">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">[pre] block</a><a class="headerlink" href="#pre-block" title="Permalink to this heading">¶</a></h2>
+<p>This block includes parameters that controls the behavior of <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>skip_lattice</p></td>
+<td><p>Bool</p></td>
+<td><p>False</p></td>
+<td><p>Skip generation of lattice model including H(k) in dcore_pre. If True, data in seedname.h5/dft_input are kept.</p></td>
+</tr>
+<tr class="row-odd"><td><p>skip_umat</p></td>
+<td><p>Bool</p></td>
+<td><p>False</p></td>
+<td><p>Skip generation of U matrix in dcore_pre. If True, data in seedname.h5/DCore/Umat are kept.</p></td>
+</tr>
+<tr class="row-even"><td><p>skip_local_potential</p></td>
+<td><p>Bool</p></td>
+<td><p>False</p></td>
+<td><p>Skip generation of local potential in dcore_pre. If True, data in seedname.h5/DCore/LocalPotential are kept.</p></td>
+</tr>
+<tr class="row-odd"><td><p>overwrite</p></td>
+<td><p>Bool</p></td>
+<td><p>True</p></td>
+<td><p>Whether seedname.h5 is overwritten. If False, the existing seedname.h5 is repalced.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="system-block">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">[system] block</a><a class="headerlink" href="#system-block" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">[system] block</a><a class="headerlink" href="#system-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes thermodynamic parameters and some technical parameters such as the number of Matsubara frequencies.</p>
 <table class="docutils align-default">
 <thead>
@@ -338,7 +380,7 @@ U_{\alpha \gamma \delta \beta}
 <p>where <span class="math notranslate nohighlight">\(\langle \cdots \rangle_0\)</span> indicates the expectation value at the initial (Kohn-Sham) state.</p>
 </section>
 <section id="impurity-solver-block">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">[impurity_solver] block</a><a class="headerlink" href="#impurity-solver-block" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">[impurity_solver] block</a><a class="headerlink" href="#impurity-solver-block" title="Permalink to this heading">¶</a></h2>
 <p>This block specifies an impurity solver to be used and necessary parameters for running the solver program.</p>
 <table class="docutils align-default">
 <thead>
@@ -365,7 +407,7 @@ U_{\alpha \gamma \delta \beta}
 For details, see <a class="reference internal" href="../impuritysolvers.html"><span class="doc">the reference manual for each solver</span></a>.</p>
 </section>
 <section id="control-block">
-<h2><a class="toc-backref" href="#id8" role="doc-backlink">[control] block</a><a class="headerlink" href="#control-block" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">[control] block</a><a class="headerlink" href="#control-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes parameters that control the self-consistency loop of DMFT.</p>
 <table class="docutils align-default">
 <thead>
@@ -430,7 +472,7 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </table>
 </section>
 <section id="tool-block">
-<h2><a class="toc-backref" href="#id9" role="doc-backlink">[tool] block</a><a class="headerlink" href="#tool-block" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">[tool] block</a><a class="headerlink" href="#tool-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes parameters that are solely used by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table class="docutils align-default">
 <thead>
@@ -550,7 +592,7 @@ For details, see <a class="reference internal" href="../impuritysolvers.html"><s
 </table>
 </section>
 <section id="mpi-block">
-<h2><a class="toc-backref" href="#id10" role="doc-backlink">[mpi] block</a><a class="headerlink" href="#mpi-block" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id11" role="doc-backlink">[mpi] block</a><a class="headerlink" href="#mpi-block" title="Permalink to this heading">¶</a></h2>
 <p>This block includes parameters which are read by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
 <table class="docutils align-default">
 <thead>
