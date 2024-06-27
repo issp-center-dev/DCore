@@ -95,7 +95,7 @@ class DMFTCoreCheck(object):
 
     def __plot_init(self):
         if self.plot_called:
-            self.plt.clf()
+            self.plt.close()
             self.plt.figure(figsize=(8, 6))  # default
             return
         self.plot_called = True
