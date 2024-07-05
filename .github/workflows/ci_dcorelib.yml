@@ -18,7 +18,7 @@ jobs:
             #python: 3.9
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: apt
         if: ${{ runner.os == 'Linux' }}
         run: |
@@ -27,7 +27,7 @@ jobs:
       - uses: mpi4py/setup-mpi@v1
 
       - name: Set up python ${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
