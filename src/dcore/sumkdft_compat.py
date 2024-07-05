@@ -29,7 +29,7 @@ def read_dft_input_data(file, subgrp, things_to_read):
     values = {}
     with HDFArchive(file, 'r') as ar:
         if not subgrp in ar:
-            raise RuntimeError("subrp " + subgrp + "does not exist in " + file + "!")
+            raise RuntimeError("subgrp " + subgrp + " does not exist in " + file + "!")
         # first read the necessary things:
         for it in things_to_read:
             values[it] = ar[subgrp][it]

@@ -854,6 +854,7 @@ class SumkDFT_opt(SumkDFT):
             eff_atlevels = None
         return mpi.bcast(eff_atlevels)
 
+    # This replacement does not work when np_mpi > nk
     def calculate_min_max_band_energies(self):
         # hop = self.hopping
         # diag_hop = numpy.zeros(hop.shape[:-1])
@@ -867,6 +868,16 @@ class SumkDFT_opt(SumkDFT):
         diag_hop = mpi.all_reduce(mpi.world, diag_hop, lambda x, y: x + y)
         min_band_energy = diag_hop.min().real
         max_band_energy = diag_hop.max().real
+        self.min_band_energy = min_band_energy
+        self.max_band_energy = max_band_energy
+        return min_band_energy, max_band_energy
+
+    # Simply set 0
+    def calculate_min_max_band_energies(self):
+        if mpi.is_master_node():
+            warn("Set min_band_energy=0 and max_band_energy=0 when hopping_part is used.")
+        min_band_energy = 0
+        max_band_energy = 0
         self.min_band_energy = min_band_energy
         self.max_band_energy = max_band_energy
         return min_band_energy, max_band_energy
