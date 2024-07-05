@@ -6,20 +6,21 @@ jobs:
       ${{ matrix.os }}, python==${{ matrix.python }}, numpy==${{ matrix.numpy }}, scipy==${{ matrix.scipy }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            numpy: 1.24
-            scipy: 1.6
-            python: 3.8
+            numpy: "1.24"
+            scipy: "1.6"
+            python: "3.8"
           - os: ubuntu-latest
-            numpy: 1.24
-            scipy: 1.6
-            python: 3.11
+            numpy: "1.26"
+            scipy: "1.11"
+            python: "3.11"
           - os: ubuntu-latest
-            numpy: 2.0
-            scipy: 1.14
-            python: 3.12
+            numpy: "2.0"
+            scipy: "1.14"
+            python: "3.12"
           #- os: ubuntu-latest
             #numpy: auto
             #scipy: auto
