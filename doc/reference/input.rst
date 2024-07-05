@@ -16,13 +16,14 @@ The following table shows which blocks are used by each program.
     :widths: 5, 5, 5, 5, 5
 
     [model]          ,  Yes, Yes, Yes, Yes
+    [pre]            ,  Yes,    ,    ,
     [system]         ,     , Yes, Yes, Yes
     [impurity_solver],     , Yes,    , Yes
     [control]        ,     , Yes
     [tool]           ,     ,    , Yes, Yes
     [mpi]            ,     , Yes,    , Yes
 
-For example, we can see that ``dcore_pre`` reads only [model] block. Therefore, ``dcore_pre`` needs to be re-executed only when the parameters in [model] block are changed.
+For example, we can see that ``dcore_pre`` reads only [model] and [pre] blocks. Therefore, ``dcore_pre`` needs to be re-executed only when the parameters in [model] and [pre] blocks are changed.
 
 The parameters included in each block are explained below.
 
@@ -53,6 +54,13 @@ See separate pages from the link below for detailed descriptions of some paramet
 :doc:`local_potential`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
+[pre] block
+--------------
+
+This block includes parameters that controls the behavior of ``dcore_pre``.
+
+.. include:: pre_desc.txt
 
 [system] block
 --------------

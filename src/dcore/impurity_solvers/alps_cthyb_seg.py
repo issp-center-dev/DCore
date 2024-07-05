@@ -413,29 +413,13 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # [(s1,o1), (s2,o2), 0]
         self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
         """
-        compute local G2 in p-h channel
-            X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >
+        Compute local G2 in p-h channel
 
-        Parameters
-        ----------
-        rot
-        mpirun_command
-        num_wf
-        num_wb
-        params_kw
-
-        Returns
-        -------
-        G2_loc : dict
-            key = (i1, i2, i3, i4)
-            val = numpy.ndarray(n_w2b, 2*n_w2f, 2*n_w2f)
-
-        chi_loc : dict (None if not computed)
-            key = (i1, i2, i3, i4)
-            val = numpy.ndarray(n_w2b)
+        For details, see SolverBase.calc_Xloc_ph
         """
+
         if rot is not None:
             # TODO
             raise NotImplementedError
