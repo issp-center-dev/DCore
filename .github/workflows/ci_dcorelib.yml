@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   build:
     name: |
-      ${{ matrix.os }}, numpy==${{ matrix.numpy }}, scipy==${{ matrix.scipy }}
+      ${{ matrix.os }}, python==${{ matrix.python }}, numpy==${{ matrix.numpy }}, scipy==${{ matrix.scipy }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -12,6 +12,14 @@ jobs:
             numpy: 1.24
             scipy: 1.6
             python: 3.8
+          - os: ubuntu-latest
+            numpy: 1.24
+            scipy: 1.6
+            python: 3.11
+          - os: ubuntu-latest
+            numpy: 2.0
+            scipy: 1.14
+            python: 3.12
           #- os: ubuntu-latest
             #numpy: auto
             #scipy: auto
