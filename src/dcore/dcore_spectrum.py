@@ -137,27 +137,6 @@ class DMFTPostSolver(DMFTCoreSolver):
         )
         return r["den"]
 
-    def calc_Sigma_w(self, mesh):
-        """
-        Compute Sigma_w for computing band structure
-        For an imaginary-time solver, a list of Nones will be returned.
-
-        :param mesh: (float, float, int)
-            real-frequency mesh (min, max, num_points)
-
-        :return: list of Sigma_w
-
-        """
-
-        solver_name = self._params["impurity_solver"]["name"]
-        Solver = impurity_solvers.solver_classes[solver_name]
-        if Solver.is_gf_realomega_available():
-            Gloc_iw_sh, _, _ = self.calc_Gloc()
-            _, _, sigma_w = self.solve_impurity_models(Gloc_iw_sh, -1, mesh)
-            return sigma_w
-        else:
-            return [None] * self.n_inequiv_shells
-
 
 class DMFTCoreTools:
     def __init__(self, seedname, params, n_k, xk, nkdiv_mesh, kvec_mesh, dir_post):

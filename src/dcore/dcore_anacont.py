@@ -27,7 +27,7 @@ from dcore.program_options import create_parser, parse_parameters
 from dcore.anacont import pade, spm
 
 def dcore_anacont(inifile):
-    parser = create_parser(["system", "model", "post", "post.anacont"])
+    parser = create_parser(["system", "model", "impurity_solver", "post", "post.anacont"])
     parser.read(inifile)
     params = parser.as_dict()
     parse_parameters(params)
