@@ -3,22 +3,31 @@ on: [push, pull_request]
 jobs:
   build:
     name: |
-      ${{ matrix.os }}, numpy==${{ matrix.numpy }}, scipy==${{ matrix.scipy }}
+      ${{ matrix.os }}, python==${{ matrix.python }}, numpy==${{ matrix.numpy }}, scipy==${{ matrix.scipy }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            numpy: 1.24
-            scipy: 1.6
-            python: 3.8
+            numpy: "1.24"
+            scipy: "1.6"
+            python: "3.8"
+          - os: ubuntu-latest
+            numpy: "1.26.4"
+            scipy: "1.11.4"
+            python: "3.11"
+          - os: ubuntu-latest
+            numpy: "1.26.4"
+            scipy: "1.11.4"
+            python: "3.12"
           #- os: ubuntu-latest
             #numpy: auto
             #scipy: auto
             #python: 3.9
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: apt
         if: ${{ runner.os == 'Linux' }}
         run: |
@@ -27,7 +36,7 @@ jobs:
       - uses: mpi4py/setup-mpi@v1
 
       - name: Set up python ${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
