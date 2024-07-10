@@ -363,71 +363,110 @@ class JOCTHYBSEGSolver(SolverBase):
 
         For details, see SolverBase.calc_Xloc_ph
         """
-        raise NotImplementedError
 
         if rot is not None:
             # TODO
             raise NotImplementedError
 
-        use_chi_loc = False
+        use_chiloc = False
 
-        params_kw['cthyb.MEASURE_g2w'] = 1
-        params_kw['cthyb.N_w2'] = num_wf
-        params_kw['cthyb.N_W'] = num_wb
-        if use_chi_loc:
-            params_kw['cthyb.MEASURE_nnw'] = 1
+        params_kw['control.flag_tp'] = 'true'
+        params_kw['control.n_tp'] = 2**(int(np.log2(self.n_iw)) - 4)  # TODO
+        params_kw['control.n_tp2'] = 2**(int(np.log2(self.n_iw)) - 1)
+
+        if not only_chiloc:
+            params_kw['control.flag_vx'] = 'true'
+            params_kw['control.n_vx1'] = num_wf
+            params_kw['control.n_vx2'] = num_wb
 
         self.solve(rot, mpirun_command, params_kw)
 
-        # Save G2(wb, wf, wf')
-        # [(s1,o1), (s2,o2), (wb,wf,wf')]
-        g2_re = self._get_results("g2w_re", 4*num_wf*num_wf*num_wb, orbital_symmetrize=False)
-        g2_im = self._get_results("g2w_im", 4*num_wf*num_wf*num_wb, orbital_symmetrize=False)
-        g2_loc = (g2_re + g2_im * 1.0J) / self.beta
-        g2_loc = g2_loc.reshape((2*self.n_orb, 2*self.n_orb) + (num_wb, 2*num_wf, 2*num_wf))
-        # assign to dict
-        g2_dict = {}
-        for i1, i2 in product(range(2*self.n_orb), repeat=2):
-            g2_dict[(i1, i1, i2, i2)] = g2_loc[i1, i2]
+        # Get G2
+        if only_chiloc:
+            g2_dict = None
+        else:
+            # Gf[wf, i]
+            # Read Gf
+            data = numpy.loadtxt("wmeasure_Gf_w.dat")
+            gf = data[:, 1::2] + 1j * data[:, 2::2]
+            assert gf.shape == (2*num_wf + num_wb, 2*self.n_orb)
 
-        # return g2_loc for arbitrary wb including wb<0
-        def get_g2(_i, _j, _wb, _wf1, _wf2):
-            try:
-                if _wb >= 0:
-                    return g2_loc[_i, _j, _wb, _wf1, _wf2]
-                else:
-                    # G2_iijj(wb, wf, wf') = G2_jjii(-wb, -wf', -wf)^*
-                    return numpy.conj(g2_loc[_j, _i, -_wb, -(1+_wf2), -(1+_wf1)])
-            except IndexError:
-                return 0
+            # x0_lo[i, j, wf, wf']  (wb=0)
+            # x0_{12,34}(0; wf, wf') = gf_{21}(iw) * gf_{34}(iw')
+            # x0_{11,33}(0; wf, wf') = gf_{11}(iw) * gf_{33}(iw')  [Gf is diagonal]
+            x0_lo = np.zeros((2*self.n_orb, 2*self.n_orb, 2*num_wf, 2*num_wf), dtype=complex)
+            for i1, i3 in product(range(2*self.n_orb), repeat=2):
+                x0_lo[i1, i3, :, :] = gf[:2*num_wf, None, i1] * gf[None, :2*num_wf, i3]
 
-        # Convert G2_iijj -> G2_ijij
-        g2_loc_tr = numpy.zeros(g2_loc.shape, dtype=complex)
-        for i1, i2 in product(range(2*self.n_orb), repeat=2):
-            for wb in range(num_wb):
-                for wf1, wf2 in product(range(2 * num_wf), repeat=2):
-                    # G2_ijij(wb, wf, wf') = -G2_iijj(wf-wf', wf'+wb, wf')^*
-                    g2_loc_tr[i1, i2, wb, wf1, wf2] = -get_g2(i1, i2, wf1-wf2, wf2+wb, wf2)
-        # assign to dict
-        for i1, i2 in product(range(2*self.n_orb), repeat=2):
-            # exclude i1=i2, which was already assigned by g2_loc
-            if i1 != i2:
-                g2_dict[(i1, i2, i1, i2)] = g2_loc_tr[i1, i2]
+            # x0_tr[i, j, wb, wf]  (wf=wf')
+            # x0_{12,34}(wb; wf) = - gf_{31}(wf) * gf_{24}(wf+wb)
+            # x0_{12,12}(wb; wf) = - gf_{11}(wf) * gf_{22}(wf+wb)  [Gf is diagonal]
+            x0_tr = np.zeros((2*self.n_orb, 2*self.n_orb, num_wb, 2*num_wf), dtype=complex)
+            for i1, i2 in product(range(2*self.n_orb), repeat=2):
+                for wb in range(num_wb):
+                    x0_tr[i1, i2, wb, :] = - gf[0:2*num_wf, i1] * gf[wb:wb+2*num_wf, i2]
 
-        # Occupation number
-        # [(s1,o1)]
-        occup = self._get_occupation()
+            # Read gamma
+            def read_vertex(filename):
+                data = numpy.loadtxt(filename)
+                gamma = data[:, 6::2] + 1j * data[:, 7::2]
+                assert gamma.shape == (num_wb * 2*num_wf * 2*num_wf, 2*self.n_orb * 2*self.n_orb)
+                gamma = gamma.reshape(2*num_wf, 2*num_wf, num_wb, 2*self.n_orb, 2*self.n_orb)
+                # (wf, wf', wb, i, j) -> (i, j, wb, wf, wf')
+                gamma = gamma.transpose([3, 4, 2, 0, 1])
+                # (i, j, wb, wf, wf')
+                assert gamma.shape == (2*self.n_orb, 2*self.n_orb, num_wb, 2*num_wf, 2*num_wf)
+                return -gamma / self.beta
 
-        # Save chi(wb)
-        # [(s1,o1), (s2,o2), wb]
+            # gamma[i, j, wb, wf, wf']
+            gamma_lo = read_vertex("vertex_lo.dat")
+            gamma_tr = read_vertex("vertex_tr.dat")
+
+            # gamma -> connected G2
+            # G2[i, j, wb, wf, wf']
+            #  = x0_{12}(wb; wf) * gamma_{12,34}(wb; wf, wf') * x0_{34}(wb; wf')
+
+            # for lo
+            # x0_{11}(wb; wf) * gamma_{11,33}(wb; wf, wf') * x0_{33}(wb; wf')
+            g2_lo = np.einsum("iixy, ijxyz, jjxz -> ijxyz", x0_tr, gamma_lo, x0_tr)
+
+            # for tr
+            # x0_{12}(wb; wf) * gamma_{12,12}(wb; wf, wf') * x0_{12}(wb; wf')
+            g2_tr = np.einsum("ijxy, ijxyz, ijxz -> ijxyz", x0_tr, gamma_tr, x0_tr)
+
+
+            # Sum disconnected part
+            # for lo
+            # wb == 0
+            g2_lo[:, :, 0, :, :] += x0_lo[:, :, :, :]
+            # i == j, wf == wf'
+            for i in range(2*self.n_orb):
+                for wf in range(2*num_wf):
+                    g2_lo[i, i, :, wf, wf] += x0_tr[i, i, :, wf]
+
+            # for tr (i != j)
+            # wf == wf'
+            for wf in range(2*num_wf):
+                g2_tr[:, :, :, wf, wf] += x0_tr[:, :, :, wf]
+
+            g2_dict = {}
+            for i1, i2 in product(range(2*self.n_orb), repeat=2):
+                g2_dict[(i1, i1, i2, i2)] = g2_lo[i1, i2]
+                if i1 != i2:
+                    g2_dict[(i1, i2, i1, i2)] = g2_tr[i1, i2]
+
+        # Get chi
         chi_dict = None
-        if use_chi_loc:
-            chi_re = self._get_results("nnw_re", num_wb, orbital_symmetrize=True)
-            chi_im = self._get_results("nnw_im", num_wb, orbital_symmetrize=True)
-            chi_loc = chi_re + chi_im * 1.0J
-            # subtract <n><n>
-            chi_loc[:, :, 0] -= occup[:, None] * occup[None, :] * self.beta
-            # assign to dict
+        if use_chiloc:
+            # Read chi_loc
+            data = numpy.loadtxt("chi_w.dat")
+            chi_loc = data[:num_wb, 3::2] + 1j * data[:num_wb, 4::2]
+            assert chi_loc.shape == (num_wb, (2*self.n_orb)**2)
+            chi_loc = chi_loc.reshape((num_wb, 2*self.n_orb, 2*self.n_orb))
+            # (wb, i, j) -> (i, j, wb)
+            chi_loc = chi_loc.transpose([1, 2, 0])
+            assert chi_loc.shape == (2*self.n_orb, 2*self.n_orb, num_wb)
+
             chi_dict = {}
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 chi_dict[(i1, i1, i2, i2)] = chi_loc[i1, i2]
