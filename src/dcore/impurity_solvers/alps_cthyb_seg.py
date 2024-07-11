@@ -413,7 +413,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # [(s1,o1), (s2,o2), 0]
         self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute local G2 in p-h channel
 
@@ -424,12 +424,13 @@ class ALPSCTHYBSEGSolver(SolverBase):
             # TODO
             raise NotImplementedError
 
-        use_chi_loc = False
+        save_chiloc = params_kw['save_chiloc']
+        only_chiloc = params_kw['only_chiloc']
 
         params_kw['cthyb.MEASURE_g2w'] = 1
         params_kw['cthyb.N_w2'] = num_wf
         params_kw['cthyb.N_W'] = num_wb
-        if use_chi_loc:
+        if save_chiloc:
             params_kw['cthyb.MEASURE_nnw'] = 1
 
         self.solve(rot, mpirun_command, params_kw)
@@ -476,7 +477,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # Save chi(wb)
         # [(s1,o1), (s2,o2), wb]
         chi_dict = None
-        if use_chi_loc:
+        if save_chiloc:
             chi_re = self._get_results("nnw_re", num_wb, orbital_symmetrize=True)
             chi_im = self._get_results("nnw_im", num_wb, orbital_symmetrize=True)
             chi_loc = chi_re + chi_im * 1.0J

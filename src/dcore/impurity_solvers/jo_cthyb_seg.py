@@ -357,7 +357,7 @@ class JOCTHYBSEGSolver(SolverBase):
         # [(s1,o1), (s2,o2), 0]
         # self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute local G2 in p-h channel
 
@@ -368,7 +368,11 @@ class JOCTHYBSEGSolver(SolverBase):
             # TODO
             raise NotImplementedError
 
-        use_chiloc = False
+        save_chiloc = params_kw['save_chiloc']
+        only_chiloc = params_kw['only_chiloc']
+
+        if save_chiloc:
+            print("Warning: save_chiloc=True. The transverse spin susceptibility by BSE will not be correct, although the longitudinal spin susceptibility gets faster convergence against num_wf. Set save_chiloc=False if the transverse mode is necessary (still note that the spin rotational symmetry is broken because of density-density interactions).", file=sys.stderr)
 
         params_kw['control.flag_tp'] = 'true'
         params_kw['control.n_tp'] = 2**(int(np.log2(self.n_iw)) - 4)  # TODO
@@ -434,7 +438,6 @@ class JOCTHYBSEGSolver(SolverBase):
             # x0_{12}(wb; wf) * gamma_{12,12}(wb; wf, wf') * x0_{12}(wb; wf')
             g2_tr = np.einsum("ijxy, ijxyz, ijxz -> ijxyz", x0_tr, gamma_tr, x0_tr)
 
-
             # Sum disconnected part
             # for lo
             # wb == 0
@@ -457,7 +460,7 @@ class JOCTHYBSEGSolver(SolverBase):
 
         # Get chi
         chi_dict = None
-        if use_chiloc:
+        if save_chiloc:
             # Read chi_loc
             data = numpy.loadtxt("chi_w.dat")
             chi_loc = data[:num_wb, 3::2] + 1j * data[:num_wb, 4::2]

@@ -147,7 +147,7 @@ class SolverBase(object):
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute local G2 in p-h channel
             X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >,  and
@@ -159,10 +159,12 @@ class SolverBase(object):
             Number of non-negative fermionic frequencies
         num_wb: int
             Number of non-negative bosonic frequencies
-        only_chiloc: bool
-            If True, only chi_loc is computed (no Xloc).
 
         The other parameters are the same as for solve().
+        params_kw includes the following parameters in addition to the ones used in solve().
+
+            'only_chiloc': bool, if True, only chi_loc is computed (no Xloc).
+            'save_chiloc': bool, if True, chi_loc is saved.
 
         Returns
         -------

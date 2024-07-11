@@ -49,7 +49,7 @@ def _compare_str_list(list1, list2):
 
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
-                              Sigma_iw, Gloc_iw, num_wb, num_wf, only_chiloc, ish, freqs=None):
+                              Sigma_iw, Gloc_iw, num_wb, num_wf, save_chiloc, only_chiloc, ish, freqs=None):
     """
 
     Calculate G2 in an impurity model
@@ -71,6 +71,9 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
+    s_params['save_chiloc'] = save_chiloc
+    s_params['only_chiloc'] = only_chiloc
+
     work_dir_org = os.getcwd()
     work_dir = 'work/imp_shell' + str(ish) + '_bse'
     if not os.path.isdir(work_dir):
@@ -83,7 +86,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     # Solve the model
     rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     if flag_box:
-        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params, only_chiloc)
+        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
     else:
         xloc, chiloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, num_wb, s_params)
 
@@ -507,6 +510,7 @@ class DMFTBSESolver(DMFTCoreSolver):
                                                               self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                                                               self._params['bse']['num_wb'],
                                                               self._params['bse']['num_wf'],
+                                                              self._params['bse']['save_chiloc'],
                                                               self._params['bse']['calc_only_chiloc'],
                                                               ish, freqs=freqs)
 
