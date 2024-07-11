@@ -364,10 +364,6 @@ class JOCTHYBSEGSolver(SolverBase):
         For details, see SolverBase.calc_Xloc_ph
         """
 
-        if rot is not None:
-            # TODO
-            raise NotImplementedError
-
         save_chiloc = params_kw['save_chiloc']
         only_chiloc = params_kw['only_chiloc']
 
@@ -473,6 +469,10 @@ class JOCTHYBSEGSolver(SolverBase):
             chi_dict = {}
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 chi_dict[(i1, i1, i2, i2)] = chi_loc[i1, i2]
+
+        # Rotate g2_dict and chi_dict back to the original basis
+        if rot is not None:
+            rotate_basis(rot, self.use_spin_orbit, None, direction='backward', X_dict=g2_dict, chi_dict=chi_dict)
 
         return g2_dict, chi_dict
 

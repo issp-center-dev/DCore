@@ -261,7 +261,7 @@ class SolverBase(object):
 
 
 
-def rotate_basis(rot, use_spin_orbit, u_matrix, Gfs=[], direction='forward'):
+def rotate_basis(rot, use_spin_orbit, u_matrix, Gfs=[], direction='forward', X_dict=None, chi_dict=None):
     """
     Rotate all Gf-like objects and U-matrix to the basis defined by rot
 
@@ -270,17 +270,17 @@ def rotate_basis(rot, use_spin_orbit, u_matrix, Gfs=[], direction='forward'):
     """
 
     if direction == 'forward':
-        return _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs)
+        return _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict)
     elif direction == 'backward':
         rot_conj_trans = {}
         for name, r in list(rot.items()):
             rot_conj_trans[name] = r.conjugate().transpose()
-        return _rotate_basis(rot_conj_trans, u_matrix, use_spin_orbit, Gfs)
+        return _rotate_basis(rot_conj_trans, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict)
     else:
         raise RuntimeError("Unknown direction " + direction)
 
 
-def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs):
+def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict):
     """
     Rotate all Gf-like object and U matrix to a new local basis defined by "rot".
     :param rot: matrix
@@ -300,9 +300,48 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs):
         for bname, gf in G:
             gf.from_L_G_R(rot[bname].transpose().conjugate(), gf, rot[bname])
 
+    if X_dict is not None:
+        shape = next(iter(X_dict.values())).shape  # (num_wb, num_wf, num_wf)
+        assert len(shape) == 3
+        array = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb) + shape, dtype=numpy.complex128)
+        _set_from_dict(X_dict, array)
+
+        array = numpy.einsum("ijklxyz,im,jn,ko,lp -> mnopxyz", array,
+                    numpy.conj(rot_spin_full), rot_spin_full, rot_spin_full, numpy.conj(rot_spin_full))
+
+        X_dict.clear()
+        _set_to_dict(X_dict, array)
+
+    if chi_dict is not None:
+        shape = next(iter(chi_dict.values())).shape  # (num_wb,)
+        assert len(shape) == 1
+        array = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb) + shape, dtype=numpy.complex128)
+        _set_from_dict(chi_dict, array)
+
+        array = numpy.einsum("ijklx,im,jn,ko,lp -> mnopx", array,
+                    numpy.conj(rot_spin_full), rot_spin_full, rot_spin_full, numpy.conj(rot_spin_full))
+
+        chi_dict.clear()
+        _set_to_dict(chi_dict, array)
+
     if not u_matrix is None:
         return numpy.einsum("ijkl,im,jn,ko,lp", u_matrix,
                                     numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full, rot_spin_full)
+
+
+def _set_from_dict(x_dict, x_array):
+    print("_set_from_dict")
+    for key, val in x_dict.items():
+        i, j, k, l = key
+        x_array[i, j, k, l] = val  # val is np.array
+
+
+def _set_to_dict(x_dict, x_array):
+    print("_set_to_dict")
+    n1, n2, n3, n4 = x_array.shape[:4]
+    for i, j, k, l in product(range(n1), range(n2), range(n3), range(n4)):
+        if not numpy.all(np.abs(x_array[i, j, k, l]) < 1e-8):  # if not zero matrix
+            x_dict[(i, j, k, l)] = x_array[i, j, k, l]
 
 
 class PytriqsMPISolver(SolverBase):
