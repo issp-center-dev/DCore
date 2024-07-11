@@ -300,10 +300,12 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict):
         for bname, gf in G:
             gf.from_L_G_R(rot[bname].transpose().conjugate(), gf, rot[bname])
 
+    n_flavors = rot_spin_full.shape[0]
+
     if X_dict is not None:
         shape = next(iter(X_dict.values())).shape  # (num_wb, num_wf, num_wf)
         assert len(shape) == 3
-        array = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb) + shape, dtype=numpy.complex128)
+        array = numpy.zeros((n_flavors, n_flavors, n_flavors, n_flavors) + shape, dtype=numpy.complex128)
         _set_from_dict(X_dict, array)
 
         # X_{1234}(iW, iw, iw') = < c_1^+(iw) c_2(iw+iW) c_4^+(iw'+iW) c_3(iw') >
@@ -316,7 +318,7 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict):
     if chi_dict is not None:
         shape = next(iter(chi_dict.values())).shape  # (num_wb,)
         assert len(shape) == 1
-        array = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb) + shape, dtype=numpy.complex128)
+        array = numpy.zeros((n_flavors, n_flavors, n_flavors, n_flavors) + shape, dtype=numpy.complex128)
         _set_from_dict(chi_dict, array)
 
         # chi_{1234}(iW) = < c_1^+ c_2 c_4^+ c_3 >(iW)
