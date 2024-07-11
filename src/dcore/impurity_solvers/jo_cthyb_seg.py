@@ -352,11 +352,6 @@ class JOCTHYBSEGSolver(SolverBase):
             rotate_basis(rot, self.use_spin_orbit, None, [self._Sigma_iw, self._Gimp_iw], direction='backward')
             # rotate_basis(rot, self.use_spin_orbit, None, self._Gimp_iw, direction='backward')
 
-        #   self.quant_to_save['nn_equal_time']
-        # nn_equal_time =
-        # [(s1,o1), (s2,o2), 0]
-        # self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
-
     def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute local G2 in p-h channel

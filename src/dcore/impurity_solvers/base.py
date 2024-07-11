@@ -306,6 +306,7 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict):
         array = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb) + shape, dtype=numpy.complex128)
         _set_from_dict(X_dict, array)
 
+        # X_{1234}(iW, iw, iw') = < c_1^+(iw) c_2(iw+iW) c_4^+(iw'+iW) c_3(iw') >
         array = numpy.einsum("ijklxyz,im,jn,ko,lp -> mnopxyz", array,
                     numpy.conj(rot_spin_full), rot_spin_full, rot_spin_full, numpy.conj(rot_spin_full))
 
@@ -318,6 +319,7 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict):
         array = numpy.zeros((2*n_orb, 2*n_orb, 2*n_orb, 2*n_orb) + shape, dtype=numpy.complex128)
         _set_from_dict(chi_dict, array)
 
+        # chi_{1234}(iW) = < c_1^+ c_2 c_4^+ c_3 >(iW)
         array = numpy.einsum("ijklx,im,jn,ko,lp -> mnopx", array,
                     numpy.conj(rot_spin_full), rot_spin_full, rot_spin_full, numpy.conj(rot_spin_full))
 
