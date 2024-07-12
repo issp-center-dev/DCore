@@ -389,14 +389,14 @@ class JOCTHYBSEGSolver(SolverBase):
             # x0_lo[i, j, wf, wf']  (wb=0)
             # x0_{12,34}(0; wf, wf') = gf_{21}(iw) * gf_{34}(iw')
             # x0_{11,33}(0; wf, wf') = gf_{11}(iw) * gf_{33}(iw')  [Gf is diagonal]
-            x0_lo = np.zeros((2*self.n_orb, 2*self.n_orb, 2*num_wf, 2*num_wf), dtype=complex)
+            x0_lo = np.zeros((2*self.n_orb, 2*self.n_orb, 2*num_wf, 2*num_wf), dtype=numpy.complex128)
             for i1, i3 in product(range(2*self.n_orb), repeat=2):
                 x0_lo[i1, i3, :, :] = gf[:2*num_wf, None, i1] * gf[None, :2*num_wf, i3]
 
             # x0_tr[i, j, wb, wf]  (wf=wf')
             # x0_{12,34}(wb; wf) = - gf_{31}(wf) * gf_{24}(wf+wb)
             # x0_{12,12}(wb; wf) = - gf_{11}(wf) * gf_{22}(wf+wb)  [Gf is diagonal]
-            x0_tr = np.zeros((2*self.n_orb, 2*self.n_orb, num_wb, 2*num_wf), dtype=complex)
+            x0_tr = np.zeros((2*self.n_orb, 2*self.n_orb, num_wb, 2*num_wf), dtype=numpy.complex128)
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 for wb in range(num_wb):
                     x0_tr[i1, i2, wb, :] = - gf[0:2*num_wf, i1] * gf[wb:wb+2*num_wf, i2]
