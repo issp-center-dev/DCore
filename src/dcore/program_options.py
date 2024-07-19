@@ -161,6 +161,7 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "calc_only_chiloc", bool, False, "Calculate only chi_loc but no X_loc (for SCL, rRPA). Do not activate skip_Xloc when using this option.")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
+    parser.add_option("bse", "choice_X0loc", str, 'qsum', "How to compute X0_loc. 'qsum': by taking q-sum of X_0(q); 'imp': from G_imp. These are not equivalent if G_loc and G_imp are not equal.")
 
     return parser
 
@@ -179,6 +180,12 @@ def two_options_incompatible(params, option1, option2):
         block1, param1 = option1
         block2, param2 = option2
         sys.exit(f"ERROR: [{block1}]{param1} and [{block2}]{param2} cannot be True at the same time.")
+
+
+def check_option_choices(params, option, choices):
+    block, param = option
+    if params[block][param] not in choices:
+        sys.exit(f"ERROR: [{block}]{param} must be chosen from {choices}. {repr(params[block][param])} was given.")
 
 
 def parse_parameters(params):
@@ -251,6 +258,8 @@ def parse_parameters(params):
 
     if 'bse' in params:
         two_options_incompatible(params, ('bse', 'skip_Xloc'), ('bse', 'calc_only_chiloc'))
+
+        check_option_choices(params, ('bse', 'choice_X0loc'), ['qsum', 'imp'])
 
 
 def parse_knode(knode_string):
