@@ -28,7 +28,7 @@ from dcore.anacont import pade, spm
 
 def dcore_anacont(inifile):
     # tool is removed but read for error message
-    parser = create_parser(["system", "model", "impurity_solver", "tool", "post", "post.anacont"])
+    parser = create_parser(["system", "model", "tool", "post", "post.anacont"])
     parser.read(inifile)
     params = parser.as_dict()
     parse_parameters(params)

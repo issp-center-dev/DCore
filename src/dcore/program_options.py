@@ -45,7 +45,7 @@ def create_parser(target_sections=None):
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.spectrum', 'bse', 'vertex', 'sparse_bse'])
+        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
     
