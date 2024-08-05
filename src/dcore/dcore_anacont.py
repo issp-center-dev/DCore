@@ -27,17 +27,17 @@ from dcore.program_options import create_parser, parse_parameters
 from dcore.anacont import pade, spm
 
 def dcore_anacont(inifile):
-    parser = create_parser(["system", "model", "impurity_solver", "post", "post.anacont"])
+    # tool is removed but read for error message
+    parser = create_parser(["system", "model", "impurity_solver", "tool", "post", "post.anacont"])
     parser.read(inifile)
     params = parser.as_dict()
     parse_parameters(params)
 
     beta = params["system"]["beta"]
 
-    omega_min = params["post"]["omega_min"]
-    omega_max = params["post"]["omega_max"]
-
-    Nomega = params["post"]["Nomega"]
+    omega_min = params["post.anacont"]["omega_min"]
+    omega_max = params["post.anacont"]["omega_max"]
+    Nomega = params["post.anacont"]["Nomega"]
     mesh_w = MeshReFreq(omega_min, omega_max, Nomega)
 
     seedname = params["model"]["seedname"]
@@ -60,11 +60,15 @@ def dcore_anacont(inifile):
         data_w = spm.anacont(sigma_iw_npz, beta, mesh_w, params_ac)
     else:
         assert False, "Unknown solver: " + solver
-    
+
+    data_w["omega"] = mesh_w.values()
     if params["post.anacont"]["show_result"] or params["post.anacont"]["save_result"]:
         import matplotlib.pyplot as plt
 
-        ndata = len(data_w)
+        ndata = 0
+        for key in data_w.keys():
+            if key.startswith("data"):
+                ndata += 1
         for idata in range(ndata):
             sigma_w = data_w[f"data{idata}"]
             for iorb, jorb in itertools.product(range(sigma_w.shape[1]), range(sigma_w.shape[2])):

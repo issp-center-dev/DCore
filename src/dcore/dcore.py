@@ -57,23 +57,6 @@ def dcore(filename, np=1):
 
     solver.do_steps(max_step=params["control"]["max_step"])
 
-    # Write information for analytic continuation of the self-energy
-    with open(params["model"]["seedname"] + "_anacont.toml", "w") as f:
-        toml.dump(
-            {
-                "beta":       params["system"]["beta"],
-                "Nomega":     params["tool"]["Nomega"],
-                "omega_min":  params["tool"]["omega_min"],
-                "omega_max":  params["tool"]["omega_max"],
-                "pade" : {
-                    "n_min"    : params["tool"]["n_pade_min"],
-                    "n_max"    : params["tool"]["n_pade_max"],
-                    "omega_max": params["tool"]["omega_pade"],
-                    "eta"      : params["tool"]["eta"],
-                }
-            },
-        f)
-
     print("\n########################  Done  ########################\n")
 
 

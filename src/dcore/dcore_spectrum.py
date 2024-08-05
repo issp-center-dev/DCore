@@ -37,6 +37,10 @@ from dcore import impurity_solvers
 from dcore.lattice_models import create_lattice_model
 from .sumkdft_workers.launcher import run_sumkdft
 
+def _read_ws(npz_file):
+    npz = np.load(npz_file)
+    ws = npz["omega"]
+    return ws
 
 def _read_sigma_w(npz_file, nsh, mesh, block_names):
     npz = np.load(npz_file)
@@ -160,10 +164,18 @@ class DMFTCoreTools:
         """
 
         self._params = copy.deepcopy(params)
+        self._sigma_w_file = os.path.join(dir_post, "sigma_w.npz")
+        ws = _read_ws(self._sigma_w_file)
+        self.mesh_w = MeshReFreq(ws[0], ws[-1], len(ws))
+        self.mesh_w._points = ws
+
         # Construct a SumKDFT object
-        self._omega_min = float(params["post"]["omega_min"])
-        self._omega_max = float(params["post"]["omega_max"])
-        self._Nomega = int(params["post"]["Nomega"])
+        self._omega_min = ws[0]
+        self._omega_max = ws[-1]
+        self._Nomega = len(ws)
+        # self._omega_min = float(params["post"]["omega_min"])
+        # self._omega_max = float(params["post"]["omega_max"])
+        # self._Nomega = int(params["post"]["Nomega"])
         self._broadening = float(params["post.spectrum"]["broadening"])
         self._seedname = seedname
         self._n_k = n_k
@@ -172,7 +184,6 @@ class DMFTCoreTools:
         self._nkdiv_mesh = nkdiv_mesh
         self._dir_post = dir_post
 
-        self._sigma_w_file = os.path.join(dir_post, "sigma_w.npz")
 
         self._solver = DMFTPostSolver(
             seedname, self._params, output_file=seedname + ".out.h5"
@@ -269,13 +280,12 @@ class DMFTCoreTools:
         #
         # Real-frequency self-energy
         #
-        mesh = [self._omega_min, self._omega_max, self._Nomega]
         if not os.path.exists(self._sigma_w_file):
             sys.exit("File not found: " + self._sigma_w_file)
         sigma_w_sh = _read_sigma_w(
             self._sigma_w_file,
             self._solver.n_inequiv_shells,
-            MeshReFreq(*mesh),
+            self.mesh_w,
             self._solver.spin_block_names,
         )
 
@@ -286,6 +296,7 @@ class DMFTCoreTools:
         print("\n Writing real-freqnecy self-energy into ", filename)
         save_Sigma_w_sh_txt(filename, sigma_w_sh, self._solver.spin_block_names)
 
+        mesh = [self._omega_min, self._omega_max, self._Nomega]
         #
         #  (Partial) DOS
         #
@@ -474,6 +485,7 @@ def dcore_spectrum(filename, np=1):
     print("  Input File Name : ", filename)
     #
     # Construct a parser with default values
+    # tool is removed but read for error message
     #
     pars = create_parser(["model", "system", "impurity_solver", "tool", "post", "post.spectrum", "mpi"])
     #
@@ -512,8 +524,6 @@ def dcore_spectrum(filename, np=1):
     # make directory
     dir_post = p["post"]["dir_post"]
 
-    # for backward compatibility
-    p["tool"]["post_dir"] = dir_post
 
     if dir_post:
         os.makedirs(dir_post, exist_ok=True)
