@@ -331,7 +331,7 @@ class DMFTCoreTools:
             om_mesh = numpy.linspace(mesh[0], mesh[1], mesh[2])
             bvec = parse_bvec(self._params["model"]["bvec"])
             for bname in self._solver.spin_block_names:
-                filename = f"akw_mesh_{bname}.dat"
+                filename = os.path.join(self._dir_post, f"akw_mesh_{bname}.dat")
                 print(f"\n    Output {filename}")
                 with open(filename, "w") as f:
                     print(
@@ -581,7 +581,7 @@ def dcore_spectrum(filename, np=1):
     # Output gnuplot script
     #
     if xnode is not None:
-        print("\n#############   Generate GnuPlot Script  ########################\n")
+        print("\n#############   Generate Gnuplot Script  ########################\n")
         gen_script_gnuplot(xnode, seedname, dir_post, p["model"]["spin_orbit"])
 
     print("\n#################  Done  #####################\n")
