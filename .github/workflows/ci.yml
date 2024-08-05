@@ -16,5 +16,5 @@ jobs:
           export LOCAL_GID=$(id -g $USER)
           echo "LOCAL_UID=${LOCAL_UID}" > .env
           echo "LOCAL_GID=${LOCAL_GID}" >> .env
-          docker-compose up -d dcoretest
+          docker compose up -d dcoretest
       - run: echo "This job's status is ${{ job.status }}."
