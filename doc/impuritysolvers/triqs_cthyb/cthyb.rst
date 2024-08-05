@@ -161,7 +161,7 @@ The original input file (without tail-fit) is as follows (dmft.ini):
    [control]
    max_step = 1
    
-   [tool]
+   [post.check]
    omega_check = 30.0
 
 We first execute the ordinary DMFT calculation:
@@ -221,10 +221,10 @@ Pade approximation for DOS and spectrum function
 To obtain spectral functions, we need to perform analytical continuation from Matsubara frequency to real frequency.
 Currently, the Pade approximation is the only choice for the analytical continuation.
 
-There is one control parameter for Pade approximation, ``omega_pade`` in the ``[tool]`` block. It specifies an energy cutoff for Matsubara frequency.
-A reasonable choice of ``omega_pade`` is the maximum frequency
+There is one control parameter for Pade approximation, ``iomega_max`` in the ``[post.anacont.pade]`` block. It specifies an energy cutoff for Matsubara frequency.
+A reasonable choice of ``iomega_max`` is the maximum frequency
 before the self energy becomes noisy.
-For example, in the case of figure (a) above, we can find that ``omega_pade=4.0`` is reasonable.
+For example, in the case of figure (a) above, we can find that ``iomega_max=4.0`` is reasonable.
 
 Legendre filter
 ---------------
