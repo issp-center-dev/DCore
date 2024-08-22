@@ -1,19 +1,13 @@
 Input-file format
 =================
 
-The input file consists of six parameter blocks named [model], [system], [impurity\_solver], [control], [tool], and [mpi].
-
-..
-    The example of the input file is shown as follows:
-
-    .. literalinclude:: ../tutorial/nis/nis.ini
-       :language: ini
+The input file consists of several parameter blocks.
 
 The following table shows which blocks are used by each program.
 
 .. csv-table::
-    :header: "", ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_anacont``, ``dcore_spectrum``
-    :widths: 5, 5, 5, 5, 5, 5
+    :header: "Block name", ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_anacont``, ``dcore_spectrum``
+    :widths: 10, 5, 5, 5, 5, 5
 
     [model]             ,  Yes, Yes, Yes, Yes, Yes
     [pre]               ,  Yes,    ,    ,    ,

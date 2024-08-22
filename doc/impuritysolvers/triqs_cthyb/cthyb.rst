@@ -350,7 +350,7 @@ Finally, we choose the following setting:
    [control]
    max_step = 1
 
-   [tool]
+   [post.check]
    omega_check = 30.0
 
 and obtain

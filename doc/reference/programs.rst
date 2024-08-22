@@ -1,24 +1,10 @@
 Programs
 ========
 
-**DCore** consists of four main programs, ``dcore_pre``, ``dcore``, ``dcore_check``,  and ``dcore_post``.
+**DCore** consists of five main programs, ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_anacont``, and ``dcore_spectrum``.
 All programs read a single input file (say *input.ini*) which contains parameters classified into blocks.
 It is also possible to pass multiple input files to the program. Parameters from all input files are merged. Duplicate paramegers are overwritten by the later one.
 See :doc:`input`, for the list of parameters and detailed descriptions.
-
-..
-    All programs can read input files of the same type and get the information by using blocks.
-    For details of input parameters defined in each block, see the next section.
-
-..
-    ================= ======================================================= ====================
-    Program           Blocks to read from the input file                      Output HDF files
-    ================= ======================================================= ====================
-    ``dcore_pre``     [model], [system]                                       *seedname*.h5
-    ``dcore``         [model], [system], [impurity-solver], [control], [mpi]  *seedname*.out.h5
-    ``dcore_check``   [model], [tool]                                           ---
-    ``dcore_post``    [model], [system], [impurity-solver], [tool], [mpi]       ---
-    ================= ================================================== ====================
 
 In the following, brief explanations are given for each program.
 
@@ -140,33 +126,46 @@ Three kinds of figures will be included:
      /\left[\sum_i^{\rm shell} N_{\rm orb}^{i}\right],
 
   The maximum frequency of this plot is specified with the parameter ``omega_check``
-  in the ``[tool]`` block.
+  in the ``[post.check]`` block.
 
 ..    Here, the average is taken over the shell index *i* and the orbital indices *a*, *b*.
 
 ..    .. image:: ../tutorial/square/convergence.png
 
 
-.. _program_dcore_post:
+.. _program_dcore_anacont:
 
-Post-processing : ``dcore_post``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Analytic continuation : ``dcore_anacont``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This program computes the total DOS (*seedname*\_dos.dat) and momenum-resolved spectral function (*seedname*\_akw.dat) reading the DMFT results in *seedname*.out.h5.
-
-..
-    This program reads the parameters defined in the ``[model]``, ``[system]``, ``[impurity-solver]`` and ``[tool]`` blocks.
+This program performs the analytic continuation of the self-energy of Matsubara frequencies to the real frequency.
+The self-energy of Matsubara frequencies is stored in the NumPy binary file *seedname*\_sigma\_iw.npz, which is one of the output files of the main program ``dcore``.
 
 .. code-block:: bash
 
-   $ dcore_post input.ini --np 4
+   $ dcore_anacont input.ini
+
+The obtained self-energy on the real axis is stored in the NumPy binary file sigma\_w.npz in the ``post`` directory; the name of the directory can be changed by the parameter ``dir_post`` in the ``[post]`` block.
+
+.. _program_dcore_spectrum:
+
+Spectral functions : ``dcore_spectrum``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This program computes the total DOS (post/dos.dat) and momenum-resolved spectral function (post/akw.dat) reading the self-energy on the real axis stored in post/sigma\_w.npz.
+
+.. code-block:: bash
+
+   $ dcore_spectrum input.ini --np 4
 
 Here, please specify the number of MPI processes.
+The output files are saved in the directory ``post``; the name of the directory can be changed by the parameter ``dir_post`` in the ``[post]`` block.
 The computed spectral function can be drawn by
 
 .. code-block:: bash
 
-   $ gnuplot [seedname]_akw.gp
+   $ cd post
+   $ gnuplot akw.gp
 
 Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
 *seedname*\_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.
