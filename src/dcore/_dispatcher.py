@@ -2,7 +2,7 @@ import os, sys
 import importlib.util
 
 
-if 'DCORE_TRIQS_COMPAT' in os.environ and int(os.environ['DCORE_TRIQS_COMPAT']) == 1:
+if int(os.environ.get('DCORE_TRIQS_COMPAT', 1)) == 1:
     TRIQS_COMPAT = True
     from dcorelib.triqs_compat import *
     from dcorelib.triqs_compat import h5
