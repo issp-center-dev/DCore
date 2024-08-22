@@ -57,7 +57,9 @@ def dcore_anacont(inifile):
         data_w = pade.anacont(sigma_iw_npz, beta, mesh_w, params_ac)
     elif solver == "spm":
         params_ac = spm.parameters_from_ini(inifile)
-        data_w = spm.anacont(sigma_iw_npz, beta, mesh_w, params_ac)
+        if "post.anacont.spm.solver" not in params_ac:
+            params_ac["post.anacont.spm.solver"] = {}
+        data_w = spm.anacont(sigma_iw_npz, beta, mesh_w, params_ac["post.anacont.spm"], params_ac["post.anacont.spm.solver"])
     else:
         assert False, "Unknown solver: " + solver
 

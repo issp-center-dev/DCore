@@ -193,7 +193,7 @@ def test_solveProblem():
 
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(tau_grid, nsv, beta, emin, emax, num_energies)
 
-    rho_prime, gf_tau_fit, chi2 = _solveProblem(delta_energy, U, S, Vt, gf_tau, b_test, lambd, verbose=False, max_iters=100, solver='ECOS')
+    rho_prime, gf_tau_fit, chi2 = _solveProblem(delta_energy, U, S, Vt, gf_tau, b_test, lambd, verbose=False, solver='ECOS')
     rho = np.dot(Vt.T, rho_prime)
 
     d_bhatt = np.trapz(y=np.sqrt(np.multiply(rho, dos)), x=energies_extract)

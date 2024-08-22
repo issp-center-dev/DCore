@@ -45,12 +45,13 @@ def create_parser(target_sections=None):
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
+        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.anacont.spm.solver' 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
     
     # tool is removed but read for warning
     parser.allow_undefined_options("tool")
+    parser.allow_undefined_options("post.anacont.spm.solver")
 
     # [mpi]
     parser.add_option("mpi", "command", str, default_mpi_command, "Command for executing a MPI job. # will be relaced by the number of processes.")
@@ -140,9 +141,9 @@ def create_parser(target_sections=None):
     parser.add_option("post.anacont", "save_result", bool, False, "plot result of analytic continuation")
 
     # [post.anacont.pade]
-    parser.add_option( "post.anacont.pade", "iomega_max", float, -1.0, "Cut-off frequency of the Matsubara frequency",)
-    parser.add_option( "post.anacont.pade", "n_min", int, 0, "lower bound of the order of Pade approximation",)
-    parser.add_option( "post.anacont.pade", "n_max", int, 100000000, "upper bound of the order of Pade approximation",)
+    parser.add_option( "post.anacont.pade", "iomega_max", float, 0.0, "Cut-off frequency of the Matsubara frequency",)
+    parser.add_option( "post.anacont.pade", "n_min", int, 0, "lower bound of the number of used Matsubara frequency",)
+    parser.add_option( "post.anacont.pade", "n_max", int, 100000000, "upper bound of the number of used Matsubara frequency",)
     parser.add_option( "post.anacont.pade", "eta", float, 0.01, "Imaginary Frequency shift to avoid divergence",)
 
     # [post.anacont.spm]
@@ -151,9 +152,7 @@ def create_parser(target_sections=None):
     parser.add_option("post.anacont.spm", "n_tail", int, 10, "number of matsubara points for tail-fitting")
     parser.add_option("post.anacont.spm", "n_sv", int, 50, "number of singular values to be used")
     parser.add_option("post.anacont.spm", "lambda", float, 1e-5, "coefficient of L1 regularization")
-    parser.add_option("post.anacont.spm", "max_iters_opt", int, 100, "maximum number of iterations")
-    parser.add_option("post.anacont.spm", "solver_opt", str, "ECOS", "solver to be used")
-
+    parser.add_option("post.anacont.spm", "solver", str, "ECOS", "solver to be used")
     parser.add_option("post.anacont.spm", "verbose_opt", bool, False, "show optimization progress")
     parser.add_option("post.anacont.spm", "show_fit", bool, False, "plot result of tail-fitting")
 
@@ -322,8 +321,6 @@ def parse_parameters(params):
             sys.exit(f"ERROR: n_sv={params['post.anacont.spm']['n_sv']} must be a positive integer.")
         if params['post.anacont.spm']['lambda'] < 0:
             sys.exit(f"ERROR: lambda={params['post.anacont.spm']['lambda']} must be a non-negative float.")
-        if params['post.anacont.spm']['max_iters_opt'] <= 0:
-            sys.exit(f"ERROR: max_iters_opt={params['post.anacont.spm']['max_iters_opt']} must be a positive integer.")
 
     if 'bse' in params:
         two_options_incompatible(params, ('bse', 'skip_Xloc'), ('bse', 'calc_only_chiloc'))

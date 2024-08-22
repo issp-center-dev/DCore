@@ -16,7 +16,9 @@
 # along with this program.  If not, see <https://www.gnu.org/li/show_fitcenses/>.
 #
 
+import builtins
 import sys
+import re
 
 import numpy as np
 import cvxpy as cp
@@ -25,6 +27,13 @@ from scipy.sparse.linalg import svds
 
 from dcore._dispatcher import MeshImFreq, GfImFreq, GfReFreq
 from dcore.program_options import create_parser, parse_parameters
+
+
+def __gettype(name):
+    t = getattr(builtins, name)
+    if isinstance(t, type):
+        return t
+    raise ValueError(name)
 
 def set_default_values(dictionary, default_values_dict):
     for key, value in default_values_dict.items():
@@ -91,8 +100,8 @@ def get_single_continuation(
     sum_rule_const,
     lambd,
     verbose=True,
-    max_iters=100,
     solver="ECOS",
+    solver_opts={},
 ):
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(
         tau_grid, nsv, beta, emin, emax, num_energies
@@ -106,8 +115,8 @@ def get_single_continuation(
         sum_rule_const,
         lambd,
         verbose=verbose,
-        max_iters=max_iters,
         solver=solver,
+        solver_opts=solver_opts,
     )
     rho = np.dot(Vt.T, rho_prime)
     rho_integrated = np.trapz(y=rho, x=energies_extract)
@@ -125,8 +134,8 @@ def get_multiple_continuations(
     sum_rule_const,
     lambdas,
     verbose=True,
-    max_iters=100,
     solver="ECOS",
+    solver_opts={},
 ):
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(
         tau_grid, nsv, beta, emin, emax, num_energies
@@ -144,8 +153,8 @@ def get_multiple_continuations(
             sum_rule_const,
             lambd,
             verbose=verbose,
-            max_iters=max_iters,
             solver=solver,
+            solver_opts=solver_opts,
         )
         rho = np.dot(Vt.T, rho_prime)
         rho_integrated = np.trapz(y=rho, x=energies_extract)
@@ -201,8 +210,8 @@ def _solveProblem(
     sum_rule_const,
     lambd,
     verbose=True,
-    max_iters=100,
     solver="ECOS",
+    solver_opts={},
 ):
     Q = len(S)
     Smat = np.diag(S)
@@ -216,8 +225,9 @@ def _solveProblem(
         Vt.T @ rho_prime >= 0,
         cp.sum(delta_energy * V_mod @ rho_prime) == sum_rule_const,
     ]  # uniform real energy grid is assumed here
+
     prob = cp.Problem(objective, constraints)
-    _ = prob.solve(verbose=verbose, solver=solver, max_iters=max_iters)
+    _ = prob.solve(verbose=verbose, solver=solver, **solver_opts)
     gf_tau_fit = np.dot(U, np.dot(Smat, rho_prime.value))
     chi2 = 0.5 * np.linalg.norm(gf_tau - gf_tau_fit, ord=2) ** 2
     return rho_prime.value, gf_tau_fit, chi2
@@ -282,13 +292,28 @@ def check_parameters(params):
     pass
 
 def parameters_from_ini(inifile):
-    parser = create_parser(["post.anacont.spm"])
+    parser = create_parser(["post.anacont.spm", "post.anacont.spm.solver"])
     parser.read(inifile)
     params = parser.as_dict()
     parse_parameters(params)
-    return params["post.anacont.spm"]
+    solver_dict = {}
+    if "post.anacont.spm.solver" in params:
+        r = re.compile('^(.*)\{(.*)\}$')
+        for k,v in params["post.anacont.spm.solver"].items():
+            try:
+                m = r.search(k)
+                if m is None:
+                    continue
 
-def anacont(sigma_iw_npz, beta, mesh_w, params_spm):
+                param_name, param_type_str = m.group(1), m.group(2)
+                param_type = __gettype(param_type_str)
+            except RuntimeError:
+                raise RuntimeError("Unknown type or unrecognized format : " + k)
+            solver_dict[param_name] = param_type(v)
+    params["post.anacont.spm.solver"] = solver_dict
+    return params
+
+def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
 
     n_tau = params_spm["n_tau"]
     n_tail = params_spm["n_tail"]
@@ -296,8 +321,7 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm):
     
     n_sv = params_spm["n_sv"]
     L1_coeff = params_spm["lambda"]
-    max_iters = params_spm["max_iters_opt"]
-    solver_opt = params_spm["solver_opt"]
+    solver = params_spm["solver"]
     verbose_opt = params_spm["verbose_opt"]
     
     data_w = {}
@@ -327,7 +351,7 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm):
             )
 
             density, gf_tau_fit, energies_extract, sum_rule_const, chi2 = get_single_continuation(
-                tau_grid, gf_tau, n_sv, beta, mesh_w.values()[0], mesh_w.values()[-1], mesh_w.size, sum_rule_const=const_imag_tail, lambd=L1_coeff, verbose=verbose_opt, max_iters=max_iters, solver=solver_opt
+                tau_grid, gf_tau, n_sv, beta, mesh_w.values()[0], mesh_w.values()[-1], mesh_w.size, sum_rule_const=const_imag_tail, lambd=L1_coeff, verbose=verbose_opt, solver=solver, solver_opts=params_spm_solver
             )
             energies, gf_real, gf_imag = get_kramers_kronig_realpart(
                 energies_extract, dos_to_gf_imag(density)
