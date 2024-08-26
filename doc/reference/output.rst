@@ -156,7 +156,7 @@ Files that have empty Reference in this table are explained in the following.
 -   **post/akw.dat**
 
     The single-particle excitation spectrum :math:`A(\boldsymbol{k}, \omega)` on the given k-path.
-    See :ref:`program_dcore_post` for how to plot this data.
+    See :ref:`program_dcore_spectrum` for how to plot this data.
 
     ::
 

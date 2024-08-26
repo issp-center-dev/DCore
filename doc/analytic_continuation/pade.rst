@@ -37,10 +37,10 @@ The parameters for the Pade approximation are specified in the ``[post.anacont.p
    eta = 0.01
 
 ``iomega_max``, ``n_min``, and ``n_max`` specify how many Matsubara frequencies are used.
-First, ``iomega_max`` specifies the cutoff of Matsubara frequency.
-When ``iomega_max > 0``, solve :math:`\omega_N = \pi/\beta (2N+1) \le \text{iomega_max} \lt \omega_{N+1}` and obtain :math:`N`.
-If :math:`N < \text{n_min}` or :math:`N > \text{n_max}`, :math:`N` is replaced by :math:`\text{n_min}` or :math:`\text{n_max}`.
-Otherwise (``iomega_max == 0``, default value), :math:`N = \text{n_max}`.
+First, ``iomega_max`` specifies the cutoff of Matsubara frequency, :math:`\omega_m`.
+When ``iomega_max > 0``, solve :math:`\omega_N = \pi/\beta (2N+1) \le \omega_m < \omega_{N+1}` and obtain :math:`N`.
+If :math:`N < N_\text{min}` or :math:`N > N_\text{max}`, :math:`N` is replaced by :math:`N_\text{min}` or :math:`N_\text{max}`.
+Otherwise (``iomega_max == 0``, default value), :math:`N = N_\text{max}`.
 Then, the Matsubara frequencies :math:`\omega_n` for :math:`0 \le n \le N` are used.
 When the number of self-energies calculated by the DMFT loop is less than :math:`N`, all the data are used.
 
