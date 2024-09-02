@@ -7,6 +7,7 @@ from .alps_cthyb_seg import ALPSCTHYBSEGSolver
 from .pomerol import PomerolSolver
 from .hphi import HPhiSolver
 from .jo_cthyb_seg import JOCTHYBSEGSolver
+from .scipy_sparse import ScipySolver
 from .base import compute_basis_rot
 
 solver_classes = {
@@ -19,4 +20,5 @@ solver_classes = {
     'pomerol': PomerolSolver,
     'HPhi': HPhiSolver,
     'JO/cthyb-seg': JOCTHYBSEGSolver,
+    'scipy': ScipySolver,
 }
