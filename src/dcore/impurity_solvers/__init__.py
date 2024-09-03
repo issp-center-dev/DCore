@@ -20,5 +20,5 @@ solver_classes = {
     'pomerol': PomerolSolver,
     'HPhi': HPhiSolver,
     'JO/cthyb-seg': JOCTHYBSEGSolver,
-    'scipy': ScipySolver,
+    'scipy/sparse': ScipySolver,
 }
