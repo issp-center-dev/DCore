@@ -1,0 +1,181 @@
+import numpy as np
+import scipy.sparse as sp
+import argparse
+import json
+import sys
+
+
+
+def make_local_ops():
+    ops = {}
+    ops['c^+'] = np.array([[0, 0], [1, 0]])
+    ops['c'] = np.array([[0, 1], [0, 0]])
+    ops['I'] = np.identity(2)
+    ops['F'] = np.diag([1, -1])  # to represent fermionic anticommutation
+    return ops
+
+
+# kronecker product for an arbitrary number of operators
+def kron(*ops):
+    r = 1.0
+    for op in ops:
+        r = sp.kron(r, op)
+    return r
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Process a string argument.')
+    parser.add_argument('filename', type=str, help='Input file in json format')
+    args = parser.parse_args()
+
+    # Load input parameters
+    with open(args.filename, 'r') as f:
+        params = json.load(f)
+
+    assert isinstance(params, dict)
+    print(params)
+
+    n_flavors = params['n_flavors']
+    n_sites = params['n_sites']
+    beta = params['beta']
+    n_eigen = params['n_eigen']
+    n_iw = params['n_iw']
+    flag_spin_conserve = params['flag_spin_conserve']
+
+
+    # Load H0
+    h0 = np.load(params['file_h0'])
+    print(h0.shape)
+    # assert h0.shape == (n_flavors, n_flavors)
+    assert h0.shape == (2*n_sites, 2*n_sites)
+
+    # Load U_ijkl
+    umat = np.load(params['file_umat'])
+    print(umat.shape)
+    assert umat.shape == (2*n_sites, 2*n_sites, 2*n_sites, 2*n_sites)
+
+    dim = 2 ** (2*n_sites)
+    print("dimension of Hilbert space:", dim)
+
+    # building blocks for creation/anihilation operators
+    local_ops = make_local_ops()
+    cdag = local_ops['c^+']
+    I = local_ops['I']
+    F = local_ops['F']
+    assert cdag.shape == I.shape == F.shape == (2, 2)
+
+    # Make creation operators
+    # ex. for i=3:
+    #   kron(I, I, I, cdag, F, F)
+    # Cdag = []
+    Cdag = np.empty((2*n_sites,), dtype=object)
+    C = np.empty((2*n_sites,), dtype=object)
+    for i in range(2*n_sites):
+        n_I = i
+        n_F = 2*n_sites - i - 1
+        print(n_I, n_F)
+        args = [I] * n_I + [cdag] + [F] * n_F
+        # Cdag.append(kron(*args))
+        Cdag[i] = kron(*args)
+        assert Cdag[i].shape == (dim, dim)
+        C[i] = Cdag[i].T
+    # print(Cdag)
+
+    # TODO: define density matrix first
+
+    # Make many-body Hamiltonian
+    hamil = 0
+    for i, j in np.ndindex(h0.shape):
+        hamil += h0[i, j] * Cdag[i] @ C[j]
+    # print(hamil.shape)
+    assert hamil.shape == (dim, dim)
+
+    # U_ijkl
+    for i, j, k, l in np.ndindex(umat.shape):
+        hamil += 0.5 * umat[i, j, k, l] * Cdag[i] @ Cdag[j] @ C[l] @ C[k]
+    assert hamil.shape == (dim, dim)
+
+    # Use full diagonalization if dim is small
+    full_diagonalization = n_eigen >= dim - 1
+
+    # Solve the eigenvalue problem
+    if full_diagonalization:
+        print("\nn_eigen >= dim\n  -> Use full diagonalization")
+        n_eigen = dim
+        eigvals, eigvecs = np.linalg.eigh(hamil.toarray())
+    else:
+        print("\nn_eigen < dim\n  -> Use Lanczos method")
+        eigvals, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='SA')
+
+    assert eigvals.shape == (n_eigen,)
+    assert eigvecs.shape == (dim, n_eigen)
+
+    print("\nEigenvalues:")
+    print(eigvals)
+
+    # Boltzmann factors
+    E = eigvals - eigvals[0]  # relative to the ground state
+    weights = np.exp(-beta * E)
+    weights /= np.sum(weights)
+    print("\nWeights (Boltzmann factors / Z):")
+    print(weights)
+
+    weight_threshold = 1e-6
+    n_initial_states = np.count_nonzero(weights > weight_threshold)
+    print("\nNumber of initial states:", n_initial_states)
+
+    if weights[-1] > weight_threshold and n_eigen < dim:
+        sys.stdout.flush()
+        print(f"\nWarning: n_eigen={n_eigen} may be too small: The weight for the highest-energy state computed is {weights[-1]}.", file=sys.stderr)
+
+    # Save eigenvalues
+    indexed_eigvals = np.column_stack((np.arange(len(eigvals)), eigvals, weights))
+    header = f"dim = {dim}\nn_eigen = {n_eigen}\ni  E_i  exp(-beta (E_i-E_0))"
+    np.savetxt("eigenvalues.dat", indexed_eigvals, fmt='%d %.8e %.5e', header=header)
+
+    # Matsubara frequencies
+    iws = 1j * (2 * np.arange(n_iw) + 1) * np.pi / beta
+
+    # Calculate impurity Green's function
+    gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
+    if full_diagonalization:
+        for n in range(n_initial_states):
+
+            # cdag_im[i, m] = <m|c^+_{i}|n>  for a given |n>
+            cdag_im = np.empty((n_flavors, dim), dtype=complex)
+            for i in range(n_flavors):
+                cdag_im[i] = eigvecs.conj().T @ Cdag[i] @ eigvecs[:, n]
+
+            # c_im[i, m] = <m|c^+_{i}|n>  for a given |n>
+            c_im = np.empty((n_flavors, dim), dtype=complex)
+            for i in range(n_flavors):
+                c_im[i] = eigvecs.conj().T @ C[i] @ eigvecs[:, n]
+
+            for l, iw in enumerate(iws):
+                # ene_denom[m] = 1 / (iw - E_m + E_n)
+                ene_denom_1 = 1 / (iw - E + E[n])
+
+                # ene_denom[m] = 1 / (iw + E_m - E_n)
+                ene_denom_2 = - ene_denom_1.conj()
+
+                for i, j in np.ndindex(n_flavors, n_flavors):
+                    if flag_spin_conserve:
+                        if i // 2 != j // 2:  # skip different spins
+                            continue
+
+                    # gf[i, j, l] += np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[i]) * weights[n]
+                    gf_1 = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom_1, cdag_im[i])
+                    gf_2 = np.einsum("m, m, m", c_im[i].conj().T, ene_denom_2, c_im[i])
+                    gf[i, j, l] += (gf_1 + gf_2) * weights[n]
+
+    else:
+        pass
+
+
+
+    # Save Green's function
+    np.save("gf", gf)
+
+if __name__ == '__main__':
+    main()
+

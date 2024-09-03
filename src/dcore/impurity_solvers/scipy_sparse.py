@@ -61,6 +61,7 @@ class ScipySolver(SolverBase):
 
         # print("params_kw =", params_kw)
         # exec_path = expand_path(params_kw['exec_path'])
+        exec_path = os.path.join(os.path.dirname(__file__), 'scipy_sparse_main.py')
         # check_version(mpirun_command, exec_path)
 
         # bath fitting
@@ -71,35 +72,37 @@ class ScipySolver(SolverBase):
             if key in params_kw:
                 fit_params[key] = params_kw[key]
 
-        n_site = self.n_orb + n_bath
+        n_sites = self.n_orb + n_bath
 
         # parameters
         file_input = "input.in"
         file_h0 = "h0.in"
         file_umat = "umat.in"
-        file_gf = "gf.dat"
-        exct = params_kw.get('exct', 1)  # number of states to be computed
+        # file_gf = "gf.dat"
+        n_eigen = params_kw.get('n_eigen', 4)  # number of states to be computed
 
         # params = dict(
-        #     n_site = n_site,
+        #     n_sites = n_sites,
         #     t = file_h0,
         #     u_ijkl = file_umat,
         #     n_eigen = exct,  # number of eigenstates to be computed
         #     # ncv = ncv,
         # )
         params_solver = {
-            'n_site': n_site,
+            'n_sites': n_sites,
+            'n_flavors': int(self.n_flavors),  # avoid error in json.dump (*)
             'n_orb': self.n_orb,
             'beta': self.beta,
-            'n_eigen': exct,  # number of eigenstates to be computed
+            'n_eigen': n_eigen,  # number of eigenstates to be computed
             'flag_spin_conserve': 1 if not self.use_spin_orbit else 0,
-            'file_h0': file_h0 + 'npy',
-            'file_umat': file_umat + 'npy',
+            'file_h0': file_h0 + '.npy',
+            'file_umat': file_umat + '.npy',
             'flag_gf': 1,
-            'file_gf': file_gf,
+            # 'file_gf': file_gf,
             'n_iw': self.n_iw,
             'n_bath': n_bath,
         }
+        # (*) TypeError: Object of type int64 is not JSON serializable
 
         with open(file_input, "w") as f:
             json.dump(params_solver, f, indent=2)
@@ -157,51 +160,12 @@ class ScipySolver(SolverBase):
         # -------------------------------------------------------------------------
 
         # (2) Run a working horse
-        print("\nComputing eigeneneries ...")
-        # with open('./stdout.log', 'w') as output_f:
-        #     launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f)
+        print("\nSolving the impurity problem...")
+        with open('./stdout.log', 'w') as output_f:
+            # launch_mpi_subprocesses(mpirun_command, [exec_path, file_input], output_f)
+            launch_mpi_subprocesses("", ["python3", exec_path, file_input], output_f)
 
-
-        enes = scipy_sparse_energy(**params)
-
-
-
-        print("\nComputing Gf ...")
-        # header = "zvo"
-        # T_list = [1./self.beta]
-        # eta = 1e-4
-        # output_dir = "./output"
-        # p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
-        # one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=np)
-
-
-        # Matsubara frequencies
-        # z_array =
-        # Matsubara frequencies omega_n = (2*n+1)*pi*T
-        omega_min = numpy.pi / self.beta  # n=0
-        omega_max = (2*self.n_iw + 1) * numpy.pi / self.beta  # n=n_iw
-        # NOTE: omega_max is NOT included in the omega mesh.
-        #           omega_n = (omega_max - omega_min) / n_iw * n
-        #       for n=[0:n_iw)
-
-        params_spec = dict(
-            z_values = z_array,
-            orbs = self.n_orb,
-            T = 1. / self.beta,
-        )
-
-        gf = scipy_sparse_gf(**params, **params_spec)
-
-
-
-        print("\nFinish Gf calc.")
-
-        # print(one_body_g.shape)
-        # assert isinstance(one_body_g, numpy.ndarray)
-        # assert one_body_g.shape == (self.n_orb, 2, self.n_orb, 2, 1, self.n_iw)
-
-        # gf = one_body_g[..., 0, :]
-        assert gf.shape == (self.n_orb, 2, self.n_orb, 2, self.n_iw)
+        print("\nFinish impurity problem")
 
         # -------------------------------------------------------------------------
 
@@ -209,12 +173,17 @@ class ScipySolver(SolverBase):
         #   self._Sigma_iw
         #   self._Gimp_iw
 
-        # load data as a complex type
-        gf_1d = numpy.loadtxt(file_gf).view(numpy.complex128).reshape(-1)
+        # Load Gf(iw)
+        gf = np.load("gf.npy")
+        assert gf.shape == (self.n_flavors, self.n_flavors, self.n_iw)
+        assert gf.dtype == complex
+
         if not self.use_spin_orbit:
-            gf = gf_1d.reshape((2, self.n_orb, self.n_orb, self.n_iw))
+            gf = gf.reshape((2, self.n_orb, 2, self.n_orb, self.n_iw))
+            gf = numpy.einsum("sisjw->sijw", gf)  # delete spin off-diagonal elements
+            assert gf.shape == (2, self.n_orb, self.n_orb, self.n_iw)
         else:
-            gf = gf_1d.reshape((1, self.n_flavors, self.n_flavors, self.n_iw))
+            gf = gf.reshape((1, self.n_flavors, self.n_flavors, self.n_iw))
         assign_from_numpy_array(self._Gimp_iw, gf, self.block_names)
 
         # Compute Sigma_iw
