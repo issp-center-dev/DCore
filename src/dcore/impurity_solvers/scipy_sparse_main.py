@@ -5,7 +5,6 @@ import json
 import sys
 
 
-
 def make_local_ops():
     ops = {}
     ops['c^+'] = np.array([[0, 0], [1, 0]])
@@ -77,8 +76,9 @@ def main():
         args = [I] * n_I + [cdag] + [F] * n_F
         # Cdag.append(kron(*args))
         Cdag[i] = kron(*args)
-        assert Cdag[i].shape == (dim, dim)
         C[i] = Cdag[i].T
+        assert isinstance(Cdag[i], sp.spmatrix)
+        assert Cdag[i].shape == (dim, dim)
     # print(Cdag)
 
     # TODO: define density matrix first
@@ -93,10 +93,14 @@ def main():
     # U_ijkl
     for i, j, k, l in np.ndindex(umat.shape):
         hamil += 0.5 * umat[i, j, k, l] * Cdag[i] @ Cdag[j] @ C[l] @ C[k]
+
+    assert isinstance(hamil, sp.spmatrix)
     assert hamil.shape == (dim, dim)
 
+    # TODO: Use particle number conservation
+
     # Use full diagonalization if dim is small
-    full_diagonalization = n_eigen >= dim - 1
+    full_diagonalization = (n_eigen >= dim - 1)
 
     # Solve the eigenvalue problem
     if full_diagonalization:
@@ -141,12 +145,12 @@ def main():
     if full_diagonalization:
         for n in range(n_initial_states):
 
-            # cdag_im[i, m] = <m|c^+_{i}|n>  for a given |n>
+            # cdag_im[i, m] = <m|c_i^+|n>  for a given n
             cdag_im = np.empty((n_flavors, dim), dtype=complex)
             for i in range(n_flavors):
                 cdag_im[i] = eigvecs.conj().T @ Cdag[i] @ eigvecs[:, n]
 
-            # c_im[i, m] = <m|c^+_{i}|n>  for a given |n>
+            # c_im[i, m] = <m|c_i|n>  for a given n
             c_im = np.empty((n_flavors, dim), dtype=complex)
             for i in range(n_flavors):
                 c_im[i] = eigvecs.conj().T @ C[i] @ eigvecs[:, n]
@@ -164,14 +168,57 @@ def main():
                             continue
 
                     # gf[i, j, l] += np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[i]) * weights[n]
-                    gf_1 = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom_1, cdag_im[i])
-                    gf_2 = np.einsum("m, m, m", c_im[i].conj().T, ene_denom_2, c_im[i])
+                    gf_1 = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom_1, cdag_im[j])
+                    gf_2 = np.einsum("m, m, m", c_im[j].conj().T, ene_denom_2, c_im[i])
                     gf[i, j, l] += (gf_1 + gf_2) * weights[n]
 
     else:
-        pass
+        for n in range(n_initial_states):
 
+            # loop for [particle excitation, hole excitation]
+            for _Cdag, pm in [[Cdag, +1], [C, -1]]:
 
+                # particle excitation
+                for j in range(n_flavors):
+                    # cdag_j = c_j^+ |n>  for a given (j, n)
+                    cdag_j = _Cdag[j] @ eigvecs[:, n]
+
+                    for l, iw in enumerate(iws):
+                        # A = iw - H + E_n
+                        # A = (iw + pm * eigvals[n]) * sp.identity(dim) - pm * hamil
+                        if pm == +1:
+                            # A = iw - H + E_n
+                            A = (iw + eigvals[n]) * sp.identity(dim) - hamil
+                        else:
+                            # A = iw + H - E_n
+                            A = (iw - eigvals[n]) * sp.identity(dim) + hamil
+                        assert isinstance(A, sp.spmatrix)
+                        assert A.shape == (dim, dim)
+
+                        # Solve A |x> = c_j^+ |n>
+                        x = sp.linalg.spsolve(A, cdag_j)
+                        # x = np.linalg.solve(A.toarray(), cdag_j)
+                        # x, _ = sp.linalg.lgmres(A, cdag_i)
+                        assert x.shape == (dim,)
+
+                        for i in range(n_flavors):
+                            if flag_spin_conserve:
+                                if i // 2 != j // 2:  # skip different spins
+                                    continue
+
+                            if i == j:
+                                gf_1 = cdag_j.conj().T @ x
+                            else:
+                                cdag_i = _Cdag[i] @ eigvecs[:, n]
+                                gf_1 = cdag_i.conj().T @ x
+                                del cdag_i
+
+                            # gf[i, j, l] += gf_1 * weights[n]
+                            if pm == +1:
+                                gf[i, j, l] += gf_1 * weights[n]
+                            else:
+                                gf[j, i, l] += gf_1 * weights[n]
+                    del cdag_j
 
     # Save Green's function
     np.save("gf", gf)
