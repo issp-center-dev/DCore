@@ -106,20 +106,20 @@ def main():
     if full_diagonalization:
         print("\nn_eigen >= dim\n  -> Use full diagonalization")
         n_eigen = dim
-        eigvals, eigvecs = np.linalg.eigh(hamil.toarray())
+        E, eigvecs = np.linalg.eigh(hamil.toarray())
     else:
         print("\nn_eigen < dim\n  -> Use Lanczos method")
-        eigvals, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='SA')
+        E, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='SA')
 
-    assert eigvals.shape == (n_eigen,)
+    assert E.shape == (n_eigen,)
     assert eigvecs.shape == (dim, n_eigen)
 
     print("\nEigenvalues:")
-    print(eigvals)
+    print(E)
 
     # Boltzmann factors
-    E = eigvals - eigvals[0]  # relative to the ground state
-    weights = np.exp(-beta * E)
+    # E = E - E[0]  # relative to the ground state
+    weights = np.exp(-beta * (E - E[0]))
     weights /= np.sum(weights)
     print("\nWeights (Boltzmann factors / Z):")
     print(weights)
@@ -133,9 +133,9 @@ def main():
         print(f"\nWarning: n_eigen={n_eigen} may be too small: The weight for the highest-energy state computed is {weights[-1]}.", file=sys.stderr)
 
     # Save eigenvalues
-    indexed_eigvals = np.column_stack((np.arange(len(eigvals)), eigvals, weights))
+    indexed_E = np.column_stack((np.arange(len(E)), E, weights))
     header = f"dim = {dim}\nn_eigen = {n_eigen}\ni  E_i  exp(-beta (E_i-E_0))"
-    np.savetxt("eigenvalues.dat", indexed_eigvals, fmt='%d %.8e %.5e', header=header)
+    np.savetxt("eigenvalues.dat", indexed_E, fmt='%d %.8e %.5e', header=header)
 
     # Matsubara frequencies
     iws = 1j * (2 * np.arange(n_iw) + 1) * np.pi / beta
@@ -176,7 +176,7 @@ def main():
         for n in range(n_initial_states):
 
             # loop for [particle excitation, hole excitation]
-            for _Cdag, pm in [[Cdag, +1], [C, -1]]:
+            for _Cdag, particle_excitation in [[Cdag, True], [C, False]]:
 
                 # particle excitation
                 for j in range(n_flavors):
@@ -185,13 +185,13 @@ def main():
 
                     for l, iw in enumerate(iws):
                         # A = iw - H + E_n
-                        # A = (iw + pm * eigvals[n]) * sp.identity(dim) - pm * hamil
-                        if pm == +1:
+                        # A = (iw + pm * E[n]) * sp.identity(dim) - pm * hamil
+                        if particle_excitation:
                             # A = iw - H + E_n
-                            A = (iw + eigvals[n]) * sp.identity(dim) - hamil
+                            A = (iw + E[n]) * sp.identity(dim) - hamil
                         else:
                             # A = iw + H - E_n
-                            A = (iw - eigvals[n]) * sp.identity(dim) + hamil
+                            A = (iw - E[n]) * sp.identity(dim) + hamil
                         assert isinstance(A, sp.spmatrix)
                         assert A.shape == (dim, dim)
 
@@ -214,7 +214,7 @@ def main():
                                 del cdag_i
 
                             # gf[i, j, l] += gf_1 * weights[n]
-                            if pm == +1:
+                            if particle_excitation:
                                 gf[i, j, l] += gf_1 * weights[n]
                             else:
                                 gf[j, i, l] += gf_1 * weights[n]
