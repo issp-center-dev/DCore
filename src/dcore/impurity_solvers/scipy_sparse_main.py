@@ -7,16 +7,16 @@ import sys
 
 def make_local_ops():
     ops = {}
-    ops['c^+'] = np.array([[0, 0], [1, 0]])
-    ops['c'] = np.array([[0, 1], [0, 0]])
-    ops['I'] = np.identity(2)
-    ops['F'] = np.diag([1, -1])  # to represent fermionic anticommutation
+    ops['c^+'] = np.array([[0, 0], [1, 0]], dtype=int)
+    ops['c'] = np.array([[0, 1], [0, 0]], dtype=int)
+    ops['I'] = np.identity(2, dtype=int)
+    ops['F'] = np.array([[1, 0], [0, -1]], dtype=int)  # to represent fermionic anticommutation
     return ops
 
 
 # kronecker product for an arbitrary number of operators
 def kron(*ops):
-    r = 1.0
+    r = 1
     for op in ops:
         r = sp.kron(r, op)
     return r
@@ -74,9 +74,8 @@ def main():
         n_F = 2*n_sites - i - 1
         print(n_I, n_F)
         args = [I] * n_I + [cdag] + [F] * n_F
-        # Cdag.append(kron(*args))
         Cdag[i] = kron(*args)
-        C[i] = Cdag[i].T
+        C[i] = Cdag[i].T  # real (omit conj)
         assert isinstance(Cdag[i], sp.spmatrix)
         assert Cdag[i].shape == (dim, dim)
     # print(Cdag)
@@ -110,6 +109,8 @@ def main():
     else:
         print("\nn_eigen < dim\n  -> Use Lanczos method")
         E, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='SA')
+        # E, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='SA', v0=np.ones(dim))
+        # ‘SA’ : Smallest (algebraic) eigenvalues.
 
     assert E.shape == (n_eigen,)
     assert eigvecs.shape == (dim, n_eigen)
@@ -118,7 +119,6 @@ def main():
     print(E)
 
     # Boltzmann factors
-    # E = E - E[0]  # relative to the ground state
     weights = np.exp(-beta * (E - E[0]))
     weights /= np.sum(weights)
     print("\nWeights (Boltzmann factors / Z):")
@@ -134,8 +134,33 @@ def main():
 
     # Save eigenvalues
     indexed_E = np.column_stack((np.arange(len(E)), E, weights))
-    header = f"dim = {dim}\nn_eigen = {n_eigen}\ni  E_i  exp(-beta (E_i-E_0))"
+    header = f"dim = {dim}\nn_eigen = {n_eigen}\ni  E_i  Boltzmann_weight"
     np.savetxt("eigenvalues.dat", indexed_E, fmt='%d %.8e %.5e', header=header)
+
+    # Save eigenvectors
+    print("Eigenvectors:")
+    print(eigvecs)
+
+    print("\nweights")
+    print(eigvecs * eigvecs.conj())
+
+    print("\nOrthonormality of eigenvectors:")
+    overlap = eigvecs.conj().T @ eigvecs  # <m|n>
+    print("m n <m|n>")
+    for m, n in np.ndindex(n_eigen, n_eigen):
+        print(m, n, overlap[m, n])
+
+    ignore_orthonormality = True
+
+    # overlap matrix must be identity
+    if not np.allclose(overlap, np.identity(n_eigen)):
+        sys.stdout.flush()
+        print("Warning: Eigenvectors are not orthonormal!", file=sys.stderr)
+        if ignore_orthonormality:
+            print("  -> Continue. Set ignore_orthonormality=False to abort calculation.", file=sys.stderr)
+        else:
+            print("  -> Exit. Set ignore_orthonormality=True to ignore this warning.", file=sys.stderr)
+            sys.exit(1)
 
     # Matsubara frequencies
     iws = 1j * (2 * np.arange(n_iw) + 1) * np.pi / beta
@@ -177,8 +202,11 @@ def main():
 
             # loop for [particle excitation, hole excitation]
             for _Cdag, particle_excitation in [[Cdag, True], [C, False]]:
+            # for _Cdag, particle_excitation in [[Cdag, True],]:
+            # for _Cdag, particle_excitation in [[C, False],]:
 
-                # particle excitation
+                # < c_i c_j^+ > for particle excitation
+                # < c_i^+ c_j > for hole excitation  (i <-> j later)
                 for j in range(n_flavors):
                     # cdag_j = c_j^+ |n>  for a given (j, n)
                     cdag_j = _Cdag[j] @ eigvecs[:, n]
@@ -217,7 +245,7 @@ def main():
                             if particle_excitation:
                                 gf[i, j, l] += gf_1 * weights[n]
                             else:
-                                gf[j, i, l] += gf_1 * weights[n]
+                                gf[j, i, l] += gf_1 * weights[n]  # i <-> j for hole excitation
                     del cdag_j
 
     # Save Green's function
