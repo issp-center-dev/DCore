@@ -82,7 +82,7 @@ def main():
     # Load U_ijkl
     umat = np.load(params['file_umat'])
     print(umat.shape)
-    assert umat.shape == (2*n_sites, 2*n_sites, 2*n_sites, 2*n_sites)
+    assert umat.shape == (n_flavors, n_flavors, n_flavors, n_flavors)
 
     # Check if H0 and U_ijkl are complex. If not, convert to real.
     h0 = convert_to_real(h0, name="H0")
