@@ -1,9 +1,9 @@
 import numpy as np
 import scipy.sparse as sp
+import scipy.linalg
 import argparse
 import json
 import sys
-
 
 def make_local_ops():
     ops = {}
@@ -33,11 +33,21 @@ def sort_eigenvalues(vals, vecs):
 def convert_to_real(array, name="array"):
     # Check if H0 and U_ijkl are complex. If not, convert to real.
     if np.any(np.iscomplex(array)):
-        print(f"{name} is complex.")
+        print(f"{name} is complex. Keep dtype={array.dtype}.")
         return array
     else:
-        print(f"{name} is real. -> Convert to real.")
+        print(f"{name} is real. -> Convert dtype={array.dtype} to real type.")
         return array.real
+
+
+def print_sparse_matrix_info(matrix, prefix=""):
+    assert isinstance(matrix, sp.spmatrix)
+    print(f"{prefix}type = {type(matrix)}")
+    print(f"{prefix}shape = {matrix.shape}")
+    print(f"{prefix}dtype = {matrix.dtype}")
+    print(f"{prefix}number of non-zero elements = {matrix.nnz}")
+    density = matrix.nnz / np.prod(matrix.shape)
+    print(f"{prefix}rate of non-zero elements = {density:.6f}")
 
 
 def main():
@@ -51,6 +61,9 @@ def main():
 
     assert isinstance(params, dict)
     print(params)
+
+    weight_threshold = 1e-6
+    ignore_orthonormality = True
 
     n_flavors = params['n_flavors']
     n_sites = params['n_sites']
@@ -118,9 +131,8 @@ def main():
     assert isinstance(hamil, sp.spmatrix)
     assert hamil.shape == (dim, dim)
 
-    print("\nHamiltonian:")
-    print(" | type =", type(hamil))
-    print(" | dtype =", hamil.dtype)
+    print("\nHamiltonian matrix info:")
+    print_sparse_matrix_info(hamil, prefix=" | ")
 
     # TODO: Use particle number conservation
 
@@ -131,7 +143,7 @@ def main():
     if full_diagonalization:
         print("\nn_eigen >= dim\n  -> Use full diagonalization")
         n_eigen = dim
-        E, eigvecs = np.linalg.eigh(hamil.toarray())
+        E, eigvecs = scipy.linalg.eigh(hamil.toarray())
     else:
         print("\nn_eigen < dim\n  -> Use Lanczos method")
         E, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='SA')
@@ -142,11 +154,9 @@ def main():
     assert E.shape == (n_eigen,)
     assert eigvecs.shape == (dim, n_eigen)
 
-    # TODO: Sort eigenvalues and eigenvectors
-    # The eigenvalues are not ordered in scipy.sparse.linalg.eigsh()
-    # for complex Hermitian matrices since eigs() is called internally.
-
     # Sort eigenvalues and eigenvectors
+    #   The eigenvalues are not ordered in scipy.sparse.linalg.eigsh()
+    #   for complex Hermitian matrices since eigs() is called internally.
     E, eigvecs = sort_eigenvalues(E, eigvecs)
 
     print("\nEigenvalues:")
@@ -158,7 +168,6 @@ def main():
     print("\nWeights (Boltzmann factors / Z):")
     print(weights)
 
-    weight_threshold = 1e-6
     n_initial_states = np.count_nonzero(weights > weight_threshold)
     print("\nNumber of initial states:", n_initial_states)
 
@@ -178,7 +187,7 @@ def main():
     # print("Eigenvectors:")
     # print(eigvecs)
 
-    # print("\nweights")
+    # print("\nWeights:")
     # print(eigvecs * eigvecs.conj())
 
     # print("\nOrthonormality of eigenvectors:")
@@ -187,9 +196,7 @@ def main():
     # for m, n in np.ndindex(n_eigen, n_eigen):
     #     print(m, n, overlap[m, n])
 
-    ignore_orthonormality = True
-
-    # Check orhotonormality of eigenvectors
+    # Check orthonormality of eigenvectors
     print("\nCheck orthonormality of eigenvectors")
     if not np.allclose(overlap, np.identity(n_eigen)):
         print("  not orthonormal")
@@ -202,6 +209,8 @@ def main():
             sys.exit(1)
     else:
         print("  orthogonal")
+
+    # TODO: orthogonalize eigenvectors
 
     # Matsubara frequencies
     iws = 1j * (2 * np.arange(n_iw) + 1) * np.pi / beta
