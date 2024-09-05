@@ -38,10 +38,10 @@ class Timer:
 
 def make_local_ops():
     ops = {}
-    ops['c^+'] = np.array([[0, 0], [1, 0]], dtype=int)
-    ops['c'] = np.array([[0, 1], [0, 0]], dtype=int)
-    ops['I'] = np.identity(2, dtype=int)
-    ops['F'] = np.array([[1, 0], [0, -1]], dtype=int)  # to represent fermionic anticommutation
+    ops['c^+'] = sp.coo_matrix([[0, 0], [1, 0]], dtype=int)
+    ops['c'] = sp.coo_matrix([[0, 1], [0, 0]], dtype=int)
+    ops['I'] = sp.coo_matrix(np.identity(2, dtype=int))
+    ops['F'] = sp.coo_matrix([[1, 0], [0, -1]], dtype=int)  # to represent fermionic anticommutation
     return ops
 
 
@@ -49,13 +49,13 @@ def make_local_ops():
 def kron(*ops):
     r = 1
     for op in ops:
-        r = sp.kron(r, op)
+        r = sp.kron(r, op, format='coo')
     return r
 
 
 def slice_spmatrix(matrix, indices, N1, N2):
     if 0 <= N1 < indices.size and 0 <= N2 < indices.size:
-        return sp.lil_matrix(matrix[np.ix_(indices[N1], indices[N2])])
+        return sp.csr_matrix(matrix[np.ix_(indices[N1], indices[N2])])
     else:
         return None
 
@@ -140,9 +140,10 @@ def main():
     n_eigen = params['n_eigen']
     n_iw = params['n_iw']
     flag_spin_conserve = params['flag_spin_conserve']
+    dim_full_diag = params['dim_full_diag']
 
     # Load H0
-    print("\nLoading H0 and U_ijkl")
+    print("\nLoading H0 and U_ijkl", flush=True)
     h0 = np.load(params['file_h0'])
     print("\nH0 info:")
     print_ndarray_info(h0, prefix=" | ")
@@ -151,17 +152,17 @@ def main():
 
     # Load U_ijkl
     umat = np.load(params['file_umat'])
-    print("\nU_ijkl info:")
+    print("\nU_ijkl info:", flush=True)
     print_ndarray_info(umat, prefix=" | ")
     assert umat.shape == (n_flavors, n_flavors, n_flavors, n_flavors)
 
     # Check if H0 and U_ijkl are real. If so, convert to real dtype.
-    print("\nConvert H0 and U_ijkl to real dtype if possible")
+    print("\nConvert H0 and U_ijkl to real dtype if possible", flush=True)
     h0 = convert_to_real_dtype(h0, name="H0")
     umat = convert_to_real_dtype(umat, name="U_ijkl")
 
     dim = 2 ** (2*n_sites)
-    print("\nDimension of Hilbert space:", dim)
+    print("\nDimension of Hilbert space:", dim, flush=True)
 
     # building blocks for creation/anihilation operators
     local_ops = make_local_ops()
@@ -174,6 +175,7 @@ def main():
     # ex. for i=3:
     #   kron(I, I, I, cdag, F, F)
     # Cdag = []
+    print("\nMaking creation/annihilation operators...", flush=True)
     Cdag = np.empty((2*n_sites,), dtype=object)
     C = np.empty((2*n_sites,), dtype=object)
     for i in range(2*n_sites):
@@ -185,11 +187,15 @@ def main():
         C[i] = Cdag[i].T  # real (omit conj)
         assert isinstance(Cdag[i], sp.spmatrix)
         assert Cdag[i].shape == (dim, dim)
+
+    print("\nCreation/annihilation operators info:", flush=True)
+    print_sparse_matrix_info(Cdag[0], prefix=" | ")
     # print(Cdag)
 
     # TODO: define density matrix first
 
     # Make many-body Hamiltonian
+    print("\nMaking many-body Hamiltonian matrix...", flush=True)
     hamil = 0
     for i, j in np.ndindex(h0.shape):
         hamil += h0[i, j] * Cdag[i] @ C[j]
@@ -203,7 +209,7 @@ def main():
     assert isinstance(hamil, sp.spmatrix)
     assert hamil.shape == (dim, dim)
 
-    print("\nHamiltonian matrix info:")
+    print("\nHamiltonian matrix info:", flush=True)
     print_sparse_matrix_info(hamil, prefix=" | ")
 
     # Particle number conservation
@@ -215,8 +221,8 @@ def main():
     # 0 <= n <= 2*n_sites
     assert np.all((particle_numbers >= 0) & (particle_numbers <= 2*n_sites))
 
-    print("\nParticle number conservation:")
-    print(" N dim[N]")
+    print("\nParticle number conservation:", flush=True)
+    print("  N dim[N]")
     dims = np.zeros(2*n_sites+1, dtype=int)
     indices = np.empty(2*n_sites+1, dtype=object)
     # for n in range(dims.size):
@@ -224,11 +230,11 @@ def main():
         indices[N] = [i for i, state in enumerate(product([0, 1], repeat=2*n_sites)) if sum(state)==N]
         # print(indices)
         dims[N] = len(indices[N])
-        print(f" {N} {dims[N]}")
+        print(f" {N:2d} {dims[N]}")
     assert np.sum(dims) == dim
 
     # Split the Hamiltonian, Cdag, and C matrices into blocks
-    hamil = sp.lil_matrix(hamil)  # for slicing
+    hamil = sp.csr_matrix(hamil)  # for slicing
     hamils = np.empty(2*n_sites+1, dtype=object)
     for N in particle_numbers:
         # hamils[N] = sp.lil_matrix(hamil[np.ix_(indices[N], indices[N])])
@@ -239,8 +245,8 @@ def main():
     Cdags = np.empty((n_flavors, 2*n_sites+1), dtype=object)
     Cs = np.empty((n_flavors, 2*n_sites+1), dtype=object)
     for i in range(n_flavors):
-        cdag_i = sp.lil_matrix(Cdag[i])
-        c_i = sp.lil_matrix(C[i])
+        cdag_i = sp.csr_matrix(Cdag[i])
+        c_i = sp.csr_matrix(C[i])
         for N in particle_numbers:
             Cdags[i, N] = slice_spmatrix(cdag_i, indices, N+1, N)
             Cs[i, N] = slice_spmatrix(c_i, indices, N-1, N)
@@ -251,7 +257,7 @@ def main():
     # full_diagonalization = (n_eigen >= dim - 1)
 
     # Solve the eigenvalue problem
-    print("\nSolving the eigenvalue problem...")
+    print("\nSolving the eigenvalue problem...", flush=True)
     timer = Timer(prefix="Time: ")
     eigvals = np.empty(2*n_sites+1, dtype=object)
     eigvecs = np.empty(2*n_sites+1, dtype=object)
@@ -259,7 +265,7 @@ def main():
     for N in particle_numbers:
         print(f"\nN = {N}  (dim[N] = {dims[N]})")
         # print_sparse_matrix_info(hamils[N], prefix=" | ")
-        full_diagonalization[N] = (n_eigen >= dims[N] - 1)
+        full_diagonalization[N] = (dims[N] <= dim_full_diag) or (n_eigen >= dims[N] - 1)
 
         _timer = Timer(prefix=" Time: ")
         # if dims[N] == 1:
@@ -267,18 +273,18 @@ def main():
         #     eigvecs[N] = np.array([[1]])
         # elif n_eigen >= dims[N] - 1:
         if full_diagonalization[N]:
-            print(" n_eigen >= dim[N]\n  -> Use full diagonalization")
+            print(" full diagonalization")
             # n_eigen = dim
             eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
         else:
-            print(" n_eigen < dim[N]\n  -> Use Lanczos method")
+            print(" Lanczos method")
             eigvals[N], eigvecs[N] = sp.linalg.eigsh(hamils[N], k=n_eigen, which='SA')
             # ‘SA’ : Smallest (algebraic) eigenvalues.
         _timer.print()
 
         check_orthonormality(eigvecs[N], ignore_orthonormality=ignore_orthonormality)
 
-    print("\nFinish the eigenvalue problem")
+    print("\nFinish the eigenvalue problem", flush=True)
     timer.print()
 
     # assert E.shape == (n_eigen,)
@@ -303,18 +309,18 @@ def main():
     # E, eigvecs = sort_eigenvalues(eigvals, eigvecs)
     eigs = sort_eigs(eigs)
 
-    print("\nEigenvalues:")
+    print("\nEigenvalues:", flush=True)
     E = np.array([eig.val for eig in eigs])
     print(E)
 
     # Boltzmann factors
     weights = np.exp(-beta * (E - E[0]))
     weights /= np.sum(weights)
-    print("\nWeights (Boltzmann factors / Z):")
+    print("\nWeights (Boltzmann factors / Z):", flush=True)
     print(weights)
 
     n_initial_states = np.count_nonzero(weights > weight_threshold)
-    print("\nNumber of initial states:", n_initial_states)
+    print("\nNumber of initial states:", n_initial_states, flush=True)
 
     # if weights[-1] > weight_threshold and n_eigen < dim:
     if n_eigen < len(weights) and weights[n_eigen] > weight_threshold:
@@ -370,7 +376,7 @@ def main():
     iws = 1j * (2 * np.arange(n_iw) + 1) * np.pi / beta
 
     # Calculate impurity Green's function
-    print("\nCalculating impurity Green's function...")
+    print("\nCalculating impurity Green's function...", flush=True)
     timer = Timer(prefix="Time: ")
     gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
     for n in range(n_initial_states):
@@ -378,7 +384,7 @@ def main():
         E_n = eigs[n].val
         eigvec = eigvecs[N][:, eigs[n].i]
 
-        print(f"\nInitial state {n+1}/{n_initial_states}  (N = {N})")
+        print(f"\nInitial state {n+1}/{n_initial_states}  (N = {N})", flush=True)
 
         # loop for [particle excitation, hole excitation]
         for _Cdag, particle_excitation in [[Cdags, True], [Cs, False]]:
@@ -395,7 +401,7 @@ def main():
                 continue
 
             if full_diagonalization[Np]:
-                print("  Use the Lehmann representation")
+                print("  Use the Lehmann representation", flush=True)
                 # cdag_im[i, m] = <m|c_i^+|n>  for a given n
                 cdag_im = np.empty((n_flavors, dims[Np]), dtype=complex)
                 for i in range(n_flavors):
@@ -427,7 +433,7 @@ def main():
                             gf[j, i, l] += gf_1 * weights[n]  # i <-> j for hole excitation
 
             else:
-                print("  Solve linear equations")
+                print("  Solve linear equations", flush=True)
                 _timer = Timer(prefix="  Time: ")
 
                 # < c_i c_j^+ > for particle excitation
@@ -488,7 +494,7 @@ def main():
                     del cdag_j
                 _timer.print()
 
-    print("\nFinish impurity Green's function")
+    print("\nFinish impurity Green's function", flush=True)
     timer.print()
 
     # Save Green's function

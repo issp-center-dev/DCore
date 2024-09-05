@@ -80,6 +80,7 @@ class ScipySolver(SolverBase):
         file_umat = "umat.in"
         # file_gf = "gf.dat"
         n_eigen = params_kw.get('n_eigen', 4)  # number of states to be computed
+        dim_full_diag = params_kw.get('dim_full_diag', 1000)
 
         # params = dict(
         #     n_sites = n_sites,
@@ -101,6 +102,7 @@ class ScipySolver(SolverBase):
             # 'file_gf': file_gf,
             'n_iw': self.n_iw,
             'n_bath': n_bath,
+            'dim_full_diag': dim_full_diag,
         }
         # (*) TypeError: Object of type int64 is not JSON serializable
 
