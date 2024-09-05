@@ -310,6 +310,10 @@ def main():
                     # cdag_j = c_j^+ |n>  for a given (j, n)
                     cdag_j = _Cdag[j] @ eigvecs[:, n]
 
+                    x0 = None
+
+                    # outer_v = None  # for LGMRES algorithm: Krylov subspace must be prepared
+
                     for l, iw in enumerate(iws):
                         # A = iw - H + E_n
                         # A = (iw + pm * E[n]) * sp.identity(dim) - pm * hamil
@@ -323,9 +327,19 @@ def main():
                         assert A.shape == (dim, dim)
 
                         # Solve A |x> = c_j^+ |n>
-                        x = sp.linalg.spsolve(A, cdag_j)
+                        # x = sp.linalg.spsolve(A, cdag_j)
                         # x = np.linalg.solve(A.toarray(), cdag_j)
-                        # x, _ = sp.linalg.lgmres(A, cdag_i)
+
+                        # Use BiCG algorithm
+                        # x, _ = sp.linalg.bicg(A, cdag_j, x0=x0)
+                        x, _ = sp.linalg.bicgstab(A, cdag_j, x0=x0)
+
+                        # Use LGMRES algorithm
+                        # x, _ = sp.linalg.lgmres(A, cdag_j, x0=x0)
+                        # x, _ = sp.linalg.lgmres(A, cdag_j, x0=x0, outer_v=outer_v)
+
+                        x0 = x  # for the next iteration
+
                         assert x.shape == (dim,)
 
                         for i in range(n_flavors):
