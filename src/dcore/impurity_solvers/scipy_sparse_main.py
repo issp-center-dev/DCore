@@ -4,6 +4,36 @@ import scipy.linalg
 import argparse
 import json
 import sys
+import time
+
+
+class Timer:
+    def __init__(self, prefix="Elapsed time: "):
+        """Start the timer."""
+        self.prefix = prefix
+        self.start_time = time.time()
+        self.end_time = None
+
+    def restart(self):
+        """Restart the timer."""
+        self.start_time = time.time()
+
+    def print(self):
+        """Print the elapsed time in 'XmXs' format."""
+        if self.start_time is None:
+            raise RuntimeError("Timer has not been started.")
+
+        self.end_time = time.time()
+        elapsed_time = self.end_time - self.start_time
+
+        # Convert elapsed time to minutes and seconds
+        minutes = int(elapsed_time // 60)
+        seconds = elapsed_time % 60
+
+        # Print in the desired format
+        print(f"{self.prefix}{minutes}m{seconds:.3f}s")
+
+
 
 def make_local_ops():
     ops = {}
@@ -154,16 +184,19 @@ def main():
     full_diagonalization = (n_eigen >= dim - 1)
 
     # Solve the eigenvalue problem
+    print("\nSolving the eigenvalue problem...")
+    timer = Timer(prefix="Time: ")
     if full_diagonalization:
-        print("\nn_eigen >= dim\n  -> Use full diagonalization")
+        print("n_eigen >= dim\n  -> Use full diagonalization")
         n_eigen = dim
         E, eigvecs = scipy.linalg.eigh(hamil.toarray())
     else:
-        print("\nn_eigen < dim\n  -> Use Lanczos method")
+        print("n_eigen < dim\n  -> Use Lanczos method")
         E, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='SA')
         # E, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='LM')
         # E, eigvecs = sp.linalg.eigsh(hamil, k=n_eigen, which='SA', v0=np.ones(dim))
         # ‘SA’ : Smallest (algebraic) eigenvalues.
+    timer.print()
 
     assert E.shape == (n_eigen,)
     assert eigvecs.shape == (dim, n_eigen)
@@ -230,6 +263,8 @@ def main():
     iws = 1j * (2 * np.arange(n_iw) + 1) * np.pi / beta
 
     # Calculate impurity Green's function
+    print("\nCalculating impurity Green's function...")
+    timer.restart()
     gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
     if full_diagonalization:
         for n in range(n_initial_states):
@@ -311,6 +346,7 @@ def main():
                             else:
                                 gf[j, i, l] += gf_1 * weights[n]  # i <-> j for hole excitation
                     del cdag_j
+    timer.print()
 
     # Save Green's function
     np.save("gf", gf)
