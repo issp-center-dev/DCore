@@ -252,6 +252,7 @@ def main():
 
     # Solve the eigenvalue problem
     print("\nSolving the eigenvalue problem...")
+    timer = Timer(prefix="Time: ")
     eigvals = np.empty(2*n_sites+1, dtype=object)
     eigvecs = np.empty(2*n_sites+1, dtype=object)
     full_diagonalization = np.full(2*n_sites+1, False)
@@ -260,7 +261,7 @@ def main():
         # print_sparse_matrix_info(hamils[N], prefix=" | ")
         full_diagonalization[N] = (n_eigen >= dims[N] - 1)
 
-        timer = Timer(prefix=" Time: ")
+        _timer = Timer(prefix=" Time: ")
         # if dims[N] == 1:
         #     eigvals[N] = np.array([hamils[N][0, 0]])
         #     eigvecs[N] = np.array([[1]])
@@ -273,9 +274,12 @@ def main():
             print(" n_eigen < dim[N]\n  -> Use Lanczos method")
             eigvals[N], eigvecs[N] = sp.linalg.eigsh(hamils[N], k=n_eigen, which='SA')
             # ‘SA’ : Smallest (algebraic) eigenvalues.
-        timer.print()
+        _timer.print()
 
         check_orthonormality(eigvecs[N], ignore_orthonormality=ignore_orthonormality)
+
+    print("\nFinish the eigenvalue problem")
+    timer.print()
 
     # assert E.shape == (n_eigen,)
     # assert eigvecs.shape == (dim, n_eigen)
@@ -367,6 +371,7 @@ def main():
 
     # Calculate impurity Green's function
     print("\nCalculating impurity Green's function...")
+    timer = Timer(prefix="Time: ")
     gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
     for n in range(n_initial_states):
         N = eigs[n].N
@@ -423,7 +428,7 @@ def main():
 
             else:
                 print("  Solve linear equations")
-                timer = Timer(prefix="  Time: ")
+                _timer = Timer(prefix="  Time: ")
 
                 # < c_i c_j^+ > for particle excitation
                 # < c_i^+ c_j > for hole excitation  (i <-> j later)
@@ -481,7 +486,10 @@ def main():
                             else:
                                 gf[j, i, l] += gf_1 * weights[n]  # i <-> j for hole excitation
                     del cdag_j
-                timer.print()
+                _timer.print()
+
+    print("\nFinish impurity Green's function")
+    timer.print()
 
     # Save Green's function
     np.save("gf", gf)
