@@ -30,14 +30,25 @@ def sort_eigenvalues(vals, vecs):
     return vals, vecs
 
 
-def convert_to_real(array, name="array"):
-    # Check if H0 and U_ijkl are complex. If not, convert to real.
-    if np.any(np.iscomplex(array)):
-        print(f"{name} is complex. Keep dtype={array.dtype}.")
-        return array
+def convert_to_real_dtype(array, name="array"):
+    # Check if array are real, and if so, convert to real dtype.
+    if np.any(np.iscomplexobj(array)):  # check dtype
+        if np.any(np.iscomplex(array)):  # check values
+            print(f"{name} is complex. Keep dtype={array.dtype}.")
+            return array
+        else:
+            print(f"{name} is real. -> Convert to real dtype.")
+            return array.real
     else:
-        print(f"{name} is real. -> Convert dtype={array.dtype} to real type.")
-        return array.real
+        print(f"{name} is real dtype.")
+        return array
+
+
+def print_ndarray_info(array, prefix=""):
+    assert isinstance(array, np.ndarray)
+    print(f"{prefix}type = {type(array)}")
+    print(f"{prefix}shape = {array.shape}")
+    print(f"{prefix}dtype = {array.dtype}")
 
 
 def print_sparse_matrix_info(matrix, prefix=""):
@@ -75,18 +86,21 @@ def main():
     # Load H0
     print("\nLoading H0 and U_ijkl")
     h0 = np.load(params['file_h0'])
-    print(h0.shape)
+    print("\nH0 info:")
+    print_ndarray_info(h0, prefix=" | ")
     # assert h0.shape == (n_flavors, n_flavors)
     assert h0.shape == (2*n_sites, 2*n_sites)
 
     # Load U_ijkl
     umat = np.load(params['file_umat'])
-    print(umat.shape)
+    print("\nU_ijkl info:")
+    print_ndarray_info(umat, prefix=" | ")
     assert umat.shape == (n_flavors, n_flavors, n_flavors, n_flavors)
 
-    # Check if H0 and U_ijkl are complex. If not, convert to real.
-    h0 = convert_to_real(h0, name="H0")
-    umat = convert_to_real(umat, name="U_ijkl")
+    # Check if H0 and U_ijkl are real. If so, convert to real dtype.
+    print("\nConvert H0 and U_ijkl to real dtype if possible")
+    h0 = convert_to_real_dtype(h0, name="H0")
+    umat = convert_to_real_dtype(umat, name="U_ijkl")
 
     dim = 2 ** (2*n_sites)
     print("\nDimension of Hilbert space:", dim)
