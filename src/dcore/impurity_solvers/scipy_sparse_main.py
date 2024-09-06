@@ -460,41 +460,6 @@ def main():
                 else:
                     gf += gf_1.transpose([1, 0, 2]) * weights[n]  # [i, j, l] -> [j, i, l]
 
-
-        # # particle excitation
-        # #   <n| c_i (iw - H + E_n) c_j^+ |n>
-        # N_ex = N + 1
-        # print(f"\n particle excitation: N + 1 = {N_ex}")
-        # if N_ex <= 2*n_sites:
-        #     if full_diagonalization[N_ex]:
-        #         print("  Use the Lehmann representation", flush=True)
-        #         gf_p = calc_gf_Lehmann(iws, Cdags[N], flag_spin_conserve, eigvec, E_n, eigvals[N_ex], eigvecs[N_ex], +1)
-
-        #     else:
-        #         print("  Solve linear equations", flush=True)
-        #         _timer = Timer(prefix="  Time: ")
-        #         gf_p = calc_gf_iterative(iws, Cdags[N], flag_spin_conserve, eigvec, E_n, hamils[N_ex], +1)
-        #         _timer.print()
-
-        #     gf += gf_p * weights[n]
-
-        # # hole excitation
-        # #   <n| c_j^+ (iw + H - E_n) c_i |n>
-        # N_ex = N - 1
-        # print(f"\n hole excitation: N - 1 = {N_ex}")
-        # if N_ex >= 0:
-        #     if full_diagonalization[N_ex]:
-        #         print("  Use the Lehmann representation", flush=True)
-        #         gf_h = calc_gf_Lehmann(iws, Cs[N], flag_spin_conserve, eigvec, E_n, eigvals[N_ex], eigvecs[N_ex], -1)
-
-        #     else:
-        #         print("  Solve linear equations", flush=True)
-        #         _timer = Timer(prefix="  Time: ")
-        #         gf_h = calc_gf_iterative(iws, Cs[N], flag_spin_conserve, eigvec, E_n, hamils[N_ex], -1)
-        #         _timer.print()
-
-        #     gf += gf_h.transpose([1, 0, 2]) * weights[n]  # [i, j, l] -> [j, i, l]
-
     print("\nFinish impurity Green's function", flush=True)
     timer.print()
 
