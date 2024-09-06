@@ -110,6 +110,98 @@ def print_sparse_matrix_info(matrix, prefix=""):
     print(f"{prefix}rate of non-zero elements = {density:.6f}")
 
 
+# Compute
+#   <n| c_i (iw - H + E_n) c_j^+ |n>
+# using the eigenvalues of H (Lehmann representation)
+def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex):
+    n_flavors = Cdag.size
+    n_iw = iws.size
+    dim_ex = eigvals_ex.size
+    assert eigvecs_ex.shape == (dim_ex, dim_ex)
+
+    gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
+
+    # cdag_im[i, m] = <m|c_i^+|n>  for a given n
+    cdag_im = np.empty((n_flavors, dim_ex), dtype=complex)
+    for i in range(n_flavors):
+        cdag_im[i] = eigvecs_ex.conj().T @ Cdag[i] @ eigvec
+
+    for l, iw in enumerate(iws):
+        # ene_denom[m] = 1 / (iw - E_m + E_n)
+        ene_denom = 1 / (iw - eigvals_ex + E_n)
+        assert ene_denom.shape == (dim_ex,)
+
+        for i, j in np.ndindex(n_flavors, n_flavors):
+            if spin_conserve:
+                if i // 2 != j // 2:  # skip different spins
+                    continue
+
+            gf[i, j, l] += np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
+
+    return gf
+
+
+# Compute
+#   <n| c_i (iw - H + E_n) c_j^+ |n>
+# by solving linear equations
+def calc_gf_iterative(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm):
+    n_flavors = Cdag.size
+    n_iw = iws.size
+    dim_ex = hamil_ex.shape[0]
+    assert hamil_ex.shape == (dim_ex, dim_ex)
+
+    gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
+
+    for j in range(n_flavors):
+        # cdag_j = c_j^+ |n>  for a given (j, n)
+        cdag_j = Cdag[j] @ eigvec
+
+        x0 = None
+
+        for l, iw in enumerate(iws):
+            if pm == +1:
+                # A = iw - H + E_n
+                A = (iw + E_n) * sp.identity(dim_ex) - hamil_ex
+            else:
+                # A = iw + H - E_n
+                A = (iw - E_n) * sp.identity(dim_ex) + hamil_ex
+
+            assert isinstance(A, sp.spmatrix)
+            assert A.shape == (dim_ex, dim_ex)
+
+            # Solve A |x> = c_j^+ |n>
+            # x = sp.linalg.spsolve(A, cdag_j)
+            # x = np.linalg.solve(A.toarray(), cdag_j)
+
+            # Use BiCG algorithm
+            # x, _ = sp.linalg.bicg(A, cdag_j, x0=x0)
+            x, _ = sp.linalg.bicgstab(A, cdag_j, x0=x0)
+
+            # Use LGMRES algorithm
+            # x, _ = sp.linalg.lgmres(A, cdag_j, x0=x0)
+            # x, _ = sp.linalg.lgmres(A, cdag_j, x0=x0, outer_v=outer_v)
+
+            x0 = x  # for the next iteration
+
+            assert x.shape == (dim_ex,)
+
+            for i in range(n_flavors):
+                if spin_conserve:
+                    if i // 2 != j // 2:  # skip different spins
+                        continue
+
+                if i == j:
+                    gf_1 = cdag_j.conj().T @ x
+                else:
+                    cdag_i = Cdag[i] @ eigvec
+                    gf_1 = cdag_i.conj().T @ x
+                    del cdag_i
+
+                gf[i, j, l] += gf_1
+
+    return gf
+
+
 def main():
     # ----------------------------------------------------------------
     # Parse input parameters
@@ -243,14 +335,14 @@ def main():
     del hamil
 
     # retain only Cdag and C at impurity sites
-    Cdags = np.empty((n_flavors, 2*n_sites+1), dtype=object)
-    Cs = np.empty((n_flavors, 2*n_sites+1), dtype=object)
+    Cdags = np.empty((2*n_sites+1, n_flavors), dtype=object)
+    Cs = np.empty((2*n_sites+1, n_flavors), dtype=object)
     for i in range(n_flavors):
         cdag_i = sp.csr_matrix(Cdag[i])
         c_i = sp.csr_matrix(C[i])
         for N in particle_numbers:
-            Cdags[i, N] = slice_spmatrix(cdag_i, indices, N+1, N)
-            Cs[i, N] = slice_spmatrix(c_i, indices, N-1, N)
+            Cdags[N, i] = slice_spmatrix(cdag_i, indices, N+1, N)
+            Cs[N, i] = slice_spmatrix(c_i, indices, N-1, N)
         del cdag_i, c_i
     del Cdag, C
 
@@ -339,7 +431,7 @@ def main():
         print(f"\nInitial state {n+1}/{n_initial_states}  (N = {N})", flush=True)
 
         # loop for [particle excitation, hole excitation]
-        for _Cdag, particle_excitation in [[Cdags, True], [Cs, False]]:
+        for _Cdag, particle_excitation in [[Cdags[N], True], [Cs[N], False]]:
 
             if particle_excitation:
                 Np = N + 1
@@ -351,92 +443,28 @@ def main():
             if Np < 0 or Np > 2*n_sites:
                 continue
 
+            # Compute
+            #   <n| c_i (iw - H + E_n) c_j^+ |n> for particle excitation
+            #   <n| c_j^+ (iw + H - E_n) c_i |n> for hole excitation
             if full_diagonalization[Np]:
                 print("  Use the Lehmann representation", flush=True)
 
-                # cdag_im[i, m] = <m|c_i^+|n>  for a given n
-                cdag_im = np.empty((n_flavors, dims[Np]), dtype=complex)
-                for i in range(n_flavors):
-                    cdag_im[i] = eigvecs[Np].conj().T @ _Cdag[i, N] @ eigvec
-
-                for l, iw in enumerate(iws):
-                    if particle_excitation:
-                        # ene_denom[m] = 1 / (iw - E_m + E_n)
-                        ene_denom = 1 / (iw - eigvals[Np] + E_n)
-                    else:
-                        # ene_denom[m] = 1 / (iw + E_m - E_n)
-                        ene_denom = 1 / (iw + eigvals[Np] - E_n)
-                    assert ene_denom.shape == (dims[Np],)
-
-                    for i, j in np.ndindex(n_flavors, n_flavors):
-                        if flag_spin_conserve:
-                            if i // 2 != j // 2:  # skip different spins
-                                continue
-
-                        gf_1 = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
-
-                        if particle_excitation:
-                            gf[i, j, l] += gf_1 * weights[n]
-                        else:
-                            gf[j, i, l] += gf_1 * weights[n]  # i <-> j for hole excitation
+                if particle_excitation:
+                    gf += calc_gf_Lehmann(iws, _Cdag, flag_spin_conserve, eigvec, E_n, eigvals[Np], eigvecs[Np]) * weights[n]
+                else:
+                    gf_h = calc_gf_Lehmann(iws, _Cdag, flag_spin_conserve, eigvec, -E_n, -eigvals[Np], eigvecs[Np]) * weights[n]
+                    gf += gf_h.transpose([1, 0, 2])  # [i, j, l] -> [j, i, l]
 
             else:
                 print("  Solve linear equations", flush=True)
                 _timer = Timer(prefix="  Time: ")
 
-                # < c_i c_j^+ > for particle excitation
-                # < c_i^+ c_j > for hole excitation  (i <-> j later)
-                for j in range(n_flavors):
-                    # cdag_j = c_j^+ |n>  for a given (j, n)
-                    cdag_j = _Cdag[j, N] @ eigvec
+                if particle_excitation:
+                    gf += calc_gf_iterative(iws, _Cdag, flag_spin_conserve, eigvec, E_n, hamils[Np], +1) * weights[n]
+                else:
+                    gf_h = calc_gf_iterative(iws, _Cdag, flag_spin_conserve, eigvec, E_n, hamils[Np], -1) * weights[n]
+                    gf += gf_h.transpose([1, 0, 2])  # [i, j, l] -> [j, i, l]
 
-                    x0 = None
-
-                    for l, iw in enumerate(iws):
-                        # A = iw - H + E_n
-                        # A = (iw + pm * E[n]) * sp.identity(dim) - pm * hamil
-                        if particle_excitation:
-                            # A = iw - H + E_n
-                            A = (iw + E_n) * sp.identity(dims[Np]) - hamils[Np]
-                        else:
-                            # A = iw + H - E_n
-                            A = (iw - E_n) * sp.identity(dims[Np]) + hamils[Np]
-                        assert isinstance(A, sp.spmatrix)
-                        assert A.shape == (dims[Np], dims[Np])
-
-                        # Solve A |x> = c_j^+ |n>
-                        # x = sp.linalg.spsolve(A, cdag_j)
-                        # x = np.linalg.solve(A.toarray(), cdag_j)
-
-                        # Use BiCG algorithm
-                        # x, _ = sp.linalg.bicg(A, cdag_j, x0=x0)
-                        x, _ = sp.linalg.bicgstab(A, cdag_j, x0=x0)
-
-                        # Use LGMRES algorithm
-                        # x, _ = sp.linalg.lgmres(A, cdag_j, x0=x0)
-                        # x, _ = sp.linalg.lgmres(A, cdag_j, x0=x0, outer_v=outer_v)
-
-                        x0 = x  # for the next iteration
-
-                        assert x.shape == (dims[Np],)
-
-                        for i in range(n_flavors):
-                            if flag_spin_conserve:
-                                if i // 2 != j // 2:  # skip different spins
-                                    continue
-
-                            if i == j:
-                                gf_1 = cdag_j.conj().T @ x
-                            else:
-                                cdag_i = _Cdag[i, N] @ eigvec
-                                gf_1 = cdag_i.conj().T @ x
-                                del cdag_i
-
-                            if particle_excitation:
-                                gf[i, j, l] += gf_1 * weights[n]
-                            else:
-                                gf[j, i, l] += gf_1 * weights[n]  # i <-> j for hole excitation
-                    del cdag_j
                 _timer.print()
 
     print("\nFinish impurity Green's function", flush=True)
