@@ -113,7 +113,7 @@ def print_sparse_matrix_info(matrix, prefix=""):
 # Compute
 #   <n| c_i (iw - H + E_n) c_j^+ |n>
 # using the eigenvalues of H (Lehmann representation)
-def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex):
+def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex, pm):
     n_flavors = Cdag.size
     n_iw = iws.size
     dim_ex = eigvals_ex.size
@@ -127,8 +127,12 @@ def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_e
         cdag_im[i] = eigvecs_ex.conj().T @ Cdag[i] @ eigvec
 
     for l, iw in enumerate(iws):
-        # ene_denom[m] = 1 / (iw - E_m + E_n)
-        ene_denom = 1 / (iw - eigvals_ex + E_n)
+        if pm == +1:
+            # ene_denom[m] = 1 / (iw - E_m + E_n)
+            ene_denom = 1 / (iw - eigvals_ex + E_n)
+        else:
+            # ene_denom[m] = 1 / (iw + E_m - E_n)
+            ene_denom = 1 / (iw + eigvals_ex - E_n)
         assert ene_denom.shape == (dim_ex,)
 
         for i, j in np.ndindex(n_flavors, n_flavors):
@@ -136,7 +140,7 @@ def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_e
                 if i // 2 != j // 2:  # skip different spins
                     continue
 
-            gf[i, j, l] += np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
+            gf[i, j, l] = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
 
     return gf
 
@@ -191,13 +195,11 @@ def calc_gf_iterative(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm):
                         continue
 
                 if i == j:
-                    gf_1 = cdag_j.conj().T @ x
+                    gf[i, j, l] = cdag_j.conj().T @ x
                 else:
                     cdag_i = Cdag[i] @ eigvec
-                    gf_1 = cdag_i.conj().T @ x
+                    gf[i, j, l] = cdag_i.conj().T @ x
                     del cdag_i
-
-                gf[i, j, l] += gf_1
 
     return gf
 
@@ -431,41 +433,67 @@ def main():
         print(f"\nInitial state {n+1}/{n_initial_states}  (N = {N})", flush=True)
 
         # loop for [particle excitation, hole excitation]
-        for _Cdag, particle_excitation in [[Cdags[N], True], [Cs[N], False]]:
-
-            if particle_excitation:
-                Np = N + 1
-                print(f"\n particle excitation: Np = {Np}")
+        for _Cdag, pm in [[Cdags[N], +1], [Cs[N], -1]]:
+            if pm == +1:
+                N_ex = N + 1
+                print(f"\n particle excitation: N + 1 = {N_ex}")
             else:
-                Np = N - 1
-                print(f"\n hole excitation: Np = {Np}")
+                N_ex = N - 1
+                print(f"\n hole excitation: N - 1 = {N_ex}")
 
-            if Np < 0 or Np > 2*n_sites:
-                continue
+            if 0 <= N_ex <= 2*n_sites:
+                # Compute
+                #   <n| c_i (iw - H + E_n) c_j^+ |n> for particle excitation
+                #   <n| c_j^+ (iw + H - E_n) c_i |n> for hole excitation
+                if full_diagonalization[N_ex]:
+                    print("  Use the Lehmann representation", flush=True)
+                    gf_1 = calc_gf_Lehmann(iws, _Cdag, flag_spin_conserve, eigvec, E_n, eigvals[N_ex], eigvecs[N_ex], pm)
 
-            # Compute
-            #   <n| c_i (iw - H + E_n) c_j^+ |n> for particle excitation
-            #   <n| c_j^+ (iw + H - E_n) c_i |n> for hole excitation
-            if full_diagonalization[Np]:
-                print("  Use the Lehmann representation", flush=True)
-
-                if particle_excitation:
-                    gf += calc_gf_Lehmann(iws, _Cdag, flag_spin_conserve, eigvec, E_n, eigvals[Np], eigvecs[Np]) * weights[n]
                 else:
-                    gf_h = calc_gf_Lehmann(iws, _Cdag, flag_spin_conserve, eigvec, -E_n, -eigvals[Np], eigvecs[Np]) * weights[n]
-                    gf += gf_h.transpose([1, 0, 2])  # [i, j, l] -> [j, i, l]
+                    print("  Solve linear equations", flush=True)
+                    _timer = Timer(prefix="  Time: ")
+                    gf_1 = calc_gf_iterative(iws, _Cdag, flag_spin_conserve, eigvec, E_n, hamils[N_ex], pm)
+                    _timer.print()
 
-            else:
-                print("  Solve linear equations", flush=True)
-                _timer = Timer(prefix="  Time: ")
-
-                if particle_excitation:
-                    gf += calc_gf_iterative(iws, _Cdag, flag_spin_conserve, eigvec, E_n, hamils[Np], +1) * weights[n]
+                if pm == +1:
+                    gf += gf_1 * weights[n]
                 else:
-                    gf_h = calc_gf_iterative(iws, _Cdag, flag_spin_conserve, eigvec, E_n, hamils[Np], -1) * weights[n]
-                    gf += gf_h.transpose([1, 0, 2])  # [i, j, l] -> [j, i, l]
+                    gf += gf_1.transpose([1, 0, 2]) * weights[n]  # [i, j, l] -> [j, i, l]
 
-                _timer.print()
+
+        # # particle excitation
+        # #   <n| c_i (iw - H + E_n) c_j^+ |n>
+        # N_ex = N + 1
+        # print(f"\n particle excitation: N + 1 = {N_ex}")
+        # if N_ex <= 2*n_sites:
+        #     if full_diagonalization[N_ex]:
+        #         print("  Use the Lehmann representation", flush=True)
+        #         gf_p = calc_gf_Lehmann(iws, Cdags[N], flag_spin_conserve, eigvec, E_n, eigvals[N_ex], eigvecs[N_ex], +1)
+
+        #     else:
+        #         print("  Solve linear equations", flush=True)
+        #         _timer = Timer(prefix="  Time: ")
+        #         gf_p = calc_gf_iterative(iws, Cdags[N], flag_spin_conserve, eigvec, E_n, hamils[N_ex], +1)
+        #         _timer.print()
+
+        #     gf += gf_p * weights[n]
+
+        # # hole excitation
+        # #   <n| c_j^+ (iw + H - E_n) c_i |n>
+        # N_ex = N - 1
+        # print(f"\n hole excitation: N - 1 = {N_ex}")
+        # if N_ex >= 0:
+        #     if full_diagonalization[N_ex]:
+        #         print("  Use the Lehmann representation", flush=True)
+        #         gf_h = calc_gf_Lehmann(iws, Cs[N], flag_spin_conserve, eigvec, E_n, eigvals[N_ex], eigvecs[N_ex], -1)
+
+        #     else:
+        #         print("  Solve linear equations", flush=True)
+        #         _timer = Timer(prefix="  Time: ")
+        #         gf_h = calc_gf_iterative(iws, Cs[N], flag_spin_conserve, eigvec, E_n, hamils[N_ex], -1)
+        #         _timer.print()
+
+        #     gf += gf_h.transpose([1, 0, 2]) * weights[n]  # [i, j, l] -> [j, i, l]
 
     print("\nFinish impurity Green's function", flush=True)
     timer.print()
