@@ -74,13 +74,16 @@ class ScipySolver(SolverBase):
 
         n_sites = self.n_orb + n_bath
 
-        # parameters
+        # parameters from input
+        n_eigen = params_kw.get('n_eigen', 10)  # number of eigenstates to be computed
+        dim_full_diag = params_kw.get('dim_full_diag', 1000)
+        ncv = params_kw.get('ncv', 100)
+
+        # fixed parameters
         file_input = "input.in"
         file_h0 = "h0.in"
         file_umat = "umat.in"
         # file_gf = "gf.dat"
-        n_eigen = params_kw.get('n_eigen', 4)  # number of states to be computed
-        dim_full_diag = params_kw.get('dim_full_diag', 1000)
 
         # params = dict(
         #     n_sites = n_sites,
@@ -103,6 +106,7 @@ class ScipySolver(SolverBase):
             'n_iw': self.n_iw,
             'n_bath': n_bath,
             'dim_full_diag': dim_full_diag,
+            'ncv': ncv,
         }
         # (*) TypeError: Object of type int64 is not JSON serializable
 

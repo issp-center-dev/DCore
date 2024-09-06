@@ -119,6 +119,9 @@ def print_sparse_matrix_info(matrix, prefix=""):
 
 
 def main():
+    # ----------------------------------------------------------------
+    # Parse input parameters
+
     parser = argparse.ArgumentParser(description='Process a string argument.')
     parser.add_argument('filename', type=str, help='Input file in json format')
     args = parser.parse_args()
@@ -141,6 +144,10 @@ def main():
     n_iw = params['n_iw']
     flag_spin_conserve = params['flag_spin_conserve']
     dim_full_diag = params['dim_full_diag']
+    ncv = params['ncv']
+
+    # ----------------------------------------------------------------
+    # Load H0 and U_ijkl
 
     # Load H0
     print("\nLoading H0 and U_ijkl", flush=True)
@@ -163,6 +170,9 @@ def main():
 
     dim = 2 ** (2*n_sites)
     print("\nDimension of Hilbert space:", dim, flush=True)
+
+    # ----------------------------------------------------------------
+    # Make creation/annihilation operators
 
     # building blocks for creation/anihilation operators
     local_ops = make_local_ops()
@@ -192,9 +202,11 @@ def main():
     print_sparse_matrix_info(Cdag[0], prefix=" | ")
     # print(Cdag)
 
+    # ----------------------------------------------------------------
+    # Make many-body Hamiltonian matrix
+
     # TODO: define density matrix first
 
-    # Make many-body Hamiltonian
     print("\nMaking many-body Hamiltonian matrix...", flush=True)
     hamil = 0
     for i, j in np.ndindex(h0.shape):
@@ -253,10 +265,9 @@ def main():
         del cdag_i, c_i
     del Cdag, C
 
-    # Use full diagonalization if dim is small
-    # full_diagonalization = (n_eigen >= dim - 1)
-
+    # ----------------------------------------------------------------
     # Solve the eigenvalue problem
+
     print("\nSolving the eigenvalue problem...", flush=True)
     timer = Timer(prefix="Time: ")
     eigvals = np.empty(2*n_sites+1, dtype=object)
@@ -278,10 +289,11 @@ def main():
             eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
         else:
             print(" Lanczos method")
-            eigvals[N], eigvecs[N] = sp.linalg.eigsh(hamils[N], k=n_eigen, which='SA')
+            eigvals[N], eigvecs[N] = sp.linalg.eigsh(hamils[N], k=n_eigen, which='SA', ncv=ncv)
             # ‘SA’ : Smallest (algebraic) eigenvalues.
         _timer.print()
 
+        # TODO: orthogonalize eigenvectors
         check_orthonormality(eigvecs[N], ignore_orthonormality=ignore_orthonormality)
 
     print("\nFinish the eigenvalue problem", flush=True)
@@ -322,7 +334,8 @@ def main():
     n_initial_states = np.count_nonzero(weights > weight_threshold)
     print("\nNumber of initial states:", n_initial_states, flush=True)
 
-    # if weights[-1] > weight_threshold and n_eigen < dim:
+    # Check if n_eigen is enough
+    # TODO: improve this condition
     if n_eigen < len(weights) and weights[n_eigen] > weight_threshold:
         sys.stdout.flush()
         print(f"\nWarning: n_eigen={n_eigen} may be too small: The weight for the highest-energy state computed is {weights[-1]}.", file=sys.stderr)
@@ -370,12 +383,12 @@ def main():
     # else:
     #     print("  orthogonal")
 
-    # TODO: orthogonalize eigenvectors
+    # ----------------------------------------------------------------
+    # Calculate impurity Green's function
 
     # Matsubara frequencies
     iws = 1j * (2 * np.arange(n_iw) + 1) * np.pi / beta
 
-    # Calculate impurity Green's function
     print("\nCalculating impurity Green's function...", flush=True)
     timer = Timer(prefix="Time: ")
     gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
@@ -499,6 +512,9 @@ def main():
 
     # Save Green's function
     np.save("gf", gf)
+
+    # ----------------------------------------------------------------
+
 
 if __name__ == '__main__':
     main()
