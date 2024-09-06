@@ -80,6 +80,47 @@ def convert_to_real_dtype(array, name="array"):
         return array
 
 
+def sort_eigenvalues(eigvals, eigvecs):
+    # Sort eigenvalues and eigenvectors in ascending order
+    idx = np.argsort(eigvals)
+    eigvals = eigvals[idx]
+    eigvecs = eigvecs[:, idx]
+    return eigvals, eigvecs
+
+
+def orthogonalize(v1, v2):
+    # Orthogonalize v1 with respect to v2, assuming v2 is normalized
+    return v1 - v2 * np.vdot(v2, v1)
+    # return v1 - v2 * (np.vdot(v2, v1) / np.vdot(v2, v2))
+
+
+def normalize(v):
+    # Normalize v
+    return v / np.linalg.norm(v)
+
+
+# Orthonormalize degenerated eigenvectors
+def orthonormalize_eigvecs(eigvals, eigvecs, tol=1e-6):
+    dim = eigvals.size
+
+    # sort first
+    eigvals, eigvecs = sort_eigenvalues(eigvals, eigvecs)
+
+    i_start = 0
+    eigvecs[:, 0] = normalize(eigvecs[:, 0])
+
+    for i in range(1, dim):
+        if abs(eigvals[i] - eigvals[i-1]) < tol:  # degenerate
+            # orthogonalize
+            for j in range(i_start, i):
+                eigvecs[:, i] = orthogonalize(eigvecs[:, i], eigvecs[:, j])
+        else:
+            i_start = i
+        eigvecs[:, i] = normalize(eigvecs[:, i])
+
+    return eigvals, eigvecs
+
+
 def check_orthonormality(eigvecs, ignore_orthonormality=False):
     # Check orthonormality of eigenvectors
     overlap = eigvecs.conj().T @ eigvecs  # <m|n>
@@ -220,7 +261,7 @@ def main():
     print(params)
 
     weight_threshold = 1e-6
-    ignore_orthonormality = True
+    ignore_orthonormality = False
     particle_numbers = None
 
     n_flavors = params['n_flavors']
@@ -371,7 +412,12 @@ def main():
             # ‘SA’ : Smallest (algebraic) eigenvalues.
         _timer.print()
 
-        # TODO: orthogonalize eigenvectors
+        # Orthonormalize eigenvectors
+        #   Degenerated eigenstates are not orthogonal with each oterh
+        #   in scipy.sparse.linalg.eigsh() for complex Hermitian matrices
+        #   since eigs() is called internally.
+        eigvals[N], eigvecs[N] = orthonormalize_eigvecs(eigvals[N], eigvecs[N])
+
         check_orthonormality(eigvecs[N], ignore_orthonormality=ignore_orthonormality)
 
     print("\nFinish the eigenvalue problem", flush=True)
@@ -384,9 +430,7 @@ def main():
         eigs += [EIG(eigval, N, i) for i, eigval in enumerate(eigvals[N])]
     print("\nTotal eigenvalues computed: ", len(eigs))
 
-    # Sort eigenvalues and eigenvectors
-    #   The eigenvalues are not ordered in scipy.sparse.linalg.eigsh()
-    #   for complex Hermitian matrices since eigs() is called internally.
+    # Sort eigenvalues
     eigs = sort_eigs(eigs)
 
     print("\nEigenvalues:", flush=True)
