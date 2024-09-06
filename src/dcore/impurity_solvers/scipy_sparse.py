@@ -78,6 +78,7 @@ class ScipySolver(SolverBase):
         n_eigen = params_kw.get('n_eigen', 10)  # number of eigenstates to be computed
         dim_full_diag = params_kw.get('dim_full_diag', 1000)
         ncv = params_kw.get('ncv', 100)
+        # np = params_kw.get('np', 1)  # MPI
 
         # fixed parameters
         file_input = "input.in"
@@ -85,13 +86,6 @@ class ScipySolver(SolverBase):
         file_umat = "umat.in"
         # file_gf = "gf.dat"
 
-        # params = dict(
-        #     n_sites = n_sites,
-        #     t = file_h0,
-        #     u_ijkl = file_umat,
-        #     n_eigen = exct,  # number of eigenstates to be computed
-        #     # ncv = ncv,
-        # )
         params_solver = {
             'n_sites': n_sites,
             'n_flavors': int(self.n_flavors),  # avoid error in json.dump (*)
@@ -145,23 +139,13 @@ class ScipySolver(SolverBase):
         h0_full[L1:L1+L2, 0:L1] = bath_hyb.conj().T
         h0_full[L1:L1+L2,L1:L1+L2] = numpy.diag(bath_levels)
 
-        # save H0 into a file
+        # Save H0
         numpy.save(file_h0, h0_full)
-        # with open(file_h0, "w") as f:
-        #     for i, j in product(list(range(h0_full.shape[0])), list(range(h0_full.shape[1]))):
-        #         # TODO: real or complex
-        #         if abs(h0_full[i, j]) != 0:
-        #             print(i, j, h0_full[i,j].real, h0_full[i,j].imag, file=f)
-        #             # print(i, j, h0_full[i, j].real, file=f)
 
         # (1c) Set U_{ijkl} for the solver
+
+        # Save U_{ijkl}
         numpy.save(file_umat, self.u_mat)
-        # with open(file_umat, "w") as f:
-        #     for i, j, k, l in product(list(range(self.n_flavors)), repeat=4):
-        #         # TODO: real or complex
-        #         if abs(self.u_mat[i, j, k, l]) != 0:
-        #             print(i, j, k, l, self.u_mat[i, j, k, l].real, self.u_mat[i, j, k, l].imag, file=f)
-        #             #print(i, j, k, l, self.u_mat[i, j, k, l].real, file=f)
 
         # -------------------------------------------------------------------------
 

@@ -60,14 +60,6 @@ def slice_spmatrix(matrix, indices, N1, N2):
         return None
 
 
-def sort_eigenvalues(vals, vecs):
-    # Sort eigenvalues and eigenvectors in ascending order
-    idx = np.argsort(vals)
-    vals = vals[idx]
-    vecs = vecs[:, idx]
-    return vals, vecs
-
-
 def sort_eigs(eigs):
     # Sort eigenvalues and eigenvectors in ascending order
     eigs.sort(key=lambda x: x.val)
@@ -200,7 +192,6 @@ def main():
 
     print("\nCreation/annihilation operators info:", flush=True)
     print_sparse_matrix_info(Cdag[0], prefix=" | ")
-    # print(Cdag)
 
     # ----------------------------------------------------------------
     # Make many-body Hamiltonian matrix
@@ -224,6 +215,7 @@ def main():
     print("\nHamiltonian matrix info:", flush=True)
     print_sparse_matrix_info(hamil, prefix=" | ")
 
+    # ----------------------------------------------------------------
     # Particle number conservation
 
     # particle numbers to be considered
@@ -237,10 +229,8 @@ def main():
     print("  N dim[N]")
     dims = np.zeros(2*n_sites+1, dtype=int)
     indices = np.empty(2*n_sites+1, dtype=object)
-    # for n in range(dims.size):
     for N in particle_numbers:
         indices[N] = [i for i, state in enumerate(product([0, 1], repeat=2*n_sites)) if sum(state)==N]
-        # print(indices)
         dims[N] = len(indices[N])
         print(f" {N:2d} {dims[N]}")
     assert np.sum(dims) == dim
@@ -249,7 +239,6 @@ def main():
     hamil = sp.csr_matrix(hamil)  # for slicing
     hamils = np.empty(2*n_sites+1, dtype=object)
     for N in particle_numbers:
-        # hamils[N] = sp.lil_matrix(hamil[np.ix_(indices[N], indices[N])])
         hamils[N] = slice_spmatrix(hamil, indices, N, N)
     del hamil
 
@@ -275,14 +264,9 @@ def main():
     full_diagonalization = np.full(2*n_sites+1, False)
     for N in particle_numbers:
         print(f"\nN = {N}  (dim[N] = {dims[N]})")
-        # print_sparse_matrix_info(hamils[N], prefix=" | ")
         full_diagonalization[N] = (dims[N] <= dim_full_diag) or (n_eigen >= dims[N] - 1)
 
         _timer = Timer(prefix=" Time: ")
-        # if dims[N] == 1:
-        #     eigvals[N] = np.array([hamils[N][0, 0]])
-        #     eigvecs[N] = np.array([[1]])
-        # elif n_eigen >= dims[N] - 1:
         if full_diagonalization[N]:
             print(" full diagonalization")
             # n_eigen = dim
@@ -299,26 +283,16 @@ def main():
     print("\nFinish the eigenvalue problem", flush=True)
     timer.print()
 
-    # assert E.shape == (n_eigen,)
-    # assert eigvecs.shape == (dim, n_eigen)
-
     # One-dimensionalize
     eigs = []
     EIG = namedtuple('EIG', ['val', 'N', 'i'])
     for N in particle_numbers:
-        # print(eigvals[N].shape)
-        # print(eigvals[N])
         eigs += [EIG(eigval, N, i) for i, eigval in enumerate(eigvals[N])]
     print("\nTotal eigenvalues computed: ", len(eigs))
-    # print(eigs)
-    # print(eigvals.shape)
-    # eigvals = np.concatenate(eigvals)
-    # print(eigvals.shape)
 
     # Sort eigenvalues and eigenvectors
     #   The eigenvalues are not ordered in scipy.sparse.linalg.eigsh()
     #   for complex Hermitian matrices since eigs() is called internally.
-    # E, eigvecs = sort_eigenvalues(eigvals, eigvecs)
     eigs = sort_eigs(eigs)
 
     print("\nEigenvalues:", flush=True)
@@ -341,47 +315,12 @@ def main():
         print(f"\nWarning: n_eigen={n_eigen} may be too small: The weight for the highest-energy state computed is {weights[-1]}.", file=sys.stderr)
 
     # Save eigenvalues
-    # indexed_E = np.column_stack((np.arange(len(E)), E, weights))
-    # header = f"dim = {dim}\nn_eigen = {n_eigen}\ni  E_i  Boltzmann_weight"
-    # np.savetxt("eigenvalues.dat", indexed_E, fmt='%d %.8e %.5e', header=header)
-
     with open("eigenvalues.dat", "w") as f:
         f.write(f"# dim = {dim}\n")
         f.write(f"# n_eigen = {n_eigen} (for each n)\n")
         f.write(f"# N  E_i  Boltzmann_weight\n")
         for i, eig in enumerate(eigs):
             f.write(f"{eig.N}  {eig.val:.8e}  {weights[i]:.5e}\n")
-
-
-    # Check if eigenvalues are ordered
-    # assert np.all(np.diff(E) >= 0)
-
-    # TODO: Save eigenvectors
-    # print("Eigenvectors:")
-    # print(eigvecs)
-
-    # print("\nWeights:")
-    # print(eigvecs * eigvecs.conj())
-
-    # print("\nOrthonormality of eigenvectors:")
-    # overlap = eigvecs.conj().T @ eigvecs  # <m|n>
-    # print("m n <m|n>")
-    # for m, n in np.ndindex(n_eigen, n_eigen):
-    #     print(m, n, overlap[m, n])
-
-    # Check orthonormality of eigenvectors
-    # print("\nCheck orthonormality of eigenvectors")
-    # if not np.allclose(overlap, np.identity(n_eigen)):
-    #     print("  not orthonormal")
-    #     sys.stdout.flush()
-    #     print("Warning: Eigenvectors are not orthonormal!", file=sys.stderr)
-    #     if ignore_orthonormality:
-    #         print("  -> Continue. Set ignore_orthonormality=False to abort calculation.", file=sys.stderr)
-    #     else:
-    #         print("  -> Exit. Set ignore_orthonormality=True to ignore this warning.", file=sys.stderr)
-    #         sys.exit(1)
-    # else:
-    #     print("  orthogonal")
 
     # ----------------------------------------------------------------
     # Calculate impurity Green's function
@@ -408,37 +347,33 @@ def main():
             else:
                 Np = N - 1
                 print(f"\n hole excitation: Np = {Np}")
-            # print(f"Np = {Np}")
 
             if Np < 0 or Np > 2*n_sites:
                 continue
 
             if full_diagonalization[Np]:
                 print("  Use the Lehmann representation", flush=True)
+
                 # cdag_im[i, m] = <m|c_i^+|n>  for a given n
                 cdag_im = np.empty((n_flavors, dims[Np]), dtype=complex)
                 for i in range(n_flavors):
                     cdag_im[i] = eigvecs[Np].conj().T @ _Cdag[i, N] @ eigvec
 
                 for l, iw in enumerate(iws):
-                    # ene_denom[m] = 1 / (iw - E_m + E_n)
-                    # ene_denom_1 = 1 / (iw - E + E[n])
                     if particle_excitation:
+                        # ene_denom[m] = 1 / (iw - E_m + E_n)
                         ene_denom = 1 / (iw - eigvals[Np] + E_n)
                     else:
+                        # ene_denom[m] = 1 / (iw + E_m - E_n)
                         ene_denom = 1 / (iw + eigvals[Np] - E_n)
-
-                    # ene_denom[m] = 1 / (iw + E_m - E_n)
-                    # ene_denom_2 = - ene_denom_1.conj()
+                    assert ene_denom.shape == (dims[Np],)
 
                     for i, j in np.ndindex(n_flavors, n_flavors):
                         if flag_spin_conserve:
                             if i // 2 != j // 2:  # skip different spins
                                 continue
 
-                        # gf[i, j, l] += np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[i]) * weights[n]
                         gf_1 = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
-                        # gf_2 = np.einsum("m, m, m", c_im[j].conj().T, ene_denom_2, c_im[i])
 
                         if particle_excitation:
                             gf[i, j, l] += gf_1 * weights[n]
@@ -456,8 +391,6 @@ def main():
                     cdag_j = _Cdag[j, N] @ eigvec
 
                     x0 = None
-
-                    # outer_v = None  # for LGMRES algorithm: Krylov subspace must be prepared
 
                     for l, iw in enumerate(iws):
                         # A = iw - H + E_n
@@ -499,7 +432,6 @@ def main():
                                 gf_1 = cdag_i.conj().T @ x
                                 del cdag_i
 
-                            # gf[i, j, l] += gf_1 * weights[n]
                             if particle_excitation:
                                 gf[i, j, l] += gf_1 * weights[n]
                             else:
