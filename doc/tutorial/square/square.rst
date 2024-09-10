@@ -180,7 +180,7 @@ The file below shows the input file for ALPS/cthyb-seg:
 ``/path/to/alps_cthyb`` in ``[impurity_solver] exec_path{str}`` should be replaced with a full path to ``alps_cthyb`` executable in your environment.
 Unlike in the ED solver, we do not use ``converge_tol`` parameter, since the automatic convergence check requires a special care for QMC solvers.
 
-The figure below shows the momentum-resolved spectral functions computed after the self-consistent calculations using 40 processes:
+The figure below shows the momentum-resolved spectral functions computed after the self-consistent calculations using 8 processes:
 
 .. image:: ctseg/post/akw.png
    :width: 700
