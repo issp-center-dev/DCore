@@ -77,7 +77,7 @@ class ScipySolver(SolverBase):
         # parameters from input
         n_eigen = params_kw.get('n_eigen', 10)  # number of eigenstates to be computed
         dim_full_diag = params_kw.get('dim_full_diag', 1000)
-        ncv = params_kw.get('ncv', 100)
+        ncv = params_kw.get('ncv', None)
         # np = params_kw.get('np', 1)  # MPI
         gf_solver = params_kw.get('gf_solver', 'bicgstab')
         # gf_rtol = params_kw.get('gf_rtol', 1e-5)

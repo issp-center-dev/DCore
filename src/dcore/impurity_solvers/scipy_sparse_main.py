@@ -7,8 +7,7 @@ import sys
 import time
 from itertools import product
 from collections import namedtuple
-# from .lanczos import LanczosEigenSolver
-from dcore.impurity_solvers.lanczos import LanczosEigenSolver
+# from dcore.impurity_solvers.lanczos import LanczosEigenSolver
 
 
 # Sparse solvers for linear equations
