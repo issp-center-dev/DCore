@@ -79,6 +79,7 @@ class ScipySolver(SolverBase):
         dim_full_diag = params_kw.get('dim_full_diag', 1000)
         ncv = params_kw.get('ncv', None)
         # np = params_kw.get('np', 1)  # MPI
+        eigen_solver = params_kw.get('eigen_solver', 'eigsh')
         gf_solver = params_kw.get('gf_solver', 'bicgstab')
         # gf_rtol = params_kw.get('gf_rtol', 1e-5)
         # gf_atol = params_kw.get('gf_atol', 0.0)
@@ -104,6 +105,7 @@ class ScipySolver(SolverBase):
             'n_bath': n_bath,
             'dim_full_diag': dim_full_diag,
             'ncv': ncv,
+            'eigen_solver': eigen_solver,
             'gf_solver': gf_solver,
             # 'gf_rtol': gf_rtol,
             # 'gf_atol': gf_atol,

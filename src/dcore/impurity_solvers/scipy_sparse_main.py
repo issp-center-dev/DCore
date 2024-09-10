@@ -8,7 +8,17 @@ import time
 from itertools import product
 from collections import namedtuple
 from pprint import pp
-# from dcore.impurity_solvers.lanczos import LanczosEigenSolver
+from dcore.impurity_solvers.lanczos import LanczosEigenSolver
+
+
+# Sparse solvers for eigenvalue problems
+eigsolver = (
+    # scipy.sparse.linalg.eigsh()
+    'eigsh',
+
+    # Lanczos method (self-implemented)
+    'lanczos',
+)
 
 
 # Sparse solvers for linear equations
@@ -31,6 +41,9 @@ spsolver = {
     'qmr': sp.linalg.qmr,
     'gcrotmk': sp.linalg.gcrotmk,
     'tfqmr': sp.linalg.tfqmr,
+
+    # Lanczos method with continued fraction (self-implemented)
+    'lanczos': None,
 }
 
 
@@ -266,6 +279,62 @@ def calc_gf_iterative(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, solve
     return gf
 
 
+# Compute
+#   <n| c_i (iw - H + E_n) c_j^+ |n>
+# by self-implemented Lanczos code with continued fraction
+def calc_gf_lanczos(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, ncv):
+    n_flavors = Cdag.size
+    n_iw = iws.size
+    dim_ex = hamil_ex.shape[0]
+    assert hamil_ex.shape == (dim_ex, dim_ex)
+
+    gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
+
+    # cdag_i = c_i^+ |n>  for a given (j, n)
+    cdag_i = np.empty((n_flavors, dim_ex), dtype=complex)
+    for i in range(n_flavors):
+        # cdag_i = c_i^+ |n>  for a given (j, n)
+        cdag_i[i, :] = Cdag[i] @ eigvec
+
+    # <n| c_i (iw - H + E_n) c_i^+ |n> for particle excitation
+    # <n| c_i^+ (iw + H - E_n) c_i |n> for hole excitation
+    def _calc_gf(cdag_i_n):
+        # cdag_i_n = c_i^+ |n>
+        lan = LanczosEigenSolver(hamil_ex)
+        _gf = lan.calc_gf(pm * iws + E_n, cdag_i_n, ncv=ncv)
+        del lan
+        return pm * _gf
+
+    for i in range(n_flavors):
+        gf[i, i, :] = _calc_gf(cdag_i[i])
+
+    for i, j in np.ndindex(n_flavors, n_flavors):
+        if i <= j:  # do only i > j
+            continue
+
+        if spin_conserve:
+            if i // 2 != j // 2:  # skip different spins
+                continue
+
+        # (c_i^+ + c_j^+) |n>  for particle excitation
+        # (c_i + c_j) |n>      for hole excitation
+        F_ij_1 = _calc_gf(cdag_i[i] + cdag_i[j])
+
+        # (c_i^+ + i c_j^+) |n>  for particle excitation
+        # (c_i - i c_j) |n>      for hole excitation
+        F_ij_2 = _calc_gf(cdag_i[i] + 1j * cdag_i[j])
+        # F_ij_2 = _calc_gf(cdag_i[i] + 1j * pm * cdag_i[j])
+
+        gf_diag = gf[i, i, :] + gf[j, j, :]
+        F_ij_1 -= gf_diag
+        F_ij_2 -= gf_diag
+
+        gf[i, j] = (F_ij_1 - 1j * F_ij_2) / 2
+        gf[j, i] = (F_ij_1 + 1j * F_ij_2) / 2
+
+    return gf
+
+
 def main():
     # ----------------------------------------------------------------
     # Parse input parameters
@@ -294,9 +363,13 @@ def main():
     flag_spin_conserve = params['flag_spin_conserve']
     dim_full_diag = params['dim_full_diag']
     ncv = params['ncv']
+    eigen_solver = params['eigen_solver']
     gf_solver = params['gf_solver']
     # gf_atol = params['gf_atol']
     # gf_rtol = params['gf_rtol']
+
+    if eigen_solver not in eigsolver:
+        raise ValueError(f"Invalid eigen_solver: {eigen_solver}")
 
     if gf_solver not in spsolver:
         raise ValueError(f"Invalid gf_solver: {gf_solver}")
@@ -436,12 +509,13 @@ def main():
             eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
         else:
             print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.")
-            eigvals[N], eigvecs[N] = sp.linalg.eigsh(hamils[N], k=n_eigen, which='SA', ncv=ncv)
-            # ‘SA’ : Smallest (algebraic) eigenvalues.
-
-            # lanczos = LanczosEigenSolver(hamils[N])
-            # eigvals[N], eigvecs[N] = lanczos.solve(k=n_eigen)
-            # del lanczos
+            if eigen_solver == 'lanczos':
+                lanczos = LanczosEigenSolver(hamils[N])
+                eigvals[N], eigvecs[N] = lanczos.solve(k=n_eigen, ncv=ncv)
+                del lanczos
+            else:
+                eigvals[N], eigvecs[N] = sp.linalg.eigsh(hamils[N], k=n_eigen, which='SA', ncv=ncv)
+                # ‘SA’ : Smallest (algebraic) eigenvalues.
 
         _timer.print()
 
@@ -534,19 +608,26 @@ def main():
                 if full_diagonalization[N_ex]:
                     print("  Use the Lehmann representation", flush=True)
                     params_gf.update(
-                        eigvals_ex=eigvals[N_ex],
-                        eigvecs_ex=eigvecs[N_ex],
+                        eigvals_ex = eigvals[N_ex],
+                        eigvecs_ex = eigvecs[N_ex],
                     )
                     gf_1 = calc_gf_Lehmann(**params_gf)
 
                 else:
                     print("  Solve linear equations", flush=True)
                     _timer = Timer(prefix="  Time: ")
-                    params_gf.update(
-                        hamil_ex=hamils[N_ex],
-                        solver=gf_solver,
-                    )
-                    gf_1 = calc_gf_iterative(**params_gf)
+                    if gf_solver == 'lanczos':
+                        params_gf.update(
+                            hamil_ex = hamils[N_ex],
+                            ncv = 100,
+                        )
+                        gf_1 = calc_gf_lanczos(**params_gf)
+                    else:
+                        params_gf.update(
+                            hamil_ex = hamils[N_ex],
+                            solver = gf_solver,
+                        )
+                        gf_1 = calc_gf_iterative(**params_gf)
                     _timer.print()
 
                 if pm == +1:
