@@ -7,6 +7,7 @@ import sys
 import time
 from itertools import product
 from collections import namedtuple
+from pprint import pp
 # from dcore.impurity_solvers.lanczos import LanczosEigenSolver
 
 
@@ -278,7 +279,8 @@ def main():
         params = json.load(f)
 
     assert isinstance(params, dict)
-    print(params)
+    print("Input parameters:")
+    pp(params)
 
     weight_threshold = 1e-6
     ignore_orthonormality = False
