@@ -167,7 +167,12 @@ class DMFTCoreTools:
         self._sigma_w_file = os.path.join(dir_post, "sigma_w.npz")
         ws = _read_ws(self._sigma_w_file)
         self.mesh_w = MeshReFreq(ws[0], ws[-1], len(ws))
-        self.mesh_w._points = ws
+        if TRIQS_COMPAT:
+            self.mesh_w._points = ws
+        else:
+            ws_linear = np.linspace(ws[0], ws[-1], num=len(ws))
+            if not np.allclose(ws, ws_linear):
+                sys.exit("Error: omega points must be linearly spaced when using TRIQS (DCORE_TRIQS_COMPAT=0)")
 
         # Construct a SumKDFT object
         self._omega_min = ws[0]

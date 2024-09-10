@@ -61,9 +61,17 @@ def dcore_anacont(inifile):
             params_ac["post.anacont.spm.solver"] = {}
         data_w = spm.anacont(sigma_iw_npz, beta, mesh_w, params_ac["post.anacont.spm"], params_ac["post.anacont.spm.solver"])
     else:
-        assert False, "Unknown solver: " + solver
+        sys.exit("ERROR: Unknown anacont solver " + solver)
+    omega = numpy.array(list(mesh_w.values()))
+    data_w["omega"] = omega
 
-    data_w["omega"] = mesh_w.values()
+    dir_post = params["post"]["dir_post"]
+    if not os.path.exists(dir_post):
+        os.makedirs(dir_post)
+    file_sigma_w = os.path.join(dir_post, "sigma_w.npz")
+    print("Writing to", file_sigma_w + "...")
+    numpy.savez(file_sigma_w, **data_w)
+
     if params["post.anacont"]["show_result"] or params["post.anacont"]["save_result"]:
         import matplotlib.pyplot as plt
 
@@ -75,8 +83,8 @@ def dcore_anacont(inifile):
             sigma_w = data_w[f"data{idata}"]
             for iorb, jorb in itertools.product(range(sigma_w.shape[1]), range(sigma_w.shape[2])):
                 plt.axhline(y=0, xmin=omega_min, xmax=omega_max, color="lightgrey")
-                plt.plot(mesh_w.points, sigma_w[:,iorb,jorb].real, label="Real")
-                plt.plot(mesh_w.points, sigma_w[:,iorb,jorb].imag, label="Imag")
+                plt.plot(omega, sigma_w[:,iorb,jorb].real, label="Real")
+                plt.plot(omega, sigma_w[:,iorb,jorb].imag, label="Imag")
                 plt.xlim(omega_min, omega_max)
                 plt.xlabel(r"$\omega$")
                 plt.legend()
@@ -90,12 +98,6 @@ def dcore_anacont(inifile):
                     plt.show()
                 plt.close()
 
-    dir_post = params["post"]["dir_post"]
-    if not os.path.exists(dir_post):
-        os.makedirs(dir_post)
-    file_sigma_w = os.path.join(dir_post, "sigma_w.npz")
-    print("Writing to", file_sigma_w + "...")
-    numpy.savez(file_sigma_w, **data_w)
 
 def run():
 

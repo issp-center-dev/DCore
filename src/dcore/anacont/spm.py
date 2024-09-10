@@ -334,9 +334,11 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
         mesh_iw = MeshImFreq(beta, "Fermion", n_matsubara_retain)
         gf_iw = GfImFreq(data=data, beta=beta, mesh=mesh_iw)
         n_orbitals = gf_iw.data.shape[1]
-        matsubara_frequencies = np.imag(gf_iw.mesh.values()[n_matsubara_retain:])
+        iws = list(gf_iw.mesh.values())
+        ws = list(mesh_w.values())
+        matsubara_frequencies = np.imag(iws[n_matsubara_retain:])
         sigma_w_data = np.zeros(
-            (mesh_w.size, n_orbitals, n_orbitals), dtype=np.complex128
+            (len(ws), n_orbitals, n_orbitals), dtype=np.complex128
         )
         for i_orb in range(n_orbitals):
             print(
@@ -351,7 +353,7 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
             )
 
             density, gf_tau_fit, energies_extract, sum_rule_const, chi2 = get_single_continuation(
-                tau_grid, gf_tau, n_sv, beta, mesh_w.values()[0], mesh_w.values()[-1], mesh_w.size, sum_rule_const=const_imag_tail, lambd=L1_coeff, verbose=verbose_opt, solver=solver, solver_opts=params_spm_solver
+                tau_grid, gf_tau, n_sv, beta, ws[0], ws[-1], len(ws), sum_rule_const=const_imag_tail, lambd=L1_coeff, verbose=verbose_opt, solver=solver, solver_opts=params_spm_solver
             )
             energies, gf_real, gf_imag = get_kramers_kronig_realpart(
                 energies_extract, dos_to_gf_imag(density)
