@@ -86,7 +86,7 @@ class LanczosEigenSolver:
             assert v0.shape == (self.n,)
             v = v0
 
-        v = v / np.linalg.norm(v)
+        v /= np.linalg.norm(v)
 
         beta = 0
         alphas = np.zeros(dim)  # Diagonal elements of the tridiagonal matrix
@@ -169,6 +169,9 @@ class LanczosEigenSolver:
             ncv = 20  # TODO
         ncv = min(ncv, self.n)
 
+        v_norm = np.linalg.norm(v)
+        v /= v_norm
+
         alphas, betas = self._tridiagonalize(ncv, v0=v)
         assert alphas.size == ncv
         assert betas.size == ncv - 1
@@ -187,7 +190,8 @@ class LanczosEigenSolver:
             b[1:] = w - alphas
 
             gf[i] = continued_fraction(a, b)
-        return gf
+
+        return gf * v_norm**2
 
 
 

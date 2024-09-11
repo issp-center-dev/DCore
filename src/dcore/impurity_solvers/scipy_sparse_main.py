@@ -305,6 +305,11 @@ def calc_gf_lanczos(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, ncv):
         del lan
         return pm * _gf
 
+        # lan = LanczosEigenSolver(pm * hamil_ex)
+        # _gf = lan.calc_gf(iws + pm * E_n, cdag_i_n, ncv=ncv)
+        # del lan
+        # return _gf
+
     for i in range(n_flavors):
         gf[i, i, :] = _calc_gf(cdag_i[i])
 
@@ -321,7 +326,7 @@ def calc_gf_lanczos(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, ncv):
         F_ij_1 = _calc_gf(cdag_i[i] + cdag_i[j])
 
         # (c_i^+ + i c_j^+) |n>  for particle excitation
-        # (c_i - i c_j) |n>      for hole excitation
+        # (c_i + i c_j) |n>      for hole excitation
         F_ij_2 = _calc_gf(cdag_i[i] + 1j * cdag_i[j])
         # F_ij_2 = _calc_gf(cdag_i[i] + 1j * pm * cdag_i[j])
 
@@ -329,8 +334,8 @@ def calc_gf_lanczos(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, ncv):
         F_ij_1 -= gf_diag
         F_ij_2 -= gf_diag
 
-        gf[i, j] = (F_ij_1 - 1j * F_ij_2) / 2
-        gf[j, i] = (F_ij_1 + 1j * F_ij_2) / 2
+        gf[i, j] = (F_ij_1 - 1j * F_ij_2) / 2   # [j, i] for hole
+        gf[j, i] = (F_ij_1 + 1j * F_ij_2) / 2   # [i, j] for hole
 
     return gf
 
@@ -619,7 +624,7 @@ def main():
                     if gf_solver == 'lanczos':
                         params_gf.update(
                             hamil_ex = hamils[N_ex],
-                            ncv = 100,
+                            ncv = ncv,
                         )
                         gf_1 = calc_gf_lanczos(**params_gf)
                     else:
