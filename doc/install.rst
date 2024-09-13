@@ -30,11 +30,11 @@ Prerequisites
    The current version of DCore supports TRIQS 3.x.
    Please make sure that the triqs and triqs_dft_tools modules are loadable in your Python environment.
    You may use `MateriAppsInstaller <https://github.com/wistaria/MateriAppsInstaller>`_, a collection of install scripts, to install prerequisites (TRIQS).
-   If you installed TRIQS but want not to use it, please set the environment variable "DCORE_TRIQS_COMPAT" to "1" as follows.
+   If you want to use TRIQS, please set an environment variable ``DCORE_TRIQS_COMPAT`` to 0.
 
    .. code-block:: bash
          
-      $ export DCORE_TRIQS_COMPAT=1
+      $ export DCORE_TRIQS_COMPAT=0
 
 
 Installation

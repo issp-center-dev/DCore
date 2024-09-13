@@ -1,30 +1,10 @@
 import os, sys
 import importlib.util
 
-TRIQS_FOUND = True
-
-triqs_libs = ['triqs', 'triqs_dft_tools']
-for l in triqs_libs:
-    if not importlib.util.find_spec(l):
-        TRIQS_FOUND = False
-
-if "DCORE_TRIQS_COMPAT" in os.environ:
-    dtc = os.environ["DCORE_TRIQS_COMPAT"]
-    if dtc == "1":
-        TRIQS_COMPAT = True
-    else:
-        TRIQS_COMPAT = False
-
-    if TRIQS_FOUND and TRIQS_COMPAT:
-        print("INFO: TRIQS is found but DCORE_TRIQS_COMPAT is set to 1.")
-        print("      dcorelib.triqs_compat will be used")
-
-    if not TRIQS_FOUND and not TRIQS_COMPAT:
-        print("ERROR: TRIQS is required (DCORE_TRIQS_COMPAT={}) but TRIQS is not found!".format(dtc))
-        sys.exit(1)
+if "DCORE_TRIQS_COMPAT" in os.environ and os.environ["DCORE_TRIQS_COMPAT"] == "0":
+    TRIQS_COMPAT = False
 else:
-    TRIQS_COMPAT = not TRIQS_FOUND
-
+    TRIQS_COMPAT = True
 
 if TRIQS_COMPAT:
     from dcorelib.triqs_compat import *
@@ -39,6 +19,16 @@ if TRIQS_COMPAT:
     from dcorelib.triqs_compat.dft_tools import SumkDFT, SumkDFTTools
     from dcorelib.triqs_compat.plot import mpl_interface
 else:
+    triqs_libs = ['triqs', 'triqs_dft_tools']
+    for l in triqs_libs:
+        if not importlib.util.find_spec(l):
+            sys.exit("ERROR: TRIQS library is not found. Please install TRIQS library or set DCORE_TRIQS_COMPAT=1")
+
+    from triqs.version import version as triqs_version
+
+    if not "2" < triqs_version[0] < "4":
+        sys.exit("ERROR: TRIQS version {} is not supported. Please install TRIQS version 3.x".format(triqs_version))
+    
     from triqs.gf.gf import *
     from triqs.gf import *
     from h5 import *
@@ -53,4 +43,4 @@ else:
     else:
         from .backend import _triqs_mpi as mpi
 
-    print("INFO: TRIQS library is used")
+    print("INFO: TRIQS library {} is used".format(triqs_version))
