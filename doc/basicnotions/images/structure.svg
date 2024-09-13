@@ -2,222 +2,251 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" version="1.1" viewBox="0 0 2056.7 800">
   <defs>
     <style>
-      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6, .cls-7, .cls-8 {
-        fill: none;
-      }
-
-      .cls-2 {
+      .cls-1 {
         stroke: #0000f0;
       }
 
-      .cls-2, .cls-4, .cls-5, .cls-8 {
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6, .cls-7 {
+        fill: none;
+      }
+
+      .cls-1, .cls-3, .cls-4, .cls-7 {
         stroke-width: 2px;
       }
 
-      .cls-3 {
+      .cls-2 {
         stroke: #00a600;
       }
 
-      .cls-3, .cls-7 {
+      .cls-2, .cls-6 {
         stroke-width: 4px;
       }
 
-      .cls-4, .cls-6, .cls-9 {
+      .cls-3, .cls-5, .cls-8 {
         stroke: #000;
       }
 
-      .cls-10 {
+      .cls-9 {
         font-family: Helvetica, Helvetica;
         font-size: 40px;
       }
 
-      .cls-10, .cls-11 {
+      .cls-9, .cls-10 {
         isolation: isolate;
       }
 
-      .cls-5 {
+      .cls-4 {
         stroke: #c80000;
       }
 
-      .cls-6 {
+      .cls-5 {
         stroke-miterlimit: 8;
         stroke-width: 3px;
       }
 
-      .cls-7 {
+      .cls-6 {
         stroke: #009b00;
       }
 
-      .cls-8 {
+      .cls-7 {
         stroke: #cb0000;
       }
 
-      .cls-9 {
+      .cls-8 {
         fill-rule: evenodd;
       }
     </style>
   </defs>
   <!-- Generator: Adobe Illustrator 28.6.0, SVG Export Plug-In . SVG Version: 1.2.0 Build 709)  -->
   <g>
-    <g id="svg2">
+    <g id="_レイヤー_1" data-name="レイヤー_1">
       <sodipodi:namedview id="base" bordercolor="#666666" borderopacity="1.0" fit-margin-bottom="2" fit-margin-left="2" fit-margin-right="2" fit-margin-top="2" inkscape:current-layer="layer1" inkscape:cx="914.43881" inkscape:cy="487.75994" inkscape:document-units="px" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:window-height="1137" inkscape:window-maximized="0" inkscape:window-width="1920" inkscape:window-x="2160" inkscape:window-y="63" inkscape:zoom="0.49497475" pagecolor="#ffffff" showgrid="false"/>
       <g id="g4410">
-        <rect id="rect4232" class="cls-4" x="52.2" y="387" width="546.6" height="165.5"/>
-        <g id="text4234" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(228.8 429.5)"><tspan x="0" y="0">DFT codes</tspan></text>
-          <text class="cls-10" transform="translate(126.4 479.5)"><tspan x="0" y="0" xml:space="preserve">(QE, ABINIT, SIESTA,  </tspan></text>
-          <text class="cls-10" transform="translate(62.3 529.5)"><tspan x="0" y="0">FLEUR, VASP, WIEN2K, etc.) </tspan></text>
+        <rect id="rect4232" class="cls-3" x="52.2" y="387" width="546.6" height="165.5"/>
+        <g id="text4234" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(228.8 429.5)"><tspan x="0" y="0">DFT codes</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(126.4 479.5)"><tspan x="0" y="0" xml:space="preserve">(QE, ABINIT, SIESTA,  </tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(62.3 529.5)"><tspan x="0" y="0">FLEUR, VASP, WIEN2K, etc.)</tspan></text>
+          </g>
         </g>
       </g>
       <g id="g4423">
-        <g id="text4238" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(726.7 489)"><tspan x="0" y="0">wannier90</tspan></text>
+        <g id="text4238" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(726.7 489)"><tspan x="0" y="0">wannier90</tspan></text>
+          </g>
         </g>
-        <rect id="rect4242" class="cls-4" x="715.6" y="446.5" width="221.2" height="54.5"/>
+        <rect id="rect4242" class="cls-3" x="715.6" y="446.5" width="221.2" height="54.5"/>
       </g>
       <g id="g4456">
-        <g id="text4244" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(1016 457.7)"><tspan x="0" y="0">dcore_pre</tspan></text>
+        <g id="text4244" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1016 457.7)"><tspan x="0" y="0">dcore_pre</tspan></text>
+          </g>
         </g>
-        <rect id="rect4232-3-6" class="cls-5" x="1006.4" y="414.7" width="209.1" height="61.6"/>
+        <rect id="rect4232-3-6" class="cls-4" x="1006.4" y="414.7" width="209.1" height="61.6"/>
       </g>
       <g id="g4451">
-        <g id="text4248" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(1580.9 457.1)"><tspan x="0" y="0">dcore</tspan></text>
+        <g id="text4248" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1580.9 457.1)"><tspan x="0" y="0">dcore</tspan></text>
+          </g>
         </g>
-        <rect id="rect4232-3-6-7" class="cls-8" x="1573.3" y="420.3" width="127.3" height="48.5"/>
+        <rect id="rect4232-3-6-7" class="cls-7" x="1573.3" y="420.3" width="127.3" height="48.5"/>
       </g>
       <g id="g4428">
-        <g id="text4328" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(740 685.5)"><tspan x="0" y="0">Hopping integral</tspan></text>
-          <text class="cls-10" transform="translate(717.9 735.5)"><tspan x="0" y="0">(wannier90 format)</tspan></text>
+        <g id="text4328" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(740 685.5)"><tspan x="0" y="0">Hopping integral</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(717.9 735.5)"><tspan x="0" y="0">(wannier90 format)</tspan></text>
+          </g>
         </g>
-        <rect id="rect4232-3-62" class="cls-2" x="698.8" y="645.6" width="372.7" height="104" rx="28.3" ry="28.3"/>
+        <rect id="rect4232-3-62" class="cls-1" x="698.8" y="645.6" width="372.7" height="104" rx="28.3" ry="28.3"/>
       </g>
       <g id="g4434">
-        <g id="text4349" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(1249.9 683.1)"><tspan x="0" y="0">DMFT configuration</tspan></text>
-          <text class="cls-10" transform="translate(1328.5 733.1)"><tspan x="0" y="0">(HDF5 file)</tspan></text>
+        <g id="text4349" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1249.9 683.1)"><tspan x="0" y="0">DMFT configuration</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1328.5 733.1)"><tspan x="0" y="0">(HDF5 file)</tspan></text>
+          </g>
         </g>
-        <rect id="rect4232-3-62-7" class="cls-2" x="1231.1" y="644.2" width="392.6" height="106.9" rx="24.2" ry="24.2"/>
+        <rect id="rect4232-3-62-7" class="cls-1" x="1231.1" y="644.2" width="392.6" height="106.9" rx="24.2" ry="24.2"/>
       </g>
       <g id="g4440">
-        <g id="text4349-9" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(1770.1 683.1)"><tspan x="0" y="0">DMFT result</tspan></text>
-          <text class="cls-10" transform="translate(1783.1 733.1)"><tspan x="0" y="0">(HDF5 file)</tspan></text>
+        <g id="text4349-9" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1770.1 683.1)"><tspan x="0" y="0">DMFT result</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1783.1 733.1)"><tspan x="0" y="0">(HDF5 file)</tspan></text>
+          </g>
         </g>
-        <rect id="rect4232-3-62-7-0" class="cls-2" x="1758.3" y="646.6" width="248.3" height="102" rx="23.2" ry="23.2"/>
+        <rect id="rect4232-3-62-7-0" class="cls-1" x="1758.3" y="646.6" width="248.3" height="102" rx="23.2" ry="23.2"/>
       </g>
-      <path class="cls-1" d=""/>
-      <path id="path4463" class="cls-9" d="M715.6,472.9" inkscape:connection-end="#g4423" inkscape:connection-start="#g4410" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <path class="cls-1" d=""/>
-      <path id="path4465" class="cls-9" d="M871.5,645.6" inkscape:connection-end="#g4428" inkscape:connection-start="#g4423" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <path class="cls-1" d=""/>
-      <path id="path4469" class="cls-9" d="M1083.3,476.3" inkscape:connection-end="#g4456" inkscape:connection-start="#g4428" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <path class="cls-1" d=""/>
-      <path id="path4471" class="cls-9" d="M1360.3,644.2" inkscape:connection-end="#g4434" inkscape:connection-start="#g4456" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <path class="cls-1" d=""/>
-      <path id="path4473" class="cls-9" d="M1471.6,644.2" inkscape:connection-end="#g4434" inkscape:connection-start="#g4451" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <path class="cls-1" d=""/>
-      <path class="cls-1" d=""/>
-      <path id="path4477" class="cls-9" d="M1833,646.6" inkscape:connection-end="#g4440" inkscape:connection-start="#g4451" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <path class="cls-1" d="M0,0"/>
+      <path id="path4463" class="cls-8" d="M715.6,472.9" inkscape:connection-end="#g4423" inkscape:connection-start="#g4410" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <path class="cls-8" d="M0,0"/>
+      <path id="path4465" class="cls-8" d="M871.5,645.6" inkscape:connection-end="#g4428" inkscape:connection-start="#g4423" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <path class="cls-8" d="M0,0"/>
+      <path id="path4469" class="cls-8" d="M1083.3,476.3" inkscape:connection-end="#g4456" inkscape:connection-start="#g4428" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <path class="cls-8" d="M0,0"/>
+      <path id="path4471" class="cls-8" d="M1360.3,644.2" inkscape:connection-end="#g4434" inkscape:connection-start="#g4456" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <path class="cls-8" d="M0,0"/>
+      <path id="path4473" class="cls-8" d="M1471.6,644.2" inkscape:connection-end="#g4434" inkscape:connection-start="#g4451" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <path class="cls-8" d="M0,0"/>
+      <path class="cls-8" d="M0,0"/>
+      <path id="path4477" class="cls-8" d="M1833,646.6" inkscape:connection-end="#g4440" inkscape:connection-start="#g4451" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
       <g id="g5837">
-        <g id="text5773" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(909.2 105.2)"><tspan x="0" y="0">Input parameter</tspan></text>
-          <text class="cls-10" transform="translate(909.2 155.2)"><tspan x="0" y="0">Correlated shell</tspan></text>
-          <text class="cls-10" transform="translate(909.2 205.2)"><tspan x="0" y="0">U and J term </tspan></text>
-          <text class="cls-10" transform="translate(909.2 255.2)"><tspan x="0" y="0">k grid</tspan></text>
-          <text class="cls-10" transform="translate(909.2 305.2)"><tspan x="0" y="0">etc.</tspan></text>
+        <g id="text5773" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(909.2 105.2)"><tspan x="0" y="0">Input parameter</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(909.2 155.2)"><tspan x="0" y="0">Correlated shell</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(909.2 205.2)"><tspan x="0" y="0">U and J term</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(909.2 255.2)"><tspan x="0" y="0">k grid</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(909.2 305.2)"><tspan x="0" y="0">etc.</tspan></text>
+          </g>
         </g>
-        <path id="rect5795" class="cls-7" d="M899.8,60.8l44.5-44.2h279.2v302.9h-323.7V60.8Z" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccc"/>
-        <path id="path5826" class="cls-3" d="M899.8,60.8h44.5V16.6" inkscape:connector-curvature="0" sodipodi:nodetypes="ccc"/>
+        <path id="rect5795" class="cls-6" d="M899.8,60.8l44.5-44.2h279.2v302.9h-323.7V60.8Z" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccc"/>
+        <path id="path5826" class="cls-2" d="M899.8,60.8h44.5V16.6" inkscape:connector-curvature="0" sodipodi:nodetypes="ccc"/>
       </g>
       <g id="g5853">
-        <g id="text5777" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(1341.5 117.4)"><tspan x="0" y="0">Input parameter</tspan></text>
-          <text class="cls-10" transform="translate(1341.5 167.4)"><tspan x="0" y="0">Temperature,</tspan></text>
-          <text class="cls-10" transform="translate(1341.5 217.4)"><tspan x="0" y="0">numercal (QMC) condition</tspan></text>
-          <text class="cls-10" transform="translate(1341.5 267.4)"><tspan x="0" y="0">etc. </tspan></text>
+        <g id="text5777" class="cls-10" sodipodi:linespacing="125%">
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1341.5 117.4)"><tspan x="0" y="0">Input parameter</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1341.5 167.4)"><tspan x="0" y="0">Temperature,</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1341.5 217.4)"><tspan x="0" y="0">numercal (QMC) condition</tspan></text>
+          </g>
+          <g class="cls-10">
+            <text class="cls-9" transform="translate(1341.5 267.4)"><tspan x="0" y="0">etc.</tspan></text>
+          </g>
         </g>
-        <path id="rect5797" class="cls-3" d="M1327.2,74.1l58.3-59.4h471.3v268.5h-529.6V74.1Z" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccc"/>
-        <path id="path5828" class="cls-3" d="M1327.2,74.1h58.3V14.6" inkscape:connector-curvature="0" sodipodi:nodetypes="ccc"/>
+        <path id="rect5797" class="cls-2" d="M1327.2,74.1l58.3-59.4h471.3v268.5h-529.6V74.1h0Z" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccc"/>
+        <path id="path5828" class="cls-2" d="M1327.2,74.1h58.3V14.6" inkscape:connector-curvature="0" sodipodi:nodetypes="ccc"/>
       </g>
-      <path class="cls-1" d=""/>
-      <path id="path4463-8" class="cls-9" d="M1108.2,406" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <path class="cls-1" d=""/>
-      <path id="path4463-2" class="cls-9" d="M1641.6,416.1" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <rect id="rect4232-7" class="cls-4" x="146.9" y="54.3" width="124.4" height="50.3"/>
-      <path id="rect5795-5" class="cls-7" d="M151.3,171.2l36.4-34.1h83.2v56.4h-119.6v-22.3Z" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccc"/>
-      <path id="path5826-9" class="cls-3" d="M151.3,179.2h36.4v-34.1" inkscape:connector-curvature="0" sodipodi:nodetypes="ccc"/>
-      <rect id="rect4232-3-6-7-2" class="cls-8" x="146.5" y="229.1" width="127.3" height="48.5"/>
-      <rect id="rect4232-3-62-7-2" class="cls-2" x="147.2" y="312.2" width="123.9" height="54.4" rx="24.2" ry="24.2"/>
-      <g id="text13056" class="cls-11" sodipodi:linespacing="125%">
-        <text class="cls-10" transform="translate(286.9 92.6)"><tspan x="0" y="0">: External code</tspan></text>
-      </g>
-      <g id="text13060" class="cls-11" sodipodi:linespacing="125%">
-        <text class="cls-10" transform="translate(286.9 175.3)"><tspan x="0" y="0">: Small input file</tspan></text>
-      </g>
-      <g id="text13064" class="cls-11" sodipodi:linespacing="125%">
-        <text class="cls-10" transform="translate(286.9 261.3)"><tspan x="0" y="0">: Executable in this package</tspan></text>
-      </g>
-      <g id="text13068" class="cls-11" sodipodi:linespacing="125%">
-        <text class="cls-10" transform="translate(286.9 351.5)"><tspan x="0" y="0">: Data file</tspan></text>
-      </g>
-      <g id="g4410-3">
-        <rect id="rect4232-6" class="cls-4" x="28.7" y="662.7" width="195.1" height="62.5"/>
-        <g id="text4234-7" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(41.9 705.1)"><tspan x="0" y="0">OpenMX </tspan></text>
+      <path class="cls-2" d="M0,0"/>
+      <path id="path4463-8" class="cls-8" d="M1108.2,406" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <path class="cls-8" d="M0,0"/>
+      <path id="path4463-2" class="cls-8" d="M1641.6,416.1" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <rect id="rect4232-7" class="cls-3" x="146.9" y="54.3" width="124.4" height="50.3"/>
+      <path id="rect5795-5" class="cls-6" d="M151.3,171.2l36.4-34.1h83.2v56.4h-119.6v-22.3h0Z" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccc"/>
+      <path id="path5826-9" class="cls-2" d="M151.3,179.2h36.4v-34.1" inkscape:connector-curvature="0" sodipodi:nodetypes="ccc"/>
+      <rect id="rect4232-3-6-7-2" class="cls-7" x="146.5" y="229.1" width="127.3" height="48.5"/>
+      <rect id="rect4232-3-62-7-2" class="cls-1" x="147.2" y="312.2" width="123.9" height="54.4" rx="24.2" ry="24.2"/>
+      <g id="text13056" class="cls-10" sodipodi:linespacing="125%">
+        <g class="cls-10">
+          <text class="cls-9" transform="translate(286.9 92.6)"><tspan x="0" y="0">: External code</tspan></text>
         </g>
       </g>
-      <g id="g4456-6">
-        <g id="text4244-2" class="cls-11" sodipodi:linespacing="125%">
-          <text class="cls-10" transform="translate(323.2 709.1)"><tspan x="0" y="0">openmx2dcore</tspan></text>
+      <g id="text13060" class="cls-10" sodipodi:linespacing="125%">
+        <g class="cls-10">
+          <text class="cls-9" transform="translate(286.9 175.3)"><tspan x="0" y="0">: Small input file</tspan></text>
         </g>
-        <rect id="rect4232-3-6-1" class="cls-5" x="313.7" y="666.2" width="304.1" height="61.6"/>
       </g>
-      <path class="cls-1" d=""/>
-      <path id="path4463-0" class="cls-9" d="M691,699.1" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <path class="cls-1" d=""/>
-      <path id="path4463-0-6" class="cls-9" d="M306.2,699.1" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
-      <g>
-        <line class="cls-6" x1="281.3" y1="697" x2="231.7" y2="697"/>
-        <path d="M275.9,697l-6.6,10.8.4.2,17.6-7c6.1-1.4,12.3-2.7,18.4-4.1-6.1-1.4-12.3-2.7-18.4-4.1l-17.6-7-.4.2,6.6,10.9Z"/>
+      <g id="text13064" class="cls-10" sodipodi:linespacing="125%">
+        <g class="cls-10">
+          <text class="cls-9" transform="translate(286.9 261.3)"><tspan x="0" y="0">: Executable in this package</tspan></text>
+        </g>
       </g>
-      <g>
-        <line class="cls-6" x1="673.6" y1="699.1" x2="624" y2="699.1"/>
-        <path d="M668.2,699.1l-6.6,10.8.4.2,17.6-7c6.1-1.4,12.3-2.7,18.4-4.1-6.1-1.4-12.3-2.7-18.4-4.1l-17.6-7-.4.2,6.6,10.9Z"/>
+      <g id="text13068" class="cls-10" sodipodi:linespacing="125%">
+        <g class="cls-10">
+          <text class="cls-9" transform="translate(286.9 351.5)"><tspan x="0" y="0">: Data file</tspan></text>
+        </g>
       </g>
+      <path class="cls-4" d="M0,0"/>
+      <path id="path4463-0" class="cls-8" d="M691,699.1" inkscape:connector-curvature="0" inkscape:connector-type="polyline" sodipodi:nodetypes="cc"/>
+      <path class="cls-8" d="M0,0"/>
       <g>
-        <line class="cls-6" x1="674.4" y1="473.8" x2="605.8" y2="473.8"/>
-        <path d="M669,473.8l-6.6,10.8.4.2,17.6-7c6.1-1.4,12.3-2.7,18.4-4.1-6.1-1.4-12.3-2.7-18.4-4.1l-17.6-7-.4.2,6.6,10.9Z"/>
-      </g>
-      <g>
-        <line class="cls-6" x1="844.5" y1="611.3" x2="806.7" y2="513"/>
-        <path d="M842.6,606.3l-12.4-2.3v.4c0,0,12.8,13.9,12.8,13.9,3.5,5.2,6.9,10.5,10.4,15.7-.9-6.2-1.9-12.4-2.8-18.7l.2-19-.3-.3-7.8,10Z"/>
+        <line class="cls-5" x1="674.4" y1="473.8" x2="605.8" y2="473.8"/>
+        <path d="M669,473.8l-6.6,10.8.4.2,17.6-7c6.1-1.4,12.3-2.7,18.4-4.1-6.1-1.4-12.3-2.7-18.4-4.1l-17.6-7-.4.2,6.6,10.9h0Z"/>
       </g>
       <g>
-        <line class="cls-6" x1="1034.8" y1="508.4" x2="931.5" y2="630.3"/>
-        <path d="M1031.4,512.5l4,12h.4c0-.1,6.1-18.1,6.1-18.1,2.9-5.6,5.9-11.1,8.8-16.7-5,3.8-10,7.6-15,11.4l-16.7,8.9v.4c0,0,12.4,2,12.4,2Z"/>
+        <line class="cls-5" x1="844.5" y1="611.3" x2="806.7" y2="513"/>
+        <path d="M842.6,606.3l-12.4-2.3v.4l12.8,13.9c3.5,5.2,6.9,10.5,10.4,15.7-.9-6.2-1.9-12.4-2.8-18.7l.2-19-.3-.3-7.8,10v.3Z"/>
       </g>
       <g>
-        <line class="cls-6" x1="1091.6" y1="383.1" x2="1071.6" y2="327.8"/>
-        <path d="M1089.8,378l-12.4-2.5v.4c-.1,0,12.5,14.2,12.5,14.2,3.4,5.3,6.7,10.6,10.1,15.9-.8-6.2-1.7-12.5-2.5-18.7l.6-19-.3-.3-8,9.9Z"/>
+        <line class="cls-5" x1="1034.8" y1="508.4" x2="931.5" y2="630.3"/>
+        <path d="M1031.4,512.5l4,12h.4c0,0,6.1-18.1,6.1-18.1,2.9-5.6,5.9-11.1,8.8-16.7-5,3.8-10,7.6-15,11.4l-16.7,8.9v.4l12.4,2h0Z"/>
       </g>
       <g>
-        <line class="cls-6" x1="1272" y1="615.6" x2="1165.7" y2="491.6"/>
-        <path d="M1268.5,611.5l-12.5,2v.4c0,0,16.8,8.8,16.8,8.8,5,3.8,10,7.6,15.1,11.3-3-5.5-5.9-11.1-8.9-16.6l-6.2-17.9-.4-.2-4,12.1Z"/>
+        <line class="cls-5" x1="1091.6" y1="383.1" x2="1071.6" y2="327.8"/>
+        <path d="M1089.8,378l-12.4-2.5v.4c0,0,12.5,14.2,12.5,14.2,3.4,5.3,6.7,10.6,10.1,15.9-.8-6.2-1.7-12.5-2.5-18.7l.6-19-.3-.3-8,9.9h0Z"/>
       </g>
       <g>
-        <line class="cls-6" x1="1581.8" y1="508.7" x2="1472.4" y2="635.6"/>
-        <path d="M1578.3,512.8l3.9,12h.4c0-.1,6.2-18,6.2-18,3-5.5,6-11.1,9-16.6-5,3.8-10.1,7.5-15.1,11.3l-16.8,8.8v.4c-.1,0,12.4,2.1,12.4,2.1Z"/>
+        <line class="cls-5" x1="1272" y1="615.6" x2="1165.7" y2="491.6"/>
+        <path d="M1268.5,611.5l-12.5,2v.4l16.8,8.8c5,3.8,10,7.6,15.1,11.3-3-5.5-5.9-11.1-8.9-16.6l-6.2-17.9-.4-.2-4,12.1h0Z"/>
       </g>
       <g>
-        <line class="cls-6" x1="1630.8" y1="382.4" x2="1608.2" y2="295.1"/>
-        <path d="M1629.4,377.2l-12.1-3.7v.4c-.1,0,11.1,15.3,11.1,15.3,2.8,5.6,5.7,11.2,8.5,16.8-.2-6.3-.5-12.6-.7-18.8l2.4-18.8-.3-.3-8.9,9.1Z"/>
+        <line class="cls-5" x1="1581.8" y1="508.7" x2="1472.4" y2="635.6"/>
+        <path d="M1578.3,512.8l3.9,12h.4c0,0,6.2-18,6.2-18,3-5.5,6-11.1,9-16.6-5,3.8-10.1,7.5-15.1,11.3l-16.8,8.8v.4c0,0,12.4,2.1,12.4,2.1h0Z"/>
       </g>
       <g>
-        <line class="cls-6" x1="1764" y1="610.4" x2="1684.5" y2="490.6"/>
-        <path d="M1761,606l-12.6.5v.4s15.6,10.8,15.6,10.8c4.5,4.4,9,8.7,13.6,13.1-2.3-5.9-4.5-11.7-6.8-17.6l-3.9-18.6-.4-.2-5.4,11.5Z"/>
+        <line class="cls-5" x1="1630.8" y1="382.4" x2="1608.2" y2="295.1"/>
+        <path d="M1629.4,377.2l-12.1-3.7v.4c0,0,11.1,15.3,11.1,15.3,2.8,5.6,5.7,11.2,8.5,16.8-.2-6.3-.5-12.6-.7-18.8l2.4-18.8-.3-.3-8.9,9.1Z"/>
+      </g>
+      <g>
+        <line class="cls-5" x1="1764" y1="610.4" x2="1684.5" y2="490.6"/>
+        <path d="M1761,606l-12.6.5v.4l15.6,10.8c4.5,4.4,9,8.7,13.6,13.1-2.3-5.9-4.5-11.7-6.8-17.6l-3.9-18.6-.4-.2-5.4,11.5h0Z"/>
       </g>
     </g>
   </g>
