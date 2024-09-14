@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Non-interacting limit: null &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to integrate your own solver" href="how_to_integrate.html" />
+    <link rel="prev" title="Exact diagonalization solver: pomerol" href="pomerol/pomerol.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="how_to_integrate.html" title="How to integrate your own solver"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="pomerol/pomerol.html" title="Exact diagonalization solver: pomerol"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../impuritysolvers.html" accesskey="U">Impurity solvers</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Non-interacting limit: <code class="docutils literal notranslate"><span class="pre">null</span></code></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="non-interacting-limit-null">
+<h1>Non-interacting limit: <code class="docutils literal notranslate"><span class="pre">null</span></code><a class="headerlink" href="#non-interacting-limit-null" title="Permalink to this heading">¶</a></h1>
+<p>This impurity solver returns zero self-energy, which allows to check the non-interacting limit.</p>
+<p>How to invoke:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">null</span>
+</pre></div>
+</div>
+<p>In material calculations, we recommend users to use null solver first to check agreement with the DFT calculation.
+Note that, since self-energy is zero, one should introduce an artificial broadening to the excitation spectra to make delta functions visible. This can be done by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tool</span><span class="p">]</span>
+<span class="n">broadening</span> <span class="o">=</span> <span class="mf">0.001</span>
+</pre></div>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../reference/programs.html">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/input.html">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/output.html">Output-file format</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="pomerol/pomerol.html"
+                          title="previous chapter">Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">pomerol</span></code></a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="how_to_integrate.html"
+                          title="next chapter">How to integrate your own solver</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="how_to_integrate.html" title="How to integrate your own solver"
+             >next</a></li>
+        <li class="right" >
+          <a href="pomerol/pomerol.html" title="Exact diagonalization solver: pomerol"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../impuritysolvers.html" >Impurity solvers</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Non-interacting limit: <code class="docutils literal notranslate"><span class="pre">null</span></code></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

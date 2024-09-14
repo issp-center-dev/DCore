@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Programs &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Input-file format" href="input.html" />
+    <link rel="prev" title="Reference Manual" href="../reference.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="input.html" title="Input-file format"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../reference.html" title="Reference Manual"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" accesskey="U">Reference Manual</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Programs</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="programs">
+<h1>Programs<a class="headerlink" href="#programs" title="Permalink to this heading">¶</a></h1>
+<p><strong>DCore</strong> consists of four main programs, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code>,  and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.
+All programs read a single input file (say <em>input.ini</em>) which contains parameters classified into blocks.
+It is also possible to pass multiple input files to the program. Parameters from all input files are merged. Duplicate paramegers are overwritten by the later one.
+See <a class="reference internal" href="input.html"><span class="doc">Input-file format</span></a>, for the list of parameters and detailed descriptions.</p>
+<p>In the following, brief explanations are given for each program.</p>
+<section id="pre-processing-dcore-pre">
+<h2>Pre-processing : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-processing-dcore-pre" title="Permalink to this heading">¶</a></h2>
+<p>This program generates model HDF5 file (<em>seedname</em>.h5).
+You need to execute this program before running the main program, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore_pre input.ini
+</pre></div>
+</div>
+</section>
+<section id="main-program-dcore">
+<h2>Main program : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#main-program-dcore" title="Permalink to this heading">¶</a></h2>
+<p>This is the main program, which performs DMFT cycle and output the self energy etc. into a HDF5
+file (<em>seedname</em>.out.h5).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore input.ini --np 4
+</pre></div>
+</div>
+<p>Please invoke <code class="docutils literal notranslate"><span class="pre">dcore</span></code> <strong>in a single process</strong>, specifying the process number with <code class="docutils literal notranslate"><span class="pre">--np</span></code> option.
+In the above case, <code class="docutils literal notranslate"><span class="pre">dcore</span></code> will lauch four MPI processes internally using the command specified by the parameter <code class="docutils literal notranslate"><span class="pre">command</span></code> in the [mpi] block.</p>
+<p>The solver is executed in the working directory named <strong>work/imp_shell0_iter1</strong> (in the case with shell number 0 and iteration number 1).
+All output generated by the solver are stored in this working directory.</p>
+<p>This program should be executed repeatedly until convergence is reached.
+You can resume the DMFT iteration using the previous results by specifying <code class="docutils literal notranslate"><span class="pre">restart</span> <span class="pre">=</span> <span class="pre">True</span></code> in the [control] block (default is <code class="docutils literal notranslate"><span class="pre">False</span></code>).</p>
+<p>The output file, <em>seedname</em>.out.h5, is created, updated, or backed up depending on
+whether the previous run exists and also on the <code class="docutils literal notranslate"><span class="pre">restart</span></code> parameter.
+The behavior is summarized below.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 16.7%" />
+<col style="width: 16.7%" />
+<col style="width: 66.7%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><em>seedname</em>.out.h5</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">restart</span></code></p></th>
+<th class="head"><p>behavior</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>not exists</p></td>
+<td><p>True, False</p></td>
+<td><p>A new file is created</p></td>
+</tr>
+<tr class="row-odd"><td><p>exists</p></td>
+<td><p>False</p></td>
+<td><p>The file is backed up with the name <em>seedname</em>.out.h5.bak, and a new file is created</p></td>
+</tr>
+<tr class="row-even"><td><p>exists</p></td>
+<td><p>True</p></td>
+<td><p>The iteration is resumed, and the file is updated</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="convergence-check-dcore-check">
+<span id="program-dcore-check"></span><h2>Convergence-check : <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code><a class="headerlink" href="#convergence-check-dcore-check" title="Permalink to this heading">¶</a></h2>
+<p>This program is used to check the convergence of the DMFT loop.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore_check input.ini [--prefix PREFIX] [--ext EXT]
+</pre></div>
+</div>
+<p>Here <code class="docutils literal notranslate"><span class="pre">PREFIX</span></code> is the prefix for all output files,
+and <code class="docutils literal notranslate"><span class="pre">EXT</span></code> is the file extension of output figures (png, pdf, eps, jpg, etc).
+The default values are <code class="docutils literal notranslate"><span class="pre">PREFIX=check/</span></code> and <code class="docutils literal notranslate"><span class="pre">EXT=png</span></code>.
+All results are stored in <strong>check</strong> directory without specified.</p>
+<p>Three kinds of figures will be included:</p>
+<ul>
+<li><p><strong>iter_mu.png</strong></p>
+<p>The chemical potential as a function of iteration number.</p>
+<a class="reference internal image-reference" href="../_images/iter_mu.png"><img alt="../_images/iter_mu.png" class="align-center" src="../_images/iter_mu.png" style="width: 500px;" /></a>
+</li>
+<li><p><strong>iter_sigma-ish0.png</strong></p>
+<p>The renormalization factor as a function of iteration number.</p>
+<a class="reference internal image-reference" href="../_images/iter_sigma-ish0.png"><img alt="../_images/iter_sigma-ish0.png" class="align-center" src="../_images/iter_sigma-ish0.png" style="width: 500px;" /></a>
+</li>
+<li><p><strong>iter_occup-ish0.png</strong></p>
+<p>The spin- and orbital-dependent occupation numbers as a function of the iteration number.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>figure</p>
+</div>
+</li>
+<li><p><strong>iter_spin-ish0.png</strong></p>
+<p>The spin moments as a function of the iteration number.</p>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>figure</p>
+</div>
+</li>
+<li><p><strong>sigma_ave.png</strong></p>
+<p>The averaged self-energy at the last seven iterations.</p>
+<a class="reference internal image-reference" href="../_images/sigma_ave.png"><img alt="../_images/sigma_ave.png" class="align-center" src="../_images/sigma_ave.png" style="width: 500px;" /></a>
+<p>Here, the average is taken as follows:</p>
+<div class="math notranslate nohighlight">
+\[\Sigma_{\rm Ave} (i \omega_n) =
+\left[\sum_i^{\rm shell} \sum_{\alpha \beta}^{N_{\rm orb}^i} \Sigma_{\alpha \beta}(i\omega)\right]
+/\left[\sum_i^{\rm shell} N_{\rm orb}^{i}\right],\]</div>
+<p>The maximum frequency of this plot is specified with the parameter <code class="docutils literal notranslate"><span class="pre">omega_check</span></code>
+in the <code class="docutils literal notranslate"><span class="pre">[tool]</span></code> block.</p>
+</li>
+</ul>
+</section>
+<section id="post-processing-dcore-post">
+<span id="program-dcore-post"></span><h2>Post-processing : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this heading">¶</a></h2>
+<p>This program computes the total DOS (<em>seedname</em>_dos.dat) and momenum-resolved spectral function (<em>seedname</em>_akw.dat) reading the DMFT results in <em>seedname</em>.out.h5.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_post<span class="w"> </span>input.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+<p>Here, please specify the number of MPI processes.
+The computed spectral function can be drawn by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>gnuplot<span class="w"> </span><span class="o">[</span>seedname<span class="o">]</span>_akw.gp
+</pre></div>
+</div>
+<p>Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
+<em>seedname</em>_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.</p>
+<a class="reference internal image-reference" href="../_images/akw_srvo3.png"><img alt="../_images/akw_srvo3.png" class="align-center" src="../_images/akw_srvo3.png" style="width: 500px;" /></a>
+<p>“+” indicates the original band structure.
+The original band structure is shifted by the chemical potential specified by <code class="docutils literal notranslate"><span class="pre">mu</span></code> in <code class="docutils literal notranslate"><span class="pre">[system]</span></code> block.</p>
+</section>
+<section id="online-help">
+<h2>Online help<a class="headerlink" href="#online-help" title="Permalink to this heading">¶</a></h2>
+<p>For all programs, online help is available by <code class="docutils literal notranslate"><span class="pre">-h</span></code> or <code class="docutils literal notranslate"><span class="pre">--help</span></code> option.
+For example, the help of the main program <code class="docutils literal notranslate"><span class="pre">dcore</span></code> looks like</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore -h
+usage: dcore.py [-h] --np NP [--version]
+                [path_input_files [path_input_files ...]]
+
+Main script in DCore
+
+positional arguments:
+path_input_files  Input filename(s)
+
+optional arguments:
+-h, --help        show this help message and exit
+--np NP           Number of MPI processes
+--version         show program&#39;s version number and exit
+</pre></div>
+</div>
+<p>Additionally, the complete list of the input parameters are shown.
+It would help readers to make use of the latest features in the <strong>develop</strong> branch that are not documented in this manual.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html">Output-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../reference.html"
+                          title="previous chapter">Reference Manual</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="input.html"
+                          title="next chapter">Input-file format</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="input.html" title="Input-file format"
+             >next</a></li>
+        <li class="right" >
+          <a href="../reference.html" title="Reference Manual"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Programs</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

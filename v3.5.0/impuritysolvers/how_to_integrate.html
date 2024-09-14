@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to integrate your own solver &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tools" href="../tools.html" />
+    <link rel="prev" title="Non-interacting limit: null" href="null.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../tools.html" title="Tools"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="null.html" title="Non-interacting limit: null"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../impuritysolvers.html" accesskey="U">Impurity solvers</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">How to integrate your own solver</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="how-to-integrate-your-own-solver">
+<h1>How to integrate your own solver<a class="headerlink" href="#how-to-integrate-your-own-solver" title="Permalink to this heading">¶</a></h1>
+<p>You can use your own impurity solver from DCore by wrapping the executable as appropriate.
+The null solver serves as a template of wrapper code.</p>
+<blockquote>
+<div><p><a class="reference download internal" download="" href="../_downloads/e0e8c552f0930992e8848c8956202f74/null_solver.py"><code class="xref download docutils literal notranslate"><span class="pre">null_solver.py</span></code></a></p>
+</div></blockquote>
+<p>Follow the instructions below.</p>
+<section id="copy-the-template">
+<h2>Copy the template<a class="headerlink" href="#copy-the-template" title="Permalink to this heading">¶</a></h2>
+<p>In directory <strong>python/impurity_solvers</strong>, copy the template</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cp null_solver.py your_solver.py
+</pre></div>
+</div>
+</section>
+<section id="edit-the-template">
+<h2>Edit the template<a class="headerlink" href="#edit-the-template" title="Permalink to this heading">¶</a></h2>
+<ul>
+<li><p>Change the class name</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">NullSolver</span><span class="p">(</span><span class="n">SolverBase</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>Let’s say you changed the class name into <strong>YourSolver</strong>.</p>
+</li>
+<li><p>Set the solver name</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;null&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Set input to the solver</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># (1) Set configuration for the impurity solver</span>
+<span class="c1"># input:</span>
+<span class="c1">#   self.beta</span>
+<span class="c1">#   self.set_G0_iw</span>
+<span class="c1">#   self.u_mat</span>
+<span class="c1">#</span>
+<span class="c1"># Additionally, the following variables may be used:</span>
+<span class="c1">#   self.n_orb</span>
+<span class="c1">#   self.n_flavor</span>
+<span class="c1">#   self.gf_struct</span>
+<span class="c1">#   self.n_tau</span>
+<span class="c1">#   self.use_spin_orbit</span>
+
+<span class="c1"># (1a) If H0 is necessary:</span>
+<span class="c1"># Non-interacting part of the local Hamiltonian including chemical potential</span>
+<span class="c1"># Make sure H0 is hermite.</span>
+<span class="c1"># Ordering of index in H0 is spin1, spin1, ..., spin2, spin2, ...</span>
+<span class="n">H0</span> <span class="o">=</span> <span class="n">extract_H0</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_G0_iw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_names</span><span class="p">)</span>
+
+<span class="c1"># (1b) If Delta(iw) and/or Delta(tau) are necessary:</span>
+<span class="c1"># Compute the hybridization function from G0:</span>
+<span class="c1">#     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)</span>
+<span class="c1"># H0 is extracted from the tail of the Green&#39;s function.</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">_Delta_iw</span> <span class="o">=</span> <span class="n">delta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_G0_iw</span><span class="p">)</span>
+<span class="n">Delta_tau</span> <span class="o">=</span> <span class="n">make_block_gf</span><span class="p">(</span><span class="n">GfImTime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gf_struct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tau</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Delta_iw</span><span class="p">:</span>
+    <span class="n">Delta_tau</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">Fourier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Delta_iw</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+<span class="c1"># (1c) Set U_{ijkl} for the solver</span>
+<span class="c1"># for i, j, k, l in product(range(self.n_flavors), repeat=4):</span>
+<span class="c1">#     self.u_mat[i, j, k, l]</span>
+</pre></div>
+</div>
+<p>Here, you generate <strong>all</strong> necessary input files to run your program.</p>
+</li>
+<li><p>Run the solver</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># (2) Run a working horse</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_f</span><span class="p">:</span>
+    <span class="n">launch_mpi_subprocesses</span><span class="p">(</span><span class="n">mpirun_command</span><span class="p">,</span> <span class="p">[</span><span class="n">exec_path</span><span class="p">,</span> <span class="s1">&#39;input.ini&#39;</span><span class="p">],</span> <span class="n">output_f</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The second argument to the function <code class="docutils literal notranslate"><span class="pre">launch_mpi_subprocesses</span></code> is the actual command and arguments used for invoking MPI processes from <strong>DCore</strong>.
+These options and arguments to the solver must be given as a list (refer to <code class="docutils literal notranslate"><span class="pre">subprocess</span></code> module in Python).</p>
+</li>
+<li><p>Convert output of the solver</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># (3) Copy results into</span>
+<span class="c1">#   self._Sigma_iw</span>
+<span class="c1">#   self._Gimp_iw</span>
+</pre></div>
+</div>
+<p>Read output files generated by the solver, and set them into <strong>DCore</strong> variables.
+The self-energy and the Green’s function are stored as <code class="docutils literal notranslate"><span class="pre">BlockGf</span></code> class of <strong>TRIQS</strong> library.
+See other wrappers or <a class="reference external" href="https://triqs.github.io/triqs/1.4/reference/gfs/py/contents.html">the TRIQS documentation</a>.</p>
+</li>
+</ul>
+</section>
+<section id="register-your-solver">
+<h2>Register your solver<a class="headerlink" href="#register-your-solver" title="Permalink to this heading">¶</a></h2>
+<p>Finally, you register your own solver to <strong>DCore</strong>.
+Edit <strong>python/impurity_solvers/__init__.py</strong>
+to import your class</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.your_solver</span> <span class="kn">import</span> <span class="n">YourSolver</span>
+</pre></div>
+</div>
+<p>and add it to the dictionary variable <code class="docutils literal notranslate"><span class="pre">solver_classes</span></code> as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">solver_classes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">...</span>
+    <span class="s1">&#39;your_solver&#39;</span><span class="p">:</span> <span class="n">YourSolver</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Then, you can invoke your solver from <strong>DCore</strong> by</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">your_solver</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../reference/programs.html">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/input.html">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/output.html">Output-file format</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="null.html"
+                          title="previous chapter">Non-interacting limit: <code class="docutils literal notranslate"><span class="pre">null</span></code></a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../tools.html"
+                          title="next chapter">Tools</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../tools.html" title="Tools"
+             >next</a></li>
+        <li class="right" >
+          <a href="null.html" title="Non-interacting limit: null"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../impuritysolvers.html" >Impurity solvers</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">How to integrate your own solver</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
