@@ -62,14 +62,16 @@ Running self-consistent DMFT calculation: dcore
 
    $ dcore srvo3.ini
 
-Post-processing and data analysis: dcore_post
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Post-processing and data analysis: dcore_anacont and dcore_spectrum
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
-   $ dcore_post srvo3.ini
-   $ sed -e "s/every 10/every 1/g" srvo3_akw.gp
-   $ gnuplot nis_akw.gp
+   $ dcore_anacont srvo3.ini
+   $ dcore_spectrum srvo3.ini
+   $ cd post
+   $ sed -e "s/every 10/every 1/g" akw.gp
+   $ gnuplot akw.gp
 
 .. image:: akw_srvo3.png
    :width: 500

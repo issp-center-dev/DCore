@@ -40,19 +40,21 @@ def _set_nk(nk, nk0, nk1, nk2):
     return nk0, nk1, nk2
 
 
-
 def create_parser(target_sections=None):
     """
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'tool', 'bse', 'vertex', 'sparse_bse'])
+        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.anacont.spm.solver' 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
+    
+    # tool is removed but read for warning
+    parser.allow_undefined_options("tool")
+    parser.allow_undefined_options("post.anacont.spm.solver")
 
     # [mpi]
     parser.add_option("mpi", "command", str, default_mpi_command, "Command for executing a MPI job. # will be relaced by the number of processes.")
-
     # [model]
     parser.add_option("model", "seedname", str, "dcore", "Name of the system. The model HDF5 file will be seedname.h5.")
     parser.add_option("model", "lattice", str, "chain",
@@ -122,33 +124,50 @@ def create_parser(target_sections=None):
     parser.add_option("control", "n_converge", int, 1, "The DMFT loop is terminated if the convergence criterion defined with converge_tol is satisfied n_converge times consecutively.")
     parser.add_option("control", "converge_tol", float, 0, "Tolerance in the convergence check. The chemical potential and the renormalization factor are examined.")
 
-    # [tool]
-    parser.add_option("tool", "nnode", int, 0, "[NOT USED] Number of node for the *k* path", OptionStatus.RETIRED)
-    parser.add_option("tool", "nk_line", int, 8, "Number of *k* along each line")
-    parser.add_option("tool", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]",
-                      "The name and the fractional coordinate of each k-node.")
-    parser.add_option("tool", "omega_min", float, -1, "Minimum value of real frequency")
-    parser.add_option("tool", "omega_max", float, 1, "Max value of real frequency")
-    parser.add_option("tool", "Nomega", int, 100, "Number of real frequencies")
-    parser.add_option("tool", "broadening", float, 0.0, "An additional Lorentzian broadening")
-    parser.add_option("tool", "eta", float, 0.0, "Imaginary frequency shift for the Pade approximation")
-    parser.add_option("tool", "omega_pade", float, 1E+20, "Cutoff frequency for the Pade approximation. Data in [-i omega_pade, i omega_pade] is used.")
-    parser.add_option("tool", "n_pade_min", int, 20, "Minimum number of Matsubara frequencies used for Pade approximation.")
-    parser.add_option("tool", "n_pade_max", int, -1, "Maximum number of Matsubara frequencies used for Pade approximation. If negative, this will be replaced with n_iw in [system] block.")
-    parser.add_option("tool", "post_dir", str, "post", "Directory to which results of dcore_post are stored.")
+    # [post]
+    # parser.add_option("post", "file_sigma_iw", str, "sigma_iw.npz", "Filename of the self-energy in Matsubara frequency")
+    parser.add_option("post", "dir_post", str, "post", "Directory to which results of dcore_post are stored.")
+    parser.add_option("post", "dir_work", str, "work/post", "Directory to which temporary files of dcore_post are stored.")
 
-    parser.add_option("tool", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
-    parser.add_option("tool", "nk_mesh", int, 0, "Number of k points along each axis for computation of A(k,omega) on a 3D mesh")
-    parser.add_option("tool", "nk0_mesh", int, 0, "Number of k points along b_0 for computation of A(k,omega) on a 3D mesh")
-    parser.add_option("tool", "nk1_mesh", int, 0, "Number of k points along b_1 for computation of A(k,omega) on a 3D mesh")
-    parser.add_option("tool", "nk2_mesh", int, 0, "Number of k points along b_2 for computation of A(k,omega) on a 3D mesh")
-    parser.add_option("tool", "Lambda_IR", float, 1e+4, "IR parameter for computing G(k,iw)")
-    parser.add_option("tool", "cutoff_IR", float, 1e-5, "IR cutoff parameter for computing G(k,iw)")
-    parser.add_option("tool", "cutoff_IR_2P", float, 1e-5, "IR cutoff parameter for computing two-particle quantities")
-    parser.add_option("tool", "gk_smpl_freqs", str, "dense", "Sampling fermionic frequencies for dcore_gk. dense or the name of a text file that contains sampling frequencies."
-        "For gk_smpl_freqs = dense, all fermionic frequencies in the range of [-n_iw, n_iw] are used. A valid text file must contain the number of sampling frequencies in its first line."
-        "Each line after the first line must contain two integer numbers: The first one is an sequential index of a sampling frequency (start from 0), and the second one is a fermionic sampling frequency (i.e, -1, 0, 1)."
-    )
+    # [post.check]
+    parser.add_option("post.check", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
+
+    # [post.anacont]
+    parser.add_option("post.anacont", "solver", str, "algorithm", "Algorithm for analytic continuation")
+    parser.add_option("post.anacont", "omega_min", float, -1, "Minimum value of real frequency")
+    parser.add_option("post.anacont", "omega_max", float, 1, "Max value of real frequency")
+    parser.add_option("post.anacont", "Nomega", int, 100, "Number of real frequencies")
+    parser.add_option("post.anacont", "show_result", bool, False, "plot result of analytic continuation")
+    parser.add_option("post.anacont", "save_result", bool, False, "plot result of analytic continuation")
+
+    # [post.anacont.pade]
+    parser.add_option( "post.anacont.pade", "iomega_max", float, 0.0, "Cut-off frequency of the Matsubara frequency",)
+    parser.add_option( "post.anacont.pade", "n_min", int, 0, "lower bound of the number of used Matsubara frequency",)
+    parser.add_option( "post.anacont.pade", "n_max", int, 100000000, "upper bound of the number of used Matsubara frequency",)
+    parser.add_option( "post.anacont.pade", "eta", float, 0.01, "Imaginary Frequency shift to avoid divergence",)
+
+    # [post.anacont.spm]
+    parser.add_option("post.anacont.spm", "n_matsubara", int, 100000, "number of tau points")
+    parser.add_option("post.anacont.spm", "n_tau", int, -1, "number of tau points")
+    parser.add_option("post.anacont.spm", "n_tail", int, 10, "number of matsubara points for tail-fitting")
+    parser.add_option("post.anacont.spm", "n_sv", int, 50, "number of singular values to be used")
+    parser.add_option("post.anacont.spm", "lambda", float, 1e-5, "coefficient of L1 regularization")
+    parser.add_option("post.anacont.spm", "solver", str, "ECOS", "solver to be used")
+    parser.add_option("post.anacont.spm", "verbose_opt", bool, False, "show optimization progress")
+    parser.add_option("post.anacont.spm", "show_fit", bool, False, "plot result of tail-fitting")
+
+    # [post.spectrum]
+
+    parser.add_option("post.spectrum", "nk_line", int, 8, "Number of *k* along each line")
+    parser.add_option("post.spectrum", "knode", str, "[(G,0.0,0.0,0.0),(X,1.0,0.0,0.0)]",
+                      "The name and the fractional coordinate of each k-node.")
+
+    parser.add_option("post.spectrum", "broadening", float, 0.0, "An additional Lorentzian broadening")
+
+    parser.add_option("post.spectrum", "nk_mesh", int, 0, "Number of k points along each axis for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("post.spectrum", "nk0_mesh", int, 0, "Number of k points along b_0 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("post.spectrum", "nk1_mesh", int, 0, "Number of k points along b_1 for computation of A(k,omega) on a 3D mesh")
+    parser.add_option("post.spectrum", "nk2_mesh", int, 0, "Number of k points along b_2 for computation of A(k,omega) on a 3D mesh")
 
     # [bse]
     parser.add_option("bse", "num_wb", int, 1, "Number of bosonic frequencies (>0)")
@@ -239,14 +258,69 @@ def parse_parameters(params):
         params['model']['nkdiv'] = (params['model']['nk0'], params['model']['nk1'], params['model']['nk2'])
         del params['model']['nk']
 
-
     if 'mpi' in params:
         # Expand enviroment variables
         params['mpi']['command'] = os.path.expandvars(params['mpi']['command'])
 
     if 'tool' in params:
-        if params['tool']['n_pade_max'] < 0:
-            params['tool']['n_pade_max'] = params['system']['n_iw']
+        new_params = {
+            "nnode": ("", ""),
+            "nk_line": ("post.spectrum", ""),
+            "knode": ("post.spectrum", ""),
+            "omega_min": ("post.anacont", ""),
+            "omega_max": ("post.anacont", ""),
+            "Nomega": ("post.anacont", ""),
+            "broadening": ("post.spectrum", ""),
+            "eta": ("post.anacont.pade", ""),
+            "omega_pade": ("post.anacont.pade", "iomega_max"),
+            "n_pade_min": ("post.anacont.pade", "n_min"),
+            "n_pade_max": ("post.anacont.pade", "n_max"),
+            "post_dir": ("post", "dir_post"),
+            "omega_check": ("post.check", ""),
+            "nk_mesh": ("post.spectrum", ""),
+            "nk0_mesh": ("post.spectrum", ""),
+            "nk1_mesh": ("post.spectrum", ""),
+            "nk2_mesh": ("post.spectrum", ""),
+        }
+        print('ERROR: [tool] is removed.')
+        for k in params['tool'].keys():
+            if k in new_params:
+                new_section = new_params[k][0]
+                new_key = new_params[k][1]
+                if new_section == "":
+                    print(f'       {k} is removed.')
+                if new_key == "":
+                    print(f'       {k} is moved to [{new_section}]')
+                else:
+                    print(f'       {k} is moved to [{new_section}] as {new_key}')
+        sys.exit(1)
+
+    if 'post.anacont' in params:
+        wmin = params['post.anacont']['omega_min']
+        wmax = params['post.anacont']['omega_max']
+        wnum = params['post.anacont']['Nomega']
+        if wmin >= wmax:
+            sys.exit(f"ERROR: omega_min={wmin} must be less than omega_max={wmax}.")
+        if wnum <= 0:
+            sys.exit(f"ERROR: Nomega={wnum} must be a positive integer.")
+
+    if 'post.anacont.pade' in params:
+        if params['post.anacont.pade']['iomega_max'] < 0:
+            sys.exit(f"ERROR: iomega_max={params['post.anacont.pade']['iomega_max']} must be a positive float.")
+        if params['post.anacont.pade']['n_min'] < 0:
+            sys.exit(f"ERROR: n_min={params['post.anacont.pade']['n_min']} must be a positive integer.")
+        if params['post.anacont.pade']['n_max'] < params['post.anacont.pade']['n_min']:
+            sys.exit(f"ERROR: n_max={params['post.anacont.pade']['n_max']} must be greater than or equals to n_min={params['post.anacont.pade']['n_min']}.")
+
+    if 'post.anacont.spm' in params:
+        if params['post.anacont.spm']['n_matsubara'] <= 0:
+            sys.exit(f"ERROR: n_matsubara={params['post.anacont.spm']['n_matsubara']} must be a positive integer.")
+        if params['post.anacont.spm']['n_tail'] <= 0:
+            sys.exit(f"ERROR: n_tail={params['post.anacont.spm']['n_tail']} must be a positive integer.")
+        if params['post.anacont.spm']['n_sv'] <= 0:
+            sys.exit(f"ERROR: n_sv={params['post.anacont.spm']['n_sv']} must be a positive integer.")
+        if params['post.anacont.spm']['lambda'] < 0:
+            sys.exit(f"ERROR: lambda={params['post.anacont.spm']['lambda']} must be a non-negative float.")
 
     if 'bse' in params:
         two_options_incompatible(params, ('bse', 'skip_Xloc'), ('bse', 'calc_only_chiloc'))

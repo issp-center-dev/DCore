@@ -1,27 +1,26 @@
 Input-file format
 =================
 
-The input file consists of six parameter blocks named [model], [system], [impurity\_solver], [control], [tool], and [mpi].
-
-..
-    The example of the input file is shown as follows:
-
-    .. literalinclude:: ../tutorial/nis/nis.ini
-       :language: ini
+The input file consists of several parameter blocks.
 
 The following table shows which blocks are used by each program.
 
 .. csv-table::
-    :header: "", ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_post``
-    :widths: 5, 5, 5, 5, 5
+    :header: "Block name", ``dcore_pre``, ``dcore``, ``dcore_check``, ``dcore_anacont``, ``dcore_spectrum``
+    :widths: 10, 5, 5, 5, 5, 5
 
-    [model]          ,  Yes, Yes, Yes, Yes
-    [pre]            ,  Yes,    ,    ,
-    [system]         ,     , Yes, Yes, Yes
-    [impurity_solver],     , Yes,    , Yes
-    [control]        ,     , Yes
-    [tool]           ,     ,    , Yes, Yes
-    [mpi]            ,     , Yes,    , Yes
+    [model]             ,  Yes, Yes, Yes, Yes, Yes
+    [pre]               ,  Yes,    ,    ,    ,
+    [system]            ,     , Yes, Yes, Yes, Yes
+    [impurity_solver]   ,     , Yes,    ,    , Yes
+    [control]           ,     , Yes
+    [post]              ,     ,    , Yes, Yes, Yes
+    [post.check]        ,     ,    , Yes,    , 
+    [post.anacont]      ,     ,    ,    , Yes, 
+    [post.anacont.pade] ,     ,    ,    , Yes, 
+    [post.anacont.spm]  ,     ,    ,    , Yes, 
+    [post.spectrum]     ,     ,    ,    ,    , Yes
+    [mpi]               ,     , Yes,    ,    , Yes
 
 For example, we can see that ``dcore_pre`` reads only [model] and [pre] blocks. Therefore, ``dcore_pre`` needs to be re-executed only when the parameters in [model] and [pre] blocks are changed.
 
@@ -112,14 +111,49 @@ This block includes parameters that control the self-consistency loop of DMFT.
 
 .. include:: control_desc.txt
 
-[tool] block
+[post] block
 ------------
 
-This block includes parameters that are solely used by ``dcore_post``.
+This block includes parameters that are solely used by ``dcore_anacont`` and ``dcore_spectrum``.
 
 .. ``dcore_check`` and ``dcore_post`` read this block.
 
-.. include:: tool_desc.txt
+.. include:: post_desc.txt
+
+[post.anacont] block
+-----------------------
+
+This block includes parameters that are solely used by ``dcore_anacont``.
+
+.. include:: post.anacont_desc.txt
+
+[post.anacont.pade] block
+---------------------------
+
+This block includes parameters that are solely used by ``dcore_anacont``.
+
+.. include:: post.anacont.pade_desc.txt
+
+[post.anacont.spm] block
+---------------------------
+
+This block includes parameters that are solely used by ``dcore_anacont``.
+
+.. include:: post.anacont.spm_desc.txt
+
+[post.spectrum] block
+-----------------------
+
+This block includes parameters that are solely used by ``dcore_spectrum``.
+
+.. include:: post.spectrum_desc.txt
+
+[post.check] block
+-----------------------
+
+This block includes parameters that are solely used by ``dcore_check``.
+
+.. include:: post.check_desc.txt
 
 [mpi] block
 ------------
