@@ -45,7 +45,8 @@
 <li class="toctree-l2"><a class="reference internal" href="reference/programs.html#pre-processing-dcore-pre">Pre-processing : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/programs.html#main-program-dcore">Main program : <code class="docutils literal notranslate"><span class="pre">dcore</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/programs.html#convergence-check-dcore-check">Convergence-check : <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/programs.html#post-processing-dcore-post">Post-processing : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/programs.html#analytic-continuation-dcore-anacont">Analytic continuation : <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/programs.html#spectral-functions-dcore-spectrum">Spectral functions : <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/programs.html#online-help">Online help</a></li>
 </ul>
 </li>
@@ -55,7 +56,12 @@
 <li class="toctree-l2"><a class="reference internal" href="reference/input.html#system-block">[system] block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/input.html#impurity-solver-block">[impurity_solver] block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/input.html#control-block">[control] block</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/input.html#tool-block">[tool] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#post-block">[post] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#post-anacont-block">[post.anacont] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#post-anacont-pade-block">[post.anacont.pade] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#post-anacont-spm-block">[post.anacont.spm] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#post-spectrum-block">[post.spectrum] block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/input.html#post-check-block">[post.check] block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/input.html#mpi-block">[mpi] block</a></li>
 </ul>
 </li>
@@ -63,7 +69,7 @@
 <li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore-pre"><code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore"><code class="docutils literal notranslate"><span class="pre">dcore</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore-check"><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore-post"><code class="docutils literal notranslate"><span class="pre">dcore_post</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/output.html#dcore-spectrum"><code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="impuritysolvers.html">Impurity solvers</a><ul>
@@ -74,6 +80,12 @@
 <li class="toctree-l2"><a class="reference internal" href="impuritysolvers/pomerol/pomerol.html">Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">pomerol</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="impuritysolvers/null.html">Non-interacting limit: <code class="docutils literal notranslate"><span class="pre">null</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="impuritysolvers/how_to_integrate.html">How to integrate your own solver</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="analytic_continuation.html">Analytic continuation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="analytic_continuation/pade.html">Analytic continuation with the Pade approximation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analytic_continuation/spm.html">Analytic continuation with the sparse-modeling method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analytic_continuation/external_code.html">How to use an external AC code</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a><ul>
@@ -101,6 +113,7 @@
 <li class="toctree-l2"><a class="reference internal" href="reference/input.html">Input-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/output.html">Output-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analytic_continuation.html">Analytic continuation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tools.html">Tools</a></li>
 </ul>
 </li>

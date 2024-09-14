@@ -72,12 +72,21 @@ We first use the exact diagonalization solver <a class="reference internal" href
 <span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
 <span class="na">converge_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span>
 
-<span class="k">[tool]</span>
-<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0,0,0),(X,0.5,0,0),(M,0.5,0.5,0),(G,0,0,0)]</span>
-<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="k">[post.anacont]</span>
+<span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pade</span>
 <span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
 <span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span>
 <span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span>
+
+<span class="k">[post.anacont.pade]</span>
+<span class="na">n_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">20</span>
+<span class="na">n_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">iomega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e+20</span>
+<span class="na">eta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+
+<span class="k">[post.spectrum]</span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0,0,0),(X,0.5,0,0),(M,0.5,0.5,0),(G,0,0,0)]</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
 <span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.4</span>
 </pre></div>
 </div>
@@ -141,30 +150,45 @@ For instance, <code class="docutils literal notranslate"><span class="pre">check
 <a class="reference internal image-reference" href="../../_images/iter_sigma-ish04.png"><img alt="../../_images/iter_sigma-ish04.png" class="align-center" src="../../_images/iter_sigma-ish04.png" style="width: 80%;" /></a>
 <p>The iteration is terminated when the diff (lower figure) reaches <code class="docutils literal notranslate"><span class="pre">converge_tol</span> <span class="pre">=</span> <span class="pre">1e-5</span></code> at the 13th iteration.</p>
 </section>
-<section id="spectral-function-dcore-post">
-<h2>Spectral function : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#spectral-function-dcore-post" title="Permalink to this heading">¶</a></h2>
-<p>We can calculate real-frequency quantities such as the density of states and the momentum-dependent single-particle excitations using <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> program.
-The analytical continuation from Matsubara frequency to real frequencies is performed using the Pade approximation.</p>
+<section id="analytical-continuation-of-the-self-energy-dcore-anacont">
+<h2>Analytical continuation of the self-energy : <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code><a class="headerlink" href="#analytical-continuation-of-the-self-energy-dcore-anacont" title="Permalink to this heading">¶</a></h2>
+<p>The self-energy is calculated in the imaginary-time domain in the DMFT loop and saved as <code class="docutils literal notranslate"><span class="pre">seedname_sigma_iw.npz</span></code>.
+The analytical continuation from Matsubara frequency to real frequencies is required to calculate the spectral function.
+DCore provides a program <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> for this purpose.
+Parameters for the analytical continuation are specified in the <code class="docutils literal notranslate"><span class="pre">[post.anacont]</span></code> block in the input file.
+<code class="docutils literal notranslate"><span class="pre">omega_min</span></code> and <code class="docutils literal notranslate"><span class="pre">omega_max</span></code> is the minimum and maximum frequency for the output.
+<code class="docutils literal notranslate"><span class="pre">Nomega</span></code> is the number of frequency points.
+<code class="docutils literal notranslate"><span class="pre">solver</span></code> is the solver for the analytical continuation; “pade” is the Pade approximation and “spm” is the sparse modeling method.
+Hyperparameters for the solver can be specified in the <code class="docutils literal notranslate"><span class="pre">[post.anacont.pade]</span></code> or <code class="docutils literal notranslate"><span class="pre">[post.anacont.spm]</span></code> block.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_anacont<span class="w"> </span>dmft_square.ini
+</pre></div>
+</div>
+<p>The result is stored in <code class="docutils literal notranslate"><span class="pre">post/sigma_w.npz</span></code>.</p>
+</section>
+<section id="spectral-function-dcore-spectrum">
+<h2>Spectral function : <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code><a class="headerlink" href="#spectral-function-dcore-spectrum" title="Permalink to this heading">¶</a></h2>
+<p>After calculating the self-energy on the real-frequency axis, we can also calculate other real-frequency quantities such as the density of states and the momentum-dependent single-particle excitations using <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code> program.</p>
 <p>The calculation is done by the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_post<span class="w"> </span>dmft_square.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">1</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_spectrum<span class="w"> </span>dmft_square.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
 <p>After finishing the calculation,
 results are stored in <code class="docutils literal notranslate"><span class="pre">post</span></code> directory.
-The data of momentum-resolved spectral functions are output into <code class="docutils literal notranslate"><span class="pre">square_akw.dat</span></code>.
-We can easily plot the result by using the script file <code class="docutils literal notranslate"><span class="pre">square_akw.gp</span></code> for gnuplot:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>gnuplot<span class="w"> </span>square_akw.gp
+The data of momentum-resolved spectral functions are output into <code class="docutils literal notranslate"><span class="pre">akw.dat</span></code>.
+We can easily plot the result by using the script file <code class="docutils literal notranslate"><span class="pre">akw.gp</span></code> for gnuplot:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>post
+$<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
 </pre></div>
 </div>
 <p>In the graph shown below, the left and right panels correspond to up-spin and down-spin components, respectively.</p>
 <a class="reference internal image-reference" href="../../_images/akw1.png"><img alt="../../_images/akw1.png" class="align-center" src="../../_images/akw1.png" style="width: 80%;" /></a>
 <p>Here, we have tuned the range of the coloar bar by the command <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">cbrange[0:0.8]</span></code> to get better figure.
 The band width seems reduced than the noninteracting one, 8, but the artificial structure around E=1 and -1 makes it difficult to judge.</p>
-<p>The numerical result for the density of states is stored in <code class="docutils literal notranslate"><span class="pre">square_dos.dat</span></code>.
+<p>The numerical result for the density of states is stored in <code class="docutils literal notranslate"><span class="pre">dos.dat</span></code>.
 We can plot it using gnuplot as follows:</p>
 <div class="highlight-gnuplot notranslate"><div class="highlight"><pre><span></span><span class="k">set</span><span class="w"> </span><span class="nb">xlabel</span><span class="w"> </span><span class="s">&quot;Energy&quot;</span>
 <span class="k">set</span><span class="w"> </span><span class="nb">ylabel</span><span class="w"> </span><span class="s">&quot;DOS&quot;</span>
-<span class="k">plot</span><span class="w"> </span><span class="s">&quot;square_dos.dat&quot;</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span>
+<span class="k">plot</span><span class="w"> </span><span class="s">&quot;dos.dat&quot;</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span>
 </pre></div>
 </div>
 <p>The result is shown below.</p>
@@ -208,18 +232,27 @@ We can plot it using gnuplot as follows:</p>
 <span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
 <span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
 
-<span class="k">[tool]</span>
-<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
-<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span>
-<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="k">[post.anacont]</span>
+<span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pade</span>
 <span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
 <span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span>
 <span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span>
+
+<span class="k">[post.anacont.pade]</span>
+<span class="na">n_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">20</span>
+<span class="na">n_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">iomega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e+20</span>
+<span class="na">eta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+
+<span class="k">[post.spectrum]</span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">/path/to/alps_cthyb</span></code> in <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span> <span class="pre">exec_path{str}</span></code> should be replaced with a full path to <code class="docutils literal notranslate"><span class="pre">alps_cthyb</span></code> executable in your environment.
 Unlike in the ED solver, we do not use <code class="docutils literal notranslate"><span class="pre">converge_tol</span></code> parameter, since the automatic convergence check requires a special care for QMC solvers.</p>
-<p>The figure below shows the momentum-resolved spectral functions computed after the self-consistent calculations using 40 processes:</p>
+<p>The figure below shows the momentum-resolved spectral functions computed after the self-consistent calculations using 8 processes:</p>
 <a class="reference internal image-reference" href="../../_images/akw2.png"><img alt="../../_images/akw2.png" class="align-center" src="../../_images/akw2.png" style="width: 700px;" /></a>
 <p>The artificial features observed in the ED solver has gone. This graph shows characteristics for correlated bands such as renormalized band width, low-energy quasiparticles (sharp peak), and broadening away from the Fermi level.</p>
 <p>We note that spectra computed using the Pade analytical continuation is extremely sensitive to statistical errors. For this reason, this figure might not be reproduced even with the same input. In such cases, try improving the QMC accuracy by increasing the number of MPI processes or by increasing <code class="docutils literal notranslate"><span class="pre">MAX_TIME{int}</span></code> parameter.</p>

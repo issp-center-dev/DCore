@@ -64,63 +64,75 @@
 <td></td>
 </tr>
 <tr class="row-even"><td></td>
+<td><p><em>seedname</em>_sigma_iw.npz</p></td>
+<td><p><a class="reference internal" href="../analytic_continuation/external_code.html"><span class="doc">How to use an external AC code</span></a></p></td>
+</tr>
+<tr class="row-odd"><td></td>
 <td><p>work/imp_shell#_iter#/<em>solver_dependent_output</em></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code></p></td>
 <td><p>check/iter_mu.dat</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td></td>
+<tr class="row-odd"><td></td>
 <td><p>check/iter_mu.png</p></td>
 <td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
 </tr>
-<tr class="row-odd"><td></td>
+<tr class="row-even"><td></td>
 <td><p>check/iter_sigma-ish0.dat</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td></td>
+<tr class="row-odd"><td></td>
 <td><p>check/iter_sigma-ish0.png</p></td>
 <td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
 </tr>
-<tr class="row-odd"><td></td>
+<tr class="row-even"><td></td>
 <td><p>check/iter_occup-ish0.dat</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td></td>
+<tr class="row-odd"><td></td>
 <td><p>check/iter_occup-ish0.png</p></td>
 <td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
 </tr>
-<tr class="row-odd"><td></td>
+<tr class="row-even"><td></td>
 <td><p>check/iter_spin-ish0.dat</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td></td>
+<tr class="row-odd"><td></td>
 <td><p>check/iter_spin-ish0.png</p></td>
 <td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
 </tr>
-<tr class="row-odd"><td></td>
+<tr class="row-even"><td></td>
 <td><p>check/sigma.dat</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td></td>
+<tr class="row-odd"><td></td>
 <td><p>check/sigma_ave.png</p></td>
 <td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dcore_post</span></code></p></td>
-<td><p>post/<em>seedname</em>_dos.dat</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code></p></td>
+<td><p>post/sigma_w.npz</p></td>
+<td><p><a class="reference internal" href="../analytic_continuation/external_code.html"><span class="doc">How to use an external AC code</span></a></p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>post/sigma_w.npz</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td></td>
-<td><p>post/<em>seedname</em>_akw.dat</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code></p></td>
+<td><p>post/dos.dat</p></td>
 <td></td>
 </tr>
 <tr class="row-odd"><td></td>
-<td><p>post/<em>seedname</em>_akw.gp</p></td>
-<td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
+<td><p>post/akw.dat</p></td>
+<td></td>
 </tr>
 <tr class="row-even"><td></td>
-<td><p>post/<em>seedname</em>_momdist.dat</p></td>
+<td><p>post/akw.gp</p></td>
+<td><p><a class="reference internal" href="programs.html"><span class="doc">Programs</span></a></p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>post/momdist.dat</p></td>
 <td></td>
 </tr>
 </tbody>
@@ -272,10 +284,10 @@ This is the data corresponding to the figure iter_spin-ish0.png (see <a class="r
 </li>
 </ul>
 </section>
-<section id="dcore-post">
-<h2><code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#dcore-post" title="Permalink to this heading">¶</a></h2>
+<section id="dcore-spectrum">
+<h2><code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code><a class="headerlink" href="#dcore-spectrum" title="Permalink to this heading">¶</a></h2>
 <ul>
-<li><p><strong>post/</strong><em>seedname</em><strong>_dos.dat</strong></p>
+<li><p><strong>post/dos.dat</strong></p>
 <p>The k-integrated single-particle excitation spectrum <span class="math notranslate nohighlight">\(A(\omega)\)</span> (density of states).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># [1] Energy</span>
 <span class="c1"># [2] Total DOS of spin up</span>
@@ -291,9 +303,9 @@ This is the data corresponding to the figure iter_spin-ish0.png (see <a class="r
 </pre></div>
 </div>
 </li>
-<li><p><strong>post/</strong><em>seedname</em><strong>_akw.dat</strong></p>
+<li><p><strong>post/akw.dat</strong></p>
 <p>The single-particle excitation spectrum <span class="math notranslate nohighlight">\(A(\boldsymbol{k}, \omega)\)</span> on the given k-path.
-See <a class="reference internal" href="programs.html#program-dcore-post"><span class="std std-ref">Post-processing : dcore_post</span></a> for how to plot this data.</p>
+See <a class="reference internal" href="programs.html#program-dcore-spectrum"><span class="std std-ref">Spectral functions : dcore_spectrum</span></a> for how to plot this data.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.000000</span> <span class="o">-</span><span class="mf">5.000000</span> <span class="mf">0.092677</span>
 <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">4.972431</span> <span class="mf">0.097063</span>
 <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">4.944862</span> <span class="mf">0.101755</span>
@@ -308,7 +320,7 @@ See <a class="reference internal" href="programs.html#program-dcore-post"><span 
 </pre></div>
 </div>
 </li>
-<li><p><strong>post/</strong><em>seedname</em><strong>_momdist.dat</strong></p>
+<li><p><strong>post/momdist.dat</strong></p>
 <p>The momentum distribution function.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Momentum distribution</span>
 <span class="c1"># [Column] Data</span>
@@ -345,6 +357,7 @@ See <a class="reference internal" href="programs.html#program-dcore-post"><span 
 <li class="toctree-l2"><a class="reference internal" href="input.html">Input-file format</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Output-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analytic_continuation.html">Analytic continuation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tools.html">Tools</a></li>
 </ul>
 </li>

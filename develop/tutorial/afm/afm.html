@@ -86,11 +86,13 @@ In this tutorial, we compute the antiferromagetic solution below <span class="ma
 <span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
 <span class="na">initial_static_self_energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">{0: &#39;init_se_up.txt&#39;, 1: &#39;init_se_down.txt&#39;}</span>
 
-<span class="k">[tool]</span>
+<span class="k">[post.spectrum]</span>
 <span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
 <span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span>
 <span class="c1"># knode = [(G,0,0,0),(X,1,0,0),(M,1,1,0),(G,0,0,0)]</span>
 <span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+
+<span class="k">[post.anacont]</span>
 <span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
 <span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span>
 <span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span>
@@ -130,7 +132,8 @@ For one shell, we use the text file <a class="reference download internal" downl
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
 dcore_pre<span class="w"> </span>cubic.ini<span class="w"> </span>&gt;<span class="w"> </span>output-pre
 dcore<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span><span class="w"> </span>&gt;<span class="w"> </span>output
-dcore_post<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span><span class="w"> </span>&gt;<span class="w"> </span>output-post
+dcore_anacont<span class="w"> </span>cubic.ini<span class="w"> </span>&gt;<span class="w"> </span>output-anacont
+dcore_spectrum<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span><span class="w"> </span>&gt;<span class="w"> </span>output-spectrum
 </pre></div>
 </div>
 <p>In the standard output of <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, you will see that the magnetic moments converge to <span class="math notranslate nohighlight">\(\simeq 0.28\)</span> (57 % of the saturated moment).</p>

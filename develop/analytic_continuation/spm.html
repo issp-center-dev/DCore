@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Analytic continuation with the sparse-modeling method &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to use an external AC code" href="external_code.html" />
+    <link rel="prev" title="Analytic continuation with the Pade approximation" href="pade.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="external_code.html" title="How to use an external AC code"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="pade.html" title="Analytic continuation with the Pade approximation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analytic_continuation.html" accesskey="U">Analytic continuation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Analytic continuation with the sparse-modeling method</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="analytic-continuation-with-the-sparse-modeling-method">
+<h1>Analytic continuation with the sparse-modeling method<a class="headerlink" href="#analytic-continuation-with-the-sparse-modeling-method" title="Permalink to this heading">¶</a></h1>
+<p>The sparse-modeling (SpM) method is a method for the analytic continuation of the self-energy by solving the integral equation</p>
+<div class="math notranslate nohighlight">
+\[\Sigma(\tau) = \int_{-\infty}^{\infty} d\omega \frac{e^{-\tau \omega}}{1+e^{-\beta\omega}} \Sigma(\omega)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Sigma(\tau)\)</span> is the self-energy in imaginary time and <span class="math notranslate nohighlight">\(\Sigma(\omega)\)</span> is the self-energy in real frequency.</p>
+<p>In the SpM method, the kernel matrix of the integral equation, <span class="math notranslate nohighlight">\(e^{-\tau\omega}/(1+e^{-\beta\omega})\)</span> is decomposed by the singular value decomposition (SVD),
+and the self-energies <span class="math notranslate nohighlight">\(\Sigma(\tau)\)</span> and <span class="math notranslate nohighlight">\(\Sigma(\omega)\)</span> are transformed by the left and right singular vectors, respectively.</p>
+<p>The SpM method is implemented in the <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> program.
+While the SpM method in the original paper uses the ADMM for optimization, the SpM method in the <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> program can use more solvers via <a class="reference external" href="https://www.cvxpy.org/index.html">the CVXPY package</a>.</p>
+<p>The common parameters of <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> is described in <a class="reference internal" href="pade.html"><span class="doc">the section of the Pade approximation</span></a>.
+The SpM method is specified by <code class="docutils literal notranslate"><span class="pre">solver</span> <span class="pre">=</span> <span class="pre">spm</span></code> in the <code class="docutils literal notranslate"><span class="pre">[post.anacont]</span></code> block.
+The parameters for the SpM method are specified in the <code class="docutils literal notranslate"><span class="pre">[post.anacont.spm]</span></code> block as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">anacont</span><span class="o">.</span><span class="n">spm</span><span class="p">]</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">ECOS</span>
+<span class="n">n_matsubara</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">n_tau</span> <span class="o">=</span> <span class="mi">101</span>
+<span class="n">n_tail</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">n_sv</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="k">lambda</span> <span class="o">=</span> <span class="mf">1e-5</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">n_matsubara</span></code> is the number of Matsubara frequencies used. When it is larger than the number of the data obtained by the DMFT calculation, the number of the data is used.
+<code class="docutils literal notranslate"><span class="pre">n_tau</span></code> is the number of imaginary time points.
+<code class="docutils literal notranslate"><span class="pre">n_tail</span></code> is the number of the last Matsubara frequencies used for the tail fitting, <span class="math notranslate nohighlight">\(\Sigma(i\omega_n) \sim a/i\omega_n\)</span>.
+<code class="docutils literal notranslate"><span class="pre">n_sv</span></code> is the number of singular values used after truncation.
+<code class="docutils literal notranslate"><span class="pre">lambda</span></code> is the coefficient of the L1 regularization term in the optimization.
+<code class="docutils literal notranslate"><span class="pre">solver</span></code> specifies the solver for the optimization.</p>
+<p>The parameter of the solver can be specified in the <code class="docutils literal notranslate"><span class="pre">[post.anacont.spm.solver]</span></code> block.
+In this block, the format of <code class="docutils literal notranslate"><span class="pre">name{type}</span> <span class="pre">=</span> <span class="pre">value</span></code> should be used, for example, <code class="docutils literal notranslate"><span class="pre">max_iters{int}</span> <span class="pre">=</span> <span class="pre">100</span></code>.
+Available types are <code class="docutils literal notranslate"><span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">float</span></code>, and <code class="docutils literal notranslate"><span class="pre">str</span></code>.
+Available parameters depend on the solver used.
+For details of solvers, see <a class="reference external" href="https://www.cvxpy.org/tutorial/solvers/index.html">the CVXPY documentation</a>.</p>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading">¶</a></h2>
+<p>The following input file is used to perform a DMFT calculation of a Hubbard model on a square lattice with the Pomerol solver and an analytic continuation of the self-energy with the SpM method:</p>
+<p><a class="reference download internal" download="" href="../_downloads/91e34cddf4f76571df423bc78a2284ca/spm.ini"><code class="xref download docutils literal notranslate"><span class="pre">spm.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span>
+<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+
+<span class="k">[system]</span>
+<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol2dcore</span>
+<span class="na">n_bath{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+<span class="na">fit_gtol{float}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-6</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">true</span>
+<span class="na">converge_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span>
+
+<span class="k">[post.anacont]</span>
+<span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">spm</span>
+<span class="na">show_result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
+<span class="na">save_result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">true</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span>
+
+<span class="k">[post.anacont.spm]</span>
+<span class="na">n_matsubara</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">n_tau</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">101</span>
+<span class="na">n_tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span>
+<span class="na">n_sv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span>
+<span class="na">lambda</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span>
+<span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ECOS</span>
+
+<span class="k">[post.anacont.spm.solver]</span>
+<span class="na">max_iters{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+</pre></div>
+</div>
+<p>The figure below shows the self-energy in real frequency obtained by analytic continuation (<code class="docutils literal notranslate"><span class="pre">work/post/sigma_w_0_0_0.png</span></code>).</p>
+<a class="reference internal image-reference" href="../_images/spm.png"><img alt="../_images/spm.png" class="align-center" src="../_images/spm.png" style="width: 700px;" /></a>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../reference/programs.html">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/input.html">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/output.html">Output-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../analytic_continuation.html">Analytic continuation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="pade.html"
+                          title="previous chapter">Analytic continuation with the Pade approximation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="external_code.html"
+                          title="next chapter">How to use an external AC code</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="external_code.html" title="How to use an external AC code"
+             >next</a></li>
+        <li class="right" >
+          <a href="pade.html" title="Analytic continuation with the Pade approximation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analytic_continuation.html" >Analytic continuation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Analytic continuation with the sparse-modeling method</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
