@@ -16,7 +16,7 @@ jobs:
       - name: Build dist
         run: python setup.py sdist bdist_wheel
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: |
@@ -28,7 +28,7 @@ jobs:
     needs: [build_sdist]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
