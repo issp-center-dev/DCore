@@ -9,7 +9,7 @@ Installation
 Prerequisites
 -------------
 
-#. Python3
+#. Python3 (>=3.8)
 
 #. You will also need at least one impurity solver.
 
