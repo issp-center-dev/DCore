@@ -39,9 +39,9 @@ setup(
         ]),
     author_email='h.shinaoka@gmail.com',
 
-    python_requires='>=3.6, <4',
+    python_requires='>=3.8, <4',
     install_requires=[
-        'numpy',
+        'numpy<2',
         'scipy>=1.4',
         # h5py 2.10.0 has a bug.
         # Import h5py imports mpi4py automatically.
