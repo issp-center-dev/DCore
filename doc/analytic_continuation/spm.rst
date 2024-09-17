@@ -5,9 +5,10 @@ The sparse-modeling (SpM) method is a method for the analytic continuation of th
 
 .. math::
 
-  \Sigma(\tau) = \int_{-\infty}^{\infty} d\omega \frac{e^{-\tau \omega}}{1+e^{-\beta\omega}} \Sigma(\omega)
+  \Sigma(\tau) = \int_{-\infty}^{\infty} d\omega \frac{e^{-\tau \omega}}{1+e^{-\beta\omega}} \rho(\omega)
   
-where :math:`\Sigma(\tau)` is the self-energy in imaginary time and :math:`\Sigma(\omega)` is the self-energy in real frequency.
+where :math:`\Sigma(\tau)` is the self-energy in imaginary time and :math:`\rho(\omega) = -\mathrm{Im}\Sigma(\omega)/\pi` is the spectral function in real frequency.
+The real part of the self-energy is obtained by the Kramers-Kronig transformation from the imaginary part.
 
 In `the SpM method <https://journals.aps.org/pre/abstract/10.1103/PhysRevE.95.061302>`_, the kernel matrix of the integral equation, :math:`e^{-\tau\omega}/(1+e^{-\beta\omega})` is decomposed by the singular value decomposition (SVD),
 and the self-energies :math:`\Sigma(\tau)` and :math:`\Sigma(\omega)` are transformed by the left and right singular vectors, respectively.
