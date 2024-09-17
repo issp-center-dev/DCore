@@ -77,6 +77,10 @@ In addition to the above two libraries, you may use impurity solvers listed belo
 
 For some of them, they provide a BibTeX entry for each paper in the above cites.
 
+When you use the SpM method for analytic continuation, please cite the following paper:
+
+* `Junya Otsuki, Masayuki Ohzeki, Hiroshi Shinaoka, and Kazuyoshi Yoshimi, Phys. Rev. E 95, 061302(R) (2017) <https://journals.aps.org/pre/abstract/10.1103/PhysRevE.95.061302>`_
+
 GitHub repository
 -----------------
 

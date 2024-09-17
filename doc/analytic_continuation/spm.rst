@@ -9,7 +9,7 @@ The sparse-modeling (SpM) method is a method for the analytic continuation of th
   
 where :math:`\Sigma(\tau)` is the self-energy in imaginary time and :math:`\Sigma(\omega)` is the self-energy in real frequency.
 
-In the SpM method, the kernel matrix of the integral equation, :math:`e^{-\tau\omega}/(1+e^{-\beta\omega})` is decomposed by the singular value decomposition (SVD),
+In `the SpM method <https://journals.aps.org/pre/abstract/10.1103/PhysRevE.95.061302>`_, the kernel matrix of the integral equation, :math:`e^{-\tau\omega}/(1+e^{-\beta\omega})` is decomposed by the singular value decomposition (SVD),
 and the self-energies :math:`\Sigma(\tau)` and :math:`\Sigma(\omega)` are transformed by the left and right singular vectors, respectively.
 
 The SpM method is implemented in the ``dcore_anacont`` program.
