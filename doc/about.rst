@@ -49,7 +49,8 @@ Authors & Quotation
 
 **Developers**:
 
-- ver. 2.0
+
+- ver. 2.0-
 
   H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, N. Takemori, Y. Motoyama
 
@@ -60,6 +61,7 @@ Authors & Quotation
   H. Shinaoka, J. Otsuki, K. Yoshimi, M. Kawamura, T. Kato
 
 **Related papers**:
+
 This package depends on TRIQS libraries and applications.
 Please cite relevant papers for these original libraries.
 
