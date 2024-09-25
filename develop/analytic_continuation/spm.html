@@ -44,9 +44,10 @@
 <h1>Analytic continuation with the sparse-modeling method<a class="headerlink" href="#analytic-continuation-with-the-sparse-modeling-method" title="Permalink to this heading">¶</a></h1>
 <p>The sparse-modeling (SpM) method is a method for the analytic continuation of the self-energy by solving the integral equation</p>
 <div class="math notranslate nohighlight">
-\[\Sigma(\tau) = \int_{-\infty}^{\infty} d\omega \frac{e^{-\tau \omega}}{1+e^{-\beta\omega}} \Sigma(\omega)\]</div>
-<p>where <span class="math notranslate nohighlight">\(\Sigma(\tau)\)</span> is the self-energy in imaginary time and <span class="math notranslate nohighlight">\(\Sigma(\omega)\)</span> is the self-energy in real frequency.</p>
-<p>In the SpM method, the kernel matrix of the integral equation, <span class="math notranslate nohighlight">\(e^{-\tau\omega}/(1+e^{-\beta\omega})\)</span> is decomposed by the singular value decomposition (SVD),
+\[\Sigma(\tau) = \int_{-\infty}^{\infty} d\omega \frac{e^{-\tau \omega}}{1+e^{-\beta\omega}} \rho(\omega)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Sigma(\tau)\)</span> is the self-energy in imaginary time and <span class="math notranslate nohighlight">\(\rho(\omega) = -\mathrm{Im}\Sigma(\omega)/\pi\)</span> is the spectral function in real frequency.
+The real part of the self-energy is obtained by the Kramers-Kronig transformation from the imaginary part.</p>
+<p>In <a class="reference external" href="https://journals.aps.org/pre/abstract/10.1103/PhysRevE.95.061302">the SpM method</a>, the kernel matrix of the integral equation, <span class="math notranslate nohighlight">\(e^{-\tau\omega}/(1+e^{-\beta\omega})\)</span> is decomposed by the singular value decomposition (SVD),
 and the self-energies <span class="math notranslate nohighlight">\(\Sigma(\tau)\)</span> and <span class="math notranslate nohighlight">\(\Sigma(\omega)\)</span> are transformed by the left and right singular vectors, respectively.</p>
 <p>The SpM method is implemented in the <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> program.
 While the SpM method in the original paper uses the ADMM for optimization, the SpM method in the <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> program can use more solvers via <a class="reference external" href="https://www.cvxpy.org/index.html">the CVXPY package</a>.</p>
