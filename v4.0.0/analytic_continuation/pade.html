@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Analytic continuation with the Pade approximation &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Analytic continuation with the sparse-modeling method" href="spm.html" />
+    <link rel="prev" title="Analytic continuation" href="../analytic_continuation.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="spm.html" title="Analytic continuation with the sparse-modeling method"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../analytic_continuation.html" title="Analytic continuation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analytic_continuation.html" accesskey="U">Analytic continuation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Analytic continuation with the Pade approximation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="analytic-continuation-with-the-pade-approximation">
+<h1>Analytic continuation with the Pade approximation<a class="headerlink" href="#analytic-continuation-with-the-pade-approximation" title="Permalink to this heading">¶</a></h1>
+<p>The Pade approximation is a simple and widely used method for the analytic continuation.
+The Pade approximation is based on the assumption that the Green’s function can be approximated by a rational function of the frequency.
+The Pade approximation is implemented in the <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> program.</p>
+<p>The common parameters of <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> is specified in the <code class="docutils literal notranslate"><span class="pre">[post.anacont]</span></code> block as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">anacont</span><span class="p">]</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">pade</span>
+<span class="n">omega_min</span> <span class="o">=</span> <span class="o">-</span><span class="mf">6.0</span>
+<span class="n">omega_max</span> <span class="o">=</span> <span class="mf">6.0</span>
+<span class="n">Nomega</span> <span class="o">=</span> <span class="mi">101</span>
+<span class="n">show_result</span> <span class="o">=</span> <span class="n">false</span>
+<span class="n">save_result</span> <span class="o">=</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">solver</span></code> specifies the method for the analytic continuation.
+<code class="docutils literal notranslate"><span class="pre">omega_min</span></code>, <code class="docutils literal notranslate"><span class="pre">omega_max</span></code>, and <code class="docutils literal notranslate"><span class="pre">Nomega</span></code> specify the frequency range and the number of frequency points for the output;
+the frequency points are linearly spaced between <code class="docutils literal notranslate"><span class="pre">omega_min</span></code> and <code class="docutils literal notranslate"><span class="pre">omega_max</span></code>.
+<code class="docutils literal notranslate"><span class="pre">show_result</span></code> specifies whether the obtained self-energies <span class="math notranslate nohighlight">\(\mathrm{Re}\Sigma_{ij}(\omega)\)</span> and <span class="math notranslate nohighlight">\(\mathrm{Im}\Sigma_{ij}(\omega)\)</span> are displayed on the screen by using Matplotlib.
+<code class="docutils literal notranslate"><span class="pre">save_result</span></code> specifies whether the plots of the obtained self-energies are saved in the <code class="docutils literal notranslate"><span class="pre">work/post</span></code> directory as <code class="docutils literal notranslate"><span class="pre">sigma_w_{ish}_{iorb}_{jorb}.png</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">ish</span></code> is the shell index, and <code class="docutils literal notranslate"><span class="pre">iorb</span></code> and <code class="docutils literal notranslate"><span class="pre">jorb</span></code> are the orbital indices.
+The output directory <code class="docutils literal notranslate"><span class="pre">work/post</span></code> can be changed by the parameter <code class="docutils literal notranslate"><span class="pre">dir_work</span></code> in the <code class="docutils literal notranslate"><span class="pre">[post]</span></code> block.</p>
+<p>The parameters for the Pade approximation are specified in the <code class="docutils literal notranslate"><span class="pre">[post.anacont.pade]</span></code> block as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">anacont</span><span class="o">.</span><span class="n">pade</span><span class="p">]</span>
+<span class="n">iomega_max</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">n_min</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">n_max</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">eta</span> <span class="o">=</span> <span class="mf">0.01</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">iomega_max</span></code>, <code class="docutils literal notranslate"><span class="pre">n_min</span></code>, and <code class="docutils literal notranslate"><span class="pre">n_max</span></code> specify how many Matsubara frequencies are used.
+First, <code class="docutils literal notranslate"><span class="pre">iomega_max</span></code> specifies the cutoff of Matsubara frequency, <span class="math notranslate nohighlight">\(\omega_m\)</span>.
+When <code class="docutils literal notranslate"><span class="pre">iomega_max</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>, solve <span class="math notranslate nohighlight">\(\omega_N = \pi/\beta (2N+1) \le \omega_m &lt; \omega_{N+1}\)</span> and obtain <span class="math notranslate nohighlight">\(N\)</span>.
+If <span class="math notranslate nohighlight">\(N &lt; N_\text{min}\)</span> or <span class="math notranslate nohighlight">\(N &gt; N_\text{max}\)</span>, <span class="math notranslate nohighlight">\(N\)</span> is replaced by <span class="math notranslate nohighlight">\(N_\text{min}\)</span> or <span class="math notranslate nohighlight">\(N_\text{max}\)</span>.
+Otherwise (<code class="docutils literal notranslate"><span class="pre">iomega_max</span> <span class="pre">==</span> <span class="pre">0</span></code>, default value), <span class="math notranslate nohighlight">\(N = N_\text{max}\)</span>.
+Then, the Matsubara frequencies <span class="math notranslate nohighlight">\(\omega_n\)</span> for <span class="math notranslate nohighlight">\(0 \le n \le N\)</span> are used.
+When the number of self-energies calculated by the DMFT loop is less than <span class="math notranslate nohighlight">\(N\)</span>, all the data are used.</p>
+<p><code class="docutils literal notranslate"><span class="pre">eta</span></code> is the imaginary frequency shift for the analytic continuation, that is, the analytic continuation is performed as <span class="math notranslate nohighlight">\(i\omega_n \to \omega + i\eta\)</span>.</p>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading">¶</a></h2>
+<p>The following input file is used to perform a DMFT calculation of a Hubbard model on a square lattice with the Pomerol solver and an analytic continuation of the self-energy with the Pade approximation:</p>
+<p><a class="reference download internal" download="" href="../_downloads/b65e337248cde4f14fd64ddc46ce10df/pade.ini"><code class="xref download docutils literal notranslate"><span class="pre">pade.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span>
+<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+
+<span class="k">[system]</span>
+<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol2dcore</span>
+<span class="na">n_bath{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+<span class="na">fit_gtol{float}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-6</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">true</span>
+<span class="na">converge_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span>
+
+<span class="k">[post.anacont]</span>
+<span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pade</span>
+<span class="na">show_result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
+<span class="na">save_result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">true</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span>
+
+<span class="k">[post.anacont.pade]</span>
+<span class="na">eta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+</pre></div>
+</div>
+<p>The figure below shows the self-energy in real frequency obtained by analytic continuation (<code class="docutils literal notranslate"><span class="pre">work/post/sigma_w_0_0_0.png</span></code>).</p>
+<a class="reference internal image-reference" href="../_images/pade.png"><img alt="../_images/pade.png" class="align-center" src="../_images/pade.png" style="width: 700px;" /></a>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../reference/programs.html">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/input.html">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/output.html">Output-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../analytic_continuation.html">Analytic continuation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../analytic_continuation.html"
+                          title="previous chapter">Analytic continuation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="spm.html"
+                          title="next chapter">Analytic continuation with the sparse-modeling method</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="spm.html" title="Analytic continuation with the sparse-modeling method"
+             >next</a></li>
+        <li class="right" >
+          <a href="../analytic_continuation.html" title="Analytic continuation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analytic_continuation.html" >Analytic continuation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Analytic continuation with the Pade approximation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

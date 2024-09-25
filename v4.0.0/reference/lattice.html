@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>lattice parameter &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">lattice</span></code> parameter</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="lattice-parameter">
+<h1><code class="docutils literal notranslate"><span class="pre">lattice</span></code> parameter<a class="headerlink" href="#lattice-parameter" title="Permalink to this heading">¶</a></h1>
+<section id="predefined-models">
+<h2>Predefined models<a class="headerlink" href="#predefined-models" title="Permalink to this heading">¶</a></h2>
+<p>For model calculations, the following preset models are defined</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lattice</span> <span class="o">=</span> <span class="n">chain</span>
+<span class="n">lattice</span> <span class="o">=</span> <span class="n">square</span>
+<span class="n">lattice</span> <span class="o">=</span> <span class="n">cubic</span>
+<span class="n">lattice</span> <span class="o">=</span> <span class="n">bethe</span>
+</pre></div>
+</div>
+<p>The first three models use tight-binding parameters up to second nearest neighbors. One can specify them by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">t</span><span class="s1">&#39; = -0.1</span>
+</pre></div>
+</div>
+<p>The last one, <code class="docutils literal notranslate"><span class="pre">bethe</span></code>, use only parameter <code class="docutils literal notranslate"><span class="pre">t</span></code>, which defines the width (4t) of the semicircular density of states.</p>
+<a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
+</section>
+<section id="wannier90-format">
+<h2>Wannier90 format<a class="headerlink" href="#wannier90-format" title="Permalink to this heading">¶</a></h2>
+<p>For DFT+DMFT calculations and model calculations of other lattice structures, hopping parameters in the Wannier90 format can be imported by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lattice</span> <span class="o">=</span> <span class="n">wannier90</span>
+</pre></div>
+</div>
+<p>Place the Wannier90 file in the current directory with the name <em>seedname</em>_hr.dat. For details of the Wannier90 format, see <a class="reference internal" href="../about.html#dcore-paper"><span class="std std-ref">SciPost 2021</span></a>.</p>
+</section>
+<section id="connection-to-external-programs">
+<h2>Connection to external programs<a class="headerlink" href="#connection-to-external-programs" title="Permalink to this heading">¶</a></h2>
+<p>For experts, the lattice data may be prepared by your own. In this case, use</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lattice</span> <span class="o">=</span> <span class="n">external</span>
+</pre></div>
+</div>
+<p>In this mode, you should make all necessary data in <code class="docutils literal notranslate"><span class="pre">dft_input</span></code> group in <em>seedname</em>.h5.
+The data structure follows <strong>DFTTools</strong>. For details, see
+<a class="reference external" href="https://triqs.github.io/dft_tools/1.4/reference/h5structure.html">the reference manual of DFTTools</a>.</p>
+<p>The pre-process <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> does not touch the data in <code class="docutils literal notranslate"><span class="pre">dft_input</span></code> group, and write only additional data such as interactions into <code class="docutils literal notranslate"><span class="pre">DCore</span></code> group.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">lattice</span></code> parameter</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
