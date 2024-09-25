@@ -1,22 +1,18 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Programs &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/dcore.css" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -45,7 +41,7 @@
             
   <section id="programs">
 <h1>Programs<a class="headerlink" href="#programs" title="Permalink to this heading">¶</a></h1>
-<p><strong>DCore</strong> consists of four main programs, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code>,  and <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.
+<p><strong>DCore</strong> consists of five main programs, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code>, and <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code>.
 All programs read a single input file (say <em>input.ini</em>) which contains parameters classified into blocks.
 It is also possible to pass multiple input files to the program. Parameters from all input files are merged. Duplicate paramegers are overwritten by the later one.
 See <a class="reference internal" href="input.html"><span class="doc">Input-file format</span></a>, for the list of parameters and detailed descriptions.</p>
@@ -145,19 +141,30 @@ All results are stored in <strong>check</strong> directory without specified.</p
 \left[\sum_i^{\rm shell} \sum_{\alpha \beta}^{N_{\rm orb}^i} \Sigma_{\alpha \beta}(i\omega)\right]
 /\left[\sum_i^{\rm shell} N_{\rm orb}^{i}\right],\]</div>
 <p>The maximum frequency of this plot is specified with the parameter <code class="docutils literal notranslate"><span class="pre">omega_check</span></code>
-in the <code class="docutils literal notranslate"><span class="pre">[tool]</span></code> block.</p>
+in the <code class="docutils literal notranslate"><span class="pre">[post.check]</span></code> block.</p>
 </li>
 </ul>
 </section>
-<section id="post-processing-dcore-post">
-<span id="program-dcore-post"></span><h2>Post-processing : <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code><a class="headerlink" href="#post-processing-dcore-post" title="Permalink to this heading">¶</a></h2>
-<p>This program computes the total DOS (<em>seedname</em>_dos.dat) and momenum-resolved spectral function (<em>seedname</em>_akw.dat) reading the DMFT results in <em>seedname</em>.out.h5.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_post input.ini --np <span class="m">4</span>
+<section id="analytic-continuation-dcore-anacont">
+<span id="program-dcore-anacont"></span><h2>Analytic continuation : <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code><a class="headerlink" href="#analytic-continuation-dcore-anacont" title="Permalink to this heading">¶</a></h2>
+<p>This program performs the analytic continuation of the self-energy of Matsubara frequencies to the real frequency.
+The self-energy of Matsubara frequencies is stored in the NumPy binary file <em>seedname</em>_sigma_iw.npz, which is one of the output files of the main program <code class="docutils literal notranslate"><span class="pre">dcore</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_anacont<span class="w"> </span>input.ini
+</pre></div>
+</div>
+<p>The obtained self-energy on the real axis is stored in the NumPy binary file sigma_w.npz in the <code class="docutils literal notranslate"><span class="pre">post</span></code> directory; the name of the directory can be changed by the parameter <code class="docutils literal notranslate"><span class="pre">dir_post</span></code> in the <code class="docutils literal notranslate"><span class="pre">[post]</span></code> block.</p>
+</section>
+<section id="spectral-functions-dcore-spectrum">
+<span id="program-dcore-spectrum"></span><h2>Spectral functions : <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code><a class="headerlink" href="#spectral-functions-dcore-spectrum" title="Permalink to this heading">¶</a></h2>
+<p>This program computes the total DOS (post/dos.dat) and momenum-resolved spectral function (post/akw.dat) reading the self-energy on the real axis stored in post/sigma_w.npz.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_spectrum<span class="w"> </span>input.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">4</span>
 </pre></div>
 </div>
 <p>Here, please specify the number of MPI processes.
+The output files are saved in the directory <code class="docutils literal notranslate"><span class="pre">post</span></code>; the name of the directory can be changed by the parameter <code class="docutils literal notranslate"><span class="pre">dir_post</span></code> in the <code class="docutils literal notranslate"><span class="pre">[post]</span></code> block.
 The computed spectral function can be drawn by</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ gnuplot <span class="o">[</span>seedname<span class="o">]</span>_akw.gp
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>post
+$<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
 </pre></div>
 </div>
 <p>Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
@@ -207,6 +214,7 @@ It would help readers to make use of the latest features in the <strong>develop<
 <li class="toctree-l2"><a class="reference internal" href="input.html">Input-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="output.html">Output-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analytic_continuation.html">Analytic continuation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tools.html">Tools</a></li>
 </ul>
 </li>
@@ -252,7 +260,7 @@ It would help readers to make use of the latest features in the <strong>develop<
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, The University of Tokyo.
+    &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

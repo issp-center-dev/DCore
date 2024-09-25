@@ -1,22 +1,18 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Exact diagonalization solver: pomerol &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -90,40 +86,42 @@ Because of storage limitation, <span class="math notranslate nohighlight">\(n_\t
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference internal" href="../../tutorial/square/square.html"><span class="doc">The square-lattice model in tutorial</span></a> is solved by the pomerol solver using the following input parameter set:</p>
 <p><a class="reference download internal" download="" href="../../_downloads/20038bb177c668c41dc9aaf6a269b495/dmft_square_pomerol.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_square_pomerol.ini</span></code></a></p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span><span class="w"></span>
-<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
-<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span><span class="w"></span>
-<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w"></span>
-<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span><span class="w"></span>
-<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span><span class="w"></span>
-<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span><span class="w"></span>
-<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span><span class="w"></span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">square</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-1.0</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
 
-<span class="k">[system]</span><span class="w"></span>
-<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span><span class="w"></span>
-<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span><span class="w"></span>
-<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span><span class="w"></span>
-<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
+<span class="k">[system]</span>
+<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
+<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
 
-<span class="k">[impurity_solver]</span><span class="w"></span>
-<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol</span><span class="w"></span>
-<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol2dcore</span><span class="w"></span>
-<span class="na">n_bath{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span><span class="w"></span>
-<span class="na">fit_gtol{float}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-6</span><span class="w"></span>
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">pomerol2dcore</span>
+<span class="na">n_bath{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+<span class="na">fit_gtol{float}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-6</span>
 
-<span class="k">[control]</span><span class="w"></span>
-<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
-<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span><span class="w"></span>
-<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span><span class="w"></span>
-<span class="na">converge_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span><span class="w"></span>
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">converge_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span>
 
-<span class="k">[tool]</span><span class="w"></span>
-<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.4</span><span class="w"></span>
-<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span><span class="w"></span>
-<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span><span class="w"></span>
-<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">6.0</span><span class="w"></span>
-<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-5.0</span><span class="w"></span>
-<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span><span class="w"></span>
+<span class="k">[post.spectrum]</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.4</span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+
+<span class="k">[post.anacont]</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">6.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-5.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span>
 </pre></div>
 </div>
 <p>It is recommended to set <code class="docutils literal notranslate"><span class="pre">convergence_tol</span></code> parameter in [control] block to stop the DMFT loop automatically.
@@ -150,6 +148,7 @@ Convergence to the CTHYB result is obtained around <code class="docutils literal
 <li class="toctree-l2"><a class="reference internal" href="../../reference/input.html">Input-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/output.html">Output-file format</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../analytic_continuation.html">Analytic continuation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tools.html">Tools</a></li>
 </ul>
 </li>
@@ -196,7 +195,7 @@ Convergence to the CTHYB result is obtained around <code class="docutils literal
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, The University of Tokyo.
+    &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

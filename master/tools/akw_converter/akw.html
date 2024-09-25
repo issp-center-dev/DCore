@@ -1,22 +1,18 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>A(k,w) converter &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -50,18 +46,23 @@
 An auxiliary tool <code class="docutils literal notranslate"><span class="pre">akw_converter</span></code> converts these data into three-dimensional volumeric data with a fixed value of <span class="math notranslate nohighlight">\(\omega\)</span> that is suitable for reading with existing 3D graphic softwares such as VESTA.</p>
 <section id="how-to-use">
 <h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this heading">¶</a></h2>
-<p>The following steps should be done after all calculations are finished, namely, self-consistent calculation by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and even post calculations by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
+<p>The following steps should be done after all calculations are finished, namely, self-consistent calculation by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and even post calculations by <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code>.</p>
 <ol class="arabic">
 <li><p><strong>Modifying ini file</strong></p>
-<p>A parameter <code class="docutils literal notranslate"><span class="pre">nk_mesh</span></code> is added to the ini file</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tools</span><span class="p">]</span>
+<p>To change the output directory from the default value (<code class="docutils literal notranslate"><span class="pre">post</span></code>), <code class="docutils literal notranslate"><span class="pre">dir_post</span></code> is added to the ini file as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="p">]</span>
+<span class="n">dir_post</span> <span class="o">=</span> <span class="n">post_grd</span>
+</pre></div>
+</div>
+<p>Then, to activate the grid calculation, the following block is added to the ini file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">spectrum</span><span class="p">]</span>
 <span class="n">nk_mesh</span> <span class="o">=</span> <span class="mi">100</span>
 </pre></div>
 </div>
 <p>This parameter activates a grid calculation.
 <span class="math notranslate nohighlight">\(A(\boldsymbol{k},\omega)\)</span> is to be computed on a four-dimensional grid of size <span class="math notranslate nohighlight">\(100^3 \times N_{\omega}\)</span>.
 In order to reduce the data size, one could instead specify a set of 3 parameters as</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tools</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">spectrum</span><span class="p">]</span>
 <span class="n">nk0_mesh</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">nk1_mesh</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">nk2_mesh</span> <span class="o">=</span> <span class="mi">4</span>
@@ -70,7 +71,8 @@ In order to reduce the data size, one could instead specify a set of 3 parameter
 <p>In this case, <span class="math notranslate nohighlight">\(k_z\)</span> is computed on 0, pi/2, pi and 3pi/3.
 Note that the k-grid is generated in the <em>primitive</em> reciprocal space.
 It is also highly recommended to reduce the number of frequency points. For example, if only the Fermi surface is of interest, one can set</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Nomega</span> <span class="o">=</span> <span class="mi">3</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">anacont</span><span class="p">]</span>
+<span class="n">Nomega</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">omega_max</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="n">omega_min</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
 </pre></div>
@@ -78,13 +80,13 @@ It is also highly recommended to reduce the number of frequency points. For exam
 <p>Then, <span class="math notranslate nohighlight">\(\omega=0\)</span> and two additional points are selected (<code class="docutils literal notranslate"><span class="pre">Nomega</span> <span class="pre">=</span> <span class="pre">1</span></code> is not allowed).
 In this way, the data points are reduced to <span class="math notranslate nohighlight">\(100^2 \times 4 \times 3\)</span>.</p>
 </li>
-<li><p><strong>Executing dcore_post</strong></p>
-<p>Now, <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> is (re-)executed by</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dcore_post</span> <span class="o">--</span><span class="n">np</span> <span class="mi">4</span> <span class="o">--</span><span class="n">prefix</span> <span class="n">post_grd</span><span class="o">/</span> <span class="n">square</span><span class="o">.</span><span class="n">ini</span>
+<li><p><strong>Executing dcore_anacont and dcore_spectrum</strong></p>
+<p>Now, <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code> are (re-)executed by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dcore_anacont</span> <span class="n">square</span><span class="o">.</span><span class="n">ini</span>
+<span class="n">dcore_spectrum</span> <span class="o">--</span><span class="n">np</span> <span class="mi">4</span> <span class="n">square</span><span class="o">.</span><span class="n">ini</span>
 </pre></div>
 </div>
 <p>The number of processes in the <code class="docutils literal notranslate"><span class="pre">--np</span></code> option  (4 above) should be changed according to your environment.
-An output directory is specified by the <code class="docutils literal notranslate"><span class="pre">--prefix</span></code> option (default is ‘post/’).
 In this case, the data are saved in ‘post_grd’ directory.
 We recommend to use this option to have k-path data and k-grid data in separate directories.</p>
 <p>The four-dimensional grid data are save in a file ‘<em>seed</em>_akw_mesh_*sp*.dat’, where <em>seed</em> is the seed name given in the ini file, and <em>sp</em> is the spin index (‘up’ and ‘down’ if spin-orbit coupling is not considered and ‘ud’ otherwise).</p>
@@ -96,7 +98,7 @@ We recommend to use this option to have k-path data and k-grid data in separate 
 </pre></div>
 </div>
 <p>The value of <span class="math notranslate nohighlight">\(\omega\)</span> is given by the <code class="docutils literal notranslate"><span class="pre">--omega</span></code> option. If data do not exist just on this <span class="math notranslate nohighlight">\(\omega\)</span>, <span class="math notranslate nohighlight">\(A(\boldsymbol{k},\omega)\)</span> is interpolated using 2 points nearby (depending on the kind of interpolation method).
-The first argument is the path to the four-dimensional data generated by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>. The second argument is the output file name. The default format is <strong>GRD</strong>, and the output filename should have extension ‘grd’.</p>
+The first argument is the path to the four-dimensional data generated by <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code>. The second argument is the output file name. The default format is <strong>GRD</strong>, and the output filename should have extension ‘grd’.</p>
 <p>The full option of <code class="docutils literal notranslate"><span class="pre">akw_converter</span></code> can be seen by the command</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">akw_converter</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
 </pre></div>
@@ -140,6 +142,7 @@ The figure below shows the Slice panel:</p>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/input.html">Input-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/output.html">Output-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../analytic_continuation.html">Analytic continuation</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../../tools.html">Tools</a></li>
 </ul>
 </li>
@@ -186,7 +189,7 @@ The figure below shows the Slice panel:</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, The University of Tokyo.
+    &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

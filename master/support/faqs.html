@@ -1,22 +1,18 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>FAQ/Troubleshooting &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/dcore.css" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Reporting issues" href="issues.html" />
@@ -76,6 +72,11 @@
 <li><p><a class="reference internal" href="#what-is-the-difference-between-alps-ct-hyb-and-triqs-cthyb" id="id15">What is the difference between ALPS/CT-HYB and TRIQS/cthyb?</a></p></li>
 <li><p><a class="reference internal" href="#solver-dependent-parameter-is-not-recognized" id="id16">Solver-dependent parameter is not recognized</a></p></li>
 <li><p><a class="reference internal" href="#can-i-use-my-impurity-solver" id="id17">Can I use my impurity solver?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#others" id="id18">Others</a></p>
+<ul>
+<li><p><a class="reference internal" href="#dcore-is-slow-even-with-mpi-parallelization" id="id19">DCore is slow even with MPI parallelization</a></p></li>
 </ul>
 </li>
 </ul>
@@ -179,6 +180,22 @@ For example, integer variable with name <em>num</em> is written as</p>
 <p>Yes. Follow the instruction in <a class="reference internal" href="../impuritysolvers/how_to_integrate.html"><span class="doc">How to integrate your own solver</span></a></p>
 </section>
 </section>
+<section id="others">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">Others</a><a class="headerlink" href="#others" title="Permalink to this heading">¶</a></h2>
+<section id="dcore-is-slow-even-with-mpi-parallelization">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">DCore is slow even with MPI parallelization</a><a class="headerlink" href="#dcore-is-slow-even-with-mpi-parallelization" title="Permalink to this heading">¶</a></h3>
+<p>One of the reasons is that the number of threads of each MPI process is not set properly.
+Unfortunately, the environment variable to set the number of threads is different among environments/libraries (OpenBLAS, Intel MKL, etc.).
+The followings are the environment variables to set the number of threads for some libraries.</p>
+<ul class="simple">
+<li><p>OMP_NUM_THREADS</p></li>
+<li><p>OPENBLAS_NUM_THREADS</p></li>
+<li><p>MKL_NUM_THREADS</p></li>
+<li><p>VECLIB_MAXIMUM_THREADS</p></li>
+<li><p>NUMEXPR_NUM_THREADS</p></li>
+</ul>
+</section>
+</section>
 </section>
 
 
@@ -240,7 +257,7 @@ For example, integer variable with name <em>num</em> is written as</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, The University of Tokyo.
+    &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>
