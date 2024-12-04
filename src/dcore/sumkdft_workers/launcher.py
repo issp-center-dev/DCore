@@ -62,7 +62,7 @@ def run_sumkdft(runner_cls, model_file, work_dir, mpirun_command, params):
     with HDFArchive('./input.h5', 'w') as h:
         h['params'] = params
 
-    commands = [sys.executable, "-m", "dcore.sumkdft_workers.mpi_main"]
+    commands = [sys.executable, "-m", "mpi4py", "-m", "dcore.sumkdft_workers.mpi_main"]
     commands.append(runner_cls)
     commands.append(model_file)
     commands.append(os.path.abspath('./input.h5'))
