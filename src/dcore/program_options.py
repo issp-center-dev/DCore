@@ -152,7 +152,7 @@ def create_parser(target_sections=None):
     parser.add_option("post.anacont.spm", "n_tail", int, 10, "number of matsubara points for tail-fitting")
     parser.add_option("post.anacont.spm", "n_sv", int, 50, "number of singular values to be used")
     parser.add_option("post.anacont.spm", "lambda", float, 1e-5, "coefficient of L1 regularization")
-    parser.add_option("post.anacont.spm", "solver", str, "ECOS", "solver to be used")
+    parser.add_option("post.anacont.spm", "solver", str, "", "solver to be used")
     parser.add_option("post.anacont.spm", "verbose_opt", bool, False, "show optimization progress")
     parser.add_option("post.anacont.spm", "show_fit", bool, False, "plot result of tail-fitting")
 

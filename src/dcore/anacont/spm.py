@@ -100,7 +100,7 @@ def get_single_continuation(
     sum_rule_const,
     lambd,
     verbose=True,
-    solver="ECOS",
+    solver="",
     solver_opts={},
 ):
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(
@@ -134,7 +134,7 @@ def get_multiple_continuations(
     sum_rule_const,
     lambdas,
     verbose=True,
-    solver="ECOS",
+    solver="",
     solver_opts={},
 ):
     U, S, Vt, delta_energy, energies_extract = _get_svd_for_continuation(
@@ -210,7 +210,7 @@ def _solveProblem(
     sum_rule_const,
     lambd,
     verbose=True,
-    solver="ECOS",
+    solver="",
     solver_opts={},
 ):
     Q = len(S)
@@ -227,7 +227,10 @@ def _solveProblem(
     ]  # uniform real energy grid is assumed here
 
     prob = cp.Problem(objective, constraints)
-    _ = prob.solve(verbose=verbose, solver=solver, **solver_opts)
+    if solver == "":
+        _ = prob.solve(verbose=verbose)
+    else:
+        _ = prob.solve(verbose=verbose, solver=solver, **solver_opts)
     gf_tau_fit = np.dot(U, np.dot(Smat, rho_prime.value))
     chi2 = 0.5 * np.linalg.norm(gf_tau - gf_tau_fit, ord=2) ** 2
     return rho_prime.value, gf_tau_fit, chi2
