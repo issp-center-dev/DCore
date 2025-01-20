@@ -27,6 +27,8 @@ def run_sumkdft(runner_cls, model_file, work_dir, mpirun_command, params):
 
     :param runner_cls: str
        Name of subclass of SumkDFTWorker
+       If runner_cls is fully qualified name (e.g., `module.class`), module will be automatically imported.
+       Otherwise, the class is assumed to be in dcore.sumkdft_workers.all_workers.
     :param model_file: str
         HDF5 file
     :param work_dir: str
