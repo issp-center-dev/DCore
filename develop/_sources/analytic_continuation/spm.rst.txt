@@ -23,7 +23,7 @@ The parameters for the SpM method are specified in the ``[post.anacont.spm]`` bl
 .. code-block::
 
    [post.anacont.spm]
-   solver = ECOS
+   solver = CLARABEL
    n_matsubara = 1000
    n_tau = 101
    n_tail = 5
