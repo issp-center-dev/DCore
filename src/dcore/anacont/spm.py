@@ -228,7 +228,7 @@ def _solveProblem(
 
     prob = cp.Problem(objective, constraints)
     if solver == "":
-        _ = prob.solve(verbose=verbose)
+        _ = prob.solve(verbose=verbose, **solver_opts)
     else:
         _ = prob.solve(verbose=verbose, solver=solver, **solver_opts)
     gf_tau_fit = np.dot(U, np.dot(Smat, rho_prime.value))
