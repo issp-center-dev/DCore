@@ -111,6 +111,18 @@ class TypedParser(object):
         # Names of sections in which we accept options that are not predefined by add_option().
         self.__allow_undefined_options = []
 
+    def add_section(self, section):
+        """
+        Add a section to be used.
+        If a section is already added, raise an error.
+
+        :param section: section name
+        """
+        if section not in self.__section_to_be_used:
+            self.__section_to_be_used.append(section)
+        else:
+            raise RuntimeError("Redefinition of a section is not allowed!")
+
     def add_option(self, section, option, dtype, default, string, status = OptionStatus.VALID):
         """
         :param section: section name
