@@ -130,16 +130,25 @@ This block includes parameters that are solely used by ``dcore_anacont``.
 [post.anacont.pade] block
 ---------------------------
 
-This block includes parameters that are solely used by ``dcore_anacont``.
+This block includes parameters that are solely used by ``dcore_anacont`` when ``solver = pade`` in ``[post.anacont]``.
 
 .. include:: post.anacont.pade_desc.txt
 
 [post.anacont.spm] block
 ---------------------------
 
-This block includes parameters that are solely used by ``dcore_anacont``.
+This block includes parameters that are solely used by ``dcore_anacont`` when ``solver = spm`` in ``[post.anacont]``.
 
 .. include:: post.anacont.spm_desc.txt
+
+[post.anacont.spm.solver] block
+---------------------------
+
+This block includes parameters that are solely used by ``dcore_anacont`` when ``solver = spm`` in ``[post.anacont]``.
+
+The parameters in this block are passed to cvxpy's ``solve`` function.
+Note that ``solver`` and ``verbose_opt`` in ``[post.anacont.spm]`` are used for the ``solver`` and ``verbose`` arguments of ``solve``, respectively, so don't specify them here.
+See `cvxpy's solver documentation <https://www.cvxpy.org/tutorial/solvers/index.html>`_ for details.
 
 [post.spectrum] block
 -----------------------
