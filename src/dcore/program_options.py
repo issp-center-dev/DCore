@@ -45,7 +45,7 @@ def create_parser(target_sections=None):
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.anacont.spm.solver' 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
+        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.anacont.spm.solver', 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
     
@@ -133,7 +133,7 @@ def create_parser(target_sections=None):
     parser.add_option("post.check", "omega_check", float, 0, "Maximum frequency for dcore_check. If not specified, a fixed number of Matsubara points are taken.")
 
     # [post.anacont]
-    parser.add_option("post.anacont", "solver", str, "algorithm", "Algorithm for analytic continuation")
+    parser.add_option("post.anacont", "solver", str, "pade", "Algorithm for analytic continuation (pade or spm)")
     parser.add_option("post.anacont", "omega_min", float, -1, "Minimum value of real frequency")
     parser.add_option("post.anacont", "omega_max", float, 1, "Max value of real frequency")
     parser.add_option("post.anacont", "Nomega", int, 100, "Number of real frequencies")
