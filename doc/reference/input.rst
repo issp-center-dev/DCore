@@ -36,7 +36,14 @@ This block includes parameters for defining a model to be solved.
 
 .. ``dcore_pre``, ``dcore_check`` and ``dcore_post`` read this block.
 
-.. include:: model_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: model_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: model_desc.txt
 
 
 See separate pages from the link below for detailed descriptions of some parameters.
@@ -59,7 +66,14 @@ See separate pages from the link below for detailed descriptions of some paramet
 
 This block includes parameters that controls the behavior of ``dcore_pre``.
 
-.. include:: pre_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: pre_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: pre_desc.txt
 
 [system] block
 --------------
@@ -68,7 +82,14 @@ This block includes thermodynamic parameters and some technical parameters such 
 
 .. ``dcore`` read this block.
 
-.. include:: system_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: system_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: system_desc.txt
 
 If the parameter ``with_dc`` is specified to ``True``,
 the following part of the self-energy is subtracted to avoid the double-counting error of
@@ -93,7 +114,14 @@ This block specifies an impurity solver to be used and necessary parameters for 
 
 .. ``dcore`` and ``dcore_post`` read this block.
 
-.. include:: impurity_solver_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: impurity_solver_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: impurity_solver_desc.txt
 
 Additionally, we have to specify solver-dependent parameters in the way like ``n_cycles{int} = 500000``.
 For details, see :doc:`the reference manual for each solver <../impuritysolvers>`.
@@ -109,7 +137,14 @@ This block includes parameters that control the self-consistency loop of DMFT.
 
 .. ``dcore`` reads this block.
 
-.. include:: control_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: control_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: control_desc.txt
 
 [post] block
 ------------
@@ -118,28 +153,56 @@ This block includes parameters that are solely used by ``dcore_anacont`` and ``d
 
 .. ``dcore_check`` and ``dcore_post`` read this block.
 
-.. include:: post_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: post_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: post_desc.txt
 
 [post.anacont] block
 -----------------------
 
 This block includes parameters that are solely used by ``dcore_anacont``.
 
-.. include:: post.anacont_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: post.anacont_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: post.anacont_desc.txt
 
 [post.anacont.pade] block
 ---------------------------
 
 This block includes parameters that are solely used by ``dcore_anacont`` when ``solver = pade`` in ``[post.anacont]``.
 
-.. include:: post.anacont.pade_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: post.anacont.pade_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: post.anacont.pade_desc.txt
 
 [post.anacont.spm] block
 ---------------------------
 
 This block includes parameters that are solely used by ``dcore_anacont`` when ``solver = spm`` in ``[post.anacont]``.
 
-.. include:: post.anacont.spm_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: post.anacont.spm_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: post.anacont.spm_desc.txt
 
 [post.anacont.spm.solver] block
 ---------------------------
@@ -155,21 +218,42 @@ See `cvxpy's solver documentation <https://www.cvxpy.org/tutorial/solvers/index.
 
 This block includes parameters that are solely used by ``dcore_spectrum``.
 
-.. include:: post.spectrum_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: post.spectrum_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: post.spectrum_desc.txt
 
 [post.check] block
 -----------------------
 
 This block includes parameters that are solely used by ``dcore_check``.
 
-.. include:: post.check_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: post.check_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: post.check_desc.txt
 
 [mpi] block
 ------------
 
 This block includes parameters which are read by ``dcore`` and ``dcore_post``.
 
-.. include:: mpi_desc.txt
+.. csv-table::
+   :width: 100%
+   :widths: 20, 10, 20, 60
+   :file: mpi_desc.csv
+   :encoding: utf-8
+   :header-rows: 1
+
+.. .. include:: mpi_desc.txt
 
 When an option ``-DMPIEXEC=<MPIRUN>`` is passed to the ``cmake`` command,
 The default value of ``command`` will be replaced with ``<MPIRUN>``.

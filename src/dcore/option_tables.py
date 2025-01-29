@@ -89,6 +89,33 @@ def generate_all_description():
         desc.append(generate_description(p, section))
     return ''.join(desc)
 
+def generate_description_csv(p, section):
+    """
+    Generate descriptions of all options in a given section
+
+    :param p: parser
+    :param section: str
+        section name
+    :return description: str
+        Description of all options
+    """
+
+    output = StringIO()
+
+    import csv
+    writer = csv.writer(output, dialect='unix')
+    writer.writerow(["Name", "Type", "Default", "Description"])
+    for option in p.get_predefined_options(section):
+        writer.writerow([
+            option,
+            readable_type_string(p.get_type(section, option)),
+            str(p.get_default_value(section, option)),
+            p.get_description(section, option)
+        ])
+
+    return output.getvalue()
+
+
 if __name__ == '__main__':
     import sys
     p = create_parser()
@@ -99,7 +126,7 @@ if __name__ == '__main__':
     print("Writing tables of runtime options into ", prefix)
 
     for section in p.get_predefined_sections():
-        desc = generate_description(p, section)
-        with open(prefix+'/'+section+'_desc.txt', 'w') as f:
-            print(desc, file=f)
+        desc = generate_description_csv(p, section)
+        with open(prefix+'/'+section+'_desc.csv', 'w') as f:
+            f.write(desc)
             print(f'  [{section}]')
