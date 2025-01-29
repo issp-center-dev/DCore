@@ -39,7 +39,13 @@ Files that have empty Reference in this table are explained in the following.
     See `DFTTools <https://triqs.ipht.cnrs.fr/applications/dft_tools/reference/h5structure.html>`_ for the details of the data structure in ``dft_input`` group.
     The data included in ``Dcore`` group is list below:
 
-    .. include:: dcore_pre.txt
+    .. csv-table::
+       :width: 100%
+       :header: Name, Type, Description
+       :widths: 20, 20, 60
+
+       Umat, numpy.complex, "The values of :math:`U^i_{\alpha\beta\gamma\delta}`, where :math:`i` corresponds to the kind of correlated shell and :math:`\alpha, \beta, \gamma, \delta` denote the spin-orbital indices at each correlated shell."
+       LocalPotential, numpy.complex, "The values of :math:`V^i_{s, o1, o2}`, where :math:`s` denotes the spin, and :math:`o1, o2` denote orbitals. If SO coupling is considered, the spin is included in the orbital indices."
 
 ``dcore``
 ~~~~~~~~~
@@ -50,7 +56,17 @@ Files that have empty Reference in this table are explained in the following.
     The following list summarizes data structure in the ``dmft_out`` group:
     See :doc:`gf_format` for the data structure of the Green's function and self-energy.
 
-    .. include:: dcore_out.txt
+    .. csv-table::
+       :width: 100%
+       :header: Name, Type, Description
+       :widths: 20, 20, 60
+
+       iterations, Int, "The total number of iteration steps."
+       Sigma_iw, Group, "The local self-energy in imaginary-frequency domain at each iteration step."
+       chemical_potential, Group, "The chemical potential at each iteration step."
+       dc_energ, Group, "The double-counting corrections to the energy at each iteration step."
+       dc_imp, Group, "The double-counting self-energy term at each iteration step."
+       parameters, Group, "All input parameters read from ini file."
 
     The latest data list can be obtained by ``h5ls`` command.
 
