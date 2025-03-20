@@ -64,7 +64,7 @@ The parameters for the SpM method are specified in the <code class="docutils lit
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">n_matsubara</span></code> is the number of Matsubara frequencies used. When it is larger than the number of the data obtained by the DMFT calculation, the number of the data is used.
-<code class="docutils literal notranslate"><span class="pre">n_tau</span></code> is the number of imaginary time points.
+<code class="docutils literal notranslate"><span class="pre">n_tau</span></code> is the number of imaginary time points. If negative or omitted, it will be determined from the size of <span class="math notranslate nohighlight">\(\Sigma(i\omega_n)\)</span> .
 <code class="docutils literal notranslate"><span class="pre">n_tail</span></code> is the number of the last Matsubara frequencies used for the tail fitting, <span class="math notranslate nohighlight">\(\Sigma(i\omega_n) \sim a/i\omega_n\)</span>.
 <code class="docutils literal notranslate"><span class="pre">n_sv</span></code> is the number of singular values used after truncation.
 <code class="docutils literal notranslate"><span class="pre">lambda</span></code> is the coefficient of the L1 regularization term in the optimization.
