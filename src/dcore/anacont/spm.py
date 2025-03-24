@@ -228,7 +228,7 @@ def _solveProblem(
 
     prob = cp.Problem(objective, constraints)
     if solver == "":
-        _ = prob.solve(verbose=verbose)
+        _ = prob.solve(verbose=verbose, **solver_opts)
     else:
         _ = prob.solve(verbose=verbose, solver=solver, **solver_opts)
     gf_tau_fit = np.dot(U, np.dot(Smat, rho_prime.value))
@@ -319,6 +319,10 @@ def parameters_from_ini(inifile):
 def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
 
     n_tau = params_spm["n_tau"]
+    if n_tau <= 0:
+        print(f"Negative value of n_tau is given ({n_tau}), so n_tau will be determined from the size of sigma_iw")
+        n_tau = sigma_iw_npz['data0'].shape[0] // 2
+    print(f"n_tau = {n_tau}")
     n_tail = params_spm["n_tail"]
     show_fit = params_spm["show_fit"]
     

@@ -102,3 +102,4 @@ if __name__ == '__main__':
         desc = generate_description(p, section)
         with open(prefix+'/'+section+'_desc.txt', 'w') as f:
             print(desc, file=f)
+            print(f'  [{section}]')

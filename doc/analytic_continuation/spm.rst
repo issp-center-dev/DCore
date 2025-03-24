@@ -23,7 +23,7 @@ The parameters for the SpM method are specified in the ``[post.anacont.spm]`` bl
 .. code-block::
 
    [post.anacont.spm]
-   solver = ECOS
+   solver = CLARABEL
    n_matsubara = 1000
    n_tau = 101
    n_tail = 5
@@ -31,7 +31,7 @@ The parameters for the SpM method are specified in the ``[post.anacont.spm]`` bl
    lambda = 1e-5
 
 ``n_matsubara`` is the number of Matsubara frequencies used. When it is larger than the number of the data obtained by the DMFT calculation, the number of the data is used.
-``n_tau`` is the number of imaginary time points.
+``n_tau`` is the number of imaginary time points. If negative or omitted, it will be determined from the size of :math:`\Sigma(i\omega_n)` .
 ``n_tail`` is the number of the last Matsubara frequencies used for the tail fitting, :math:`\Sigma(i\omega_n) \sim a/i\omega_n`.
 ``n_sv`` is the number of singular values used after truncation.
 ``lambda`` is the coefficient of the L1 regularization term in the optimization.

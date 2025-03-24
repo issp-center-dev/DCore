@@ -45,7 +45,7 @@ def create_parser(target_sections=None):
     Create a parser for all program options of DCore
     """
     if target_sections is None:
-        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.anacont.spm.solver' 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
+        parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.anacont.spm.solver', 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
     
@@ -152,9 +152,13 @@ def create_parser(target_sections=None):
     parser.add_option("post.anacont.spm", "n_tail", int, 10, "number of matsubara points for tail-fitting")
     parser.add_option("post.anacont.spm", "n_sv", int, 50, "number of singular values to be used")
     parser.add_option("post.anacont.spm", "lambda", float, 1e-5, "coefficient of L1 regularization")
-    parser.add_option("post.anacont.spm", "solver", str, "", "solver to be used")
+    parser.add_option("post.anacont.spm", "solver", str, "", "cvxpy solver for solving spm. Empty string means default solver of cvxpy.")
     parser.add_option("post.anacont.spm", "verbose_opt", bool, False, "show optimization progress")
     parser.add_option("post.anacont.spm", "show_fit", bool, False, "plot result of tail-fitting")
+
+    # [post.anacont.spm.solver]
+    # Nothing to add here
+    # All parameters are passed to cvxpy solver
 
     # [post.spectrum]
 
