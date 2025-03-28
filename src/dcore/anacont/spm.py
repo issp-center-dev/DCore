@@ -35,6 +35,7 @@ def __gettype(name):
         return t
     raise ValueError(name)
 
+
 def set_default_values(dictionary, default_values_dict):
     for key, value in default_values_dict.items():
         if key not in dictionary:
@@ -294,6 +295,7 @@ def check_parameters(params):
         sys.exit("n_tau must be positive.")
     pass
 
+
 def parameters_from_ini(inifile):
     parser = create_parser(["post.anacont.spm", "post.anacont.spm.solver"])
     parser.read(inifile)
@@ -301,8 +303,8 @@ def parameters_from_ini(inifile):
     parse_parameters(params)
     solver_dict = {}
     if "post.anacont.spm.solver" in params:
-        r = re.compile('^(.*)\{(.*)\}$')
-        for k,v in params["post.anacont.spm.solver"].items():
+        r = re.compile("^(.*)\{(.*)\}$")
+        for k, v in params["post.anacont.spm.solver"].items():
             try:
                 m = r.search(k)
                 if m is None:
@@ -316,21 +318,24 @@ def parameters_from_ini(inifile):
     params["post.anacont.spm.solver"] = solver_dict
     return params
 
+
 def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
 
     n_tau = params_spm["n_tau"]
     if n_tau <= 0:
-        print(f"Negative value of n_tau is given ({n_tau}), so n_tau will be determined from the size of sigma_iw")
-        n_tau = sigma_iw_npz['data0'].shape[0] // 2
+        print(
+            f"Negative value of n_tau is given ({n_tau}), so n_tau will be determined from the size of sigma_iw"
+        )
+        n_tau = sigma_iw_npz["data0"].shape[0] // 2
     print(f"n_tau = {n_tau}")
     n_tail = params_spm["n_tail"]
     show_fit = params_spm["show_fit"]
-    
+
     n_sv = params_spm["n_sv"]
     L1_coeff = params_spm["lambda"]
     solver = params_spm["solver"]
     verbose_opt = params_spm["verbose_opt"]
-    
+
     data_w = {}
     num_data = np.sum([key.startswith("data") for key in sigma_iw_npz.keys()])
     for idata in range(num_data):
@@ -344,9 +349,7 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
         iws = list(gf_iw.mesh.values())
         ws = list(mesh_w.values())
         matsubara_frequencies = np.imag(iws[n_matsubara_retain:])
-        sigma_w_data = np.zeros(
-            (len(ws), n_orbitals, n_orbitals), dtype=np.complex128
-        )
+        sigma_w_data = np.zeros((len(ws), n_orbitals, n_orbitals), dtype=np.complex128)
         for i_orb in range(n_orbitals):
             print(
                 f"Performing analytic continuation for data index {idata} and orbital index {i_orb}..."
@@ -354,13 +357,33 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
             gf_imag_matsubara = gf_iw.data[
                 n_matsubara : n_matsubara + n_matsubara_retain, i_orb, i_orb
             ]
-            
-            tau_grid, gf_tau, const_real_tail, const_imag_tail = calc_gf_tau_from_gf_matsubara(
-                matsubara_frequencies, gf_imag_matsubara, n_tau, n_tail, beta, show_fit=show_fit
+
+            tau_grid, gf_tau, const_real_tail, const_imag_tail = (
+                calc_gf_tau_from_gf_matsubara(
+                    matsubara_frequencies,
+                    gf_imag_matsubara,
+                    n_tau,
+                    n_tail,
+                    beta,
+                    show_fit=show_fit,
+                )
             )
 
-            density, gf_tau_fit, energies_extract, sum_rule_const, chi2 = get_single_continuation(
-                tau_grid, gf_tau, n_sv, beta, ws[0], ws[-1], len(ws), sum_rule_const=const_imag_tail, lambd=L1_coeff, verbose=verbose_opt, solver=solver, solver_opts=params_spm_solver
+            density, gf_tau_fit, energies_extract, sum_rule_const, chi2 = (
+                get_single_continuation(
+                    tau_grid,
+                    gf_tau,
+                    n_sv,
+                    beta,
+                    ws[0],
+                    ws[-1],
+                    len(ws),
+                    sum_rule_const=const_imag_tail,
+                    lambd=L1_coeff,
+                    verbose=verbose_opt,
+                    solver=solver,
+                    solver_opts=params_spm_solver,
+                )
             )
             energies, gf_real, gf_imag = get_kramers_kronig_realpart(
                 energies_extract, dos_to_gf_imag(density)

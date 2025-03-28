@@ -26,6 +26,7 @@ from dcore.version import version, print_header
 from dcore.program_options import create_parser, parse_parameters
 from dcore.anacont import pade, spm
 
+
 def dcore_anacont(inifile):
     # tool is removed but read for error message
     parser = create_parser(["system", "model", "tool", "post", "post.anacont"])
@@ -59,7 +60,13 @@ def dcore_anacont(inifile):
         params_ac = spm.parameters_from_ini(inifile)
         if "post.anacont.spm.solver" not in params_ac:
             params_ac["post.anacont.spm.solver"] = {}
-        data_w = spm.anacont(sigma_iw_npz, beta, mesh_w, params_ac["post.anacont.spm"], params_ac["post.anacont.spm.solver"])
+        data_w = spm.anacont(
+            sigma_iw_npz,
+            beta,
+            mesh_w,
+            params_ac["post.anacont.spm"],
+            params_ac["post.anacont.spm.solver"],
+        )
     else:
         sys.exit("ERROR: Unknown anacont solver " + solver)
     omega = numpy.array(list(mesh_w.values()))
@@ -81,17 +88,21 @@ def dcore_anacont(inifile):
                 ndata += 1
         for idata in range(ndata):
             sigma_w = data_w[f"data{idata}"]
-            for iorb, jorb in itertools.product(range(sigma_w.shape[1]), range(sigma_w.shape[2])):
+            for iorb, jorb in itertools.product(
+                range(sigma_w.shape[1]), range(sigma_w.shape[2])
+            ):
                 plt.axhline(y=0, xmin=omega_min, xmax=omega_max, color="lightgrey")
-                plt.plot(omega, sigma_w[:,iorb,jorb].real, label="Real")
-                plt.plot(omega, sigma_w[:,iorb,jorb].imag, label="Imag")
+                plt.plot(omega, sigma_w[:, iorb, jorb].real, label="Real")
+                plt.plot(omega, sigma_w[:, iorb, jorb].imag, label="Imag")
                 plt.xlim(omega_min, omega_max)
                 plt.xlabel(r"$\omega$")
                 plt.legend()
                 plt.title(rf"$\Sigma_{{{iorb}{jorb}}}( \omega )$ of shell {idata}")
                 plt.tight_layout()
                 if params["post.anacont"]["save_result"]:
-                    file_result = os.path.join(dir_work, f"sigma_w_{idata}_{iorb}_{jorb}.png")
+                    file_result = os.path.join(
+                        dir_work, f"sigma_w_{idata}_{iorb}_{jorb}.png"
+                    )
                     print("Writing to", file_result + "...")
                     plt.savefig(file_result)
                 if params["post.anacont"]["show_result"]:
@@ -104,21 +115,24 @@ def run():
     print_header()
 
     parser = argparse.ArgumentParser(
-        prog='dcore_anacont.py',
-        description='DCore post script -- analytic continuation.',
-        usage='$ dcore_anacont input.ini',
+        prog="dcore_anacont.py",
+        description="DCore post script -- analytic continuation.",
+        usage="$ dcore_anacont input.ini",
         add_help=True,
         formatter_class=argparse.RawTextHelpFormatter,
-        #epilog=generate_all_description()
+        # epilog=generate_all_description()
     )
-    parser.add_argument('path_input_files',
-                        action='store',
-                        default=None,
-                        type=str,
-                        nargs='*',
-                        help="Input filename(s)",
-                        )
-    parser.add_argument('--version', action='version', version='DCore {}'.format(version))
+    parser.add_argument(
+        "path_input_files",
+        action="store",
+        default=None,
+        type=str,
+        nargs="*",
+        help="Input filename(s)",
+    )
+    parser.add_argument(
+        "--version", action="version", version="DCore {}".format(version)
+    )
 
     args = parser.parse_args()
 

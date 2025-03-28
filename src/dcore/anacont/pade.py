@@ -45,10 +45,14 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_pade):
     eta = params_pade["eta"]
 
     n_matsubara = _set_n_matsubara(iw_max, beta, n_min=n_min, n_max=n_max)
-    n = sigma_iw_npz['data0'].shape[0] // 2
+    n = sigma_iw_npz["data0"].shape[0] // 2
     if n_matsubara > n:
         n_matsubara = n
-        print("Warning: n_matsubara is larger than the number of calculated Matsubara frequencies, {}".format(n))
+        print(
+            "Warning: n_matsubara is larger than the number of calculated Matsubara frequencies, {}".format(
+                n
+            )
+        )
         print("         n_matsubara is reset to {}".format(n))
 
     data_w = {}
