@@ -19,6 +19,7 @@
 import builtins
 import sys
 import re
+from itertools import product
 
 import numpy as np
 import cvxpy as cp
@@ -34,6 +35,11 @@ def __gettype(name):
     if isinstance(t, type):
         return t
     raise ValueError(name)
+
+
+class CPSolverError(Exception):
+    def __init__(self, status):
+        self.status = status
 
 
 def set_default_values(dictionary, default_values_dict):
@@ -229,9 +235,11 @@ def _solveProblem(
 
     prob = cp.Problem(objective, constraints)
     if solver == "":
-        _ = prob.solve(verbose=verbose, **solver_opts)
+        prob.solve(verbose=verbose, **solver_opts)
     else:
-        _ = prob.solve(verbose=verbose, solver=solver, **solver_opts)
+        prob.solve(verbose=verbose, solver=solver, **solver_opts)
+    if not prob.status.startswith("optimal"):
+        raise CPSolverError(prob.status)
     gf_tau_fit = np.dot(U, np.dot(Smat, rho_prime.value))
     chi2 = 0.5 * np.linalg.norm(gf_tau - gf_tau_fit, ord=2) ** 2
     return rho_prime.value, gf_tau_fit, chi2
@@ -350,12 +358,12 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
         ws = list(mesh_w.values())
         matsubara_frequencies = np.imag(iws[n_matsubara_retain:])
         sigma_w_data = np.zeros((len(ws), n_orbitals, n_orbitals), dtype=np.complex128)
-        for i_orb in range(n_orbitals):
+        for i_orb, j_orb in product(range(n_orbitals), repeat=2):
             print(
-                f"Performing analytic continuation for data index {idata} and orbital index {i_orb}..."
+                f"Performing analytic continuation for data index {idata} and orbital indices {i_orb}, {j_orb}..."
             )
             gf_imag_matsubara = gf_iw.data[
-                n_matsubara : n_matsubara + n_matsubara_retain, i_orb, i_orb
+                n_matsubara : n_matsubara + n_matsubara_retain, i_orb, j_orb
             ]
 
             tau_grid, gf_tau, const_real_tail, const_imag_tail = (
@@ -369,28 +377,33 @@ def anacont(sigma_iw_npz, beta, mesh_w, params_spm, params_spm_solver):
                 )
             )
 
-            density, gf_tau_fit, energies_extract, sum_rule_const, chi2 = (
-                get_single_continuation(
-                    tau_grid,
-                    gf_tau,
-                    n_sv,
-                    beta,
-                    ws[0],
-                    ws[-1],
-                    len(ws),
-                    sum_rule_const=const_imag_tail,
-                    lambd=L1_coeff,
-                    verbose=verbose_opt,
-                    solver=solver,
-                    solver_opts=params_spm_solver,
+            try:
+                density, gf_tau_fit, energies_extract, sum_rule_const, chi2 = (
+                    get_single_continuation(
+                        tau_grid,
+                        gf_tau,
+                        n_sv,
+                        beta,
+                        ws[0],
+                        ws[-1],
+                        len(ws),
+                        sum_rule_const=const_imag_tail,
+                        lambd=L1_coeff,
+                        verbose=verbose_opt,
+                        solver=solver,
+                        solver_opts=params_spm_solver,
+                    )
                 )
-            )
+            except CPSolverError as e:
+                print(f'ERROR: Optimization problem in spm anacont of sigma_iw["data{idata}"][{i_orb}, {j_orb}] is {e.status} and cannot be solved.')
+                sys.exit(1)
+
             energies, gf_real, gf_imag = get_kramers_kronig_realpart(
                 energies_extract, dos_to_gf_imag(density)
             )
             gf_real += const_real_tail
 
-            sigma_w_data[:, i_orb, i_orb] = gf_real + 1j * gf_imag
+            sigma_w_data[:, i_orb, j_orb] = gf_real + 1j * gf_imag
             if params_spm.get("show_result", False):
                 import matplotlib.pyplot as plt
 
