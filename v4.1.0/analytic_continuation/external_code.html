@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to use an external AC code &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tools" href="../tools.html" />
+    <link rel="prev" title="Analytic continuation with the sparse-modeling method" href="spm.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../tools.html" title="Tools"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="spm.html" title="Analytic continuation with the sparse-modeling method"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analytic_continuation.html" accesskey="U">Analytic continuation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">How to use an external AC code</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="how-to-use-an-external-ac-code">
+<h1>How to use an external AC code<a class="headerlink" href="#how-to-use-an-external-ac-code" title="Permalink to this heading">¶</a></h1>
+<p>You can use an external code to perform AC of the self-energy from the Matsubara frequency to the real frequency.
+The only thing the code needs to do is to write the self-energy in the real frequency as a NumPy binary file, <code class="docutils literal notranslate"><span class="pre">post/sigma_w.npz</span></code>
+from the Matsubara frequency self-energy stored in <code class="docutils literal notranslate"><span class="pre">seedname_sigma_iw.npz</span></code>.</p>
+<section id="input-file-seedname-sigma-iw-npz">
+<h2>Input file: <code class="docutils literal notranslate"><span class="pre">seedname_sigma_iw.npz</span></code><a class="headerlink" href="#input-file-seedname-sigma-iw-npz" title="Permalink to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">seedname_sigma_iw.npz</span></code> is a NumPy binary file, so you can load it with <code class="docutils literal notranslate"><span class="pre">numpy.load</span></code> function.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="n">npz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;./seedname_sigma_iw.npz&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The returned object, <code class="docutils literal notranslate"><span class="pre">npz</span></code>, is a dictionary. The keys are as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 14.3%" />
+<col style="width: 28.6%" />
+<col style="width: 57.1%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>beta</p></td>
+<td><p>float</p></td>
+<td><p>Inverse temperature</p></td>
+</tr>
+<tr class="row-odd"><td><p>iwn</p></td>
+<td><p>array of complex</p></td>
+<td><p>Matsubara frequency</p></td>
+</tr>
+<tr class="row-even"><td><p>data#</p></td>
+<td><p>array of complex</p></td>
+<td><p>Self-energy of #-th inequivalent shell</p></td>
+</tr>
+<tr class="row-odd"><td><p>hartree_fock#</p></td>
+<td><p>array of complex</p></td>
+<td><p>Hartree-Fock term of #-th inequivalent shell</p></td>
+</tr>
+</tbody>
+</table>
+<p>Here, “#” is 0, 1, 2, … .</p>
+<p>“data#” is a <span class="math notranslate nohighlight">\(N_{i\omega} \times N_\text{orb} \times N_\text{orb}\)</span> array, where <span class="math notranslate nohighlight">\(N_{i\omega}\)</span> is the number of Matsubara frequencies, and <span class="math notranslate nohighlight">\(N_\text{orb}\)</span> is the number of orbitals.</p>
+<p>“hartree_fock#” is a Hartree-Fock term of “#”-th inequivalent shell, <span class="math notranslate nohighlight">\(H^\text{f}\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[H^\text{f}_{ik} = \sum_{jl} U_{ijkl} \left\langle c^\dagger_j c_l \right\rangle\]</div>
+<p>The data format is a <span class="math notranslate nohighlight">\(N_\text{orb} \times N_\text{orb}\)</span> array, where <span class="math notranslate nohighlight">\(N_\text{orb}\)</span> is the number of orbitals.</p>
+</section>
+<section id="output-file-post-sigma-w-npz">
+<h2>Output file: <code class="docutils literal notranslate"><span class="pre">post/sigma_w.npz</span></code><a class="headerlink" href="#output-file-post-sigma-w-npz" title="Permalink to this heading">¶</a></h2>
+<p>The output file, <code class="docutils literal notranslate"><span class="pre">post/sigma_w.npz</span></code>, is also a NumPy binary file storing one dictionary with the following keys:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 14.3%" />
+<col style="width: 28.6%" />
+<col style="width: 57.1%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>omega</p></td>
+<td><p>array of real</p></td>
+<td><p>frequency</p></td>
+</tr>
+<tr class="row-odd"><td><p>data#</p></td>
+<td><p>array of complex</p></td>
+<td><p>Self-energy of #-th inequivalent shell</p></td>
+</tr>
+</tbody>
+</table>
+<p>Here, “#” is 0, 1, 2, … .</p>
+<p>“data#” is a <span class="math notranslate nohighlight">\(N_{\omega} \times N_\text{orb} \times N_\text{orb}\)</span> array, where <span class="math notranslate nohighlight">\(N_{\omega}\)</span> is the number of frequencies, and <span class="math notranslate nohighlight">\(N_\text{orb}\)</span> is the number of orbitals.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../reference/programs.html">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/input.html">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/output.html">Output-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../analytic_continuation.html">Analytic continuation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="spm.html"
+                          title="previous chapter">Analytic continuation with the sparse-modeling method</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../tools.html"
+                          title="next chapter">Tools</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../tools.html" title="Tools"
+             >next</a></li>
+        <li class="right" >
+          <a href="spm.html" title="Analytic continuation with the sparse-modeling method"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analytic_continuation.html" >Analytic continuation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">How to use an external AC code</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

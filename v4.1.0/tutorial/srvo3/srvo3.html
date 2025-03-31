@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>SrVO3 &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Reference Manual" href="../../reference.html" />
+    <link rel="prev" title="Antiferromagnetic state" href="../afm/afm.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../reference.html" title="Reference Manual"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../afm/afm.html" title="Antiferromagnetic state"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" accesskey="U">Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">SrVO<sub>3</sub></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="srvo3">
+<span id="id1"></span><h1>SrVO<sub>3</sub><a class="headerlink" href="#srvo3" title="Permalink to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This tutorial requires parallel computing.</p>
+</div>
+<p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
+<a class="reference internal image-reference" href="../../_images/struct_srvo3.png"><img alt="../../_images/struct_srvo3.png" class="align-center" src="../../_images/struct_srvo3.png" style="width: 200px;" /></a>
+<section id="construction-of-wannier-functions">
+<h2>Construction of Wannier functions<a class="headerlink" href="#construction-of-wannier-functions" title="Permalink to this heading">¶</a></h2>
+<p>Maximally localized Wannier functions for the <em>t</em><sub>2g</sub> manifold can be constructed by using DFT code.
+Please download precomputed data for Wannier functions</p>
+<p><a class="reference download internal" download="" href="../../_downloads/e0c7729f347f01bbd41c0c07f818c779/srvo3_hr.dat"><code class="xref download docutils literal notranslate"><span class="pre">srvo3_hr.dat</span></code></a></p>
+<p>and save it to your working directly. This data was computed by using Quantum ESPRESSO and Wannier90.
+The procedure of Wanniernization is detailed in <a class="reference internal" href="qe/qe.html"><span class="doc">Wanniernization using Quantum ESPRESSO</span></a> and <a class="reference internal" href="openmx/openmx.html"><span class="doc">Wanniernization using OpenMX</span></a>.</p>
+</section>
+<section id="dmft-calculation">
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference download internal" download="" href="../../_downloads/c64f73d0e3b58daa5cfb6f9b75b04860/srvo3.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">srvo3</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">ncor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(3.419, 2.315, 0.530)]</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span>
+<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span>
+<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span>
+<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span>
+
+<span class="c1">#[mpi]</span>
+<span class="c1">#command = &#39;$MPIRUN -np #&#39;</span>
+
+<span class="k">[system]</span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">12.290722</span>
+<span class="na">with_dc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb</span>
+<span class="na">timelimit{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">90</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">hybmat</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">12</span>
+<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.8</span>
+
+<span class="k">[post.spectrum]</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5)]</span>
+
+<span class="k">[post.anacont]</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">2.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-2.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span>
+
+<span class="k">[post.anacont.pade]</span>
+<span class="na">iomega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
+
+<span class="k">[post.check]</span>
+<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span>
+</pre></div>
+</div>
+<p>To use TRIQS/cthyb, please use</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">srvo3</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">ncor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(3.419, 2.315, 0.530)]</span>
+<span class="na">bvec</span><span class="o">=</span><span class="s">[(1.627091,0.0,0.0),(0.0,1.627091,0.0),(0.0,0.0,1.627091)]</span>
+<span class="na">nk0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span>
+<span class="na">nk1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span>
+<span class="na">nk2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span>
+
+<span class="c1">#[mpi]</span>
+<span class="c1">#command = &#39;$MPIRUN -np #&#39;</span>
+
+<span class="k">[system]</span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">12.290722</span>
+<span class="na">with_dc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span>
+<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span>
+<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span>
+<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span>
+<span class="na">move_double{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">12</span>
+<span class="na">time_reversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.8</span>
+
+<span class="k">[post.spectrum]</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+<span class="na">knode</span><span class="o">=</span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0),(R,0.5,0.5,0.5)]</span>
+
+<span class="k">[post.anacont]</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="s">2.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="s">-2.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">400</span>
+
+<span class="k">[post.anacont.pade]</span>
+<span class="na">iomega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
+
+<span class="k">[post.check]</span>
+<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span>
+</pre></div>
+</div>
+<p>instead.
+Please see <a class="reference internal" href="../../impuritysolvers/triqs_cthyb/cthyb.html#howtocthyb"><span class="std std-ref">CT-QMC: TRIQS/cthyb</span></a> for the details of the parameter setting for TRIQS/cthyb.</p>
+<p>To generate reference data, we used 48 MPI processes (ISSP system B).
+The total computational time for 12 iterations is around 30 mins.</p>
+<p>The accuracy of QMC results can be improved by setting a longer simulation time (ALPS/CT-HYB) or a larger n_cycles (TRIQS/cthyb).
+For ALPS/CT-HYB, the parameter time_limit is given in seconds.</p>
+<section id="dmft-setup-dcore-pre">
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_pre<span class="w"> </span>srvo3.ini
+</pre></div>
+</div>
+</section>
+<section id="running-self-consistent-dmft-calculation-dcore">
+<h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore<span class="w"> </span>srvo3.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span>
+</pre></div>
+</div>
+</section>
+<section id="post-processing-and-data-analysis-dcore-anacont-and-dcore-spectrum">
+<h3>Post-processing and data analysis: dcore_anacont and dcore_spectrum<a class="headerlink" href="#post-processing-and-data-analysis-dcore-anacont-and-dcore-spectrum" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_anacont<span class="w"> </span>srvo3.ini
+$<span class="w"> </span>dcore_spectrum<span class="w"> </span>srvo3.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span>
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>post
+$<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/akw_srvo3.png"><img alt="../../_images/akw_srvo3.png" class="align-center" src="../../_images/akw_srvo3.png" style="width: 500px;" /></a>
+<p>The left and right panels show results for up and down spins, respectively.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../basicnotions/structure.html">Minimum introduction: Structure of DCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../square/square.html">The first example: 2D Hubbard model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bethe-t2g/bethe.html">Multiorbital model by a QMC solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../afm/afm.html">Antiferromagnetic state</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SrVO<sub>3</sub></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../afm/afm.html"
+                          title="previous chapter">Antiferromagnetic state</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../../reference.html"
+                          title="next chapter">Reference Manual</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../reference.html" title="Reference Manual"
+             >next</a></li>
+        <li class="right" >
+          <a href="../afm/afm.html" title="Antiferromagnetic state"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" >Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">SrVO<sub>3</sub></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
