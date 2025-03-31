@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Antiferromagnetic state in 3D Hubbard model &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
@@ -56,7 +56,7 @@ The complete input file is shown below.</p>
 <span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span>
 
 <span class="k">[mpi]</span>
-<span class="na">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;$MPIRUN -np</span><span class="w"> </span><span class="c1">#&#39;</span>
+<span class="na">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;$MPIRUN -np #&#39;</span>
 
 <span class="k">[system]</span>
 <span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5.0</span>
@@ -71,7 +71,7 @@ The complete input file is shown below.</p>
 
 <span class="k">[control]</span>
 <span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span>
-<span class="na">initial_static_self_energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">{0: &#39;init_se_up.txt&#39;, 1: &#39;init_se_down.txt&#39;}</span>
+<span class="na">initial_static_self_energy = {0</span><span class="o">:</span><span class="w"> </span><span class="s">&#39;init_se_up.txt&#39;</span><span class="na">, 1</span><span class="o">:</span><span class="w"> </span><span class="s">&#39;init_se_down.txt&#39;</span><span class="na">}</span>
 
 <span class="k">[tool]</span>
 <span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>

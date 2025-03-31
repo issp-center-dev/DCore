@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>How to integrate your own solver &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
@@ -58,13 +58,13 @@ The null solver serves as a template of wrapper code.</p>
 <h2>Edit the template<a class="headerlink" href="#edit-the-template" title="Permalink to this heading">¶</a></h2>
 <ul>
 <li><p>Change the class name</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">NullSolver</span><span class="p">(</span><span class="n">SolverBase</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">NullSolver</span><span class="p">(</span><span class="n">SolverBase</span><span class="p">):</span>
 </pre></div>
 </div>
 <p>Let’s say you changed the class name into <strong>YourSolver</strong>.</p>
 </li>
 <li><p>Set the solver name</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="k">return</span> <span class="s2">&quot;null&quot;</span>
 </pre></div>
 </div>
@@ -131,7 +131,7 @@ See other wrappers or <a class="reference external" href="https://triqs.github.i
 <p>Finally, you register your own solver to <strong>DCore</strong>.
 Edit <strong>python/impurity_solvers/__init__.py</strong>
 to import your class</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.your_solver</span> <span class="kn">import</span> <span class="n">YourSolver</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.your_solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">YourSolver</span>
 </pre></div>
 </div>
 <p>and add it to the dictionary variable <code class="docutils literal notranslate"><span class="pre">solver_classes</span></code> as</p>

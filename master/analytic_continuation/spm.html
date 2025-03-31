@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Analytic continuation with the sparse-modeling method &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
@@ -55,7 +55,7 @@ While the SpM method in the original paper uses the ADMM for optimization, the S
 The SpM method is specified by <code class="docutils literal notranslate"><span class="pre">solver</span> <span class="pre">=</span> <span class="pre">spm</span></code> in the <code class="docutils literal notranslate"><span class="pre">[post.anacont]</span></code> block.
 The parameters for the SpM method are specified in the <code class="docutils literal notranslate"><span class="pre">[post.anacont.spm]</span></code> block as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">anacont</span><span class="o">.</span><span class="n">spm</span><span class="p">]</span>
-<span class="n">solver</span> <span class="o">=</span> <span class="n">ECOS</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">CLARABEL</span>
 <span class="n">n_matsubara</span> <span class="o">=</span> <span class="mi">1000</span>
 <span class="n">n_tau</span> <span class="o">=</span> <span class="mi">101</span>
 <span class="n">n_tail</span> <span class="o">=</span> <span class="mi">5</span>
@@ -64,7 +64,7 @@ The parameters for the SpM method are specified in the <code class="docutils lit
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">n_matsubara</span></code> is the number of Matsubara frequencies used. When it is larger than the number of the data obtained by the DMFT calculation, the number of the data is used.
-<code class="docutils literal notranslate"><span class="pre">n_tau</span></code> is the number of imaginary time points.
+<code class="docutils literal notranslate"><span class="pre">n_tau</span></code> is the number of imaginary time points. If negative or omitted, it will be determined from the size of <span class="math notranslate nohighlight">\(\Sigma(i\omega_n)\)</span> .
 <code class="docutils literal notranslate"><span class="pre">n_tail</span></code> is the number of the last Matsubara frequencies used for the tail fitting, <span class="math notranslate nohighlight">\(\Sigma(i\omega_n) \sim a/i\omega_n\)</span>.
 <code class="docutils literal notranslate"><span class="pre">n_sv</span></code> is the number of singular values used after truncation.
 <code class="docutils literal notranslate"><span class="pre">lambda</span></code> is the coefficient of the L1 regularization term in the optimization.
@@ -121,10 +121,10 @@ For details of solvers, see <a class="reference external" href="https://www.cvxp
 <span class="na">n_tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span>
 <span class="na">n_sv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span>
 <span class="na">lambda</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-5</span>
-<span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ECOS</span>
+<span class="na">solver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CLARABEL</span>
 
 <span class="k">[post.anacont.spm.solver]</span>
-<span class="na">max_iters{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">max_iter{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
 </pre></div>
 </div>
 <p>The figure below shows the self-energy in real frequency obtained by analytic continuation (<code class="docutils literal notranslate"><span class="pre">work/post/sigma_w_0_0_0.png</span></code>).</p>
