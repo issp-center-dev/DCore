@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,15 +10,15 @@
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Analytic continuation" href="../analytic_continuation.html" />
     <link rel="prev" title="Non-interacting limit: null" href="null.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,7 +40,7 @@
           <div class="body" role="main">
             
   <section id="how-to-integrate-your-own-solver">
-<h1>How to integrate your own solver<a class="headerlink" href="#how-to-integrate-your-own-solver" title="Permalink to this heading">¶</a></h1>
+<h1>How to integrate your own solver<a class="headerlink" href="#how-to-integrate-your-own-solver" title="Link to this heading">¶</a></h1>
 <p>You can use your own impurity solver from DCore by wrapping the executable as appropriate.
 The null solver serves as a template of wrapper code.</p>
 <blockquote>
@@ -48,14 +48,14 @@ The null solver serves as a template of wrapper code.</p>
 </div></blockquote>
 <p>Follow the instructions below.</p>
 <section id="copy-the-template">
-<h2>Copy the template<a class="headerlink" href="#copy-the-template" title="Permalink to this heading">¶</a></h2>
+<h2>Copy the template<a class="headerlink" href="#copy-the-template" title="Link to this heading">¶</a></h2>
 <p>In directory <strong>python/impurity_solvers</strong>, copy the template</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cp null_solver.py your_solver.py
 </pre></div>
 </div>
 </section>
 <section id="edit-the-template">
-<h2>Edit the template<a class="headerlink" href="#edit-the-template" title="Permalink to this heading">¶</a></h2>
+<h2>Edit the template<a class="headerlink" href="#edit-the-template" title="Link to this heading">¶</a></h2>
 <ul>
 <li><p>Change the class name</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">NullSolver</span><span class="p">(</span><span class="n">SolverBase</span><span class="p">):</span>
@@ -127,7 +127,7 @@ See other wrappers or <a class="reference external" href="https://triqs.github.i
 </ul>
 </section>
 <section id="register-your-solver">
-<h2>Register your solver<a class="headerlink" href="#register-your-solver" title="Permalink to this heading">¶</a></h2>
+<h2>Register your solver<a class="headerlink" href="#register-your-solver" title="Link to this heading">¶</a></h2>
 <p>Finally, you register your own solver to <strong>DCore</strong>.
 Edit <strong>python/impurity_solvers/__init__.py</strong>
 to import your class</p>
@@ -154,7 +154,7 @@ to import your class</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
@@ -183,7 +183,7 @@ to import your class</p>
     <p class="topless"><a href="../analytic_continuation.html"
                           title="next chapter">Analytic continuation</a></p>
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -191,13 +191,13 @@ to import your class</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">

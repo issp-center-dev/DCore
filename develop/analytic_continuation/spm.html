@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,16 +10,16 @@
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="How to use an external AC code" href="external_code.html" />
     <link rel="prev" title="Analytic continuation with the Pade approximation" href="pade.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,7 +41,7 @@
           <div class="body" role="main">
             
   <section id="analytic-continuation-with-the-sparse-modeling-method">
-<h1>Analytic continuation with the sparse-modeling method<a class="headerlink" href="#analytic-continuation-with-the-sparse-modeling-method" title="Permalink to this heading">¶</a></h1>
+<h1>Analytic continuation with the sparse-modeling method<a class="headerlink" href="#analytic-continuation-with-the-sparse-modeling-method" title="Link to this heading">¶</a></h1>
 <p>The sparse-modeling (SpM) method is a method for the analytic continuation of the self-energy by solving the integral equation</p>
 <div class="math notranslate nohighlight">
 \[\Sigma(\tau) = \int_{-\infty}^{\infty} d\omega \frac{e^{-\tau \omega}}{1+e^{-\beta\omega}} \rho(\omega)\]</div>
@@ -75,7 +75,7 @@ Available types are <code class="docutils literal notranslate"><span class="pre"
 Available parameters depend on the solver used.
 For details of solvers, see <a class="reference external" href="https://www.cvxpy.org/tutorial/solvers/index.html">the CVXPY documentation</a>.</p>
 <section id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading">¶</a></h2>
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
 <p>The following input file is used to perform a DMFT calculation of a Hubbard model on a square lattice with the Pomerol solver and an analytic continuation of the self-energy with the SpM method:</p>
 <p><a class="reference download internal" download="" href="../_downloads/91e34cddf4f76571df423bc78a2284ca/spm.ini"><code class="xref download docutils literal notranslate"><span class="pre">spm.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
@@ -128,7 +128,8 @@ For details of solvers, see <a class="reference external" href="https://www.cvxp
 </pre></div>
 </div>
 <p>The figure below shows the self-energy in real frequency obtained by analytic continuation (<code class="docutils literal notranslate"><span class="pre">work/post/sigma_w_0_0_0.png</span></code>).</p>
-<a class="reference internal image-reference" href="../_images/spm.png"><img alt="../_images/spm.png" class="align-center" src="../_images/spm.png" style="width: 700px;" /></a>
+<a class="reference internal image-reference" href="../_images/spm.png"><img alt="../_images/spm.png" class="align-center" src="../_images/spm.png" style="width: 700px;" />
+</a>
 </section>
 </section>
 
@@ -137,7 +138,7 @@ For details of solvers, see <a class="reference external" href="https://www.cvxp
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
@@ -166,7 +167,7 @@ For details of solvers, see <a class="reference external" href="https://www.cvxp
     <p class="topless"><a href="external_code.html"
                           title="next chapter">How to use an external AC code</a></p>
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -174,13 +175,13 @@ For details of solvers, see <a class="reference external" href="https://www.cvxp
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">

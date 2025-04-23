@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,16 +10,16 @@
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Input-file format" href="input.html" />
     <link rel="prev" title="Reference Manual" href="../reference.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,14 +40,14 @@
           <div class="body" role="main">
             
   <section id="programs">
-<h1>Programs<a class="headerlink" href="#programs" title="Permalink to this heading">¶</a></h1>
+<h1>Programs<a class="headerlink" href="#programs" title="Link to this heading">¶</a></h1>
 <p><strong>DCore</strong> consists of five main programs, <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code>, <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code>, and <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code>.
 All programs read a single input file (say <em>input.ini</em>) which contains parameters classified into blocks.
 It is also possible to pass multiple input files to the program. Parameters from all input files are merged. Duplicate paramegers are overwritten by the later one.
 See <a class="reference internal" href="input.html"><span class="doc">Input-file format</span></a>, for the list of parameters and detailed descriptions.</p>
 <p>In the following, brief explanations are given for each program.</p>
 <section id="pre-processing-dcore-pre">
-<h2>Pre-processing : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-processing-dcore-pre" title="Permalink to this heading">¶</a></h2>
+<h2>Pre-processing : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-processing-dcore-pre" title="Link to this heading">¶</a></h2>
 <p>This program generates model HDF5 file (<em>seedname</em>.h5).
 You need to execute this program before running the main program, <code class="docutils literal notranslate"><span class="pre">dcore</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore_pre input.ini
@@ -55,7 +55,7 @@ You need to execute this program before running the main program, <code class="d
 </div>
 </section>
 <section id="main-program-dcore">
-<h2>Main program : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#main-program-dcore" title="Permalink to this heading">¶</a></h2>
+<h2>Main program : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#main-program-dcore" title="Link to this heading">¶</a></h2>
 <p>This is the main program, which performs DMFT cycle and output the self energy etc. into a HDF5
 file (<em>seedname</em>.out.h5).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore input.ini --np 4
@@ -99,7 +99,7 @@ The behavior is summarized below.</p>
 </table>
 </section>
 <section id="convergence-check-dcore-check">
-<span id="program-dcore-check"></span><h2>Convergence-check : <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code><a class="headerlink" href="#convergence-check-dcore-check" title="Permalink to this heading">¶</a></h2>
+<span id="program-dcore-check"></span><h2>Convergence-check : <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code><a class="headerlink" href="#convergence-check-dcore-check" title="Link to this heading">¶</a></h2>
 <p>This program is used to check the convergence of the DMFT loop.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore_check input.ini [--prefix PREFIX] [--ext EXT]
 </pre></div>
@@ -112,11 +112,13 @@ All results are stored in <strong>check</strong> directory without specified.</p
 <ul>
 <li><p><strong>iter_mu.png</strong></p>
 <p>The chemical potential as a function of iteration number.</p>
-<a class="reference internal image-reference" href="../_images/iter_mu.png"><img alt="../_images/iter_mu.png" class="align-center" src="../_images/iter_mu.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/iter_mu.png"><img alt="../_images/iter_mu.png" class="align-center" src="../_images/iter_mu.png" style="width: 500px;" />
+</a>
 </li>
 <li><p><strong>iter_sigma-ish0.png</strong></p>
 <p>The renormalization factor as a function of iteration number.</p>
-<a class="reference internal image-reference" href="../_images/iter_sigma-ish0.png"><img alt="../_images/iter_sigma-ish0.png" class="align-center" src="../_images/iter_sigma-ish0.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/iter_sigma-ish0.png"><img alt="../_images/iter_sigma-ish0.png" class="align-center" src="../_images/iter_sigma-ish0.png" style="width: 500px;" />
+</a>
 </li>
 <li><p><strong>iter_occup-ish0.png</strong></p>
 <p>The spin- and orbital-dependent occupation numbers as a function of the iteration number.</p>
@@ -134,7 +136,8 @@ All results are stored in <strong>check</strong> directory without specified.</p
 </li>
 <li><p><strong>sigma_ave.png</strong></p>
 <p>The averaged self-energy at the last seven iterations.</p>
-<a class="reference internal image-reference" href="../_images/sigma_ave.png"><img alt="../_images/sigma_ave.png" class="align-center" src="../_images/sigma_ave.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/sigma_ave.png"><img alt="../_images/sigma_ave.png" class="align-center" src="../_images/sigma_ave.png" style="width: 500px;" />
+</a>
 <p>Here, the average is taken as follows:</p>
 <div class="math notranslate nohighlight">
 \[\Sigma_{\rm Ave} (i \omega_n) =
@@ -146,7 +149,7 @@ in the <code class="docutils literal notranslate"><span class="pre">[post.check]
 </ul>
 </section>
 <section id="analytic-continuation-dcore-anacont">
-<span id="program-dcore-anacont"></span><h2>Analytic continuation : <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code><a class="headerlink" href="#analytic-continuation-dcore-anacont" title="Permalink to this heading">¶</a></h2>
+<span id="program-dcore-anacont"></span><h2>Analytic continuation : <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code><a class="headerlink" href="#analytic-continuation-dcore-anacont" title="Link to this heading">¶</a></h2>
 <p>This program performs the analytic continuation of the self-energy of Matsubara frequencies to the real frequency.
 The self-energy of Matsubara frequencies is stored in the NumPy binary file <em>seedname</em>_sigma_iw.npz, which is one of the output files of the main program <code class="docutils literal notranslate"><span class="pre">dcore</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_anacont<span class="w"> </span>input.ini
@@ -155,7 +158,7 @@ The self-energy of Matsubara frequencies is stored in the NumPy binary file <em>
 <p>The obtained self-energy on the real axis is stored in the NumPy binary file sigma_w.npz in the <code class="docutils literal notranslate"><span class="pre">post</span></code> directory; the name of the directory can be changed by the parameter <code class="docutils literal notranslate"><span class="pre">dir_post</span></code> in the <code class="docutils literal notranslate"><span class="pre">[post]</span></code> block.</p>
 </section>
 <section id="spectral-functions-dcore-spectrum">
-<span id="program-dcore-spectrum"></span><h2>Spectral functions : <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code><a class="headerlink" href="#spectral-functions-dcore-spectrum" title="Permalink to this heading">¶</a></h2>
+<span id="program-dcore-spectrum"></span><h2>Spectral functions : <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code><a class="headerlink" href="#spectral-functions-dcore-spectrum" title="Link to this heading">¶</a></h2>
 <p>This program computes the total DOS (post/dos.dat) and momenum-resolved spectral function (post/akw.dat) reading the self-energy on the real axis stored in post/sigma_w.npz.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_spectrum<span class="w"> </span>input.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">4</span>
 </pre></div>
@@ -169,12 +172,13 @@ $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
 </div>
 <p>Using this gnuplot script, you can also see the original (DFT) band structure as follows if either
 <em>seedname</em>_band.dat (Wannier90 output) or dir-wan/dat.iband (RESPACK output) exists.</p>
-<a class="reference internal image-reference" href="../_images/akw_srvo3.png"><img alt="../_images/akw_srvo3.png" class="align-center" src="../_images/akw_srvo3.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../_images/akw_srvo3.png"><img alt="../_images/akw_srvo3.png" class="align-center" src="../_images/akw_srvo3.png" style="width: 500px;" />
+</a>
 <p>“+” indicates the original band structure.
 The original band structure is shifted by the chemical potential specified by <code class="docutils literal notranslate"><span class="pre">mu</span></code> in <code class="docutils literal notranslate"><span class="pre">[system]</span></code> block.</p>
 </section>
 <section id="online-help">
-<h2>Online help<a class="headerlink" href="#online-help" title="Permalink to this heading">¶</a></h2>
+<h2>Online help<a class="headerlink" href="#online-help" title="Link to this heading">¶</a></h2>
 <p>For all programs, online help is available by <code class="docutils literal notranslate"><span class="pre">-h</span></code> or <code class="docutils literal notranslate"><span class="pre">--help</span></code> option.
 For example, the help of the main program <code class="docutils literal notranslate"><span class="pre">dcore</span></code> looks like</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dcore -h
@@ -202,7 +206,7 @@ It would help readers to make use of the latest features in the <strong>develop<
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
@@ -231,7 +235,7 @@ It would help readers to make use of the latest features in the <strong>develop<
     <p class="topless"><a href="input.html"
                           title="next chapter">Input-file format</a></p>
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -239,13 +243,13 @@ It would help readers to make use of the latest features in the <strong>develop<
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">

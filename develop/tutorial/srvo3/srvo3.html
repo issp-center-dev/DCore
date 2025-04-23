@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,15 +10,15 @@
     <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Reference Manual" href="../../reference.html" />
     <link rel="prev" title="Antiferromagnetic state" href="../afm/afm.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -39,15 +39,16 @@
           <div class="body" role="main">
             
   <section id="srvo3">
-<span id="id1"></span><h1>SrVO<sub>3</sub><a class="headerlink" href="#srvo3" title="Permalink to this heading">¶</a></h1>
+<span id="id1"></span><h1>SrVO<sub>3</sub><a class="headerlink" href="#srvo3" title="Link to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This tutorial requires parallel computing.</p>
 </div>
 <p>Crystal structure of SrVO<sub>3</sub> (drawn by <a class="reference external" href="http://jp-minerals.org/vesta/en/">VESTA</a>).</p>
-<a class="reference internal image-reference" href="../../_images/struct_srvo3.png"><img alt="../../_images/struct_srvo3.png" class="align-center" src="../../_images/struct_srvo3.png" style="width: 200px;" /></a>
+<a class="reference internal image-reference" href="../../_images/struct_srvo3.png"><img alt="../../_images/struct_srvo3.png" class="align-center" src="../../_images/struct_srvo3.png" style="width: 200px;" />
+</a>
 <section id="construction-of-wannier-functions">
-<h2>Construction of Wannier functions<a class="headerlink" href="#construction-of-wannier-functions" title="Permalink to this heading">¶</a></h2>
+<h2>Construction of Wannier functions<a class="headerlink" href="#construction-of-wannier-functions" title="Link to this heading">¶</a></h2>
 <p>Maximally localized Wannier functions for the <em>t</em><sub>2g</sub> manifold can be constructed by using DFT code.
 Please download precomputed data for Wannier functions</p>
 <p><a class="reference download internal" download="" href="../../_downloads/e0c7729f347f01bbd41c0c07f818c779/srvo3_hr.dat"><code class="xref download docutils literal notranslate"><span class="pre">srvo3_hr.dat</span></code></a></p>
@@ -55,7 +56,7 @@ Please download precomputed data for Wannier functions</p>
 The procedure of Wanniernization is detailed in <a class="reference internal" href="qe/qe.html"><span class="doc">Wanniernization using Quantum ESPRESSO</span></a> and <a class="reference internal" href="openmx/openmx.html"><span class="doc">Wanniernization using OpenMX</span></a>.</p>
 </section>
 <section id="dmft-calculation">
-<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this heading">¶</a></h2>
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Link to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/c64f73d0e3b58daa5cfb6f9b75b04860/srvo3.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
 <span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span>
@@ -161,26 +162,27 @@ The total computational time for 12 iterations is around 30 mins.</p>
 <p>The accuracy of QMC results can be improved by setting a longer simulation time (ALPS/CT-HYB) or a larger n_cycles (TRIQS/cthyb).
 For ALPS/CT-HYB, the parameter time_limit is given in seconds.</p>
 <section id="dmft-setup-dcore-pre">
-<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this heading">¶</a></h3>
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_pre<span class="w"> </span>srvo3.ini
 </pre></div>
 </div>
 </section>
 <section id="running-self-consistent-dmft-calculation-dcore">
-<h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this heading">¶</a></h3>
+<h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore<span class="w"> </span>srvo3.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span>
 </pre></div>
 </div>
 </section>
 <section id="post-processing-and-data-analysis-dcore-anacont-and-dcore-spectrum">
-<h3>Post-processing and data analysis: dcore_anacont and dcore_spectrum<a class="headerlink" href="#post-processing-and-data-analysis-dcore-anacont-and-dcore-spectrum" title="Permalink to this heading">¶</a></h3>
+<h3>Post-processing and data analysis: dcore_anacont and dcore_spectrum<a class="headerlink" href="#post-processing-and-data-analysis-dcore-anacont-and-dcore-spectrum" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_anacont<span class="w"> </span>srvo3.ini
 $<span class="w"> </span>dcore_spectrum<span class="w"> </span>srvo3.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span>
 $<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>post
 $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../../_images/akw_srvo3.png"><img alt="../../_images/akw_srvo3.png" class="align-center" src="../../_images/akw_srvo3.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/akw_srvo3.png"><img alt="../../_images/akw_srvo3.png" class="align-center" src="../../_images/akw_srvo3.png" style="width: 500px;" />
+</a>
 <p>The left and right panels show results for up and down spins, respectively.</p>
 </section>
 </section>
@@ -191,7 +193,7 @@ $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../../index.html">Table of Contents</a></h3>
 <ul class="current">
@@ -219,7 +221,7 @@ $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
     <p class="topless"><a href="../../reference.html"
                           title="next chapter">Reference Manual</a></p>
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -227,13 +229,13 @@ $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">

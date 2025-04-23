@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,16 +10,16 @@
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Analytic continuation with the sparse-modeling method" href="spm.html" />
     <link rel="prev" title="Analytic continuation" href="../analytic_continuation.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,7 +41,7 @@
           <div class="body" role="main">
             
   <section id="analytic-continuation-with-the-pade-approximation">
-<h1>Analytic continuation with the Pade approximation<a class="headerlink" href="#analytic-continuation-with-the-pade-approximation" title="Permalink to this heading">¶</a></h1>
+<h1>Analytic continuation with the Pade approximation<a class="headerlink" href="#analytic-continuation-with-the-pade-approximation" title="Link to this heading">¶</a></h1>
 <p>The Pade approximation is a simple and widely used method for the analytic continuation.
 The Pade approximation is based on the assumption that the Green’s function can be approximated by a rational function of the frequency.
 The Pade approximation is implemented in the <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> program.</p>
@@ -79,7 +79,7 @@ Then, the Matsubara frequencies <span class="math notranslate nohighlight">\(\om
 When the number of self-energies calculated by the DMFT loop is less than <span class="math notranslate nohighlight">\(N\)</span>, all the data are used.</p>
 <p><code class="docutils literal notranslate"><span class="pre">eta</span></code> is the imaginary frequency shift for the analytic continuation, that is, the analytic continuation is performed as <span class="math notranslate nohighlight">\(i\omega_n \to \omega + i\eta\)</span>.</p>
 <section id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading">¶</a></h2>
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
 <p>The following input file is used to perform a DMFT calculation of a Hubbard model on a square lattice with the Pomerol solver and an analytic continuation of the self-energy with the Pade approximation:</p>
 <p><a class="reference download internal" download="" href="../_downloads/b65e337248cde4f14fd64ddc46ce10df/pade.ini"><code class="xref download docutils literal notranslate"><span class="pre">pade.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
@@ -124,7 +124,8 @@ When the number of self-energies calculated by the DMFT loop is less than <span 
 </pre></div>
 </div>
 <p>The figure below shows the self-energy in real frequency obtained by analytic continuation (<code class="docutils literal notranslate"><span class="pre">work/post/sigma_w_0_0_0.png</span></code>).</p>
-<a class="reference internal image-reference" href="../_images/pade.png"><img alt="../_images/pade.png" class="align-center" src="../_images/pade.png" style="width: 700px;" /></a>
+<a class="reference internal image-reference" href="../_images/pade.png"><img alt="../_images/pade.png" class="align-center" src="../_images/pade.png" style="width: 700px;" />
+</a>
 </section>
 </section>
 
@@ -133,7 +134,7 @@ When the number of self-energies calculated by the DMFT loop is less than <span 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
@@ -162,7 +163,7 @@ When the number of self-energies calculated by the DMFT loop is less than <span 
     <p class="topless"><a href="spm.html"
                           title="next chapter">Analytic continuation with the sparse-modeling method</a></p>
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -170,13 +171,13 @@ When the number of self-energies calculated by the DMFT loop is less than <span 
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,16 +10,16 @@
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Tools" href="../tools.html" />
     <link rel="prev" title="Analytic continuation with the sparse-modeling method" href="spm.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,12 +41,12 @@
           <div class="body" role="main">
             
   <section id="how-to-use-an-external-ac-code">
-<h1>How to use an external AC code<a class="headerlink" href="#how-to-use-an-external-ac-code" title="Permalink to this heading">¶</a></h1>
+<h1>How to use an external AC code<a class="headerlink" href="#how-to-use-an-external-ac-code" title="Link to this heading">¶</a></h1>
 <p>You can use an external code to perform AC of the self-energy from the Matsubara frequency to the real frequency.
 The only thing the code needs to do is to write the self-energy in the real frequency as a NumPy binary file, <code class="docutils literal notranslate"><span class="pre">post/sigma_w.npz</span></code>
 from the Matsubara frequency self-energy stored in <code class="docutils literal notranslate"><span class="pre">seedname_sigma_iw.npz</span></code>.</p>
 <section id="input-file-seedname-sigma-iw-npz">
-<h2>Input file: <code class="docutils literal notranslate"><span class="pre">seedname_sigma_iw.npz</span></code><a class="headerlink" href="#input-file-seedname-sigma-iw-npz" title="Permalink to this heading">¶</a></h2>
+<h2>Input file: <code class="docutils literal notranslate"><span class="pre">seedname_sigma_iw.npz</span></code><a class="headerlink" href="#input-file-seedname-sigma-iw-npz" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">seedname_sigma_iw.npz</span></code> is a NumPy binary file, so you can load it with <code class="docutils literal notranslate"><span class="pre">numpy.load</span></code> function.</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="n">npz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;./seedname_sigma_iw.npz&quot;</span><span class="p">)</span>
@@ -92,7 +92,7 @@ from the Matsubara frequency self-energy stored in <code class="docutils literal
 <p>The data format is a <span class="math notranslate nohighlight">\(N_\text{orb} \times N_\text{orb}\)</span> array, where <span class="math notranslate nohighlight">\(N_\text{orb}\)</span> is the number of orbitals.</p>
 </section>
 <section id="output-file-post-sigma-w-npz">
-<h2>Output file: <code class="docutils literal notranslate"><span class="pre">post/sigma_w.npz</span></code><a class="headerlink" href="#output-file-post-sigma-w-npz" title="Permalink to this heading">¶</a></h2>
+<h2>Output file: <code class="docutils literal notranslate"><span class="pre">post/sigma_w.npz</span></code><a class="headerlink" href="#output-file-post-sigma-w-npz" title="Link to this heading">¶</a></h2>
 <p>The output file, <code class="docutils literal notranslate"><span class="pre">post/sigma_w.npz</span></code>, is also a NumPy binary file storing one dictionary with the following keys:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -127,7 +127,7 @@ from the Matsubara frequency self-energy stored in <code class="docutils literal
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul class="current">
@@ -156,7 +156,7 @@ from the Matsubara frequency self-energy stored in <code class="docutils literal
     <p class="topless"><a href="../tools.html"
                           title="next chapter">Tools</a></p>
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -164,13 +164,13 @@ from the Matsubara frequency self-energy stored in <code class="docutils literal
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
