@@ -1,27 +1,25 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>CT-QMC: TRIQS/cthyb &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="CT-QMC with segment implementation: ALPS/CT-HYB-SEGMENT" href="../alpscore_ctseg/ctseg.html" />
     <link rel="prev" title="CT-QMC: ALPS/CT-HYB" href="../alpscore_cthyb/cthyb.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,9 +41,9 @@
           <div class="body" role="main">
             
   <section id="ct-qmc-triqs-cthyb">
-<span id="howtocthyb"></span><h1>CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code><a class="headerlink" href="#ct-qmc-triqs-cthyb" title="Permalink to this headline">¶</a></h1>
+<span id="howtocthyb"></span><h1>CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code><a class="headerlink" href="#ct-qmc-triqs-cthyb" title="Link to this heading">¶</a></h1>
 <section id="install">
-<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading">¶</a></h2>
 <p>Follow the installation guide in <a class="reference external" href="https://triqs.github.io/cthyb/latest/">TRIQS/cthyb</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -61,7 +59,7 @@ it must be built with the following CMake options:</p>
 </div>
 </section>
 <section id="basic-parameters-for-qmc">
-<h2>Basic parameters for QMC<a class="headerlink" href="#basic-parameters-for-qmc" title="Permalink to this headline">¶</a></h2>
+<h2>Basic parameters for QMC<a class="headerlink" href="#basic-parameters-for-qmc" title="Link to this heading">¶</a></h2>
 <p>The accuracy of the TRIQS/cthyb calculation depends on mainly the following
 three parameters.</p>
 <blockquote>
@@ -91,7 +89,7 @@ The length of this sub-cycle should be long enough to escape from the auto-corre
 The following script is an example to describe the procedure for searching appropriate QMC parameter.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
-cat &gt; pre.ini <span class="s">&lt;&lt;EOF</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>pre.ini<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
 <span class="s">[model]</span>
 <span class="s">seedname = bethe</span>
 <span class="s">lattice = bethe</span>
@@ -114,45 +112,46 @@ cat &gt; pre.ini <span class="s">&lt;&lt;EOF</span>
 <span class="s">max_step = 1</span>
 <span class="s">EOF</span>
 
-dcore_pre pre.ini
+dcore_pre<span class="w"> </span>pre.ini
 
-n_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">3000</span><span class="p">;</span>   n_warmup_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">10000</span><span class="p">;</span>  n_warmup_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">30000</span><span class="p">;</span>  n_warmup_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">100000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">100</span>
+n_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">3000</span><span class="p">;</span><span class="w">   </span>n_warmup_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">10000</span><span class="p">;</span><span class="w">  </span>n_warmup_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">30000</span><span class="p">;</span><span class="w">  </span>n_warmup_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">100000</span><span class="p">;</span><span class="w"> </span>n_warmup_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span><span class="w"> </span>n_warmup_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span><span class="w"> </span>n_warmup_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">100</span>
 
-<span class="k">for</span> i <span class="k">in</span> <span class="sb">`</span>seq <span class="m">0</span> <span class="m">5</span><span class="sb">`</span>
+<span class="k">for</span><span class="w"> </span>i<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="sb">`</span>seq<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">5</span><span class="sb">`</span>
 <span class="k">do</span>
-    sed -e <span class="s2">&quot;/n_cycles/c n_cycles{int} = </span><span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
-        -e <span class="s2">&quot;/n_wamup_cycles/c n_warmup_cycles{int} = </span><span class="si">${</span><span class="nv">n_wamup_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
-        -e <span class="s2">&quot;/length_cycle/c length_cycle{int} = </span><span class="si">${</span><span class="nv">length_cycle</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
-    pre.ini &gt; dmft.ini
-    mpiexec -np <span class="m">4</span> dcore dmft.ini
-    dcore_check dmft.ini --output bethe.pdf
-    mv bethe_sigma.dat cyc<span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span>_warm<span class="si">${</span><span class="nv">n_warmup_cycles</span><span class="p">[i]</span><span class="si">}</span>_len<span class="si">${</span><span class="nv">length_cycle</span><span class="p">[i]</span><span class="si">}</span>.dat
+<span class="w">    </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;/n_cycles/c n_cycles{int} = </span><span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>-e<span class="w"> </span><span class="s2">&quot;/n_wamup_cycles/c n_warmup_cycles{int} = </span><span class="si">${</span><span class="nv">n_wamup_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>-e<span class="w"> </span><span class="s2">&quot;/length_cycle/c length_cycle{int} = </span><span class="si">${</span><span class="nv">length_cycle</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>pre.ini<span class="w"> </span>&gt;<span class="w"> </span>dmft.ini
+<span class="w">    </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>dcore<span class="w"> </span>dmft.ini
+<span class="w">    </span>dcore_check<span class="w"> </span>dmft.ini<span class="w"> </span>--output<span class="w"> </span>bethe.pdf
+<span class="w">    </span>mv<span class="w"> </span>bethe_sigma.dat<span class="w"> </span>cyc<span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span>_warm<span class="si">${</span><span class="nv">n_warmup_cycles</span><span class="p">[i]</span><span class="si">}</span>_len<span class="si">${</span><span class="nv">length_cycle</span><span class="p">[i]</span><span class="si">}</span>.dat
 <span class="k">done</span>
 </pre></div>
 </div>
 <p>Then, we use gnuplot as</p>
-<div class="highlight-gnuplot notranslate"><div class="highlight"><pre><span></span><span class="k">plot</span> <span class="p">[</span><span class="mi">0</span><span class="o">:</span><span class="mi">10</span><span class="p">][</span><span class="mi">-0</span><span class="mf">.6</span><span class="o">:</span><span class="mi">0</span><span class="p">]</span> \
-<span class="s">&quot;cyc3000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc10000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc30000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc100000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc300000_warm5000_len50.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span><span class="o">,</span> \
-<span class="s">&quot;cyc300000_warm5000_len100.dat&quot;</span> <span class="nb">u</span> <span class="mi">1</span><span class="o">:</span><span class="mi">3</span> <span class="nb">w</span> <span class="n">l</span> <span class="n">lw</span> <span class="mi">3</span>
+<div class="highlight-gnuplot notranslate"><div class="highlight"><pre><span></span><span class="k">plot</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="o">:</span><span class="mi">10</span><span class="p">][</span><span class="mi">-0</span><span class="mf">.6</span><span class="o">:</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span>\
+<span class="s">&quot;cyc3000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\
+<span class="s">&quot;cyc10000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\
+<span class="s">&quot;cyc30000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\
+<span class="s">&quot;cyc100000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\
+<span class="s">&quot;cyc300000_warm5000_len50.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span>\
+<span class="s">&quot;cyc300000_warm5000_len100.dat&quot;</span><span class="w"> </span><span class="nb">u</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="mi">3</span><span class="w"> </span><span class="nb">w</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="n">lw</span><span class="w"> </span><span class="mi">3</span>
 </pre></div>
 </div>
 <p>and obtain</p>
-<a class="reference internal image-reference" href="../../_images/QMCparam.png"><img alt="../../_images/QMCparam.png" class="align-center" src="../../_images/QMCparam.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/QMCparam.png"><img alt="../../_images/QMCparam.png" class="align-center" src="../../_images/QMCparam.png" style="width: 500px;" />
+</a>
 <p>From this plot, we can see that both parameter settings are insufficient and
 we have to increase <code class="docutils literal notranslate"><span class="pre">n_cycles</span></code> or <code class="docutils literal notranslate"><span class="pre">length_cycle</span></code> or both of them
 (In almost cases, <code class="docutils literal notranslate"><span class="pre">n_warmup_cycles</span></code> has minor effect).</p>
 </section>
 <section id="high-frequency-tail-fit">
-<h2>High-frequency tail fit<a class="headerlink" href="#high-frequency-tail-fit" title="Permalink to this headline">¶</a></h2>
+<h2>High-frequency tail fit<a class="headerlink" href="#high-frequency-tail-fit" title="Link to this heading">¶</a></h2>
 <p>The self energy computed with QMC becomes noisy at the high frequency region.
 This high-frequency tail can be fitted by using the following function:</p>
 <div class="math notranslate nohighlight">
@@ -161,34 +160,34 @@ This high-frequency tail can be fitted by using the following function:</p>
 <p>We show the procedure for using this technique.
 The original input file (without tail-fit) is as follows (dmft.ini):</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
-<span class="na">seedname</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">lattice</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">norb</span> <span class="o">=</span> <span class="s">1</span>
-<span class="na">nelec</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">t</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(4.0, 0.0, 0.0)]</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span>
 
 <span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
 
 <span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
-<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">10000</span>
-<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">100000</span>
-<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">50</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span>
+<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10000</span>
+<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000</span>
+<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
 
 <span class="k">[control]</span>
-<span class="na">max_step</span> <span class="o">=</span> <span class="s">1</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
 
-<span class="k">[tool]</span>
-<span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
+<span class="k">[post.check]</span>
+<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span>
 </pre></div>
 </div>
 <p>We first execute the ordinary DMFT calculation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ dcore_pre dmft.ini
-$ mpiexec -np <span class="m">4</span> dcore dmft.ini
-$ dcore_check dmft.ini --output bethe.pdf
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_pre<span class="w"> </span>dmft.ini
+$<span class="w"> </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>dcore<span class="w"> </span>dmft.ini
+$<span class="w"> </span>dcore_check<span class="w"> </span>dmft.ini<span class="w"> </span>--output<span class="w"> </span>bethe.pdf
 </pre></div>
 </div>
 <p>Then, looking at the figure in bethe.pdf,
@@ -200,12 +199,12 @@ add the following parameters at the <code class="docutils literal notranslate"><
 <a class="reference external" href="https://triqs.ipht.cnrs.fr/applications/cthyb/reference/solve_parameters.html">solver parameter</a>
 for the tail fit):</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
-<span class="na">perform_tail_fit</span> <span class="o">=</span> <span class="s">True</span>
-<span class="na">fit_max_moment</span> <span class="o">=</span> <span class="s">2</span>
-<span class="na">fit_min_w</span> <span class="o">=</span> <span class="s">6.0</span>
-<span class="na">fit_max_w</span> <span class="o">=</span> <span class="s">15.0</span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">perform_tail_fit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+<span class="na">fit_max_moment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span>
+<span class="na">fit_min_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
+<span class="na">fit_max_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">15.0</span>
 </pre></div>
 </div>
 <p>We run <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> again, and obtain the result as (b) in the above figure.
@@ -214,27 +213,27 @@ After the energy range is fixed, we again perform the QMC calculation by <code c
 above figure.</p>
 </section>
 <section id="multi-band-system">
-<h2>Multi-band system<a class="headerlink" href="#multi-band-system" title="Permalink to this headline">¶</a></h2>
+<h2>Multi-band system<a class="headerlink" href="#multi-band-system" title="Link to this heading">¶</a></h2>
 <p>For the multi-band systems, <strong>we have to include the two-pairs insertion/removal move</strong>
 in the QMC cycles as</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
-<span class="na">move_double{bool}</span> <span class="o">=</span> <span class="s">True</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span>
+<span class="na">move_double{bool}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
 </pre></div>
 </div>
 <p>because these moves are disabled in the default setting.</p>
 </section>
 <section id="pade-approximation-for-dos-and-spectrum-function">
-<h2>Pade approximation for DOS and spectrum function<a class="headerlink" href="#pade-approximation-for-dos-and-spectrum-function" title="Permalink to this headline">¶</a></h2>
+<h2>Pade approximation for DOS and spectrum function<a class="headerlink" href="#pade-approximation-for-dos-and-spectrum-function" title="Link to this heading">¶</a></h2>
 <p>To obtain spectral functions, we need to perform analytical continuation from Matsubara frequency to real frequency.
 Currently, the Pade approximation is the only choice for the analytical continuation.</p>
-<p>There is one control parameter for Pade approximation, <code class="docutils literal notranslate"><span class="pre">omega_pade</span></code> in the <code class="docutils literal notranslate"><span class="pre">[tool]</span></code> block. It specifies an energy cutoff for Matsubara frequency.
-A reasonable choice of <code class="docutils literal notranslate"><span class="pre">omega_pade</span></code> is the maximum frequency
+<p>There is one control parameter for Pade approximation, <code class="docutils literal notranslate"><span class="pre">iomega_max</span></code> in the <code class="docutils literal notranslate"><span class="pre">[post.anacont.pade]</span></code> block. It specifies an energy cutoff for Matsubara frequency.
+A reasonable choice of <code class="docutils literal notranslate"><span class="pre">iomega_max</span></code> is the maximum frequency
 before the self energy becomes noisy.
-For example, in the case of figure (a) above, we can find that <code class="docutils literal notranslate"><span class="pre">omega_pade=4.0</span></code> is reasonable.</p>
+For example, in the case of figure (a) above, we can find that <code class="docutils literal notranslate"><span class="pre">iomega_max=4.0</span></code> is reasonable.</p>
 </section>
 <section id="legendre-filter">
-<h2>Legendre filter<a class="headerlink" href="#legendre-filter" title="Permalink to this headline">¶</a></h2>
+<h2>Legendre filter<a class="headerlink" href="#legendre-filter" title="Link to this heading">¶</a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Do not use it together with the tail-fit.</p>
@@ -245,9 +244,9 @@ the Legendre polynomials, and ignore the higher order polynomials.</p>
 <p>This scheme is activated when we specify the input parameter <code class="docutils literal notranslate"><span class="pre">n_l</span></code>
 (the number of polynomial included) in the <code class="docutils literal notranslate"><span class="pre">[system]</span></code> block as</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
-<span class="na">n_l</span> <span class="o">=</span> <span class="s">30</span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">n_l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span>
 </pre></div>
 </div>
 <p>When we use the Legendre filter, we should check that how many polynomials
@@ -257,7 +256,7 @@ polynomials (e.g. <code class="docutils literal notranslate"><span class="pre">n
 <p>For examples, we run the bash script as</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
-cat &gt; pre.ini <span class="s">&lt;&lt;EOF</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>pre.ini<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
 <span class="s">[model]</span>
 <span class="s">seedname = bethe</span>
 <span class="s">lattice = bethe</span>
@@ -281,24 +280,24 @@ cat &gt; pre.ini <span class="s">&lt;&lt;EOF</span>
 <span class="s">max_step = 1</span>
 <span class="s">EOF</span>
 
-dcore_pre pre.ini
+dcore_pre<span class="w"> </span>pre.ini
 
-n_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">3000</span><span class="p">;</span>   n_warmup_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">10000</span><span class="p">;</span>  n_warmup_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">30000</span><span class="p">;</span>  n_warmup_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">100000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">50</span>
-n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span> n_warmup_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span> length_cycle<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">100</span>
+n_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">3000</span><span class="p">;</span><span class="w">   </span>n_warmup_cycles<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">0</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">10000</span><span class="p">;</span><span class="w">  </span>n_warmup_cycles<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">1</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">30000</span><span class="p">;</span><span class="w">  </span>n_warmup_cycles<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">2</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">100000</span><span class="p">;</span><span class="w"> </span>n_warmup_cycles<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">3</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span><span class="w"> </span>n_warmup_cycles<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">4</span><span class="o">]=</span><span class="m">50</span>
+n_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">300000</span><span class="p">;</span><span class="w"> </span>n_warmup_cycles<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">5000</span><span class="p">;</span><span class="w"> </span>length_cycle<span class="o">[</span><span class="m">5</span><span class="o">]=</span><span class="m">100</span>
 
-<span class="k">for</span> i <span class="k">in</span> <span class="sb">`</span>seq <span class="m">0</span> <span class="m">5</span><span class="sb">`</span>
+<span class="k">for</span><span class="w"> </span>i<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="sb">`</span>seq<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">5</span><span class="sb">`</span>
 <span class="k">do</span>
-    sed -e <span class="s2">&quot;/n_cycles/c n_cycles{int} = </span><span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
-        -e <span class="s2">&quot;/n_wamup_cycles/c n_warmup_cycles{int} = </span><span class="si">${</span><span class="nv">n_wamup_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
-        -e <span class="s2">&quot;/length_cycle/c length_cycle{int} = </span><span class="si">${</span><span class="nv">length_cycle</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="se">\</span>
-    pre.ini &gt; dmft.ini
-    mpiexec -np <span class="m">4</span> dcore dmft.ini
-    dcore_check dmft.ini --output bethe.pdf
-    mv bethe_legendre.dat l_cyc<span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span>_warm<span class="si">${</span><span class="nv">n_warmup_cycles</span><span class="p">[i]</span><span class="si">}</span>_len<span class="si">${</span><span class="nv">length_cycle</span><span class="p">[i]</span><span class="si">}</span>.dat
+<span class="w">    </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;/n_cycles/c n_cycles{int} = </span><span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>-e<span class="w"> </span><span class="s2">&quot;/n_wamup_cycles/c n_warmup_cycles{int} = </span><span class="si">${</span><span class="nv">n_wamup_cycles</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>-e<span class="w"> </span><span class="s2">&quot;/length_cycle/c length_cycle{int} = </span><span class="si">${</span><span class="nv">length_cycle</span><span class="p">[i]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>pre.ini<span class="w"> </span>&gt;<span class="w"> </span>dmft.ini
+<span class="w">    </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>dcore<span class="w"> </span>dmft.ini
+<span class="w">    </span>dcore_check<span class="w"> </span>dmft.ini<span class="w"> </span>--output<span class="w"> </span>bethe.pdf
+<span class="w">    </span>mv<span class="w"> </span>bethe_legendre.dat<span class="w"> </span>l_cyc<span class="si">${</span><span class="nv">n_cycles</span><span class="p">[i]</span><span class="si">}</span>_warm<span class="si">${</span><span class="nv">n_warmup_cycles</span><span class="p">[i]</span><span class="si">}</span>_len<span class="si">${</span><span class="nv">length_cycle</span><span class="p">[i]</span><span class="si">}</span>.dat
 <span class="k">done</span>
 </pre></div>
 </div>
@@ -316,36 +315,38 @@ plot \
 </pre></div>
 </div>
 <p>and obtain</p>
-<a class="reference internal image-reference" href="../../_images/legendre.png"><img alt="../../_images/legendre.png" class="align-center" src="../../_images/legendre.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/legendre.png"><img alt="../../_images/legendre.png" class="align-center" src="../../_images/legendre.png" style="width: 500px;" />
+</a>
 <p>Finally, we choose the following setting:</p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
-<span class="na">seedname</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">lattice</span> <span class="o">=</span> <span class="s">bethe</span>
-<span class="na">norb</span> <span class="o">=</span> <span class="s">1</span>
-<span class="na">nelec</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">t</span> <span class="o">=</span> <span class="s">1.0</span>
-<span class="na">kanamori</span> <span class="o">=</span> <span class="s">[(4.0, 0.0, 0.0)]</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bethe</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0)]</span>
 
 <span class="k">[system]</span>
-<span class="na">beta</span> <span class="o">=</span> <span class="s">40.0</span>
-<span class="na">nk</span> <span class="o">=</span> <span class="s">100</span>
-<span class="na">n_l</span> <span class="o">=</span> <span class="s">30</span>
+<span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">40.0</span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+<span class="na">n_l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span>
 
 <span class="k">[impurity_solver]</span>
-<span class="na">name</span> <span class="o">=</span> <span class="s">TRIQS/cthyb</span>
-<span class="na">n_warmup_cycles{int}</span> <span class="o">=</span> <span class="s">5000</span>
-<span class="na">n_cycles{int}</span> <span class="o">=</span> <span class="s">300000</span>
-<span class="na">length_cycle{int}</span> <span class="o">=</span> <span class="s">100</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TRIQS/cthyb</span>
+<span class="na">n_warmup_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5000</span>
+<span class="na">n_cycles{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300000</span>
+<span class="na">length_cycle{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
 
 <span class="k">[control]</span>
-<span class="na">max_step</span> <span class="o">=</span> <span class="s">1</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
 
-<span class="k">[tool]</span>
-<span class="na">omega_check</span> <span class="o">=</span> <span class="s">30.0</span>
+<span class="k">[post.check]</span>
+<span class="na">omega_check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30.0</span>
 </pre></div>
 </div>
 <p>and obtain</p>
-<a class="reference internal image-reference" href="../../_images/legendre_sigma.png"><img alt="../../_images/legendre_sigma.png" class="align-center" src="../../_images/legendre_sigma.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../_images/legendre_sigma.png"><img alt="../../_images/legendre_sigma.png" class="align-center" src="../../_images/legendre_sigma.png" style="width: 500px;" />
+</a>
 </section>
 </section>
 
@@ -354,11 +355,11 @@ plot \
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../../index.html">Table of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../about.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About DCore</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference Manual</a><ul class="current">
@@ -366,19 +367,24 @@ plot \
 <li class="toctree-l2"><a class="reference internal" href="../../reference/input.html">Input-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/output.html">Output-file format</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../analytic_continuation.html">Analytic continuation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tools.html">Tools</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../alpscore_cthyb/cthyb.html"
-                        title="previous chapter">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../alpscore_ctseg/ctseg.html"
-                        title="next chapter">CT-QMC with segment implementation: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB-SEGMENT</span></code></a></p>
-<div id="searchbox" style="display: none" role="search">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../alpscore_cthyb/cthyb.html"
+                          title="previous chapter">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../alpscore_ctseg/ctseg.html"
+                          title="next chapter">CT-QMC with segment implementation: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB-SEGMENT</span></code></a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -386,13 +392,13 @@ plot \
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -408,7 +414,7 @@ plot \
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, The University of Tokyo.
+    &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>

@@ -9,13 +9,7 @@ Installation
 Prerequisites
 -------------
 
-#. Python3
-
-#. `TRIQS 3.x <https://triqs.github.io/triqs/>`_ and `TRIQS/DFTTools 3.x <https://triqs.github.io/dft_tools/>`_.
-    They must be installed prior to installing all other programs.
-    The current version of DCore supports TRIQS 3.x.
-    Please make sure that the triqs and triqs_dft_tools modules are loadable in your Python environment.
-    You may use `MateriAppsInstaller <https://github.com/wistaria/MateriAppsInstaller>`_, a collection of install scripts, to install prerequisites (TRIQS).
+#. Python3 (>=3.8)
 
 #. You will also need at least one impurity solver.
 
@@ -25,19 +19,36 @@ Prerequisites
    * :doc:`ALPS/CT-HYB<impuritysolvers/alpscore_cthyb/cthyb>`
    * :doc:`ALPS/CT-HYB-SEGMENT<impuritysolvers/alpscore_ctseg/ctseg>`
    * :doc:`TRIQS/cthyb<impuritysolvers/triqs_cthyb/cthyb>`
+   * :doc:`Pomerol solver<impuritysolvers/pomerol/pomerol>`
 
    We recommend to use the Hubbard-I solver for tests because this is fast.
    See :doc:`impuritysolvers` for a complete list of supported impurity solvers and their user manuals.
 
+#. [OPTIONAL] `TRIQS 3.x <https://triqs.github.io/triqs/>`_ and `TRIQS/DFTTools 3.x <https://triqs.github.io/dft_tools/>`_.
 
-Installation 
+   TRIQS can improve the performance of DCore.
+   The current version of DCore supports TRIQS 3.x.
+   Please make sure that the triqs and triqs_dft_tools modules are loadable in your Python environment.
+   You may use `MateriAppsInstaller <https://github.com/wistaria/MateriAppsInstaller>`_, a collection of install scripts, to install prerequisites (TRIQS).
+   If you want to use TRIQS, please set an environment variable ``DCORE_TRIQS_COMPAT`` to 0.
+
+   .. code-block:: bash
+         
+      $ export DCORE_TRIQS_COMPAT=0
+
+
+Installation
 ------------------
 
-You can install the latest version of DCore using pip as follows.
+(NOTE: Using a virtual environment such as `venv <https://docs.python.org/3/library/venv.html>`_ is recommended to avoid conflicts with other Python packages.)
+
+You can install the latest version of DCore using ``pip`` command as follows.
 
    ::
 
-     $ pip3 install dcore -U
+      $ pip3 install dcore -U
+
+Here, ``-U`` stands for ''Upgrade''. The installed packages are upgraded to the latest version, if you already have packages installed.
 
 
 Installation (only for developers)
@@ -71,13 +82,7 @@ You can download the source files in two ways.
   .. code-block:: bash
 
       $ pip3 install .
- 
-  If you do not have root privileges, please try
 
-  .. code-block:: bash
-
-      $ pip3 install . --user
- 
   If both of them did not work, you could build a binary package and install it as follows
 
   .. code-block:: bash
@@ -87,17 +92,6 @@ You can download the source files in two ways.
       $ pip3 install dist/dcore-*.whl
 
   One can run unit tests using the installed DCore by executing the following commands.
-
-  Executables such as dcore_pre may be installed into $HOME/.local/bin/dcore if you install DCore with the "--user" option.
-  Please add this directory to your PATH environment if needed.
-
-  You can build documentations as follows.
-
-  .. code-block:: bash
-
-     $ pip3 install sphinx wild_sphinx_theme matplotlib
-     $ python3 -m dcore.option_tables doc/reference
-     $ sphinx-build -b html doc html
 
   Non-MPI tests can be run as follows.
 
@@ -115,7 +109,7 @@ You can download the source files in two ways.
   MPI tests invoke MPI parallelized impourity solvers.
   If your system MPI command is not "mpirun", please provide the name of the correct one to DCore at runtime in an input file.
   The default value is "mpirun -np #" (# is replaced by the number of processors).
-  For instance, if the MPI command of your system is "mpijob", please set the environment variable "DCORE_MPIRUN_COMMAND" as folows. 
+  For instance, if the MPI command of your system is "mpijob", please set the environment variable "DCORE_MPIRUN_COMMAND" as folows.
 
   .. code-block:: bash
 
@@ -123,3 +117,11 @@ You can download the source files in two ways.
 
   Note that it is not allowed to run MPI programs interactively on some system.
   In this case, please run MPI tests as a parallel job with one process.
+
+  You can build documentations as follows.
+
+  .. code-block:: bash
+
+     $ pip3 install sphinx wild_sphinx_theme matplotlib
+     $ python3 -m dcore.option_tables doc/reference
+     $ sphinx-build -b html doc html

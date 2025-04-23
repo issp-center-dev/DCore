@@ -57,8 +57,12 @@ For changes of parameters other than [model] block, on the other hand, you can r
 How should I judge convergence of the DMFT loop?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the ``dcore_check`` and look at the generated figures.
-We do not implement automatic convergence check, because results by QMC solvers include statistical errors and simple convergence criteria does not work.
+The most reliable way is to use the ``dcore_check`` and look at the generated figures that plot some physical quantities as a function of iterations.
+
+Automatic convergence check is also available. Use ``converge_tol`` parameter in [control] block. For QMC calculations, we rocommend to use ``n_converge`` parameter simultaneously to exclude possibility that the convergence criteria is satisfied accidentally. An appropriate value would be ``n_converge=3`` or larger.
+
+..
+    We do not implement automatic convergence check, because results by QMC solvers include statistical errors and simple convergence criteria does not work.
 
 The DMFT loop does not converge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -151,11 +155,25 @@ Can I use my impurity solver?
 Yes. Follow the instruction in :doc:`../impuritysolvers/how_to_integrate`
 
 
-
-
-
 ..
    ``dcore`` crashes abnormally when using cthyb
    ---------------------------------------------
 
    Please retry.
+
+
+Others
+-------
+
+DCore is slow even with MPI parallelization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+One of the reasons is that the number of threads of each MPI process is not set properly.
+Unfortunately, the environment variable to set the number of threads is different among environments/libraries (OpenBLAS, Intel MKL, etc.).
+The followings are the environment variables to set the number of threads for some libraries.
+
+* OMP_NUM_THREADS
+* OPENBLAS_NUM_THREADS
+* MKL_NUM_THREADS
+* VECLIB_MAXIMUM_THREADS
+* NUMEXPR_NUM_THREADS

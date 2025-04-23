@@ -1,27 +1,25 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>A(k,w) converter &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/wild.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Support" href="../../support.html" />
     <link rel="prev" title="Tools" href="../../tools.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,23 +41,28 @@
           <div class="body" role="main">
             
   <section id="a-k-w-converter">
-<h1>A(k,w) converter<a class="headerlink" href="#a-k-w-converter" title="Permalink to this headline">¶</a></h1>
+<h1>A(k,w) converter<a class="headerlink" href="#a-k-w-converter" title="Link to this heading">¶</a></h1>
 <p>DCore can generate four-dimensional data of <span class="math notranslate nohighlight">\(A(\boldsymbol{k},\omega)\)</span> on a linear grid.
 An auxiliary tool <code class="docutils literal notranslate"><span class="pre">akw_converter</span></code> converts these data into three-dimensional volumeric data with a fixed value of <span class="math notranslate nohighlight">\(\omega\)</span> that is suitable for reading with existing 3D graphic softwares such as VESTA.</p>
 <section id="how-to-use">
-<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
-<p>The following steps should be done after all calculations are finished, namely, self-consistent calculation by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and even post calculations by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>.</p>
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Link to this heading">¶</a></h2>
+<p>The following steps should be done after all calculations are finished, namely, self-consistent calculation by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> and even post calculations by <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code>.</p>
 <ol class="arabic">
 <li><p><strong>Modifying ini file</strong></p>
-<p>A parameter <code class="docutils literal notranslate"><span class="pre">nk_mesh</span></code> is added to the ini file</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tools</span><span class="p">]</span>
+<p>To change the output directory from the default value (<code class="docutils literal notranslate"><span class="pre">post</span></code>), <code class="docutils literal notranslate"><span class="pre">dir_post</span></code> is added to the ini file as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="p">]</span>
+<span class="n">dir_post</span> <span class="o">=</span> <span class="n">post_grd</span>
+</pre></div>
+</div>
+<p>Then, to activate the grid calculation, the following block is added to the ini file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">spectrum</span><span class="p">]</span>
 <span class="n">nk_mesh</span> <span class="o">=</span> <span class="mi">100</span>
 </pre></div>
 </div>
 <p>This parameter activates a grid calculation.
 <span class="math notranslate nohighlight">\(A(\boldsymbol{k},\omega)\)</span> is to be computed on a four-dimensional grid of size <span class="math notranslate nohighlight">\(100^3 \times N_{\omega}\)</span>.
 In order to reduce the data size, one could instead specify a set of 3 parameters as</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tools</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">spectrum</span><span class="p">]</span>
 <span class="n">nk0_mesh</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">nk1_mesh</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">nk2_mesh</span> <span class="o">=</span> <span class="mi">4</span>
@@ -68,7 +71,8 @@ In order to reduce the data size, one could instead specify a set of 3 parameter
 <p>In this case, <span class="math notranslate nohighlight">\(k_z\)</span> is computed on 0, pi/2, pi and 3pi/3.
 Note that the k-grid is generated in the <em>primitive</em> reciprocal space.
 It is also highly recommended to reduce the number of frequency points. For example, if only the Fermi surface is of interest, one can set</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Nomega</span> <span class="o">=</span> <span class="mi">3</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">post</span><span class="o">.</span><span class="n">anacont</span><span class="p">]</span>
+<span class="n">Nomega</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">omega_max</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="n">omega_min</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
 </pre></div>
@@ -76,13 +80,13 @@ It is also highly recommended to reduce the number of frequency points. For exam
 <p>Then, <span class="math notranslate nohighlight">\(\omega=0\)</span> and two additional points are selected (<code class="docutils literal notranslate"><span class="pre">Nomega</span> <span class="pre">=</span> <span class="pre">1</span></code> is not allowed).
 In this way, the data points are reduced to <span class="math notranslate nohighlight">\(100^2 \times 4 \times 3\)</span>.</p>
 </li>
-<li><p><strong>Executing dcore_post</strong></p>
-<p>Now, <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code> is (re-)executed by</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dcore_post</span> <span class="o">--</span><span class="n">np</span> <span class="mi">4</span> <span class="o">--</span><span class="n">prefix</span> <span class="n">post_grd</span><span class="o">/</span> <span class="n">square</span><span class="o">.</span><span class="n">ini</span>
+<li><p><strong>Executing dcore_anacont and dcore_spectrum</strong></p>
+<p>Now, <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> and <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code> are (re-)executed by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dcore_anacont</span> <span class="n">square</span><span class="o">.</span><span class="n">ini</span>
+<span class="n">dcore_spectrum</span> <span class="o">--</span><span class="n">np</span> <span class="mi">4</span> <span class="n">square</span><span class="o">.</span><span class="n">ini</span>
 </pre></div>
 </div>
 <p>The number of processes in the <code class="docutils literal notranslate"><span class="pre">--np</span></code> option  (4 above) should be changed according to your environment.
-An output directory is specified by the <code class="docutils literal notranslate"><span class="pre">--prefix</span></code> option (default is ‘post/’).
 In this case, the data are saved in ‘post_grd’ directory.
 We recommend to use this option to have k-path data and k-grid data in separate directories.</p>
 <p>The four-dimensional grid data are save in a file ‘<em>seed</em>_akw_mesh_*sp*.dat’, where <em>seed</em> is the seed name given in the ini file, and <em>sp</em> is the spin index (‘up’ and ‘down’ if spin-orbit coupling is not considered and ‘ud’ otherwise).</p>
@@ -94,7 +98,7 @@ We recommend to use this option to have k-path data and k-grid data in separate 
 </pre></div>
 </div>
 <p>The value of <span class="math notranslate nohighlight">\(\omega\)</span> is given by the <code class="docutils literal notranslate"><span class="pre">--omega</span></code> option. If data do not exist just on this <span class="math notranslate nohighlight">\(\omega\)</span>, <span class="math notranslate nohighlight">\(A(\boldsymbol{k},\omega)\)</span> is interpolated using 2 points nearby (depending on the kind of interpolation method).
-The first argument is the path to the four-dimensional data generated by <code class="docutils literal notranslate"><span class="pre">dcore_post</span></code>. The second argument is the output file name. The default format is <strong>GRD</strong>, and the output filename should have extension ‘grd’.</p>
+The first argument is the path to the four-dimensional data generated by <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code>. The second argument is the output file name. The default format is <strong>GRD</strong>, and the output filename should have extension ‘grd’.</p>
 <p>The full option of <code class="docutils literal notranslate"><span class="pre">akw_converter</span></code> can be seen by the command</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">akw_converter</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
 </pre></div>
@@ -103,7 +107,7 @@ The first argument is the path to the four-dimensional data generated by <code c
 </ol>
 </section>
 <section id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
 <p>As an example, we solve
 <a class="reference internal" href="../../tutorial/square/square.html"><span class="doc">the square-lattice model in tutorial</span></a>.
 The ini file is changed as below.</p>
@@ -113,11 +117,13 @@ The occupation number is changed from n=1 to n=0.8 to break the particle-hole sy
 <p>A GRD file generated by the converter is opened by VESTA.
 A two-dimensional plot is made by “Utilities –&gt; 2D Data Display”.
 The plot clearly shows the Fermi surface in the square-lattice mode:</p>
-<a class="reference internal image-reference" href="../../_images/vesta_2d_data_display.png"><img alt="../../_images/vesta_2d_data_display.png" class="align-center" src="../../_images/vesta_2d_data_display.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../../_images/vesta_2d_data_display.png"><img alt="../../_images/vesta_2d_data_display.png" class="align-center" src="../../_images/vesta_2d_data_display.png" style="width: 600px;" />
+</a>
 <p>We note that one needs to change some configuration to have the above plot.
 One goes to “Slice” and change (1) “Distance from origin” from 0.5 to 0 to select <span class="math notranslate nohighlight">\(k_z=0\)</span> plane, and (2) “Ranges of fractional coordinates” from [0:1] to [-0.5:0.5] to shift the Gamma point to the center of the plot.
 The figure below shows the Slice panel:</p>
-<a class="reference internal image-reference" href="../../_images/vesta_slice.png"><img alt="../../_images/vesta_slice.png" class="align-center" src="../../_images/vesta_slice.png" style="width: 300px;" /></a>
+<a class="reference internal image-reference" href="../../_images/vesta_slice.png"><img alt="../../_images/vesta_slice.png" class="align-center" src="../../_images/vesta_slice.png" style="width: 300px;" />
+</a>
 </section>
 </section>
 
@@ -126,11 +132,11 @@ The figure below shows the Slice panel:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../../index.html">Table of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../about.html">DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About DCore</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference Manual</a><ul class="current">
@@ -138,19 +144,24 @@ The figure below shows the Slice panel:</p>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/input.html">Input-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/output.html">Output-file format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../analytic_continuation.html">Analytic continuation</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../../tools.html">Tools</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../../tools.html"
-                        title="previous chapter">Tools</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../../support.html"
-                        title="next chapter">Support</a></p>
-<div id="searchbox" style="display: none" role="search">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../../tools.html"
+                          title="previous chapter">Tools</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../../support.html"
+                          title="next chapter">Support</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -158,13 +169,13 @@ The figure below shows the Slice panel:</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -180,7 +191,7 @@ The figure below shows the Slice panel:</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, The University of Tokyo.
+    &#169; Copyright 2017, The University of Tokyo.
     </div>
   </body>
 </html>
