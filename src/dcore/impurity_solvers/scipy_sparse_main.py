@@ -216,7 +216,8 @@ def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_e
 
         for i, j in np.ndindex(n_flavors, n_flavors):
             if spin_conserve:
-                if i // 2 != j // 2:  # skip different spins
+                n_orb = n_flavors // 2
+                if i // n_orb != j // n_orb:  # skip different spins
                     continue
 
             gf[i, j, l] = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
@@ -256,7 +257,7 @@ def calc_gf_iterative(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, solve
 
             # Solve A |x> = c_j^+ |n>
             if solver == 'spsolve':
-                x, _ = spsolve(A, cdag_j)
+                x = spsolve(A, cdag_j)
             else:
                 x, _ = spsolve(A, cdag_j, x0=x0)
                 # x, _ = spsolve(A, cdag_j, x0=x0, rtol=rtol, atol=atol)
