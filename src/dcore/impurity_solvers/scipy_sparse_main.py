@@ -587,7 +587,7 @@ def main():
             continue
         if n_eigen == n_states_in_initial[N]:
             sys.stdout.flush()
-            print(f"\nWarning: n_eigen={n_eigen} is too small for {N}-particle states.", file=sys.stderr)
+            print(f"\nWarning: n_eigen={n_eigen} is too small for {N}-particle states. Increase n_eigen!", file=sys.stderr)
 
             if check_n_eigen:
                 print("  -> Exit. Set check_n_eigen{bool}=False to continue calculation.", file=sys.stderr)
