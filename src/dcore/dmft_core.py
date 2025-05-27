@@ -943,6 +943,9 @@ class DMFTCoreSolver(object):
                 data[f"data{idata}"] = g.data
                 data[f"hartree_fock{idata}"] = hf[bname]
                 idata += 1
+                iwn = g.mesh.values()
+        data["beta"] = self._beta
+        data["iwn"] = iwn
         numpy.savez(self._seedname + "_sigma_iw.npz", **data)
 
     def chemical_potential(self, iteration_number):

@@ -672,6 +672,9 @@ def run():
     from dcore.version import version, print_header
 
     print_header()
+    
+    print()
+    print("  dcore_bse is deprecated. Please use dcore_chiq.py in ChiQ package.")
 
     parser = argparse.ArgumentParser(
         prog='dcore_bse.py',

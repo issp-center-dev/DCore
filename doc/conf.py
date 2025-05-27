@@ -53,3 +53,31 @@ rst_epilog = '.. |BRANCH| replace:: {}'.format('@GIT_BRANCH_NAME@')
 # overwrite css of html_theme
 def setup(app):
     app.add_css_file('dcore.css')
+
+
+
+latex_elements = {
+    # The paper size ('letterpaper' or 'a4paper').
+    #
+    # 'papersize': 'letterpaper',
+
+    # The font size ('10pt', '11pt' or '12pt').
+    #
+    # 'pointsize': '10pt',
+
+    # Additional stuff for the LaTeX preamble.
+    #
+    # 'preamble': '',
+
+    # Latex figure (float) alignment
+    #
+    # 'figure_align': 'htbp',
+}
+
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title,
+#  author, documentclass [howto, manual, or own class]).
+latex_documents = [
+    ('index', 'dcore.tex', u'DCore Documentation',
+     u'DCore developers', 'manual', 'True'),
+]

@@ -8,4 +8,5 @@ Reference Manual
    reference/input
    reference/output
    impuritysolvers
+   analytic_continuation
    tools
