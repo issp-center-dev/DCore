@@ -75,14 +75,16 @@ class ScipySolver(SolverBase):
         n_sites = self.n_orb + n_bath
 
         # parameters from input
-        n_eigen = params_kw.get('n_eigen', 10)  # number of eigenstates to be computed
-        dim_full_diag = params_kw.get('dim_full_diag', 1000)
+        n_eigen = params_kw.get('n_eigen', 100)  # number of eigenstates to be computed
+        dim_full_diag = params_kw.get('dim_full_diag', 10000)
         ncv = params_kw.get('ncv', None)
         # np = params_kw.get('np', 1)  # MPI
         eigen_solver = params_kw.get('eigen_solver', 'eigsh')
         gf_solver = params_kw.get('gf_solver', 'bicgstab')
         # gf_rtol = params_kw.get('gf_rtol', 1e-5)
         # gf_atol = params_kw.get('gf_atol', 0.0)
+        check_n_eigen = params_kw.get('check_n_eigen', True)
+        check_orthonormality = params_kw.get('check_orthonormality', True)
 
         # fixed parameters
         file_input = "input.in"
@@ -109,6 +111,8 @@ class ScipySolver(SolverBase):
             'gf_solver': gf_solver,
             # 'gf_rtol': gf_rtol,
             # 'gf_atol': gf_atol,
+            'check_n_eigen' : check_n_eigen,
+            'check_orthonormality' : check_orthonormality,
         }
         # (*) TypeError: Object of type int64 is not JSON serializable
 

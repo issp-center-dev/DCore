@@ -159,17 +159,18 @@ def orthonormalize_eigvecs(eigvals, eigvecs, tol=1e-6):
     return eigvals, eigvecs
 
 
-def check_orthonormality(eigvecs, ignore_orthonormality=False):
+def func_check_orthonormality(eigvecs, check_orthonormality=True):
     # Check orthonormality of eigenvectors
     overlap = eigvecs.conj().T @ eigvecs  # <m|n>
     if not np.allclose(overlap, np.identity(eigvecs.shape[1])):
         sys.stdout.flush()
         print("Warning: Eigenvectors are not orthonormal!", file=sys.stderr)
-        if ignore_orthonormality:
-            print("  -> Continue. Set ignore_orthonormality=False to abort calculation.", file=sys.stderr)
-        else:
-            print("  -> Exit. Set ignore_orthonormality=True to ignore this warning.", file=sys.stderr)
+
+        if check_orthonormality:
+            print("  -> Exit. Set check_orthonormality{bool}=False to continue calculation.", file=sys.stderr)
             sys.exit(1)
+        else:
+            print("  -> Continue. Set check_orthonormality{bool}=True to abort calculation.", file=sys.stderr)
 
 
 def print_ndarray_info(array, prefix=""):
@@ -358,7 +359,6 @@ def main():
     pp(params)
 
     weight_threshold = 1e-6
-    ignore_orthonormality = False
     particle_numbers = None
 
     n_flavors = params['n_flavors']
@@ -373,6 +373,8 @@ def main():
     gf_solver = params['gf_solver']
     # gf_atol = params['gf_atol']
     # gf_rtol = params['gf_rtol']
+    check_n_eigen = params['check_n_eigen']
+    check_orthonormality = params['check_orthonormality']
 
     if eigen_solver not in eigsolver:
         raise ValueError(f"Invalid eigen_solver: {eigen_solver}")
@@ -511,7 +513,7 @@ def main():
         _timer = Timer(prefix=" Time: ")
         if full_diagonalization[N]:
             print(" full diagonalization")
-            # n_eigen = dim
+            # n_eigen = dim[N]
             eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
         else:
             print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.")
@@ -531,7 +533,7 @@ def main():
         #   since eigs() is called internally.
         eigvals[N], eigvecs[N] = orthonormalize_eigvecs(eigvals[N], eigvecs[N])
 
-        check_orthonormality(eigvecs[N], ignore_orthonormality=ignore_orthonormality)
+        func_check_orthonormality(eigvecs[N], check_orthonormality=check_orthonormality)
 
     print("\nFinish the eigenvalue problem", flush=True)
     timer.print()
@@ -560,10 +562,38 @@ def main():
     print("\nNumber of initial states:", n_initial_states, flush=True)
 
     # Check if n_eigen is enough
-    # TODO: improve this condition
-    if n_eigen < len(weights) and weights[n_eigen] > weight_threshold:
-        sys.stdout.flush()
-        print(f"\nWarning: n_eigen={n_eigen} may be too small: The weight for the highest-energy state computed is {weights[-1]}.", file=sys.stderr)
+    # if not np.all(full_diagonalization==True):  # do no check if only full diag is used
+    #     # TODO: improve this condition
+    #     if n_eigen < len(weights) and weights[n_eigen] > weight_threshold:
+    #         sys.stdout.flush()
+    #         print(f"\nWarning: n_eigen={n_eigen} may be too small: The weight for the highest-energy state computed is {weights[-1]}.", file=sys.stderr)
+
+    #         if check_n_eigen:
+    #             print("  -> Exit. Set check_n_eigen{bool}=False to continue calculation.", file=sys.stderr)
+    #             sys.exit(1)
+    #         else:
+    #             print("  -> Continue. Set check_n_eigen{bool}=True to abort calculation.", file=sys.stderr)
+
+    # number of N-particle states in initial states
+    n_states_in_initial = np.zeros(N+1, dtype=int)
+    Ns_initial = np.array([eig.N for eig in eigs[0:n_initial_states]])
+    for N in particle_numbers:
+        n_states_in_initial[N] = np.count_nonzero(Ns_initial == N)
+        print(f"  N={N}: {n_states_in_initial[N]} / {dims[N]}")
+
+    # Check if n_eigen is enough
+    for N in particle_numbers:
+        if full_diagonalization[N]:
+            continue
+        if n_eigen == n_states_in_initial[N]:
+            sys.stdout.flush()
+            print(f"\nWarning: n_eigen={n_eigen} is too small for {N}-particle states.", file=sys.stderr)
+
+            if check_n_eigen:
+                print("  -> Exit. Set check_n_eigen{bool}=False to continue calculation.", file=sys.stderr)
+                sys.exit(1)
+            else:
+                print("  -> Continue. Set check_n_eigen{bool}=True to abort calculation.", file=sys.stderr)
 
     # Save eigenvalues
     with open("eigenvalues.dat", "w") as f:
