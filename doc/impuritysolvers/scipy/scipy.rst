@@ -46,7 +46,7 @@ Description of the parameters are given below:
 
 - ``dim_full_diag{int}``: Maximum dimension of the matrix to be diagonalized by full diagonalization method. If the matrix is larger than this value, it will be treated by sparse solver.
 
-- ``particle_numbers{str}``: Particle numbers to be considered in a list format, e.g., `[1, 2, 3]`. If None (default), all particle numbers are considered. This parameter is useful to reduce the calculation time. Note that all states necessary to the Green's function calculation, namely, thermally occupied :math:`N`-particle states and :math:`N\pm 1` states, should be included.
+- ``particle_numbers{str}``: Particle numbers to be considered. Specify in a list format, e.g., `[1, 2, 3]`. If None (default), all particle numbers are considered. This parameter is useful to reduce the calculation time. Note that all states necessary to the Green's function calculation, namely, thermally occupied :math:`N`-particle states and :math:`N\pm 1` states, should be included.
 
 - ``n_eigen{int}``: Number of eigenvalues to be computed by the sparse solver.
 
