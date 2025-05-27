@@ -10,7 +10,6 @@ from collections import namedtuple
 from pprint import pp
 from dcore.impurity_solvers.lanczos import LanczosEigenSolver
 
-
 # Sparse solvers for eigenvalue problems
 eigsolver = (
     # scipy.sparse.linalg.eigsh()
@@ -359,7 +358,6 @@ def main():
     pp(params)
 
     weight_threshold = 1e-6
-    particle_numbers = None
 
     n_flavors = params['n_flavors']
     n_sites = params['n_sites']
@@ -368,6 +366,7 @@ def main():
     n_iw = params['n_iw']
     flag_spin_conserve = params['flag_spin_conserve']
     dim_full_diag = params['dim_full_diag']
+    particle_numbers = params['particle_numbers']
     ncv = params['ncv']
     eigen_solver = params['eigen_solver']
     gf_solver = params['gf_solver']
@@ -462,22 +461,27 @@ def main():
     # ----------------------------------------------------------------
     # Particle number conservation
 
-    # particle numbers to be considered
-    if particle_numbers is None:
-        particle_numbers = np.arange(2*n_sites+1)
+    particle_numbers_all = np.arange(2*n_sites+1)
 
-    # 0 <= n <= 2*n_sites
-    assert np.all((particle_numbers >= 0) & (particle_numbers <= 2*n_sites))
-
-    print("\nParticle number conservation:", flush=True)
+    print("\nParticle-number conservation:", flush=True)
     print("  N dim[N]")
     dims = np.zeros(2*n_sites+1, dtype=int)
     indices = np.empty(2*n_sites+1, dtype=object)
-    for N in particle_numbers:
+    for N in particle_numbers_all:
         indices[N] = [i for i, state in enumerate(product([0, 1], repeat=2*n_sites)) if sum(state)==N]
         dims[N] = len(indices[N])
         print(f" {N:2d} {dims[N]}")
     assert np.sum(dims) == dim
+
+    # particle numbers to be considered
+    if particle_numbers is None:
+        particle_numbers = particle_numbers_all
+    else:
+        particle_numbers = np.array(particle_numbers, dtype=int)
+    print(f"\nParticle numbers to be considered:\n {particle_numbers}", flush=True)
+
+    # 0 <= n <= 2*n_sites
+    assert np.all((particle_numbers >= 0) & (particle_numbers <= 2*n_sites))
 
     # Split the Hamiltonian, Cdag, and C matrices into blocks
     hamil = sp.csr_matrix(hamil)  # for slicing
@@ -623,10 +627,14 @@ def main():
         for _Cdag, pm in [[Cdags[N], +1], [Cs[N], -1]]:
             if pm == +1:
                 N_ex = N + 1
-                print(f"\n particle excitation: N + 1 = {N_ex}")
+                print(f"\n particle excitation: N + 1 = {N_ex}", flush=True)
             else:
                 N_ex = N - 1
-                print(f"\n hole excitation: N - 1 = {N_ex}")
+                print(f"\n hole excitation: N - 1 = {N_ex}", flush=True)
+
+            if N_ex not in particle_numbers:
+                print(f"ERROR: N={N_ex} is not in particle_numbers.", file=sys.stderr)
+                sys.exit(1)
 
             if 0 <= N_ex <= 2*n_sites:
                 # parameters for gf_solver

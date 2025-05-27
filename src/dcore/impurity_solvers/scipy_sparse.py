@@ -22,6 +22,7 @@ import sys
 from collections import namedtuple
 import shlex
 import json
+import ast
 
 from dcore._dispatcher import *
 
@@ -86,6 +87,14 @@ class ScipySolver(SolverBase):
         check_n_eigen = params_kw.get('check_n_eigen', True)
         check_orthonormality = params_kw.get('check_orthonormality', True)
 
+        # convert particle_numbers to a list
+        particle_numbers_in = params_kw.get('particle_numbers', 'None')
+        try:
+            particle_numbers = ast.literal_eval(particle_numbers_in)
+        except:
+            print(f"Error in parsing particle_numbers={particle_numbers_in!r}", file=sys.stderr)
+            sys.exit(1)
+
         # fixed parameters
         file_input = "input.in"
         file_h0 = "h0.in"
@@ -106,6 +115,7 @@ class ScipySolver(SolverBase):
             'n_iw': self.n_iw,
             'n_bath': n_bath,
             'dim_full_diag': dim_full_diag,
+            'particle_numbers': particle_numbers,
             'ncv': ncv,
             'eigen_solver': eigen_solver,
             'gf_solver': gf_solver,
