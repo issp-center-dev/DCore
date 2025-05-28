@@ -60,7 +60,7 @@ The table below shows the detailed description of the parameters.
 Standard output
 ----------------
 
-The standard output of the solver is saved in a file `stdout.log` in directory `work/imp_shell0_ite1`, where `shell0` and `ite1` stands for `0`-th shell and `1`-st iteration.
+The standard output of the solver is saved in a file `stdout.log` in directory `work/imp_shell0_ite1`, where `shell0` and `ite1` stands for the `0`-th shell and the `1`-st iteration.
 
 Some relevant output are explained below.
 
@@ -83,7 +83,7 @@ Some relevant output are explained below.
     Particle numbers to be considered:
      [0 1 2]
 
-This shows the dimension of the Hamiltonian matrix for each particle number. When ``particle_numbers`` option is given, the particle numbers to be considered are shown at the end.
+This shows the dimension of the Hamiltonian matrix for each particle number. When ``particle_numbers`` option is given, the particle numbers to be considered are shown.
 
 .. code-block:: text
 
@@ -105,7 +105,7 @@ This shows the dimension of the Hamiltonian matrix for each particle number. Whe
      Iterative solver: n_eigen=100 eigenvalues are computed.
      Time: 0m0.009s
 
-This shows the time taken for solving the eigenvalue problem for each particle number. The solver uses full diagonalization method for matrices smaller than ``dim_dull_diag`` (set to 100 in this example), while it switches to sparse solver specified by ``eigen_solver`` for larger matrices.
+This shows the time taken for solving the eigenvalue problem for each particle number. The solver uses full diagonalization method for matrices smaller than ``dim_full_diag`` (set to 100 in this example), while it switches to sparse solver specified by ``eigen_solver`` for larger matrices.
 
 .. code-block:: text
 
@@ -143,9 +143,11 @@ The first line shows the total number of eigenvalues computed. The last line sho
      hole excitation: N - 1 = 4
       Use the Lehmann representation
 
-This shows the calculation of the impurity Green's function. Lehmann representation is used when the dimensions of :math:`N \pm 1`-particle states is smaller than ``dim_full_diag``. Otherwise, the sparse solver specified by ``gf_solver`` is used. The output in this case is as follows:
+This shows the calculation of the impurity Green's function. Lehmann representation is used when the dimension of :math:`N \pm 1`-particle states is smaller than ``dim_full_diag``. Otherwise, linear equations are solved by the sparse solver specified by ``gf_solver``. The output in this case is as follows:
 
 .. code-block:: text
+
+    Calculating impurity Green's function...
 
     Initial state 1/32  (N = 5)
 
@@ -185,7 +187,7 @@ Output file
     5  -2.00000000e+01  3.12500e-02
     5  -2.00000000e+01  3.12500e-02
 
-  This file contains the eigenvalues computed and the corresponding Boltzmann weights in ascending order. Each column shows the particle number, the eigen-energy, and the Boltzmann weight.
+  This file contains the eigenvalues computed and the corresponding Boltzmann weights in ascending order. The numbers from left to right show the particle number, the eigen-energy, and the Boltzmann weight.
 
 
 Benchmark
