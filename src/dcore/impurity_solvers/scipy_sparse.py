@@ -78,6 +78,7 @@ class ScipySolver(SolverBase):
         # parameters from input
         n_eigen = params_kw.get('n_eigen', 100)  # number of eigenstates to be computed
         dim_full_diag = params_kw.get('dim_full_diag', 10000)
+        weight_threshold = params_kw.get('weight_threshold', 1e-6)
         ncv = params_kw.get('ncv', None)
         # np = params_kw.get('np', 1)  # MPI
         eigen_solver = params_kw.get('eigen_solver', 'eigsh')
@@ -116,6 +117,7 @@ class ScipySolver(SolverBase):
             'n_bath': n_bath,
             'dim_full_diag': dim_full_diag,
             'particle_numbers': particle_numbers,
+            'weight_threshold': weight_threshold,
             'ncv': ncv,
             'eigen_solver': eigen_solver,
             'gf_solver': gf_solver,

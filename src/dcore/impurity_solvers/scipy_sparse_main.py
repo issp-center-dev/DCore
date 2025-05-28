@@ -357,8 +357,6 @@ def main():
     print("Input parameters:")
     pp(params)
 
-    weight_threshold = 1e-6
-
     n_flavors = params['n_flavors']
     n_sites = params['n_sites']
     beta = params['beta']
@@ -367,6 +365,7 @@ def main():
     flag_spin_conserve = params['flag_spin_conserve']
     dim_full_diag = params['dim_full_diag']
     particle_numbers = params['particle_numbers']
+    weight_threshold = params['weight_threshold']
     ncv = params['ncv']
     eigen_solver = params['eigen_solver']
     gf_solver = params['gf_solver']
