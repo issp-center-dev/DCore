@@ -420,6 +420,7 @@ def main():
     #   kron(I, I, I, cdag, F, F)
     # Cdag = []
     print("\nMaking creation/annihilation operators...", flush=True)
+    timer = Timer(prefix="Time: ")
     Cdag = np.empty((2*n_sites,), dtype=object)
     C = np.empty((2*n_sites,), dtype=object)
     for i in range(2*n_sites):
@@ -431,6 +432,7 @@ def main():
         C[i] = Cdag[i].T  # real (omit conj)
         assert isinstance(Cdag[i], sp.spmatrix)
         assert Cdag[i].shape == (dim, dim)
+    timer.print()
 
     print("\nCreation/annihilation operators info:", flush=True)
     print_sparse_matrix_info(Cdag[0], prefix=" | ")
@@ -441,18 +443,22 @@ def main():
     # TODO: define density matrix first
 
     print("\nMaking many-body Hamiltonian matrix...", flush=True)
+    timer.restart()
     hamil = 0
     for i, j in np.ndindex(h0.shape):
-        hamil += h0[i, j] * Cdag[i] @ C[j]
+        if h0[i, j] != 0:
+            hamil += h0[i, j] * Cdag[i] @ C[j]
     # print(hamil.shape)
     assert hamil.shape == (dim, dim)
 
     # U_ijkl
     for i, j, k, l in np.ndindex(umat.shape):
-        hamil += 0.5 * umat[i, j, k, l] * Cdag[i] @ Cdag[j] @ C[l] @ C[k]
+        if umat[i, j, k, l] != 0:
+            hamil += 0.5 * umat[i, j, k, l] * Cdag[i] @ Cdag[j] @ C[l] @ C[k]
 
     assert isinstance(hamil, sp.spmatrix)
     assert hamil.shape == (dim, dim)
+    timer.print()
 
     print("\nHamiltonian matrix info:", flush=True)
     print_sparse_matrix_info(hamil, prefix=" | ")
@@ -505,7 +511,7 @@ def main():
     # Solve the eigenvalue problem
 
     print("\nSolving the eigenvalue problem...", flush=True)
-    timer = Timer(prefix="Time: ")
+    timer.restart()
     eigvals = np.empty(2*n_sites+1, dtype=object)
     eigvecs = np.empty(2*n_sites+1, dtype=object)
     full_diagonalization = np.full(2*n_sites+1, False)
@@ -613,7 +619,7 @@ def main():
     iws = 1j * (2 * np.arange(n_iw) + 1) * np.pi / beta
 
     print("\nCalculating impurity Green's function...", flush=True)
-    timer = Timer(prefix="Time: ")
+    timer.restart()
     gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
     for n in range(n_initial_states):
         N = eigs[n].N
