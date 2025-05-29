@@ -631,11 +631,11 @@ def main():
                 N_ex = N - 1
                 print(f"\n hole excitation: N - 1 = {N_ex}", flush=True)
 
-            if N_ex not in particle_numbers:
-                print(f"ERROR: N={N_ex} is not in particle_numbers.", file=sys.stderr)
-                sys.exit(1)
-
             if 0 <= N_ex <= 2*n_sites:
+                if N_ex not in particle_numbers:
+                    print(f"ERROR: N={N_ex} is not in particle_numbers.", file=sys.stderr)
+                    sys.exit(1)
+
                 # parameters for gf_solver
                 params_gf = dict(
                     iws = iws,
