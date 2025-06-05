@@ -619,15 +619,39 @@ def main():
     # Sort eigenvalues
     eigs = sort_eigs(eigs)
 
-    print("\nEigenvalues:", flush=True)
     E = np.array([eig.val for eig in eigs])
-    print(E)
 
     # Boltzmann factors
     weights = np.exp(-beta * (E - E[0]))
     weights /= np.sum(weights)
-    print("\nWeights (Boltzmann factors / Z):", flush=True)
-    print(weights)
+
+    # Save eigenvalues
+    print("\nSave eigenvalues and eigenvectors in\n 'eigenvalues.dat'\n 'eigenvectors.dat'", flush=True)
+    with open("eigenvalues.dat", "w") as f:
+        f.write(f"# dim = {dim}\n")
+        f.write(f"# n_eigen = {n_eigen} (for each n)\n")
+        f.write(f"# N  E_i  Boltzmann_weight\n")
+        for i, eig in enumerate(eigs):
+            f.write(f"{eig.N}  {eig.val:.8e}  {weights[i]:.5e}\n")
+
+    # Save eigenvectors
+    # print("\nSave eigenvectors in 'eigenvectors.dat'", flush=True)
+    with open("eigenvectors.dat", "w") as f:
+        length = 2*n_sites
+        f.write(f"# The i-th digit from the left of the {length}-dimensional Fock state\n")
+        f.write(f"# indicates whether (spin, site) state is occupied (1) or empty (0).\n")
+        f.write(f"# 'site' includes bath sites (b) after Wannier orbitals (w).\n")
+        f.write(f"#\n")
+        f.write(f"#   w1+ w2+ ... b1+ b2+ ... w1- w2- ... b1- b2- ...\n")
+        f.write(f"#\n")
+        for eig in eigs:
+            # print(eig)
+            f.write(f"# E={eig.val:.8e}, N={eig.N}\n")
+            eigvec = eigvecs[eig.N][:, eig.i]
+            for j in range(eigvec.size):
+                if abs(eigvec[j]) > 1e-6:  # print only non-zero elements
+                    state = indices[eig.N][j]
+                    f.write(f" |{state:0{length}b}> {eigvec[j]:.8e}\n")
 
     n_initial_states = np.count_nonzero(weights > weight_threshold)
     print("\nNumber of initial states:", n_initial_states, flush=True)
@@ -665,32 +689,6 @@ def main():
                 sys.exit(1)
             else:
                 print("  -> Continue. Set check_n_eigen{bool}=True to abort calculation.", file=sys.stderr)
-
-    # Save eigenvalues
-    with open("eigenvalues.dat", "w") as f:
-        f.write(f"# dim = {dim}\n")
-        f.write(f"# n_eigen = {n_eigen} (for each n)\n")
-        f.write(f"# N  E_i  Boltzmann_weight\n")
-        for i, eig in enumerate(eigs):
-            f.write(f"{eig.N}  {eig.val:.8e}  {weights[i]:.5e}\n")
-
-    # Save eigenvectors
-    with open("eigenvectors.dat", "w") as f:
-        length = 2*n_sites
-        f.write(f"# The i-th digit from the left of the {length}-dimensional Fock state\n")
-        f.write(f"# indicates whether (spin, site) state is occupied (1) or empty (0).\n")
-        f.write(f"# 'site' includes bath sites (b) after Wannier orbitals (w).\n")
-        f.write(f"#\n")
-        f.write(f"#   w1+ w2+ ... b1+ b2+ ... w1- w2- ... b1- b2- ...\n")
-        f.write(f"#\n")
-        for eig in eigs:
-            # print(eig)
-            f.write(f"# E={eig.val:.8e}, N={eig.N}\n")
-            eigvec = eigvecs[eig.N][:, eig.i]
-            for j in range(eigvec.size):
-                if abs(eigvec[j]) > 1e-6:  # print only non-zero elements
-                    state = indices[eig.N][j]
-                    f.write(f" |{state:0{length}b}> {eigvec[j]:.8e}\n")
 
     # ----------------------------------------------------------------
     # Calculate impurity Green's function
