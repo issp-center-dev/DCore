@@ -70,7 +70,7 @@ class Timer:
         seconds = elapsed_time % 60
 
         # Print in the desired format
-        print(f"{self.prefix}{minutes}m{seconds:.3f}s")
+        print(f"{self.prefix}{minutes}m{seconds:.3f}s", flush=True)
 
 
 def make_local_ops():
@@ -469,13 +469,14 @@ def main():
     particle_numbers_all = np.arange(2*n_sites+1)
 
     print("\nParticle-number conservation:", flush=True)
-    print("  N dim[N]")
+    print("  N       dim")
+    print(" -------------")
     dims = np.zeros(2*n_sites+1, dtype=int)
     indices = np.empty(2*n_sites+1, dtype=object)
     for N in particle_numbers_all:
         indices[N] = [i for i, state in enumerate(product([0, 1], repeat=2*n_sites)) if sum(state)==N]
         dims[N] = len(indices[N])
-        print(f" {N:2d} {dims[N]}")
+        print(f" {N:2d} {dims[N]:9,d}")
     assert np.sum(dims) == dim
 
     # particle numbers to be considered
@@ -508,6 +509,67 @@ def main():
     del Cdag, C
 
     # ----------------------------------------------------------------
+    # Prescreening
+
+    if True:
+        print("\nPrescreening -- Solving the eigenvalue problem...", flush=True)
+        timer.restart()
+        eigvals = np.zeros(2*n_sites+1, dtype=float)
+        for N in particle_numbers:
+            print(f"\nN = {N}  (dim = {dims[N]})", flush=True)
+
+            _timer = Timer(prefix=" Time: ")
+            if dims[N] <= 2:
+                # print(" full diagonalization", flush=True)
+                # n_eigen = dim[N]
+                _eigvals = scipy.linalg.eigh(hamils[N].toarray(), eigvals_only=True)
+                eigvals[N] = _eigvals[0]
+            else:
+                # print(f" Iterative solver: The smallest eigenvalue is computed.", flush=True)
+                _eigvals = sp.linalg.eigsh(hamils[N], k=1, which='SA', ncv=ncv, return_eigenvectors=False)
+                eigvals[N] = _eigvals[0]
+                # ‘SA’ : Smallest (algebraic) eigenvalues.
+
+            _timer.print()
+
+        print("\nFinish the eigenvalue problem", flush=True)
+        timer.print()
+
+        # print(eigvals)
+
+        Emin = np.min(eigvals)
+        # print(f"Emin = {Emin:.8e}")
+
+        weights_rel = np.exp(-beta * (eigvals - Emin))
+        # print(weights_rel)
+
+        print("\nSummary of lowest energy state in each N block:", flush=True)
+        print("  N       dim   E_min     weight_rel")
+        print(" ------------------------------------")
+        for N in particle_numbers_all:
+            print(f" {N:2d} {dims[N]:>9,d}  {eigvals[N]:9.2e}  {weights_rel[N]:<8.1e}")
+
+        # Select particle numbers of thermally occupied states
+        bools_thermal = weights_rel > weight_threshold
+        particle_numbers_thermal = np.flatnonzero(bools_thermal)
+
+        print(f"\nParticle numbers of thermally occupied states:\n {particle_numbers_thermal}", flush=True)
+
+        def expand_right_and_left(array):
+            expanded = array.copy()
+            expanded[1:] |= array[:-1]  # propagate True to the right neighbor
+            expanded[:-1] |= array[1:]  # propagate True to the left neighbor
+            return expanded
+
+        # N+1 and N-1 are also considered for Green's function calc
+        bools_solve = expand_right_and_left(bools_thermal)
+        particle_numbers = np.flatnonzero(bools_solve)
+
+        print(f"\nParticle numbers to be considered after prescreening:\n {particle_numbers}", flush=True)
+
+        # sys.exit(0)
+
+    # ----------------------------------------------------------------
     # Solve the eigenvalue problem
 
     print("\nSolving the eigenvalue problem...", flush=True)
@@ -516,16 +578,16 @@ def main():
     eigvecs = np.empty(2*n_sites+1, dtype=object)
     full_diagonalization = np.full(2*n_sites+1, False)
     for N in particle_numbers:
-        print(f"\nN = {N}  (dim[N] = {dims[N]})")
+        print(f"\nN = {N}  (dim = {dims[N]})", flush=True)
         full_diagonalization[N] = (dims[N] <= dim_full_diag) or (n_eigen >= dims[N] - 1)
 
         _timer = Timer(prefix=" Time: ")
         if full_diagonalization[N]:
-            print(" full diagonalization")
+            print(" full diagonalization", flush=True)
             # n_eigen = dim[N]
             eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
         else:
-            print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.")
+            print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.", flush=True)
             if eigen_solver == 'lanczos':
                 lanczos = LanczosEigenSolver(hamils[N])
                 eigvals[N], eigvecs[N] = lanczos.solve(k=n_eigen, ncv=ncv)
