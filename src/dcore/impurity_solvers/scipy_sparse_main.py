@@ -70,7 +70,7 @@ class Timer:
         seconds = elapsed_time % 60
 
         # Print in the desired format
-        print(f"{self.prefix}{minutes}m{seconds:.3f}s")
+        print(f"{self.prefix}{minutes}m{seconds:.3f}s", flush=True)
 
 
 def make_local_ops():
@@ -469,29 +469,20 @@ def main():
     particle_numbers_all = np.arange(2*n_sites+1)
 
     print("\nParticle-number conservation:", flush=True)
-    print("  N dim[N]")
+    print("  N       dim")
+    print(" -------------")
     dims = np.zeros(2*n_sites+1, dtype=int)
     indices = np.empty(2*n_sites+1, dtype=object)
     for N in particle_numbers_all:
         indices[N] = [i for i, state in enumerate(product([0, 1], repeat=2*n_sites)) if sum(state)==N]
         dims[N] = len(indices[N])
-        print(f" {N:2d} {dims[N]}")
+        print(f" {N:2d} {dims[N]:9,d}")
     assert np.sum(dims) == dim
-
-    # particle numbers to be considered
-    if particle_numbers is None:
-        particle_numbers = particle_numbers_all
-    else:
-        particle_numbers = np.array(particle_numbers, dtype=int)
-    print(f"\nParticle numbers to be considered:\n {particle_numbers}", flush=True)
-
-    # 0 <= n <= 2*n_sites
-    assert np.all((particle_numbers >= 0) & (particle_numbers <= 2*n_sites))
 
     # Split the Hamiltonian, Cdag, and C matrices into blocks
     hamil = sp.csr_matrix(hamil)  # for slicing
     hamils = np.empty(2*n_sites+1, dtype=object)
-    for N in particle_numbers:
+    for N in particle_numbers_all:
         hamils[N] = slice_spmatrix(hamil, indices, N, N)
     del hamil
 
@@ -501,11 +492,80 @@ def main():
     for i in range(n_flavors):
         cdag_i = sp.csr_matrix(Cdag[i])
         c_i = sp.csr_matrix(C[i])
-        for N in particle_numbers:
+        for N in particle_numbers_all:
             Cdags[N, i] = slice_spmatrix(cdag_i, indices, N+1, N)
             Cs[N, i] = slice_spmatrix(c_i, indices, N-1, N)
         del cdag_i, c_i
     del Cdag, C
+
+    # particle numbers to be considered
+    flag_prescreening = False
+    if particle_numbers == 'all':
+        particle_numbers = particle_numbers_all
+    elif particle_numbers == 'auto':
+        # particle_numbers is determined by the prescreening
+        flag_prescreening = True
+    elif isinstance(particle_numbers, (list, tuple)):
+        particle_numbers = np.array(particle_numbers, dtype=int)
+    else:
+        raise ValueError(f"Invalid particle_numbers: {particle_numbers}")
+
+    # ----------------------------------------------------------------
+    # Prescreening
+
+    if flag_prescreening:
+        print("\nPrescreening -- Solving the eigenvalue problem...", flush=True)
+        timer.restart()
+        eigvals = np.zeros(2*n_sites+1, dtype=float)
+        for N in particle_numbers_all:
+            print(f"\nN = {N}  (dim = {dims[N]})", flush=True)
+
+            _timer = Timer(prefix=" Time: ")
+            if dims[N] <= 2:
+                # print(" full diagonalization", flush=True)
+                # n_eigen = dim[N]
+                _eigvals = scipy.linalg.eigh(hamils[N].toarray(), eigvals_only=True)
+                eigvals[N] = _eigvals[0]
+            else:
+                # print(f" Iterative solver: The smallest eigenvalue is computed.", flush=True)
+                _eigvals = sp.linalg.eigsh(hamils[N], k=1, which='SA', ncv=ncv, return_eigenvectors=False)
+                eigvals[N] = _eigvals[0]
+                # ‘SA’ : Smallest (algebraic) eigenvalues.
+
+            _timer.print()
+
+        print("\nFinish the eigenvalue problem", flush=True)
+        timer.print()
+
+        Emin = np.min(eigvals)
+        weights_rel = np.exp(-beta * (eigvals - Emin))  # relative Boltzmann weights
+
+        print("\nSummary of lowest energy state in each N block:", flush=True)
+        print("  N       dim    E_min     weight_rel")
+        print(" ------------------------------------")
+        for N in particle_numbers_all:
+            print(f" {N:2d} {dims[N]:>9,d}   {eigvals[N]:9.2e}  {weights_rel[N]:<8.1e}")
+
+        # Select particle numbers of thermally occupied states
+        bools_thermal = weights_rel > weight_threshold
+        particle_numbers_thermal = np.flatnonzero(bools_thermal)
+
+        print(f"\nParticle numbers of thermally occupied states:\n {particle_numbers_thermal}", flush=True)
+
+        def expand_right_and_left(array):
+            expanded = array.copy()
+            expanded[1:] |= array[:-1]  # propagate True to the right neighbor
+            expanded[:-1] |= array[1:]  # propagate True to the left neighbor
+            return expanded
+
+        # N+1 and N-1 are also considered for Green's function calc
+        bools_solve = expand_right_and_left(bools_thermal)
+        particle_numbers = np.flatnonzero(bools_solve)
+
+    print(f"\nParticle numbers to be considered:\n {particle_numbers}", flush=True)
+
+    # 0 <= n <= 2*n_sites
+    assert np.all((particle_numbers >= 0) & (particle_numbers <= 2*n_sites))
 
     # ----------------------------------------------------------------
     # Solve the eigenvalue problem
@@ -516,16 +576,16 @@ def main():
     eigvecs = np.empty(2*n_sites+1, dtype=object)
     full_diagonalization = np.full(2*n_sites+1, False)
     for N in particle_numbers:
-        print(f"\nN = {N}  (dim[N] = {dims[N]})")
+        print(f"\nN = {N}  (dim = {dims[N]})", flush=True)
         full_diagonalization[N] = (dims[N] <= dim_full_diag) or (n_eigen >= dims[N] - 1)
 
         _timer = Timer(prefix=" Time: ")
         if full_diagonalization[N]:
-            print(" full diagonalization")
+            print(" full diagonalization", flush=True)
             # n_eigen = dim[N]
             eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
         else:
-            print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.")
+            print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.", flush=True)
             if eigen_solver == 'lanczos':
                 lanczos = LanczosEigenSolver(hamils[N])
                 eigvals[N], eigvecs[N] = lanczos.solve(k=n_eigen, ncv=ncv)
@@ -557,15 +617,39 @@ def main():
     # Sort eigenvalues
     eigs = sort_eigs(eigs)
 
-    print("\nEigenvalues:", flush=True)
     E = np.array([eig.val for eig in eigs])
-    print(E)
 
     # Boltzmann factors
     weights = np.exp(-beta * (E - E[0]))
     weights /= np.sum(weights)
-    print("\nWeights (Boltzmann factors / Z):", flush=True)
-    print(weights)
+
+    # Save eigenvalues
+    print("\nSave eigenvalues and eigenvectors in\n 'eigenvalues.dat'\n 'eigenvectors.dat'", flush=True)
+    with open("eigenvalues.dat", "w") as f:
+        f.write(f"# dim = {dim}\n")
+        f.write(f"# n_eigen = {n_eigen} (for each n)\n")
+        f.write(f"# N  E_i  Boltzmann_weight\n")
+        for i, eig in enumerate(eigs):
+            f.write(f"{eig.N}  {eig.val:.8e}  {weights[i]:.5e}\n")
+
+    # Save eigenvectors
+    # print("\nSave eigenvectors in 'eigenvectors.dat'", flush=True)
+    with open("eigenvectors.dat", "w") as f:
+        length = 2*n_sites
+        f.write(f"# The i-th digit from the left of the {length}-dimensional Fock state\n")
+        f.write(f"# indicates whether (spin, site) state is occupied (1) or empty (0).\n")
+        f.write(f"# 'site' includes bath sites (b) after Wannier orbitals (w).\n")
+        f.write(f"#\n")
+        f.write(f"#   w1+ w2+ ... b1+ b2+ ... w1- w2- ... b1- b2- ...\n")
+        f.write(f"#\n")
+        for eig in eigs:
+            # print(eig)
+            f.write(f"# E={eig.val:.8e}, N={eig.N}\n")
+            eigvec = eigvecs[eig.N][:, eig.i]
+            for j in range(eigvec.size):
+                if abs(eigvec[j]) > 1e-6:  # print only non-zero elements
+                    state = indices[eig.N][j]
+                    f.write(f" |{state:0{length}b}> {eigvec[j]:.8e}\n")
 
     n_initial_states = np.count_nonzero(weights > weight_threshold)
     print("\nNumber of initial states:", n_initial_states, flush=True)
@@ -603,32 +687,6 @@ def main():
                 sys.exit(1)
             else:
                 print("  -> Continue. Set check_n_eigen{bool}=True to abort calculation.", file=sys.stderr)
-
-    # Save eigenvalues
-    with open("eigenvalues.dat", "w") as f:
-        f.write(f"# dim = {dim}\n")
-        f.write(f"# n_eigen = {n_eigen} (for each n)\n")
-        f.write(f"# N  E_i  Boltzmann_weight\n")
-        for i, eig in enumerate(eigs):
-            f.write(f"{eig.N}  {eig.val:.8e}  {weights[i]:.5e}\n")
-
-    # Save eigenvectors
-    with open("eigenvectors.dat", "w") as f:
-        length = 2*n_sites
-        f.write(f"# The i-th digit from the left of the {length}-dimensional Fock state\n")
-        f.write(f"# indicates whether (spin, site) state is occupied (1) or empty (0).\n")
-        f.write(f"# 'site' includes bath sites (b) after Wannier orbitals (w).\n")
-        f.write(f"#\n")
-        f.write(f"#   w1+ w2+ ... b1+ b2+ ... w1- w2- ... b1- b2- ...\n")
-        f.write(f"#\n")
-        for eig in eigs:
-            # print(eig)
-            f.write(f"# E={eig.val:.8e}, N={eig.N}\n")
-            eigvec = eigvecs[eig.N][:, eig.i]
-            for j in range(eigvec.size):
-                if abs(eigvec[j]) > 1e-6:  # print only non-zero elements
-                    state = indices[eig.N][j]
-                    f.write(f" |{state:0{length}b}> {eigvec[j]:.8e}\n")
 
     # ----------------------------------------------------------------
     # Calculate impurity Green's function
