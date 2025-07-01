@@ -103,8 +103,8 @@
 </tr>
 <tr class="row-odd"><td><p>particle_numbers</p></td>
 <td><p>str</p></td>
-<td><p>None</p></td>
-<td><p>Particle numbers to be considered. Specify in a list format, e.g., [1,2,3]. All particle numbers are considered by default. This parameter is useful to reduce the calculation time. Note that all states necessary to the Green’s function calculation, namely, thermally occupied N-particle states and N±1 states, should be included.</p></td>
+<td><p>auto</p></td>
+<td><p>Particle numbers to be considered. Allowed inputs are ‘auto’, ‘all’, or ‘[1,2,3]’ etc. By default (‘auto’), a minimal set of particle numbers is evaluated by prescreening calculations. If the set is known in advance, one can specify it in a list format, e.g., [1,2,3]. All particle numbers are considered if ‘all’ is chosen. Note that all states necessary to the Green’s function calculation, namely, thermally occupied N-particle states and N±1 states, should be included.</p></td>
 </tr>
 <tr class="row-even"><td><p>weight_threshold</p></td>
 <td><p>float</p></td>
@@ -141,7 +141,7 @@
 </section>
 <section id="standard-output">
 <h2>Standard output<a class="headerlink" href="#standard-output" title="Link to this heading">¶</a></h2>
-<p>The standard output of the solver is saved in a file <cite>stdout.log</cite> in directory <cite>work/imp_shell0_ite1</cite>, where <cite>shell0</cite> and <cite>ite1</cite> stands for the <cite>0</cite>-th shell and the <cite>1</cite>-st iteration.</p>
+<p>The standard output of the solver is saved in a file <cite>stdout.log</cite> in directory <cite>work/imp_shell0_ite1</cite>, where <cite>shell0</cite> and <cite>ite1</cite> stand for the <cite>0</cite>-th shell and the <cite>1</cite>-st iteration, respectively.</p>
 <p>Some relevant output are explained below.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Particle-number conservation:
   N dim[N]
@@ -156,46 +156,80 @@
   8 45
   9 10
  10 1
-
-Particle numbers to be considered:
- [0 1 2]
 </pre></div>
 </div>
-<p>This shows the dimension of the Hamiltonian matrix for each particle number. When <code class="docutils literal notranslate"><span class="pre">particle_numbers</span></code> option is given, the particle numbers to be considered are shown.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Solving the eigenvalue problem...
+<p>This shows the dimension of the Hamiltonian matrix for each particle number.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">particle_numbers='auto'</span></code> (default), a prescreening calculation is done to find a minimal set of particle numbers.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Prescreening -- Solving the eigenvalue problem...
 
-N = 0  (dim[N] = 1)
- full diagonalization
+N = 0  (dim = 1)
  Time: 0m0.000s
 
-N = 1  (dim[N] = 10)
- full diagonalization
- Time: 0m0.000s
-
-N = 2  (dim[N] = 45)
- full diagonalization
+N = 1  (dim = 10)
  Time: 0m0.001s
 
-N = 3  (dim[N] = 120)
- Iterative solver: n_eigen=100 eigenvalues are computed.
- Time: 0m0.009s
+...
+
+Finish the eigenvalue problem
+Time: 0m0.006s
+
+Summary of lowest energy state in each N block:
+  N       dim    E_min     weight_rel
+ ------------------------------------
+  0         1    0.00e+00  1.4e-87
+  1        10   -4.00e+00  3.3e-70
+  2        45   -8.00e+00  7.7e-53
+  3       120   -1.20e+01  1.8e-35
+  4       210   -1.60e+01  4.2e-18
+  5       252   -2.00e+01  1.0e+00
+  6       210   -1.60e+01  4.2e-18
+  7       120   -1.20e+01  1.8e-35
+  8        45   -8.00e+00  7.7e-53
+  9        10   -4.00e+00  3.3e-70
+ 10         1    1.82e-09  1.4e-87
+
+Particle numbers of thermally occupied states:
+ [5]
+
+Particle numbers to be considered:
+ [4 5 6]
 </pre></div>
 </div>
-<p>This shows the time taken for solving the eigenvalue problem for each particle number. The solver uses full diagonalization method for matrices smaller than <code class="docutils literal notranslate"><span class="pre">dim_full_diag</span></code> (set to 100 in this example), while it switches to sparse solver specified by <code class="docutils literal notranslate"><span class="pre">eigen_solver</span></code> for larger matrices.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Total eigenvalues computed:  1024
+<p>The result of the prescreening is shown above. In this example, only N=5 includes thermally occupied states. For Green’s function calculation, particle numbers N plus/minus 1 should be included as shown in the final line.</p>
+<p>Next, the eigenvalue problems are solved for the specific particle numbers.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Solving the eigenvalue problem...
 
-Eigenvalues:
-[-2.00000000e+01 -2.00000000e+01 -2.00000000e+01 ...  1.45984558e-09
-  1.45984558e-09  1.82480875e-09]
+N = 4  (dim = 210)
+ full diagonalization
+ Time: 0m0.009s
 
-Weights (Boltzmann factors / Z):
-[3.12500000e-02 3.12500000e-02 3.12500000e-02 ... 4.32467662e-89
- 4.32467662e-89 4.32467661e-89]
+N = 5  (dim = 252)
+ full diagonalization
+ Time: 0m0.010s
+
+N = 6  (dim = 210)
+ full diagonalization
+ Time: 0m0.006s
+
+Finish the eigenvalue problem
+Time: 0m0.216s
+</pre></div>
+</div>
+<p>The time taken for solving the eigenvalue problem is shown for each particle number. The solver uses full diagonalization method for matrices smaller than <code class="docutils literal notranslate"><span class="pre">dim_full_diag</span></code>, while it switches to sparse solver specified by <code class="docutils literal notranslate"><span class="pre">eigen_solver</span></code> for larger matrices. In this example, only full diagonalization is used.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Total eigenvalues computed:  672
+
+Save eigenvalues and eigenvectors in
+ &#39;eigenvalues.dat&#39;
+ &#39;eigenvectors.dat&#39;
 
 Number of initial states: 32
+  N=4: 0 / 210
+  N=5: 32 / 252
+  N=6: 0 / 210
 </pre></div>
 </div>
-<p>The first line shows the total number of eigenvalues computed. The last line shows the number of initial states that have the Boltzmann weight larger than <cite>weight_threshold</cite>.</p>
+<p>The first line shows the total number of eigenvalues computed. The last block shows the number of initial states that have the Boltzmann weight larger than <cite>weight_threshold</cite>. As expected from the prescreening, only N=5 contains initial states.</p>
+<p>Then proceed to the calculation of the impurity Green’s function.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Calculating impurity Green&#39;s function...
 
 Initial state 1/32  (N = 5)
@@ -215,7 +249,7 @@ Initial state 2/32  (N = 5)
   Use the Lehmann representation
 </pre></div>
 </div>
-<p>This shows the calculation of the impurity Green’s function. Lehmann representation is used when the dimension of <span class="math notranslate nohighlight">\(N \pm 1\)</span>-particle states is smaller than <code class="docutils literal notranslate"><span class="pre">dim_full_diag</span></code>. Otherwise, linear equations are solved by the sparse solver specified by <code class="docutils literal notranslate"><span class="pre">gf_solver</span></code>. The output in this case is as follows:</p>
+<p>Lehmann representation is used when the dimension of <span class="math notranslate nohighlight">\(N \pm 1\)</span>-particle states is smaller than <code class="docutils literal notranslate"><span class="pre">dim_full_diag</span></code>. Otherwise, linear equations are solved by the sparse solver specified by <code class="docutils literal notranslate"><span class="pre">gf_solver</span></code>. The output in this case is as follows:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Calculating impurity Green&#39;s function...
 
 Initial state 1/32  (N = 5)
@@ -254,9 +288,34 @@ Initial state 2/32  (N = 5)
 5  -2.00000000e+01  3.12500e-02
 5  -2.00000000e+01  3.12500e-02
 5  -2.00000000e+01  3.12500e-02
+...
 </pre></div>
 </div>
 <p>This file contains the eigenvalues computed and the corresponding Boltzmann weights in ascending order. The numbers from left to right show the particle number, the eigen-energy, and the Boltzmann weight.</p>
+</li>
+<li><p><strong>eigenvectors.dat</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># The i-th digit from the left of the 10-dimensional Fock state
+# indicates whether (spin, site) state is occupied (1) or empty (0).
+# &#39;site&#39; includes bath sites (b) after Wannier orbitals (w).
+#
+#   w1+ w2+ ... b1+ b2+ ... w1- w2- ... b1- b2- ...
+#
+# E=-2.00000000e+01, N=5
+ |0000011111&gt; 1.00000000e+00
+# E=-2.00000000e+01, N=5
+ |0000111110&gt; 1.00000000e+00
+# E=-2.00000000e+01, N=5
+ |0001011101&gt; 1.00000000e+00
+# E=-2.00000000e+01, N=5
+ |0001111100&gt; 1.00000000e+00
+# E=-2.00000000e+01, N=5
+ |0110010011&gt; 1.00000000e+00
+# E=-2.00000000e+01, N=5
+ |0110110010&gt; 1.00000000e+00
+...
+</pre></div>
+</div>
+<p>This file contains the eigenvectors. The non-zero coefficients and the corresponding Fock states are shown for each eigenvector.</p>
 </li>
 </ul>
 </section>
