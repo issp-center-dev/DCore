@@ -479,20 +479,10 @@ def main():
         print(f" {N:2d} {dims[N]:9,d}")
     assert np.sum(dims) == dim
 
-    # particle numbers to be considered
-    if particle_numbers is None:
-        particle_numbers = particle_numbers_all
-    else:
-        particle_numbers = np.array(particle_numbers, dtype=int)
-    print(f"\nParticle numbers to be considered:\n {particle_numbers}", flush=True)
-
-    # 0 <= n <= 2*n_sites
-    assert np.all((particle_numbers >= 0) & (particle_numbers <= 2*n_sites))
-
     # Split the Hamiltonian, Cdag, and C matrices into blocks
     hamil = sp.csr_matrix(hamil)  # for slicing
     hamils = np.empty(2*n_sites+1, dtype=object)
-    for N in particle_numbers:
+    for N in particle_numbers_all:
         hamils[N] = slice_spmatrix(hamil, indices, N, N)
     del hamil
 
@@ -502,20 +492,32 @@ def main():
     for i in range(n_flavors):
         cdag_i = sp.csr_matrix(Cdag[i])
         c_i = sp.csr_matrix(C[i])
-        for N in particle_numbers:
+        for N in particle_numbers_all:
             Cdags[N, i] = slice_spmatrix(cdag_i, indices, N+1, N)
             Cs[N, i] = slice_spmatrix(c_i, indices, N-1, N)
         del cdag_i, c_i
     del Cdag, C
 
+    # particle numbers to be considered
+    flag_prescreening = False
+    if particle_numbers == 'all':
+        particle_numbers = particle_numbers_all
+    elif particle_numbers == 'auto':
+        # particle_numbers is determined by the prescreening
+        flag_prescreening = True
+    elif isinstance(particle_numbers, (list, tuple)):
+        particle_numbers = np.array(particle_numbers, dtype=int)
+    else:
+        raise ValueError(f"Invalid particle_numbers: {particle_numbers}")
+
     # ----------------------------------------------------------------
     # Prescreening
 
-    if True:
+    if flag_prescreening:
         print("\nPrescreening -- Solving the eigenvalue problem...", flush=True)
         timer.restart()
         eigvals = np.zeros(2*n_sites+1, dtype=float)
-        for N in particle_numbers:
+        for N in particle_numbers_all:
             print(f"\nN = {N}  (dim = {dims[N]})", flush=True)
 
             _timer = Timer(prefix=" Time: ")
@@ -535,19 +537,14 @@ def main():
         print("\nFinish the eigenvalue problem", flush=True)
         timer.print()
 
-        # print(eigvals)
-
         Emin = np.min(eigvals)
-        # print(f"Emin = {Emin:.8e}")
-
-        weights_rel = np.exp(-beta * (eigvals - Emin))
-        # print(weights_rel)
+        weights_rel = np.exp(-beta * (eigvals - Emin))  # relative Boltzmann weights
 
         print("\nSummary of lowest energy state in each N block:", flush=True)
-        print("  N       dim   E_min     weight_rel")
+        print("  N       dim    E_min     weight_rel")
         print(" ------------------------------------")
         for N in particle_numbers_all:
-            print(f" {N:2d} {dims[N]:>9,d}  {eigvals[N]:9.2e}  {weights_rel[N]:<8.1e}")
+            print(f" {N:2d} {dims[N]:>9,d}   {eigvals[N]:9.2e}  {weights_rel[N]:<8.1e}")
 
         # Select particle numbers of thermally occupied states
         bools_thermal = weights_rel > weight_threshold
@@ -565,9 +562,10 @@ def main():
         bools_solve = expand_right_and_left(bools_thermal)
         particle_numbers = np.flatnonzero(bools_solve)
 
-        print(f"\nParticle numbers to be considered after prescreening:\n {particle_numbers}", flush=True)
+    print(f"\nParticle numbers to be considered:\n {particle_numbers}", flush=True)
 
-        # sys.exit(0)
+    # 0 <= n <= 2*n_sites
+    assert np.all((particle_numbers >= 0) & (particle_numbers <= 2*n_sites))
 
     # ----------------------------------------------------------------
     # Solve the eigenvalue problem

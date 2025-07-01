@@ -89,12 +89,17 @@ class ScipySolver(SolverBase):
         check_orthonormality = params_kw.get('check_orthonormality', True)
 
         # convert particle_numbers to a list
-        particle_numbers_in = params_kw.get('particle_numbers', 'None')
-        try:
-            particle_numbers = ast.literal_eval(particle_numbers_in)
-        except:
-            print(f"Error in parsing particle_numbers={particle_numbers_in!r}", file=sys.stderr)
-            sys.exit(1)
+        particle_numbers_in = params_kw.get('particle_numbers', 'auto')
+        if particle_numbers_in in ('auto', 'all'):
+            particle_numbers = particle_numbers_in
+        else:
+            try:
+                particle_numbers = ast.literal_eval(particle_numbers_in)
+                assert isinstance(particle_numbers, (list, tuple))
+            except:
+                print(f"Error in parsing particle_numbers={particle_numbers_in!r}", file=sys.stderr)
+                print(f"Allowed inputs are 'auto', 'all', or '[1,2,3]' etc.", file=sys.stderr)
+                sys.exit(1)
 
         # fixed parameters
         file_input = "input.in"
