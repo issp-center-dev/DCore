@@ -24,7 +24,12 @@ The solver runs for 300 seconds.
   timelimit{int} = 300
   exec_path{str} = $HOME/opt/CT-HYB/bin/hybmat
 
-ALPS/CT-HYB have many input parameters.  
+.. note::
+
+  When ``timelimit{int}`` is too small to generate a sufficient number of the Monte Carlo samples, the solver crashes with a segmentation fault.
+  If you treat with a large system (e.g., many orbitals), you may need large ``timelimit{int}``.
+
+ALPS/CT-HYB have many input parameters.
 Please refer to `the reference manual <https://github.com/ALPSCore/CT-HYB/wiki/Input-parameters>`_ for a list of available input parameters.
 The DCore interface supports support all of them.
 For instance, one can enable verbose model as follows.
