@@ -58,6 +58,11 @@ The solver runs for 300 seconds.</p>
 <span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">$HOME/opt/CT-HYB/bin/hybmat</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">timelimit{int}</span></code> is too small to generate a sufficient number of the Monte Carlo samples, the solver crashes with a segmentation fault.
+If you treat with a large system (e.g., many orbitals), you may need large <code class="docutils literal notranslate"><span class="pre">timelimit{int}</span></code>.</p>
+</div>
 <p>ALPS/CT-HYB have many input parameters.
 Please refer to <a class="reference external" href="https://github.com/ALPSCore/CT-HYB/wiki/Input-parameters">the reference manual</a> for a list of available input parameters.
 The DCore interface supports support all of them.
