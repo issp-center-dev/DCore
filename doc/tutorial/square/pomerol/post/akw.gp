@@ -1,4 +1,3 @@
-set cbrange [0:0.8]
 set size 0.95, 1.0
 set xtics (\
   "G"  0.0, \
@@ -24,3 +23,4 @@ set out 'akw.png'
 rep
 set out
 set term pop
+
