@@ -16,9 +16,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+import sys
 import numpy
 
-from dcore._dispatcher import MeshImFreq, GfReFreq, GfImFreq
+from dcore._dispatcher import MeshImFreq, GfReFreq, GfImFreq, backend_lib, backend_version
 from dcore.program_options import create_parser, parse_parameters
 
 
@@ -39,6 +40,10 @@ def _set_n_matsubara(omega_cutoff, beta, n_min, n_max):
 
 
 def anacont(sigma_iw_npz, beta, mesh_w, params_pade):
+    if backend_lib == "dcorelib" and backend_version < "0.9.7":
+        sys.exit("ERROR: Pade anacont solver with dcorelib (<0.9.7) gives wrong results.\n"
+                 "       Please update dcorelib to >= 0.9.7")
+
     iw_max = params_pade["iomega_max"]
     n_min = params_pade["n_min"]
     n_max = params_pade["n_max"]
