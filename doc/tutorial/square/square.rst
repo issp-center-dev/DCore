@@ -180,9 +180,16 @@ The file below shows the input file for ALPS/cthyb-seg:
 ``/path/to/alps_cthyb`` in ``[impurity_solver] exec_path{str}`` should be replaced with a full path to ``alps_cthyb`` executable in your environment.
 Unlike in the ED solver, we do not use ``converge_tol`` parameter, since the automatic convergence check requires a special care for QMC solvers.
 
-The figure below shows the momentum-resolved spectral functions computed after the self-consistent calculations using 8 processes:
+The workflow of the DCore calculation is the same as the ED solver.
+Please note that it takes a longer time to run ``dcore`` command than the ED solver. It takes about **20 minutes** to finish the calculation because each QMC calculation takes 60 seconds (``MAX_TIME{int} = 60``), and the maximum number of the DMFT iterations is 20 (``max_step = 20``).
+
+The figures below show the momentum-resolved spectral functions and the density of states computed after the self-consistent calculations using 8 processes (``--np 8``):
 
 .. image:: ctseg/post/akw.png
+   :width: 700
+   :align: center
+
+.. image:: ctseg/post/dos.png
    :width: 700
    :align: center
 
