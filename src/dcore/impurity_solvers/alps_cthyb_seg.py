@@ -220,13 +220,14 @@ class ALPSCTHYBSEGSolver(SolverBase):
             results = f["simulation"]["results"]
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 if orbital_symmetrize and i1 < i2:
+                    # alps_cthyb does not save i1<i2 data because of symmetry.
                     continue
                 group = "%s_%d_%d" % (group_prefix, i1, i2)
                 if group in results:
                     array[i1, i2, :] = results[group]["mean"]["value"]
                 elif stop_if_data_not_exist:
                     raise Exception("data does not exist in sim.h5/simulation/results/{}. alps_cthyb might be old.".format(group))
-        if orbital_symmetrize:  # Only i1>i2 is computed in CTQMC.
+        if orbital_symmetrize: # restore i1<i2 data from i1>i2 data
             for i1 in range(2*self.n_orb):
                 for i2 in range(i1):
                     array[i2, i1, :] = array[i1, i2, :]
