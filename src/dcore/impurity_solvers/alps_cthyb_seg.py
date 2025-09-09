@@ -219,14 +219,17 @@ class ALPSCTHYBSEGSolver(SolverBase):
         with HDFArchive('sim.h5', 'r') as f:
             results = f["simulation"]["results"]
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
+                if orbital_symmetrize and i1 < i2:
+                    continue
                 group = "%s_%d_%d" % (group_prefix, i1, i2)
                 if group in results:
                     array[i1, i2, :] = results[group]["mean"]["value"]
-                    if orbital_symmetrize:  # Only i1>i2 is computed in CTQMC.
-                        array[i2, i1, :] = array[i1, i2, :]
                 elif stop_if_data_not_exist:
                     raise Exception("data does not exist in sim.h5/simulation/results/{}. alps_cthyb might be old.".format(group))
-
+        if orbital_symmetrize:  # Only i1>i2 is computed in CTQMC.
+            for i1 in range(2*self.n_orb):
+                for i2 in range(i1):
+                    array[i2, i1, :] = array[i1, i2, :]
 
         # [(o1,s1), (o2,s2)] -> [o1, s1, o2, s2] -> [s1, o1, s2, o2] -> [(s1,o1), (s2,o2)]
         array = array.reshape((self.n_orb, 2, self.n_orb, 2, -1))\
@@ -436,8 +439,8 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # Save G2(wb, wf, wf')
         # [(s1,o1), (s2,o2), (wb,wf,wf')]
-        g2_re = self._get_results("g2w_re", 4*num_wf*num_wf*num_wb, orbital_symmetrize=False)
-        g2_im = self._get_results("g2w_im", 4*num_wf*num_wf*num_wb, orbital_symmetrize=False)
+        g2_re = self._get_results("g2w_re", 4*num_wf*num_wf*num_wb, orbital_symmetrize=True)
+        g2_im = self._get_results("g2w_im", 4*num_wf*num_wf*num_wb, orbital_symmetrize=True)
         g2_loc = (g2_re + g2_im * 1.0J) / self.beta
         g2_loc = g2_loc.reshape((2*self.n_orb, 2*self.n_orb) + (num_wb, 2*num_wf, 2*num_wf))
         # assign to dict
