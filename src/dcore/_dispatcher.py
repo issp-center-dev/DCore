@@ -31,8 +31,8 @@ else:
 
     from triqs.version import version as backend_version
 
-    if not "2" < triqs_version[0] < "4":
-        sys.exit("ERROR: TRIQS version {} is not supported. Please install TRIQS version 3.x".format(triqs_version))
+    if not "2" < backend_version[0] < "4":
+        sys.exit("ERROR: TRIQS version {} is not supported. Please install TRIQS version 3.x".format(backend_version))
     
     from triqs.gf.gf import *
     from triqs.gf import *
