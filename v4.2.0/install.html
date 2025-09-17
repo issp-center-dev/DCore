@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Installation &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/dcore.css?v=1e19043f" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial" href="tutorial.html" />
+    <link rel="prev" title="About DCore" href="about.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="tutorial.html" title="Tutorial"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="about.html" title="About DCore"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
+<ol class="arabic">
+<li><p>Python3 (&gt;=3.8)</p></li>
+<li><p>You will also need at least one impurity solver.</p>
+<p>For example, the following programs are supported:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="impuritysolvers/triqs_hubbard_one/hubbard_one.html"><span class="doc">Hubbard-I solver</span></a></p></li>
+<li><p><a class="reference internal" href="impuritysolvers/alpscore_cthyb/cthyb.html"><span class="doc">ALPS/CT-HYB</span></a></p></li>
+<li><p><a class="reference internal" href="impuritysolvers/alpscore_ctseg/ctseg.html"><span class="doc">ALPS/CT-HYB-SEGMENT</span></a></p></li>
+<li><p><a class="reference internal" href="impuritysolvers/triqs_cthyb/cthyb.html"><span class="doc">TRIQS/cthyb</span></a></p></li>
+<li><p><a class="reference internal" href="impuritysolvers/pomerol/pomerol.html"><span class="doc">Pomerol solver</span></a></p></li>
+</ul>
+<p>We recommend to use the Hubbard-I solver for tests because this is fast.
+See <a class="reference internal" href="impuritysolvers.html"><span class="doc">Impurity solvers</span></a> for a complete list of supported impurity solvers and their user manuals.</p>
+</li>
+<li><p>[OPTIONAL] <a class="reference external" href="https://triqs.github.io/triqs/">TRIQS 3.x</a> and <a class="reference external" href="https://triqs.github.io/dft_tools/">TRIQS/DFTTools 3.x</a>.</p>
+<p>TRIQS can improve the performance of DCore.
+The current version of DCore supports TRIQS 3.x.
+Please make sure that the triqs and triqs_dft_tools modules are loadable in your Python environment.
+You may use <a class="reference external" href="https://github.com/wistaria/MateriAppsInstaller">MateriAppsInstaller</a>, a collection of install scripts, to install prerequisites (TRIQS).
+If you want to use TRIQS, please set an environment variable <code class="docutils literal notranslate"><span class="pre">DCORE_TRIQS_COMPAT</span></code> to 0.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">DCORE_TRIQS_COMPAT</span><span class="o">=</span><span class="m">0</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="id2">
+<h2>Installation<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<p>(NOTE: Using a virtual environment such as <a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a> is recommended to avoid conflicts with other Python packages.)</p>
+<p>You can install the latest version of DCore using <code class="docutils literal notranslate"><span class="pre">pip</span></code> command as follows.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>dcore<span class="w"> </span>-U
+</pre></div>
+</div>
+</div></blockquote>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">-U</span></code> stands for ‘’Upgrade’’. The installed packages are upgraded to the latest version, if you already have packages installed.</p>
+</section>
+<section id="installation-only-for-developers">
+<h2>Installation (only for developers)<a class="headerlink" href="#installation-only-for-developers" title="Link to this heading">¶</a></h2>
+<p>You can download the source files in two ways.</p>
+<ul>
+<li><p><strong>[Release version]</strong></p>
+<p>Go to the <a class="reference external" href="https://github.com/issp-center-dev/DCore/releases">release page</a> and download the latest tar or zip file.
+You can unpack, for example, the tar file by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>tar<span class="w"> </span>zxvf<span class="w"> </span>v3.x.x.tar.gz
+</pre></div>
+</div>
+</li>
+<li><p><strong>[Develop version]</strong></p>
+<p>Newly implemented features are available in the source code in GitHub repository. You can clone the repository by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/issp-center-dev/DCore.git<span class="w"> </span>dcore.src
+</pre></div>
+</div>
+<p>The master branch basically corresponds to the latest released package, and the develop branch includes new features.
+Note that develop branches may not be well tested and contains some bugs.</p>
+<p>Please execute the following command in the source directory to install DCore.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+<p>If both of them did not work, you could build a binary package and install it as follows</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>dist
+$<span class="w"> </span>python3<span class="w"> </span>setup.py<span class="w"> </span>bdist_wheel
+$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>dist/dcore-*.whl
+</pre></div>
+</div>
+<p>One can run unit tests using the installed DCore by executing the following commands.</p>
+<p>Non-MPI tests can be run as follows.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>pytest
+$<span class="w"> </span>pytest<span class="w"> </span>tests/non-mpi/*/*.py
+</pre></div>
+</div>
+<p>MPI tests can be run as follows.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pytest<span class="w"> </span>tests/mpi/*/*.py
+</pre></div>
+</div>
+<p>MPI tests invoke MPI parallelized impourity solvers.
+If your system MPI command is not “mpirun”, please provide the name of the correct one to DCore at runtime in an input file.
+The default value is “mpirun -np #” (# is replaced by the number of processors).
+For instance, if the MPI command of your system is “mpijob”, please set the environment variable “DCORE_MPIRUN_COMMAND” as folows.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">DCORE_MPIRUN_COMMAND</span><span class="o">=</span><span class="s2">&quot;mpijob -np #&quot;</span>
+</pre></div>
+</div>
+<p>Note that it is not allowed to run MPI programs interactively on some system.
+In this case, please run MPI tests as a parallel job with one process.</p>
+<p>You can build documentations as follows.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>sphinx<span class="w"> </span>wild_sphinx_theme<span class="w"> </span>matplotlib
+$<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>dcore.option_tables<span class="w"> </span>doc/reference
+$<span class="w"> </span>sphinx-build<span class="w"> </span>-b<span class="w"> </span>html<span class="w"> </span>doc<span class="w"> </span>html
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About DCore</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-only-for-developers">Installation (only for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="about.html"
+                          title="previous chapter">About DCore</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="tutorial.html"
+                          title="next chapter">Tutorial</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="tutorial.html" title="Tutorial"
+             >next</a></li>
+        <li class="right" >
+          <a href="about.html" title="About DCore"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DCore  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

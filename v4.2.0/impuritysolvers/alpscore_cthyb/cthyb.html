@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>CT-QMC: ALPS/CT-HYB &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="CT-QMC: TRIQS/cthyb" href="../triqs_cthyb/cthyb.html" />
+    <link rel="prev" title="Impurity solvers" href="../../impuritysolvers.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../triqs_cthyb/cthyb.html" title="CT-QMC: TRIQS/cthyb"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../../impuritysolvers.html" title="Impurity solvers"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../impuritysolvers.html" accesskey="U">Impurity solvers</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="ct-qmc-alps-ct-hyb">
+<span id="howtoalpscthyb"></span><h1>CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code><a class="headerlink" href="#ct-qmc-alps-ct-hyb" title="Link to this heading">¶</a></h1>
+<p><a class="reference external" href="https://github.com/ALPSCore/CT-HYB">ALPS/CT-HYB solver</a> implements the CT-HYB QMC algorithm and is developed by H. Shinaoka, E. Gull and P. Werner.
+The spin-orbit coupling is supported by default.
+One can call ALPS/CT-HYB from DCore through the “ALPS/cthyb” interface.
+For the moment, this interface is the first choice for QMC solvers in DCore
+as it is used by developers of DCore on a regular basis.</p>
+<p>The old triqs_interface for DCore v1.x has retired.
+The new interface involved in DCore 2.x requires only the installation of ALPS/CT-HYB 1.x.
+Please follow <a class="reference external" href="https://github.com/ALPSCore/CT-HYB/wiki">the instruction on the official site</a>.</p>
+<p>A minimum working example is the following.
+We assumed that the executable is installed at “$HOME/opt/CT-HYB/bin/hybmat”.
+The solver runs for 300 seconds.</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb</span>
+<span class="na">timelimit{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">300</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">$HOME/opt/CT-HYB/bin/hybmat</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">timelimit{int}</span></code> is too small to generate a sufficient number of the Monte Carlo samples, the solver crashes with a segmentation fault.
+If you treat with a large system (e.g., many orbitals), you may need large <code class="docutils literal notranslate"><span class="pre">timelimit{int}</span></code>.</p>
+</div>
+<p>ALPS/CT-HYB have many input parameters.
+Please refer to <a class="reference external" href="https://github.com/ALPSCore/CT-HYB/wiki/Input-parameters">the reference manual</a> for a list of available input parameters.
+The DCore interface supports support all of them.
+For instance, one can enable verbose model as follows.
+Note that one must specify type for input parameters of ALPS/CT-HYB.</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[impurity_solver]</span>
+<span class="na">verbose{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+</pre></div>
+</div>
+<p>The DCore interface generates input files for ALPS/CT-HYB into a working directory at work/imp_shell&lt;ish&gt;_ite&lt;ite&gt; (ish is the index of the shell and ite is the iteration).
+Then, ALPS/CT-HYB is excecuted in the working directory.</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../reference/programs.html">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/input.html">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/output.html">Output-file format</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../analytic_continuation.html">Analytic continuation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../../impuritysolvers.html"
+                          title="previous chapter">Impurity solvers</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../triqs_cthyb/cthyb.html"
+                          title="next chapter">CT-QMC: <code class="docutils literal notranslate"><span class="pre">TRIQS/cthyb</span></code></a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../triqs_cthyb/cthyb.html" title="CT-QMC: TRIQS/cthyb"
+             >next</a></li>
+        <li class="right" >
+          <a href="../../impuritysolvers.html" title="Impurity solvers"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../impuritysolvers.html" >Impurity solvers</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CT-QMC: <code class="docutils literal notranslate"><span class="pre">ALPS/CT-HYB</span></code></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Antiferromagnetic state &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="SrVO3" href="../srvo3/srvo3.html" />
+    <link rel="prev" title="Multiorbital model by a QMC solver" href="../bethe-t2g/bethe.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../srvo3/srvo3.html" title="SrVO3"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../bethe-t2g/bethe.html" title="Multiorbital model by a QMC solver"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" accesskey="U">Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Antiferromagnetic state</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="antiferromagnetic-state">
+<h1>Antiferromagnetic state<a class="headerlink" href="#antiferromagnetic-state" title="Link to this heading">¶</a></h1>
+<p>In this tutorial, you will learn the following:</p>
+<ul class="simple">
+<li><p>How to define a lattice model using the Wannier90 interface</p></li>
+<li><p>How to calculate antiferromagnetic states</p></li>
+<li><p>How to set an initial guess for the self-energy</p></li>
+</ul>
+<p>As a particular example, we consider the Hubbard model on a square lattice (<a class="reference internal" href="../square/square.html"><span class="doc">The first example: 2D Hubbard model</span></a>).
+Within the single-site DMFT approximation, the model shows an antiferromagnetic transition at low temperature (the Mermin-Wagner theorem is not fulfilled in DMFT).
+The transition temperature was estimated as <span class="math notranslate nohighlight">\(T_\mathrm{c}/t\simeq 0.23\)</span> for <span class="math notranslate nohighlight">\(U=4\)</span>.
+This means that the parameter set used in [<a class="reference internal" href="../square/square.html"><span class="doc">The first example: 2D Hubbard model</span></a>] is actually in the antiferromagnetic phase.
+In this tutorial, we compute the antiferromagetic solution below <span class="math notranslate nohighlight">\(T_\mathrm{c}\)</span> using a CT-HYB solver.</p>
+<p>The complete input file is shown below:</p>
+<p><a class="reference download internal" download="" href="../../_downloads/d0c992f2d92d0de470cae6f92934f461/square_afm.ini"><code class="xref download docutils literal notranslate"><span class="pre">square_afm.ini</span></code></a></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="na">seedname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">afm_dim2</span>
+<span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span>
+<span class="na">ncor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4</span>
+<span class="na">norb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1, 1</span>
+<span class="na">nelec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4.0</span>
+<span class="na">kanamori</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(4.0, 0.0, 0.0), (4.0, 0.0, 0.0)]</span>
+<span class="na">corr_to_inequiv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0, 1, 1, 0</span>
+<span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+
+<span class="k">[system]</span>
+<span class="na">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+<span class="na">n_iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1000</span>
+<span class="na">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span>
+<span class="na">fix_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+
+<span class="k">[impurity_solver]</span>
+<span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ALPS/cthyb-seg</span>
+<span class="na">exec_path{str}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/path/to/alps_cthyb</span>
+<span class="na">cthyb.TEXT_OUTPUT{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">cthyb.MEASUREMENT_freq{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">MEASURE_gw{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<span class="na">MAX_TIME{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">60</span>
+<span class="na">cthyb.N_MEAS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+<span class="na">cthyb.THERMALIZATION{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000</span>
+<span class="na">cthyb.SWEEPS{int}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100000000</span>
+
+<span class="k">[control]</span>
+<span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span>
+<span class="na">sigma_mix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+<span class="na">initial_static_self_energy = {0</span><span class="o">:</span><span class="w"> </span><span class="s">&#39;init_se_up.txt&#39;</span><span class="na">, 1</span><span class="o">:</span><span class="w"> </span><span class="s">&#39;init_se_down.txt&#39;</span><span class="na">}</span>
+
+<span class="k">[post.spectrum]</span>
+<span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+<span class="na">knode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[(G,0.0,0.0,0.0),(X,0.5,0.0,0.0),(M,0.5,0.5,0.0),(G,0.0,0.0,0.0)]</span>
+<span class="c1"># knode = [(G,0,0,0),(X,1,0,0),(M,1,1,0),(G,0,0,0)]</span>
+<span class="na">nk_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+
+<span class="k">[post.anacont]</span>
+<span class="na">omega_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6.0</span>
+<span class="na">omega_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-6.0</span>
+<span class="na">Nomega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">401</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">/path/to/alps_cthyb</span></code> for <code class="docutils literal notranslate"><span class="pre">[impurity_solver]</span> <span class="pre">exec_path{str}</span></code> parameter needs to be replaced with a full path to <code class="docutils literal notranslate"><span class="pre">alps_cthyb</span></code> executable in your environment.</p>
+<section id="define-lattice-model">
+<h2>Define lattice model<a class="headerlink" href="#define-lattice-model" title="Link to this heading">¶</a></h2>
+<p>First, we define the hopping matrix of the 2D Hubbard model with a 2x2 unit cell.
+Running the script <a class="reference download internal" download="" href="../../_downloads/f5004a655513f71ac3586bee0d7b700c/mk_hr_2.py"><code class="xref download docutils literal notranslate"><span class="pre">mk_hr_2.py</span></code></a> as</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>mk_hr_2.py
+</pre></div>
+</div>
+<p>a text file in the Wannier90 format is generated (<a class="reference download internal" download="" href="../../_downloads/296b23ddf40fcc6ec50091c16a665678/afm_dim2_hr.dat"><code class="xref download docutils literal notranslate"><span class="pre">afm_dim2_hr.dat</span></code></a>).
+The unit cell contains four sites whose internal coordinates are (0, 0), (0, 1), (1, 0), (1, 1).</p>
+<p>We now assume an antiferromagnetic order characterized by the wave vector <span class="math notranslate nohighlight">\(q=(\pi, \pi)\)</span>.
+To this end, we assign the four sites (correlated shells) to two inequivalent shells by using the <code class="docutils literal notranslate"><span class="pre">corr_to_inequiv</span></code> parameter in the model section.</p>
+</section>
+<section id="generate-initial-guess-for-self-energy">
+<h2>Generate initial guess for self-energy<a class="headerlink" href="#generate-initial-guess-for-self-energy" title="Link to this heading">¶</a></h2>
+<p>Second, we set up intial guesses for the (static) self-energies on the two inequivalent shells.
+For one shell, we use the text file <a class="reference download internal" download="" href="../../_downloads/4e848f2f03c74363cb3c6e24386afad8/init_se_up.txt"><code class="xref download docutils literal notranslate"><span class="pre">init_se_up.txt</span></code></a> containing</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span>-1.0<span class="w"> </span><span class="m">0</span>.0
+<span class="m">1</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span>.0<span class="w"> </span><span class="m">0</span>.0
+</pre></div>
+</div>
+<p>and for the other, we use <a class="reference download internal" download="" href="../../_downloads/db26d4c202f3003bee3b355c1e187b6c/init_se_down.txt"><code class="xref download docutils literal notranslate"><span class="pre">init_se_down.txt</span></code></a> containing</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span>.0<span class="w"> </span><span class="m">0</span>.0
+<span class="m">1</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span>-1.0<span class="w"> </span><span class="m">0</span>.0
+</pre></div>
+</div>
+<p>Thus, spin moments tend to turn up on inequivalent shell0 and turn down on shell1.</p>
+</section>
+<section id="self-consistent-calculations">
+<h2>Self-consistent calculations<a class="headerlink" href="#self-consistent-calculations" title="Link to this heading">¶</a></h2>
+<p>Now, DMFT calculations can be done as usual.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
+dcore_pre<span class="w"> </span>cubic.ini<span class="w"> </span>&gt;<span class="w"> </span>output-pre
+dcore<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span><span class="w"> </span>&gt;<span class="w"> </span>output
+dcore_anacont<span class="w"> </span>cubic.ini<span class="w"> </span>&gt;<span class="w"> </span>output-anacont
+dcore_spectrum<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span><span class="w"> </span>&gt;<span class="w"> </span>output-spectrum
+</pre></div>
+</div>
+<p>In the standard output of <code class="docutils literal notranslate"><span class="pre">dcore</span></code>, you will see that the magnetic moments converge to <span class="math notranslate nohighlight">\(\simeq 0.28\)</span> (57 % of the saturated moment).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Density<span class="w"> </span>Matrix
+
+<span class="w">  </span>Inequivalent<span class="w"> </span>Shell<span class="w">  </span><span class="m">0</span>
+
+<span class="w">    </span>Spin<span class="w">  </span>up
+<span class="w">          </span><span class="m">0</span>.784-0.000j
+<span class="w">    </span>Eigenvalues:<span class="w">  </span><span class="o">[</span><span class="m">0</span>.7837032<span class="o">]</span>
+
+<span class="w">    </span>Spin<span class="w">  </span>down
+<span class="w">          </span><span class="m">0</span>.218+0.000j
+<span class="w">    </span>Eigenvalues:<span class="w">  </span><span class="o">[</span><span class="m">0</span>.2182982<span class="o">]</span>
+
+<span class="w">    </span>Magnetic<span class="w"> </span>moment<span class="w"> </span><span class="o">(</span>only<span class="w"> </span>spin<span class="w"> </span>contribution,<span class="w"> </span><span class="nv">S</span><span class="o">=</span><span class="m">1</span>/2<span class="w"> </span>gives<span class="w"> </span><span class="m">0</span>.5<span class="o">)</span>
+<span class="w">      </span>mx,my,mz<span class="o">=</span><span class="w"> </span><span class="m">0</span>.0<span class="w"> </span><span class="m">0</span>.0<span class="w"> </span><span class="m">0</span>.282702499302
+
+<span class="w">  </span>Inequivalent<span class="w"> </span>Shell<span class="w">  </span><span class="m">1</span>
+
+<span class="w">    </span>Spin<span class="w">  </span>up
+<span class="w">          </span><span class="m">0</span>.218-0.000j
+<span class="w">    </span>Eigenvalues:<span class="w">  </span><span class="o">[</span><span class="m">0</span>.21842138<span class="o">]</span>
+
+<span class="w">    </span>Spin<span class="w">  </span>down
+<span class="w">          </span><span class="m">0</span>.784-0.000j
+<span class="w">    </span>Eigenvalues:<span class="w">  </span><span class="o">[</span><span class="m">0</span>.78360972<span class="o">]</span>
+
+<span class="w">    </span>Magnetic<span class="w"> </span>moment<span class="w"> </span><span class="o">(</span>only<span class="w"> </span>spin<span class="w"> </span>contribution,<span class="w"> </span><span class="nv">S</span><span class="o">=</span><span class="m">1</span>/2<span class="w"> </span>gives<span class="w"> </span><span class="m">0</span>.5<span class="o">)</span>
+<span class="w">      </span>mx,my,mz<span class="o">=</span><span class="w"> </span><span class="m">0</span>.0<span class="w"> </span><span class="m">0</span>.0<span class="w"> </span>-0.282594174364
+</pre></div>
+</div>
+<p>The graph below is one of the figures generated by <code class="docutils literal notranslate"><span class="pre">dcore_check</span></code>, which shows the convergence of the spin moment for inequivalent shell0:</p>
+<a class="reference internal image-reference" href="../../_images/iter_spin-ish0.png"><img alt="../../_images/iter_spin-ish0.png" class="align-center" src="../../_images/iter_spin-ish0.png" style="width: 80%;" />
+</a>
+<p>For inequivalent shell1, the spin moment points the opposite directions:</p>
+<a class="reference internal image-reference" href="../../_images/iter_spin-ish1.png"><img alt="../../_images/iter_spin-ish1.png" class="align-center" src="../../_images/iter_spin-ish1.png" style="width: 80%;" />
+</a>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../basicnotions/structure.html">Minimum introduction: Structure of DCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../square/square.html">The first example: 2D Hubbard model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bethe-t2g/bethe.html">Multiorbital model by a QMC solver</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Antiferromagnetic state</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../srvo3/srvo3.html">SrVO<sub>3</sub></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../bethe-t2g/bethe.html"
+                          title="previous chapter">Multiorbital model by a QMC solver</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../srvo3/srvo3.html"
+                          title="next chapter">SrVO<sub>3</sub></a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../srvo3/srvo3.html" title="SrVO3"
+             >next</a></li>
+        <li class="right" >
+          <a href="../bethe-t2g/bethe.html" title="Multiorbital model by a QMC solver"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../tutorial.html" >Tutorial</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Antiferromagnetic state</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
