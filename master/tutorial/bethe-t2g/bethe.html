@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,16 +10,16 @@
     <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Antiferromagnetic state" href="../afm/afm.html" />
     <link rel="prev" title="The first example: 2D Hubbard model" href="../square/square.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,7 +40,7 @@
           <div class="body" role="main">
             
   <section id="multiorbital-model-by-a-qmc-solver">
-<h1>Multiorbital model by a QMC solver<a class="headerlink" href="#multiorbital-model-by-a-qmc-solver" title="Permalink to this heading">¶</a></h1>
+<h1>Multiorbital model by a QMC solver<a class="headerlink" href="#multiorbital-model-by-a-qmc-solver" title="Link to this heading">¶</a></h1>
 <p><a class="reference download internal" download="" href="../../_downloads/4597ad694e31bb00dcb3d29f11e8e0c8/dmft_bethe.ini"><code class="xref download docutils literal notranslate"><span class="pre">dmft_bethe.ini</span></code></a></p>
 <p>An interesting phenomena called spin-freezing transition occurs in multi-orbital models
 [<a class="reference external" href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.101.166405">P. Werner, E. Gull, M. Troyer and A. J. Millis, PRL 101, 166405 (2008)</a>].
@@ -79,7 +79,7 @@ In this tutorial, we solve the three-orbital model on a Bethe lattice to reprodu
 </pre></div>
 </div>
 <section id="pre-process-dcore-pre">
-<h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Permalink to this heading">¶</a></h2>
+<h2>Pre-process : <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code><a class="headerlink" href="#pre-process-dcore-pre" title="Link to this heading">¶</a></h2>
 <p>We first generate a h5 file that is necessary for DMFT calculations.
 The script <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> is invoked for this purpose:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_pre<span class="w"> </span>dmft_bethe.ini
@@ -88,7 +88,7 @@ The script <code class="docutils literal notranslate"><span class="pre">dcore_pr
 <p>If successful, a h5 file named <em>seedname</em>.h5 (<code class="docutils literal notranslate"><span class="pre">bethe.h5</span></code> in the present case) is generated.</p>
 </section>
 <section id="dmft-loop-dcore">
-<h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Permalink to this heading">¶</a></h2>
+<h2>DMFT loop : <code class="docutils literal notranslate"><span class="pre">dcore</span></code><a class="headerlink" href="#dmft-loop-dcore" title="Link to this heading">¶</a></h2>
 <p>The DMFT loop is performed by <code class="docutils literal notranslate"><span class="pre">dcore</span></code> program.
 In this tutorial, we use continuous-time QMC implementation of ALPS/CT-HYB.
 The runtime of the impurity solver is set to 300 sec.
@@ -173,14 +173,16 @@ Results for the self-energy and Green’s function in each iteration are accumul
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">dcore_check</span></code> generates several figures as well as data files in text format.
 For instance, <code class="docutils literal notranslate"><span class="pre">check/iter_sigma-ish0.png</span></code> shows how the renormalization factor converges for each orbital.</p>
-<a class="reference internal image-reference" href="../../_images/iter_sigma-ish02.png"><img alt="../../_images/iter_sigma-ish02.png" class="align-center" src="../../_images/iter_sigma-ish02.png" style="width: 800px;" /></a>
+<a class="reference internal image-reference" href="../../_images/iter_sigma-ish02.png"><img alt="../../_images/iter_sigma-ish02.png" class="align-center" src="../../_images/iter_sigma-ish02.png" style="width: 800px;" />
+</a>
 <p>If those results are not converged, one can restart DMFT iterations.</p>
 <p>You can plot the data for positive Matsubara frequencies as follows (like Fig. 3 of PRL 101, 166405 (2008)) using
 <a class="reference download internal" download="" href="../../_downloads/4519b5b5cc0b7ae13b9fb5f08ee6a320/plot.plt"><code class="xref download docutils literal notranslate"><span class="pre">a</span> <span class="pre">gnuplot</span> <span class="pre">command</span> <span class="pre">file</span></code></a>.</p>
 <p>The reference data extracted from PRL 101, 166405 (2008) are available
 <a class="reference download internal" download="" href="../../_downloads/fe6ab51628368b87c407fbbc52cae95f/sigma-PRL101-166405.txt"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.
 The plot should look like the following.</p>
-<a class="reference internal image-reference" href="../../_images/sigma.png"><img alt="../../_images/sigma.png" class="align-center" src="../../_images/sigma.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="../../_images/sigma.png"><img alt="../../_images/sigma.png" class="align-center" src="../../_images/sigma.png" style="width: 600px;" />
+</a>
 </section>
 </section>
 
@@ -189,7 +191,7 @@ The plot should look like the following.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../../index.html">Table of Contents</a></h3>
 <ul class="current">
@@ -217,7 +219,7 @@ The plot should look like the following.</p>
     <p class="topless"><a href="../afm/afm.html"
                           title="next chapter">Antiferromagnetic state</a></p>
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -225,13 +227,13 @@ The plot should look like the following.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">

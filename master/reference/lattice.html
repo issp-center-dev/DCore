@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,13 +10,13 @@
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
@@ -30,9 +30,9 @@
           <div class="body" role="main">
             
   <section id="lattice-parameter">
-<h1><code class="docutils literal notranslate"><span class="pre">lattice</span></code> parameter<a class="headerlink" href="#lattice-parameter" title="Permalink to this heading">¶</a></h1>
+<h1><code class="docutils literal notranslate"><span class="pre">lattice</span></code> parameter<a class="headerlink" href="#lattice-parameter" title="Link to this heading">¶</a></h1>
 <section id="predefined-models">
-<h2>Predefined models<a class="headerlink" href="#predefined-models" title="Permalink to this heading">¶</a></h2>
+<h2>Predefined models<a class="headerlink" href="#predefined-models" title="Link to this heading">¶</a></h2>
 <p>For model calculations, the following preset models are defined</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lattice</span> <span class="o">=</span> <span class="n">chain</span>
 <span class="n">lattice</span> <span class="o">=</span> <span class="n">square</span>
@@ -46,10 +46,11 @@
 </pre></div>
 </div>
 <p>The last one, <code class="docutils literal notranslate"><span class="pre">bethe</span></code>, use only parameter <code class="docutils literal notranslate"><span class="pre">t</span></code>, which defines the width (4t) of the semicircular density of states.</p>
-<a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" /></a>
+<a class="reference internal image-reference" href="../_images/model.png"><img alt="../_images/model.png" class="align-center" src="../_images/model.png" style="width: 700px;" />
+</a>
 </section>
 <section id="wannier90-format">
-<h2>Wannier90 format<a class="headerlink" href="#wannier90-format" title="Permalink to this heading">¶</a></h2>
+<h2>Wannier90 format<a class="headerlink" href="#wannier90-format" title="Link to this heading">¶</a></h2>
 <p>For DFT+DMFT calculations and model calculations of other lattice structures, hopping parameters in the Wannier90 format can be imported by</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lattice</span> <span class="o">=</span> <span class="n">wannier90</span>
 </pre></div>
@@ -57,7 +58,7 @@
 <p>Place the Wannier90 file in the current directory with the name <em>seedname</em>_hr.dat. For details of the Wannier90 format, see <a class="reference internal" href="../about.html#dcore-paper"><span class="std std-ref">SciPost 2021</span></a>.</p>
 </section>
 <section id="connection-to-external-programs">
-<h2>Connection to external programs<a class="headerlink" href="#connection-to-external-programs" title="Permalink to this heading">¶</a></h2>
+<h2>Connection to external programs<a class="headerlink" href="#connection-to-external-programs" title="Link to this heading">¶</a></h2>
 <p>For experts, the lattice data may be prepared by your own. In this case, use</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lattice</span> <span class="o">=</span> <span class="n">external</span>
 </pre></div>
@@ -74,7 +75,7 @@ The data structure follows <strong>DFTTools</strong>. For details, see
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul>
@@ -85,7 +86,7 @@ The data structure follows <strong>DFTTools</strong>. For details, see
 <li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
 </ul>
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -93,13 +94,13 @@ The data structure follows <strong>DFTTools</strong>. For details, see
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>

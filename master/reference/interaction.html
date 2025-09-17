@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,14 +10,14 @@
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>
@@ -31,7 +31,7 @@
           <div class="body" role="main">
             
   <section id="interaction-parameter">
-<h1><code class="docutils literal notranslate"><span class="pre">interaction</span></code> parameter<a class="headerlink" href="#interaction-parameter" title="Permalink to this heading">¶</a></h1>
+<h1><code class="docutils literal notranslate"><span class="pre">interaction</span></code> parameter<a class="headerlink" href="#interaction-parameter" title="Link to this heading">¶</a></h1>
 <p>Model Hamiltonian is defined as</p>
 <div class="math notranslate nohighlight">
 \[{\hat H} = \sum_{i j} \sum_{\alpha \beta}^{N_{\rm band}} \sum_{\sigma=\uparrow, \downarrow}
@@ -39,7 +39,7 @@ t_{i \alpha j \beta} c_{i \alpha \sigma}^\dagger c_{j \beta \sigma}
 +h.c. + {\hat H}_{\rm int},\]</div>
 <p>where</p>
 <div class="math notranslate nohighlight" id="equation-h-int">
-<span class="eqno">(1)<a class="headerlink" href="#equation-h-int" title="Permalink to this equation">¶</a></span>\[{\hat H}_{\rm int} = \frac{1}{2}
+<span class="eqno">(1)<a class="headerlink" href="#equation-h-int" title="Link to this equation">¶</a></span>\[{\hat H}_{\rm int} = \frac{1}{2}
 \sum_{i, \alpha \beta \gamma \delta,\sigma \sigma'}
 U^{i}_{\alpha \beta \gamma \delta}
 c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \delta \sigma'} c_{i \gamma \sigma}.\]</div>
@@ -55,7 +55,7 @@ c_{i \alpha \sigma}^\dagger c_{i \beta \sigma'}^\dagger c_{i \delta \sigma'} c_{
 </ul>
 </nav>
 <section id="interaction-kanamori">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">kanamori</span></code></a><a class="headerlink" href="#interaction-kanamori" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">kanamori</span></code></a><a class="headerlink" href="#interaction-kanamori" title="Link to this heading">¶</a></h2>
 <p>In this case, the Kanamori-type interaction is used, i.e.</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align}
@@ -81,7 +81,7 @@ you need to set the input parameters as</p>
 </div>
 </section>
 <section id="interaction-slater-f">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code></a><a class="headerlink" href="#interaction-slater-f" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code></a><a class="headerlink" href="#interaction-slater-f" title="Link to this heading">¶</a></h2>
 <p>In this case, the fully rotationally invariant Slater interaction is used. The interaction matrix is constructed by the effective Slater integrals
 <span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span>.
 These Slater integrals and the angular momentum at each correlated shell
@@ -105,7 +105,7 @@ you need to set the input parameter as</p>
 <p>The basis can be specified by <code class="docutils literal notranslate"><span class="pre">slater_basis</span></code> parameter. See <a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis parameter</span></a> for details.</p>
 </section>
 <section id="interaction-slater-uj">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_uj</span></code></a><a class="headerlink" href="#interaction-slater-uj" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_uj</span></code></a><a class="headerlink" href="#interaction-slater-uj" title="Link to this heading">¶</a></h2>
 <p>The Slater interaction is used as in the case with <code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">slater_f</span></code>, but a conventional intuitive parameterization is implemented.
 The effective Slater integrals <span class="math notranslate nohighlight">\(F_0, F_2, F_4, F_6\)</span> are evaluated from parameters <span class="math notranslate nohighlight">\(U\)</span> and <span class="math notranslate nohighlight">\(J\)</span>. The explicit formulas are given as follows:</p>
 <ul class="simple">
@@ -138,12 +138,12 @@ are specified by the parameter <code class="docutils literal notranslate"><span 
 <p>The basis can be specified by <code class="docutils literal notranslate"><span class="pre">slater_basis</span></code> parameter. See <a class="reference internal" href="slater_basis.html"><span class="doc">slater_basis parameter</span></a> for details.</p>
 </section>
 <section id="interaction-respack">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">respack</span></code></a><a class="headerlink" href="#interaction-respack" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">respack</span></code></a><a class="headerlink" href="#interaction-respack" title="Link to this heading">¶</a></h2>
 <p>Use the output by <a class="reference external" href="https://sites.google.com/view/kazuma7k6r">RESPACK</a>.
 <strong>Under construction.</strong></p>
 </section>
 <section id="interaction-file">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">file</span></code></a><a class="headerlink" href="#interaction-file" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">interaction</span> <span class="pre">=</span> <span class="pre">file</span></code></a><a class="headerlink" href="#interaction-file" title="Link to this heading">¶</a></h2>
 <p>One can set the U tensor <span class="math notranslate nohighlight">\(U^{i}_{\alpha \beta \gamma \delta}\)</span> from an external file.
 The input parameters for this are</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">file</span>
@@ -185,7 +185,7 @@ c_{i \alpha}^\dagger c_{i \beta}^\dagger c_{i \delta} c_{i \gamma}.\]</div>
 The shape of the U tensor is therefore <code class="docutils literal notranslate"><span class="pre">(2*norb,</span> <span class="pre">2*norb,</span> <span class="pre">2*norb,</span> <span class="pre">2*norb)</span></code>.</p>
 </section>
 <section id="density-density-option">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">density_density</span></code> option</a><a class="headerlink" href="#density-density-option" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">density_density</span></code> option</a><a class="headerlink" href="#density-density-option" title="Link to this heading">¶</a></h2>
 <p>If you want to treat only the density-density part</p>
 <div class="math notranslate nohighlight">
 \[{\hat H}_{\rm int} = \frac{1}{2}
@@ -217,7 +217,7 @@ the double-counting correction.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../index.html">Table of Contents</a></h3>
 <ul>
@@ -228,7 +228,7 @@ the double-counting correction.</p>
 <li class="toctree-l1"><a class="reference internal" href="../support.html">Support</a></li>
 </ul>
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -236,13 +236,13 @@ the double-counting correction.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../index.html">DCore  documentation</a> &#187;</li>

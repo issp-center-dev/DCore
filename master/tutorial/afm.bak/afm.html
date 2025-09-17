@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,14 +10,14 @@
     <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
@@ -31,7 +31,7 @@
           <div class="body" role="main">
             
   <section id="antiferromagnetic-state-in-3d-hubbard-model">
-<h1>Antiferromagnetic state in 3D Hubbard model<a class="headerlink" href="#antiferromagnetic-state-in-3d-hubbard-model" title="Permalink to this heading">¶</a></h1>
+<h1>Antiferromagnetic state in 3D Hubbard model<a class="headerlink" href="#antiferromagnetic-state-in-3d-hubbard-model" title="Link to this heading">¶</a></h1>
 <p>In this tutorial, you will learn the following:</p>
 <ul class="simple">
 <li><p>How to define a lattice model using the Wannier90 interface</p></li>
@@ -83,7 +83,7 @@ The complete input file is shown below.</p>
 </pre></div>
 </div>
 <section id="define-lattice-model">
-<h2>Define lattice model<a class="headerlink" href="#define-lattice-model" title="Permalink to this heading">¶</a></h2>
+<h2>Define lattice model<a class="headerlink" href="#define-lattice-model" title="Link to this heading">¶</a></h2>
 <p>First, we define the hopping matrix of the 3D Hubbard model with a 2x2x2 unit cell.
 Running <a class="reference download internal" download="" href="../../_downloads/1716d9c448f19ba68a74a1137ed0f742/mk_hr.py"><code class="xref download docutils literal notranslate"><span class="pre">mk_hr.py</span></code></a> generates a text file (cubic_hr.dat) in the Wannier90 format.
 The unit cell contains eight sites whose internal coordinates are (0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1), (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1).</p>
@@ -94,7 +94,7 @@ To this end, we assign the eight sites (correlated shells) to two inequivalent s
 </div>
 </section>
 <section id="generate-initial-guess-for-self-energy">
-<h2>Generate initial guess for self-energy<a class="headerlink" href="#generate-initial-guess-for-self-energy" title="Permalink to this heading">¶</a></h2>
+<h2>Generate initial guess for self-energy<a class="headerlink" href="#generate-initial-guess-for-self-energy" title="Link to this heading">¶</a></h2>
 <p>Second, we generate intial guesses for the (static) self-energies on the two inequivalent shells.
 Running <a class="reference download internal" download="" href="../../_downloads/5e5d410f56d52db83608fae79a58b290/mk_init_se.py"><code class="xref download docutils literal notranslate"><span class="pre">mk_init_se.py</span></code></a> generates <cite>init_se_up.txt</cite> and <cite>init_se_down.txt</cite>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>mk_init_se.py
@@ -102,7 +102,7 @@ Running <a class="reference download internal" download="" href="../../_download
 </div>
 </section>
 <section id="self-consistent-calculations">
-<h2>Self-consistent calculations<a class="headerlink" href="#self-consistent-calculations" title="Permalink to this heading">¶</a></h2>
+<h2>Self-consistent calculations<a class="headerlink" href="#self-consistent-calculations" title="Link to this heading">¶</a></h2>
 <p>Now, DMFT calculations can be done as usual.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
 dcore_pre<span class="w"> </span>cubic.ini<span class="w"> </span>&gt;<span class="w"> </span>output-pre
@@ -141,9 +141,11 @@ dcore_post<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span cla
 </pre></div>
 </div>
 <p>Inequivalent shell0</p>
-<a class="reference internal image-reference" href="../../_images/iter_sigma-ish01.png"><img alt="../../_images/iter_sigma-ish01.png" class="align-center" src="../../_images/iter_sigma-ish01.png" style="width: 800px;" /></a>
+<a class="reference internal image-reference" href="../../_images/iter_sigma-ish01.png"><img alt="../../_images/iter_sigma-ish01.png" class="align-center" src="../../_images/iter_sigma-ish01.png" style="width: 800px;" />
+</a>
 <p>Inequivalent shell1</p>
-<a class="reference internal image-reference" href="../../_images/iter_sigma-ish1.png"><img alt="../../_images/iter_sigma-ish1.png" class="align-center" src="../../_images/iter_sigma-ish1.png" style="width: 800px;" /></a>
+<a class="reference internal image-reference" href="../../_images/iter_sigma-ish1.png"><img alt="../../_images/iter_sigma-ish1.png" class="align-center" src="../../_images/iter_sigma-ish1.png" style="width: 800px;" />
+</a>
 </section>
 </section>
 
@@ -152,7 +154,7 @@ dcore_post<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span cla
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../../index.html">Table of Contents</a></h3>
 <ul>
@@ -163,7 +165,7 @@ dcore_post<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span cla
 <li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
 </ul>
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -171,13 +173,13 @@ dcore_post<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span cla
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>

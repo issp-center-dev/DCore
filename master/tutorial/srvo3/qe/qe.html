@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,13 +10,13 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../../../index.html">DCore  documentation</a> &#187;</li>
@@ -30,9 +30,9 @@
           <div class="body" role="main">
             
   <section id="wanniernization-using-quantum-espresso">
-<span id="qesrvo3"></span><h1>Wanniernization using Quantum ESPRESSO<a class="headerlink" href="#wanniernization-using-quantum-espresso" title="Permalink to this heading">¶</a></h1>
+<span id="qesrvo3"></span><h1>Wanniernization using Quantum ESPRESSO<a class="headerlink" href="#wanniernization-using-quantum-espresso" title="Link to this heading">¶</a></h1>
 <section id="scf-calculation-of-quantum-espresso">
-<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Permalink to this heading">¶</a></h2>
+<h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Link to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../../_downloads/fbf4aa10c0a8f5d138fa99ae99efb2de/scf_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
  <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
@@ -74,9 +74,9 @@
 </div>
 </section>
 <section id="wannierization">
-<h2>Wannierization<a class="headerlink" href="#wannierization" title="Permalink to this heading">¶</a></h2>
+<h2>Wannierization<a class="headerlink" href="#wannierization" title="Link to this heading">¶</a></h2>
 <section id="generate-bloch-orbitals-for-the-wannier">
-<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Permalink to this heading">¶</a></h3>
+<h3>Generate Bloch orbitals for the Wannier<a class="headerlink" href="#generate-bloch-orbitals-for-the-wannier" title="Link to this heading">¶</a></h3>
 <p>Perform non-scf calculation for generating Bloch orbitals that are used
 in the wannierization.</p>
 <p><a class="reference download internal" download="" href="../../../_downloads/c99daac10cc60faf3570eb2a87cab34d/nscf_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_srvo3.in</span></code></a></p>
@@ -186,7 +186,7 @@ in the wannierization.</p>
 </div>
 </section>
 <section id="pre-process-for-wannier90">
-<h3>Pre-process for Wannier90<a class="headerlink" href="#pre-process-for-wannier90" title="Permalink to this heading">¶</a></h3>
+<h3>Pre-process for Wannier90<a class="headerlink" href="#pre-process-for-wannier90" title="Link to this heading">¶</a></h3>
 <p>Pre-process with wannier90 program.
 It is always required before pw2wannier.x runs.</p>
 <p><a class="reference download internal" download="" href="../../../_downloads/2c4a8a193ba4f8759def689a8b2ce1d8/srvo3.win"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.win</span></code></a></p>
@@ -313,7 +313,7 @@ end kpoints
 </div>
 </section>
 <section id="qe-to-wannier90-interface">
-<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Permalink to this heading">¶</a></h3>
+<h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Link to this heading">¶</a></h3>
 <p><a class="reference download internal" download="" href="../../../_downloads/e7ce6a1c83ef95fcbe392f6296abd452/pw2wan_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">pw2wan_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">inputpp</span> 
    <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
@@ -333,7 +333,7 @@ end kpoints
 </div>
 </section>
 <section id="wannier90">
-<h3>Wannier90<a class="headerlink" href="#wannier90" title="Permalink to this heading">¶</a></h3>
+<h3>Wannier90<a class="headerlink" href="#wannier90" title="Link to this heading">¶</a></h3>
 <p>Execute <code class="docutils literal notranslate"><span class="pre">wannier90.x</span></code> for the actual wannierization.
 The input file is the same as that for the pre-processing run.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>wannier90.x<span class="w"> </span>srvo3
@@ -341,7 +341,7 @@ The input file is the same as that for the pre-processing run.</p>
 </div>
 </section>
 <section id="optional-check-wannierization">
-<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Permalink to this heading">¶</a></h3>
+<h3>(Optional) Check wannierization<a class="headerlink" href="#optional-check-wannierization" title="Link to this heading">¶</a></h3>
 <p>If you want to check the quality of the wannierization,
 you can plot the original and the wannier-interpolated band structure simultaneously.</p>
 <p>First, compute the band structure with the following input file:</p>
@@ -445,7 +445,8 @@ outdir = &quot;./&quot;,
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;srvo3_band.dat&quot; u ($1*0.6146):2 tit &quot;Wannier&quot; w l
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../../../_images/band_srvo3.png"><img alt="../../../_images/band_srvo3.png" class="align-center" src="../../../_images/band_srvo3.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../../_images/band_srvo3.png"><img alt="../../../_images/band_srvo3.png" class="align-center" src="../../../_images/band_srvo3.png" style="width: 500px;" />
+</a>
 </section>
 </section>
 </section>
@@ -455,7 +456,7 @@ outdir = &quot;./&quot;,
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../../../index.html">Table of Contents</a></h3>
 <ul>
@@ -466,7 +467,7 @@ outdir = &quot;./&quot;,
 <li class="toctree-l1"><a class="reference internal" href="../../../support.html">Support</a></li>
 </ul>
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -474,13 +475,13 @@ outdir = &quot;./&quot;,
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../../../index.html">DCore  documentation</a> &#187;</li>

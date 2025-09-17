@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,13 +10,13 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/dcore.css?v=1e19043f" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b3ba4146"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../../../index.html">DCore  documentation</a> &#187;</li>
@@ -30,7 +30,7 @@
           <div class="body" role="main">
             
   <section id="wanniernization-using-openmx">
-<h1>Wanniernization using OpenMX<a class="headerlink" href="#wanniernization-using-openmx" title="Permalink to this heading">¶</a></h1>
+<h1>Wanniernization using OpenMX<a class="headerlink" href="#wanniernization-using-openmx" title="Link to this heading">¶</a></h1>
 <p>OpenMX is a first-principles program package based on
 the numerical localized basis set and pseudopotentials.
 OpenMX itself can generate hopping parameter in the wannier90 format.
@@ -40,7 +40,7 @@ In this tutorial, we demonstrate the calculation of SrVO<sub>3</sub>.</p>
 <p>This tutorial requires large computational resources or long simulation time.</p>
 </div>
 <section id="scf-computation-and-wannier-with-openmx">
-<h2>SCF computation and Wannier with OpenMX<a class="headerlink" href="#scf-computation-and-wannier-with-openmx" title="Permalink to this heading">¶</a></h2>
+<h2>SCF computation and Wannier with OpenMX<a class="headerlink" href="#scf-computation-and-wannier-with-openmx" title="Link to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../../_downloads/c023139646f06e58203ae42058b13bf3/scf.dat"><code class="xref download docutils literal notranslate"><span class="pre">scf.dat</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
 <span class="c1"># File Name</span>
@@ -137,7 +137,7 @@ It can be performed with <code class="docutils literal notranslate"><span class=
 </div>
 </section>
 <section id="dmft-calculation">
-<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Permalink to this heading">¶</a></h2>
+<h2>DMFT calculation<a class="headerlink" href="#dmft-calculation" title="Link to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../../_downloads/90e0825153f3d161a26ce497aa915e47/srvo3_openmx.ini"><code class="xref download docutils literal notranslate"><span class="pre">srvo3.ini</span></code></a></p>
 <div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
 <span class="na">lattice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">wannier90</span>
@@ -197,19 +197,19 @@ If we want to compute by using 32 MPI processes at the same accuracy,
 <code class="docutils literal notranslate"><span class="pre">n_cycles{int}</span></code> should be 10000*432/32=135000.</p>
 </div>
 <section id="dmft-setup-dcore-pre">
-<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Permalink to this heading">¶</a></h3>
+<h3>DMFT setup: dcore_pre<a class="headerlink" href="#dmft-setup-dcore-pre" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_pre<span class="w"> </span>srvo3.ini
 </pre></div>
 </div>
 </section>
 <section id="running-self-consistent-dmft-calculation-dcore">
-<h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Permalink to this heading">¶</a></h3>
+<h3>Running self-consistent DMFT calculation: dcore<a class="headerlink" href="#running-self-consistent-dmft-calculation-dcore" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore<span class="w"> </span>srvo3.ini
 </pre></div>
 </div>
 </section>
 <section id="post-processing-and-data-analysis-dcore-anacont-and-dcore-spectrum">
-<h3>Post-processing and data analysis: dcore_anacont and dcore_spectrum<a class="headerlink" href="#post-processing-and-data-analysis-dcore-anacont-and-dcore-spectrum" title="Permalink to this heading">¶</a></h3>
+<h3>Post-processing and data analysis: dcore_anacont and dcore_spectrum<a class="headerlink" href="#post-processing-and-data-analysis-dcore-anacont-and-dcore-spectrum" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_anacont<span class="w"> </span>srvo3.ini
 $<span class="w"> </span>dcore_spectrum<span class="w"> </span>srvo3.ini
 $<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>post
@@ -217,7 +217,8 @@ $<span class="w"> </span>sed<span class="w"> </span>-e<span class="w"> </span><s
 $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="../../../_images/akw_srvo31.png"><img alt="../../../_images/akw_srvo31.png" class="align-center" src="../../../_images/akw_srvo31.png" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="../../../_images/akw_srvo31.png"><img alt="../../../_images/akw_srvo31.png" class="align-center" src="../../../_images/akw_srvo31.png" style="width: 500px;" />
+</a>
 <p>“+” indicates the original band structure.</p>
 </section>
 </section>
@@ -228,7 +229,7 @@ $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../../../index.html">Table of Contents</a></h3>
 <ul>
@@ -239,7 +240,7 @@ $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
 <li class="toctree-l1"><a class="reference internal" href="../../../support.html">Support</a></li>
 </ul>
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -247,13 +248,13 @@ $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="nav-item nav-item-0"><a href="../../../index.html">DCore  documentation</a> &#187;</li>
