@@ -169,14 +169,16 @@ Running the DMFT calculation: dcore
 
    $ dcore srvo3_respack.ini
 
-Post-processing and data analysis: dcore_post
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Post-processing and data analysis: dcore_anacont and dcore_spectrum
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block :: bash
 
-   $ dcore_post srvo3_respack.ini
-   $ sed -e "s/every 10/every 3/g" srvo3_akw.gp
-   $ gnuplot nis_akw.gp
+   $ dcore_anacont srvo3_respack.ini
+   $ dcore_spectrum srvo3_respack.ini
+   $ cd post
+   $ sed -e "s/every 10/every 3/g" akw.gp
+   $ gnuplot akw.gp
 
 .. image:: akw_srvo3.png
    :width: 500

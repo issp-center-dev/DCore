@@ -44,10 +44,11 @@ name = null
 max_step = 1
 sigma_mix = 0.0
 initial_self_energy = Sigma.txt
+'''
 
-[tool]
-Lambda_IR = {Lambda}
-cutoff_IR = {cutoff}'''
+# [tool]
+# Lambda_IR = {Lambda}
+# cutoff_IR = {cutoff}'''
 
     with open(file, 'w') as f:
         print(ini_str, file=f)

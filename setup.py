@@ -39,9 +39,9 @@ setup(
         ]),
     author_email='h.shinaoka@gmail.com',
 
-    python_requires='>=3.6, <4',
+    python_requires='>=3.8, <4',
     install_requires=[
-        'numpy',
+        'numpy<2',
         'scipy>=1.4',
         # h5py 2.10.0 has a bug.
         # Import h5py imports mpi4py automatically.
@@ -63,14 +63,12 @@ setup(
         "console_scripts": [
             "dcore_pre = dcore.dcore_pre:run",
             "dcore = dcore.dcore:run",
-            "dcore_post = dcore.dcore_post:run",
             "dcore_check = dcore.dcore_check:run",
             "dcore_bse = dcore.dcore_bse:run",
             "dcore_gk = dcore.dcore_gk:run",
             "dcore_mpicheck = dcore.dcore_mpicheck:run",
-            "dcore_anacont_pade = dcore.dcore_anacont_pade:run",
-            "dcore_anacont_spm = dcore.dcore_anacont_spm:run",
-            "dcore_anacont_spm_interactive = dcore.dcore_anacont_spm_interactive:run",
+            "dcore_anacont = dcore.dcore_anacont:run",
+            "dcore_spectrum = dcore.dcore_spectrum:run",
         ]
     },
 

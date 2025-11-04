@@ -87,7 +87,8 @@ Now, DMFT calculations can be done as usual.
    export MPIRUN="mpirun"
    dcore_pre cubic.ini > output-pre
    dcore cubic.ini --np 48 > output
-   dcore_post cubic.ini --np 48 > output-post
+   dcore_anacont cubic.ini > output-anacont
+   dcore_spectrum cubic.ini --np 48 > output-spectrum
 
 
 In the standard output of ``dcore``, you will see that the magnetic moments converge to :math:`\simeq 0.28` (57 % of the saturated moment).

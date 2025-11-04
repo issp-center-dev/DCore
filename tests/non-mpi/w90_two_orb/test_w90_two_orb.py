@@ -19,8 +19,9 @@
 import os
 import numpy
 from dcore.dcore_pre import dcore_pre
-from dcore.dcore_post import dcore_post
 from dcore.dcore import dcore
+from dcore.dcore_anacont import dcore_anacont
+from dcore.dcore_spectrum import dcore_spectrum
 from dcore._dispatcher import HDFArchive
 
 
@@ -51,4 +52,5 @@ def test_dcore_pre(request):
     # We do not check the correctness of the results,
     # but want to make sure the rest runs without errors!
     dcore('dmft_square.ini')
-    dcore_post('dmft_square.ini')
+    dcore_anacont('dmft_square.ini')
+    dcore_spectrum('dmft_square.ini')

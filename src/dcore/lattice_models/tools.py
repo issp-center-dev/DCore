@@ -141,9 +141,9 @@ def gen_kpath(params):
 
     """
 
-    knode = parse_knode(params["tool"]["knode"])
+    knode = parse_knode(params["post.spectrum"]["knode"])
     bvec = parse_bvec(params["model"]["bvec"])
-    nk_line = params["tool"]["nk_line"]
+    nk_line = params["post.spectrum"]["nk_line"]
     #
     # Generate k-vectors on the k-path
     #   knode --> kvec

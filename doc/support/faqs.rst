@@ -155,11 +155,25 @@ Can I use my impurity solver?
 Yes. Follow the instruction in :doc:`../impuritysolvers/how_to_integrate`
 
 
-
-
-
 ..
    ``dcore`` crashes abnormally when using cthyb
    ---------------------------------------------
 
    Please retry.
+
+
+Others
+-------
+
+DCore is slow even with MPI parallelization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+One of the reasons is that the number of threads of each MPI process is not set properly.
+Unfortunately, the environment variable to set the number of threads is different among environments/libraries (OpenBLAS, Intel MKL, etc.).
+The followings are the environment variables to set the number of threads for some libraries.
+
+* OMP_NUM_THREADS
+* OPENBLAS_NUM_THREADS
+* MKL_NUM_THREADS
+* VECLIB_MAXIMUM_THREADS
+* NUMEXPR_NUM_THREADS

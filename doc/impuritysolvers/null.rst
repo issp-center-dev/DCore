@@ -15,5 +15,5 @@ Note that, since self-energy is zero, one should introduce an artificial broaden
 
 ::
 
-    [tool]
+    [post.spectrum]
     broadening = 0.001

@@ -9,7 +9,8 @@
 check_command dcore_pre
 check_command dcore
 check_command dcore_check
-check_command dcore_post
+check_command dcore_anacont
+check_command dcore_spectrum
 
 # set NUM_PROC=1 if not defined
 set_num_proc
@@ -34,6 +35,12 @@ dcore --np $NUM_PROC $ini || exit
 
 echo "running dcore_check..."
 dcore_check $ini || exit
+
+echo "running dcore_anacont..."
+dcore_anacont $ini || exit
+
+echo "running dcore_spectrum..."
+dcore_spectrum --np $NUM_PROC $ini || exit
 
 echo "running dcore_post..."
 dcore_post --np $NUM_PROC $ini || exit

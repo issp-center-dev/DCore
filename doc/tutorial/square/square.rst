@@ -97,10 +97,28 @@ For instance, ``check/iter_sigma-ish0.png`` shows how the renormalization factor
 
 The iteration is terminated when the diff (lower figure) reaches ``converge_tol = 1e-5`` at the 13th iteration.
 
-Spectral function : ``dcore_post``
-----------------------------------
-We can calculate real-frequency quantities such as the density of states and the momentum-dependent single-particle excitations using ``dcore_post`` program.
-The analytical continuation from Matsubara frequency to real frequencies is performed using the Pade approximation.
+Analytical continuation of the self-energy : ``dcore_anacont``
+---------------------------------------------------------------------
+
+The self-energy is calculated in the imaginary-time domain in the DMFT loop and saved as ``seedname_sigma_iw.npz``.
+The analytical continuation from Matsubara frequency to real frequencies is required to calculate the spectral function.
+DCore provides a program ``dcore_anacont`` for this purpose.
+Parameters for the analytical continuation are specified in the ``[post.anacont]`` block in the input file.
+``omega_min`` and ``omega_max`` is the minimum and maximum frequency for the output.
+``Nomega`` is the number of frequency points.
+``solver`` is the solver for the analytical continuation; "pade" is the Pade approximation and "spm" is the sparse modeling method.
+Hyperparameters for the solver can be specified in the ``[post.anacont.pade]`` or ``[post.anacont.spm]`` block.
+
+.. code-block:: bash
+
+   $ dcore_anacont dmft_square.ini
+
+The result is stored in ``post/sigma_w.npz``.
+
+Spectral function : ``dcore_spectrum``
+---------------------------------------
+
+After calculating the self-energy on the real-frequency axis, we can also calculate other real-frequency quantities such as the density of states and the momentum-dependent single-particle excitations using ``dcore_spectrum`` program.
 
 .. In the Hubbard-I solver, the self-energy on the real-frequency axis can be directly computed (no analytical continuation is required).
 .. Hence, the impurity problem is solved once more in ``dcore_post``.
@@ -109,18 +127,19 @@ The calculation is done by the following command:
 
 .. code-block:: bash
 
-   $ dcore_post dmft_square.ini --np 1
+   $ dcore_spectrum dmft_square.ini --np 1
 
 After finishing the calculation,
 results are stored in ``post`` directory.
-The data of momentum-resolved spectral functions are output into ``square_akw.dat``.
-We can easily plot the result by using the script file ``square_akw.gp`` for gnuplot:
+The data of momentum-resolved spectral functions are output into ``akw.dat``.
+We can easily plot the result by using the script file ``akw.gp`` for gnuplot:
 
 .. ``square_akw.dat``, ``square_akw.gp`` and ``square_dos.dat`` are generated.
 
 .. code-block:: bash
 
-   $ gnuplot square_akw.gp
+   $ cd post
+   $ gnuplot akw.gp
 
 In the graph shown below, the left and right panels correspond to up-spin and down-spin components, respectively.
 
@@ -131,14 +150,14 @@ In the graph shown below, the left and right panels correspond to up-spin and do
 Here, we have tuned the range of the coloar bar by the command ``set cbrange[0:0.8]`` to get better figure.
 The band width seems reduced than the noninteracting one, 8, but the artificial structure around E=1 and -1 makes it difficult to judge.
 
-The numerical result for the density of states is stored in ``square_dos.dat``.
+The numerical result for the density of states is stored in ``dos.dat``.
 We can plot it using gnuplot as follows:
 
 .. code-block:: gnuplot
 
    set xlabel "Energy"
    set ylabel "DOS"
-   plot "square_dos.dat" w l
+   plot "dos.dat" w l
 
 The result is shown below.
 
@@ -161,7 +180,7 @@ The file below shows the input file for ALPS/cthyb-seg:
 ``/path/to/alps_cthyb`` in ``[impurity_solver] exec_path{str}`` should be replaced with a full path to ``alps_cthyb`` executable in your environment.
 Unlike in the ED solver, we do not use ``converge_tol`` parameter, since the automatic convergence check requires a special care for QMC solvers.
 
-The figure below shows the momentum-resolved spectral functions computed after the self-consistent calculations using 40 processes:
+The figure below shows the momentum-resolved spectral functions computed after the self-consistent calculations using 8 processes:
 
 .. image:: ctseg/post/akw.png
    :width: 700

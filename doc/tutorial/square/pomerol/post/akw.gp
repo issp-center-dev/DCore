@@ -1,19 +1,26 @@
-set terminal unknown
-load "square_akw.gp"
+set cbrange [0:0.8]
+set size 0.95, 1.0
+set xtics (\
+  "G"  0.0, \
+  "X"  0.5000000000000003, \
+  "M"  1.0000000000000007, \
+  "G"  1.7071067811865512, \
+  "G"  1.8778174593052066, \
+  "X"  2.377817459305207, \
+  "M"  2.8778174593052075, \
+  "G"  3.584924240491758 \
+  )
+set pm3d map
+#set pm3d interpolate 5, 5
+unset key
+set ylabel "Energy"
+set cblabel "A(k,w)"
+splot "akw.dat" u 1:2:(abs($3))
+pause -1
 
-
-#set terminal postscript eps color enhanced "Times-Roman" 24
-#set output "akw.eps"
-#set outpu "| epstopdf -f -o=akw.pdf"
-
-set terminal png
-set output "akw.png"
-
-#set palette rgbformulae 21, 22, 23  # hot
-#set palette defined (0 "white", 1 "blue", 2 "orange")  # white background
-
-set cbrange[0:0.8]
-set zrange[*:*]
-
-replot
-set output
+set term push
+set term png
+set out 'akw.png'
+rep
+set out
+set term pop

@@ -39,8 +39,9 @@ class DMFTCoreCheck(object):
         print("\n  @ Reading {0} ...".format(ini_file))
         #
         # Construct a parser with default values
+        # tool is removed but read for error message
         #
-        pars = create_parser(['model', 'system', 'tool'])
+        pars = create_parser(['model', 'system', 'tool', 'post.check'])
         #
         # Parse keywords and store
         #
@@ -51,7 +52,6 @@ class DMFTCoreCheck(object):
         # Delete unnecessary parameters
         delete_parameters(self.p, block='model', retain=['seedname'])
         delete_parameters(self.p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu'])
-        delete_parameters(self.p, block='tool', retain=['omega_check'])
 
         # Summary of input parameters
         print_parameters(self.p)
@@ -74,7 +74,7 @@ class DMFTCoreCheck(object):
         print("  Total number of Iteration: {0}".format(self.n_iter))
 
         # If omega_check is not specified, a fixed number of Matsubara points are taken
-        self.omega_check = self.p['tool']['omega_check']
+        self.omega_check = self.p['post.check']['omega_check']
         if self.omega_check == 0:
             nmax = min(30, self.n_iw)
             self.omega_check = (2*nmax+1) * math.pi / self.beta
