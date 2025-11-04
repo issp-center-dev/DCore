@@ -363,7 +363,7 @@ class JOCTHYBSEGSolver(SolverBase):
         only_chiloc = params_kw['only_chiloc']
 
         if save_chiloc:
-            print("Warning: save_chiloc=True. The transverse spin susceptibility by BSE will not be correct, although the longitudinal spin susceptibility gets faster convergence against num_wf. Set save_chiloc=False if the transverse mode is necessary (still note that the spin rotational symmetry is broken because of density-density interactions).", file=sys.stderr)
+            print("Warning: save_chiloc=True. The transverse spin susceptibility calculated via BSE will be incorrect, although the longitudinal spin susceptibility shows faster convergence with respect to num_wf. Set save_chiloc=False if the transverse mode is required. Note, however, that the spin rotational symmetry is broken due to the use of density-density interactions.", file=sys.stderr)
 
         params_kw['control.flag_tp'] = 'true'
         params_kw['control.n_tp'] = 2**(int(np.log2(self.n_iw)) - 4)  # TODO
@@ -467,6 +467,10 @@ class JOCTHYBSEGSolver(SolverBase):
 
         # Rotate g2_dict and chi_dict back to the original basis
         if rot is not None:
+            print("Error: 'basis_rotation' for two-particle quantities is currently not supported.", file=sys.stderr)
+            sys.exit(1)
+
+            # TODO: rotate_basis has been implemented, but further test and debugging are necessary.
             rotate_basis(rot, self.use_spin_orbit, None, direction='backward', X_dict=g2_dict, chi_dict=chi_dict)
 
         return g2_dict, chi_dict

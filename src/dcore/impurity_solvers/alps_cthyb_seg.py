@@ -486,6 +486,9 @@ class ALPSCTHYBSEGSolver(SolverBase):
 
         # Rotate g2_dict and chi_dict back to the original basis
         if rot is not None:
+            print("Error: 'basis_rotation' for two-particle quantities is currently not supported.", file=sys.stderr)
+            sys.exit(1)
+
             rotate_basis(rot, self.use_spin_orbit, None, direction='backward', X_dict=g2_dict, chi_dict=chi_dict)
 
         return g2_dict, chi_dict
