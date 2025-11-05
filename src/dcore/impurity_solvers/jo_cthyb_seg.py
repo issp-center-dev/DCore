@@ -363,7 +363,7 @@ class JOCTHYBSEGSolver(SolverBase):
         only_chiloc = params_kw['only_chiloc']
 
         if save_chiloc:
-            print("Warning: save_chiloc=True. The transverse spin susceptibility calculated via BSE will be incorrect, although the longitudinal spin susceptibility shows faster convergence with respect to num_wf. Set save_chiloc=False if the transverse mode is required. Note, however, that the spin rotational symmetry is broken due to the use of density-density interactions.", file=sys.stderr)
+            print("Warning: [bse]save_chiloc=True. The transverse spin susceptibility and some orbital susceptibilities calculated via BSE will be incorrect, although the longitudinal spin susceptibility shows faster convergence with respect to num_wf. [bse]save_chiloc=False is recommended. Note, however, that the spin rotational symmetry remains broken due to the use of density-density interactions.", file=sys.stderr)
 
         params_kw['control.flag_tp'] = 'true'
         params_kw['control.n_tp'] = 2**(int(np.log2(self.n_iw)) - 4)  # TODO
