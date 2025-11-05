@@ -23,6 +23,7 @@ from itertools import product
 from dcore._dispatcher import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size, expand_path
 from .base import SolverBase, rotate_basis
+from dcore.program_options import parse_save_chiloc
 
 
 def to_numpy_array(g, names):
@@ -420,7 +421,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         For details, see SolverBase.calc_Xloc_ph
         """
 
-        save_chiloc = params_kw['save_chiloc']
+        save_chiloc = parse_save_chiloc(params_kw['save_chiloc'], default=False)
         only_chiloc = params_kw['only_chiloc']
 
         params_kw['cthyb.MEASURE_g2w'] = 1

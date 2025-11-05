@@ -25,6 +25,7 @@ from dcore._dispatcher import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params, expand_path
 from .base import SolverBase
+from dcore.program_options import parse_save_chiloc
 
 VERSION_REQUIRED = 1.5
 
@@ -318,7 +319,7 @@ class PomerolSolver(SolverBase):
         For details, see SolverBase.calc_Xloc_ph
         """
 
-        save_chiloc = params_kw['save_chiloc']
+        save_chiloc = parse_save_chiloc(params_kw['save_chiloc'], default=True)
         only_chiloc = params_kw['only_chiloc']
 
         # Set parameters

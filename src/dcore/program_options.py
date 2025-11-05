@@ -48,7 +48,7 @@ def create_parser(target_sections=None):
         parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.anacont.spm.solver', 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
-    
+
     # tool is removed but read for warning
     parser.allow_undefined_options("tool")
     parser.allow_undefined_options("post.anacont.spm.solver")
@@ -180,7 +180,7 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "skip_X0q_if_exists", bool, False, "[NOT USED] Skip X_0(q) calc if file already exists", OptionStatus.RETIRED)
     parser.add_option("bse", "skip_X0q", bool, False, "Skip X_0(q) calc")
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
-    parser.add_option("bse", "save_chiloc", bool, True, "Save chi_loc to get better convergence against num_wf. But False is recommended in CTHYB-SEGMENT solvers (See below).")
+    parser.add_option("bse", "save_chiloc", str, 'default', "Chosen from 'default', 'True', or 'False'. If True, chi_loc is saved to get better convergence against num_wf in ChiQ. But False is recommended for CTHYB segment algorithm. For 'default', True is set for pomerol solver, while False is set for JO/cthyb-seg and ALPS/cthyb-seg solvers.")
     parser.add_option("bse", "calc_only_chiloc", bool, False, "Calculate only chi_loc but no X_loc (for SCL, rRPA). Do not activate skip_Xloc when using this option.")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
@@ -337,6 +337,7 @@ def parse_parameters(params):
     if 'bse' in params:
         two_options_incompatible(params, ('bse', 'skip_Xloc'), ('bse', 'calc_only_chiloc'))
 
+        check_option_choices(params, ('bse', 'save_chiloc'), ['default', 'True', 'False'])
         check_option_choices(params, ('bse', 'choice_X0loc'), ['qsum', 'imp'])
 
 
@@ -397,6 +398,15 @@ def parse_bvec(bvec_string):
         print(e)
         sys.exit(f"ERROR: Unable to parse bvec={bvec_string}. bvec must be a double list of shape (3, 3).")
     return bvec
+
+
+def parse_save_chiloc(save_chiloc_in, default : bool):
+    assert save_chiloc_in in ('default', 'True', 'False')
+    if save_chiloc_in == 'default':
+        save_chiloc = default
+    else:
+        save_chiloc = save_chiloc_in == 'True'  # convert str to bool
+    return save_chiloc
 
 
 def delete_parameters(p, block, delete=None, retain=None):
