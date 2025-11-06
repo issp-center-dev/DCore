@@ -49,7 +49,7 @@ def _compare_str_list(list1, list2):
 
 
 def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_rot, Umat, gf_struct, beta, n_iw,
-                              Sigma_iw, Gloc_iw, num_wb, num_wf, only_chiloc, ish, freqs=None):
+                              Sigma_iw, Gloc_iw, num_wb, num_wf, save_chiloc, only_chiloc, ish, freqs=None):
     """
 
     Calculate G2 in an impurity model
@@ -71,6 +71,9 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     s_params = copy.deepcopy(solver_params)
     s_params['random_seed_offset'] = 1000 * ish
 
+    s_params['save_chiloc'] = save_chiloc
+    s_params['only_chiloc'] = only_chiloc
+
     work_dir_org = os.getcwd()
     work_dir = 'work/imp_shell' + str(ish) + '_bse'
     if not os.path.isdir(work_dir):
@@ -83,7 +86,7 @@ def calc_g2_in_impurity_model(solver_name, solver_params, mpirun_command, basis_
     # Solve the model
     rot = impurity_solvers.compute_basis_rot(basis_rot, sol)
     if flag_box:
-        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params, only_chiloc)
+        xloc, chiloc = sol.calc_Xloc_ph(rot, mpirun_command, num_wf, num_wb, s_params)
     else:
         xloc, chiloc = sol.calc_Xloc_ph_sparse(rot, mpirun_command, freqs, num_wb, s_params)
 
@@ -165,6 +168,56 @@ def subtract_disconnected(xloc, gimp, spin_names, freqs=None):
             for j, (wb, wf1, wf2) in enumerate(freqs):
                 if wb==0:
                     data[j] -= g(i2, i1, wf1) * g(i3, i4, wf2)
+
+
+def calc_X0_loc(gimp, spin_names, num_wb, num_wf, freqs=None):
+    """
+    calculate X0_loc from G_imp
+        X0_loc[(i1, i2, i3, i4)][wb, wf1, wf2] = - G[(i3, i1)][wf1] * G[(i2, i4)][wf2+wb]
+
+    if freqs is None: box frequency sampling
+    else: sparse sampling
+
+    """
+
+    # g_ij[(i, j)] = data[iw]
+    g_ij = {}
+    for isp, sp in enumerate(spin_names):
+        # data[iw, orb1, orb2]
+        norb = gimp[sp].data.shape[1]
+        assert norb == gimp[sp].data.shape[2]
+        for o1, o2 in product(list(range(norb)), repeat=2):
+            i = o1 + isp*norb
+            j = o2 + isp*norb
+            g_ij[(i, j)] = gimp[sp].data[:, o1, o2]
+
+    assert g_ij[(0, 0)].shape[0] % 2 == 0
+    w0 = g_ij[(0, 0)].shape[0] // 2
+
+    # reduce Matsubara frequencies
+    for key, g in g_ij.items():
+        g_ij[key] = g[w0-num_wf:w0+num_wf+num_wb]
+
+    # get maximum index
+    max_ij = numpy.max(numpy.array([key for key in g_ij.keys()]))
+
+    chi0_loc = {}
+    for i1, i2, i3, i4 in product(range(max_ij+1), repeat=4):
+        # skip if g_ij has no data
+        if (not (i3, i1) in g_ij) or (not (i2, i4) in g_ij):
+            continue
+
+        if freqs is None:
+            # box sampling
+            chi0 = numpy.zeros((num_wb, 2*num_wf), dtype=numpy.complex128)
+            for wb in range(num_wb):
+                chi0[wb, :] = - g_ij[(i3, i1)][0:2*num_wf] * g_ij[(i2, i4)][wb:wb+2*num_wf]
+            chi0_loc[(i1, i2, i3, i4)] = chi0
+        else:
+            # sparse sampling
+            raise NotImplementedError
+
+    return chi0_loc
 
 
 def gen_sparse_freqs_fix_boson(boson_freq, Lambda, sv_cutoff):
@@ -338,6 +391,9 @@ class SaveBSE:
     def save_xloc(self, xloc_ijkl, icrsh):
         self._save_common(xloc_ijkl, icrsh, 'X_loc')
 
+    def save_x0loc(self, x0loc_ijkl, icrsh):
+        self._save_common(x0loc_ijkl, icrsh, 'X0_loc')
+
     def save_chiloc(self, chiloc_ijkl, icrsh):
         self._save_common(chiloc_ijkl, icrsh, 'chi_loc_in')
 
@@ -424,6 +480,7 @@ class DMFTBSESolver(DMFTCoreSolver):
         params['div'] = lattice_model.nkdiv()
         params['bse_h5_out_file'] = os.path.abspath(self._params['bse']['h5_output_file'])
         params['use_temp_file'] = self._params['bse']['use_temp_file']
+        params['flag_save_X0_loc'] = self._params['bse']['choice_X0loc'] == 'qsum'
         if self._params['bse']['X0q_qpoints_saved'] == 'quadrant':
             params['X0q_qpoints_saved'] = 'quadrant'
         else:
@@ -507,11 +564,24 @@ class DMFTBSESolver(DMFTCoreSolver):
                                                               self._sh_quant[ish].Sigma_iw, Gloc_iw_sh[ish],
                                                               self._params['bse']['num_wb'],
                                                               self._params['bse']['num_wf'],
+                                                              self._params['bse']['save_chiloc'],
                                                               self._params['bse']['calc_only_chiloc'],
                                                               ish, freqs=freqs)
 
             if x_loc is not None:
                 subtract_disconnected(x_loc, g_imp, self.spin_block_names, freqs=freqs)
+
+            if self._params['bse']['choice_X0loc'] == 'imp':
+                print("calc_X0_loc start")
+                params = dict(
+                    spin_names = self.spin_block_names,
+                    num_wf = self._params['bse']['num_wf'],
+                    num_wb = self._params['bse']['num_wb'],
+                )
+                x0_loc = calc_X0_loc(g_imp, **params, freqs=freqs)
+                print("calc_X0_loc end")
+            else:
+                x0_loc = None
 
             # Open HDF5 file to improve performance. Close manually.
             bse.h5bse.open('a')
@@ -525,6 +595,9 @@ class DMFTBSESolver(DMFTCoreSolver):
                     # chi_loc
                     if chi_loc is not None:
                         bse.save_chiloc(chi_loc, icrsh=icrsh)
+                    # X0_loc
+                    if x0_loc is not None:
+                        bse.save_x0loc(x0_loc, icrsh=icrsh)
 
             bse.h5bse.close()
 
@@ -532,8 +605,12 @@ class DMFTBSESolver(DMFTCoreSolver):
         """
         Compute data for BSE
         """
-        self._calc_bse_x0q()
-        self._calc_bse_xloc()
+        self._calc_bse_x0q()  # X_0(q)
+        self._calc_bse_xloc()  # X_{loc}
+
+        # X_{0,loc} is computed in
+        #   _calc_bse_x0q()  if calc_X0loc_from_X0q = True (default)
+        #   _calc_bse_xloc() if                     = False
 
 
     def fit_Xloc(self, save_only):

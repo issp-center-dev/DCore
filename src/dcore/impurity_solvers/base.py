@@ -147,7 +147,7 @@ class SolverBase(object):
 
         # Set self.Gimp_iw, self.G_tau, self.Sigma_iw
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute local G2 in p-h channel
             X_loc = < c_{i1}^+ ; c_{i2} ; c_{i4}^+ ; c_{i3} >,  and
@@ -159,10 +159,12 @@ class SolverBase(object):
             Number of non-negative fermionic frequencies
         num_wb: int
             Number of non-negative bosonic frequencies
-        only_chiloc: bool
-            If True, only chi_loc is computed (no Xloc).
 
         The other parameters are the same as for solve().
+        params_kw includes the following parameters in addition to the ones used in solve().
+
+            'only_chiloc': bool, if True, only chi_loc is computed (no Xloc).
+            'save_chiloc': bool, if True, chi_loc is saved.
 
         Returns
         -------
@@ -259,7 +261,7 @@ class SolverBase(object):
 
 
 
-def rotate_basis(rot, use_spin_orbit, u_matrix, Gfs=[], direction='forward'):
+def rotate_basis(rot, use_spin_orbit, u_matrix, Gfs=[], direction='forward', X_dict=None, chi_dict=None):
     """
     Rotate all Gf-like objects and U-matrix to the basis defined by rot
 
@@ -268,17 +270,17 @@ def rotate_basis(rot, use_spin_orbit, u_matrix, Gfs=[], direction='forward'):
     """
 
     if direction == 'forward':
-        return _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs)
+        return _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict)
     elif direction == 'backward':
         rot_conj_trans = {}
         for name, r in list(rot.items()):
             rot_conj_trans[name] = r.conjugate().transpose()
-        return _rotate_basis(rot_conj_trans, u_matrix, use_spin_orbit, Gfs)
+        return _rotate_basis(rot_conj_trans, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict)
     else:
         raise RuntimeError("Unknown direction " + direction)
 
 
-def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs):
+def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict):
     """
     Rotate all Gf-like object and U matrix to a new local basis defined by "rot".
     :param rot: matrix
@@ -298,9 +300,50 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs):
         for bname, gf in G:
             gf.from_L_G_R(rot[bname].transpose().conjugate(), gf, rot[bname])
 
+    n_flavors = rot_spin_full.shape[0]
+
+    if X_dict is not None:
+        shape = next(iter(X_dict.values())).shape  # (num_wb, num_wf, num_wf)
+        assert len(shape) == 3
+        array = numpy.zeros((n_flavors, n_flavors, n_flavors, n_flavors) + shape, dtype=numpy.complex128)
+        _set_from_dict(X_dict, array)
+
+        # X_{1234}(iW, iw, iw') = < c_1^+(iw) c_2(iw+iW) c_4^+(iw'+iW) c_3(iw') >
+        array = numpy.einsum("ijklxyz,im,jn,ko,lp -> mnopxyz", array,
+                    rot_spin_full, numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full)
+
+        X_dict.clear()
+        _set_to_dict(X_dict, array)
+
+    if chi_dict is not None:
+        shape = next(iter(chi_dict.values())).shape  # (num_wb,)
+        assert len(shape) == 1
+        array = numpy.zeros((n_flavors, n_flavors, n_flavors, n_flavors) + shape, dtype=numpy.complex128)
+        _set_from_dict(chi_dict, array)
+
+        # chi_{1234}(iW) = < c_1^+ c_2 c_4^+ c_3 >(iW)
+        array = numpy.einsum("ijklx,im,jn,ko,lp -> mnopx", array,
+                    rot_spin_full, numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full)
+
+        chi_dict.clear()
+        _set_to_dict(chi_dict, array)
+
     if not u_matrix is None:
         return numpy.einsum("ijkl,im,jn,ko,lp", u_matrix,
                                     numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full, rot_spin_full)
+
+
+def _set_from_dict(x_dict, x_array):
+    for key, val in x_dict.items():
+        i, j, k, l = key
+        x_array[i, j, k, l] = val  # val is np.array
+
+
+def _set_to_dict(x_dict, x_array):
+    n1, n2, n3, n4 = x_array.shape[:4]
+    for i, j, k, l in product(range(n1), range(n2), range(n3), range(n4)):
+        if not numpy.all(np.abs(x_array[i, j, k, l]) < 1e-8):  # if not zero matrix
+            x_dict[(i, j, k, l)] = x_array[i, j, k, l]
 
 
 class PytriqsMPISolver(SolverBase):

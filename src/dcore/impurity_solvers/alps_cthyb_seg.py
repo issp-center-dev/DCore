@@ -23,6 +23,7 @@ from itertools import product
 from dcore._dispatcher import *
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, umat2dd, get_block_size, expand_path
 from .base import SolverBase, rotate_basis
+from dcore.program_options import parse_save_chiloc
 
 
 def to_numpy_array(g, names):
@@ -417,23 +418,20 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # [(s1,o1), (s2,o2), 0]
         self.quant_to_save['nn_equal_time'] = nn_equal_time[:, :, 0]  # copy
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute local G2 in p-h channel
 
         For details, see SolverBase.calc_Xloc_ph
         """
 
-        if rot is not None:
-            # TODO
-            raise NotImplementedError
-
-        use_chi_loc = False
+        save_chiloc = parse_save_chiloc(params_kw['save_chiloc'], default=False)
+        only_chiloc = params_kw['only_chiloc']
 
         params_kw['cthyb.MEASURE_g2w'] = 1
         params_kw['cthyb.N_w2'] = num_wf
         params_kw['cthyb.N_W'] = num_wb
-        if use_chi_loc:
+        if save_chiloc:
             params_kw['cthyb.MEASURE_nnw'] = 1
 
         self.solve(rot, mpirun_command, params_kw)
@@ -480,7 +478,7 @@ class ALPSCTHYBSEGSolver(SolverBase):
         # Save chi(wb)
         # [(s1,o1), (s2,o2), wb]
         chi_dict = None
-        if use_chi_loc:
+        if save_chiloc:
             chi_re = self._get_results("nnw_re", num_wb, orbital_symmetrize=True)
             chi_im = self._get_results("nnw_im", num_wb, orbital_symmetrize=True)
             chi_loc = chi_re + chi_im * 1.0J
@@ -490,6 +488,13 @@ class ALPSCTHYBSEGSolver(SolverBase):
             chi_dict = {}
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 chi_dict[(i1, i1, i2, i2)] = chi_loc[i1, i2]
+
+        # Rotate g2_dict and chi_dict back to the original basis
+        if rot is not None:
+            print("Error: 'basis_rotation' for two-particle quantities is currently not supported.", file=sys.stderr)
+            sys.exit(1)
+
+            rotate_basis(rot, self.use_spin_orbit, None, direction='backward', X_dict=g2_dict, chi_dict=chi_dict)
 
         return g2_dict, chi_dict
 

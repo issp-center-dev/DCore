@@ -25,6 +25,7 @@ from dcore._dispatcher import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params, expand_path
 from .base import SolverBase
+from dcore.program_options import parse_save_chiloc
 
 VERSION_REQUIRED = 1.5
 
@@ -311,12 +312,15 @@ class PomerolSolver(SolverBase):
         dir_suscep = params_kw.get('dir_suscep', './susceptibility')
         return self._read_common(dir_suscep)
 
-    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw, only_chiloc):
+    def calc_Xloc_ph(self, rot, mpirun_command, num_wf, num_wb, params_kw):
         """
         Compute local G2 in p-h channel
 
         For details, see SolverBase.calc_Xloc_ph
         """
+
+        save_chiloc = parse_save_chiloc(params_kw['save_chiloc'], default=True)
+        only_chiloc = params_kw['only_chiloc']
 
         # Set parameters
         if only_chiloc:
@@ -327,8 +331,9 @@ class PomerolSolver(SolverBase):
             params_kw['n_w2f'] = num_wf
             params_kw['n_w2b'] = num_wb
 
-        params_kw['flag_suscep'] = 1
-        params_kw['n_wb'] = num_wb
+        if save_chiloc:
+            params_kw['flag_suscep'] = 1
+            params_kw['n_wb'] = num_wb
 
         # Run the impurity solver
         self.solve(rot, mpirun_command, params_kw)
@@ -344,7 +349,8 @@ class PomerolSolver(SolverBase):
                 g2_loc[key] = data.reshape((num_wb, 2*num_wf, 2*num_wf))
 
         # chi_loc
-        if params_kw['flag_suscep']:
+        # if params_kw['flag_suscep']:
+        if save_chiloc:
             chi_loc = self._read_chiloc(params_kw)
 
         return g2_loc, chi_loc

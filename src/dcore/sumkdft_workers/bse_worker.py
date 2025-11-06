@@ -35,6 +35,7 @@ class SumkDFTWorkerBSE(SumkDFTWorkerBase):
 
         sk.save_X0q_for_bse(list_wb=self.params['list_wb'],
                             n_wf_cutoff=self.params['n_wf_G2'],
+                            flag_save_X0_loc=self.params['flag_save_X0_loc'],
                             qpoints_saved=self.params['X0q_qpoints_saved'],
                             h5_file=self.params['bse_h5_out_file'],
                             temp_file=temp_file,
