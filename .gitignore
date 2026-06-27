@@ -146,3 +146,10 @@ venv.bak/
 .mypy_cache/
 
 # End of https://www.gitignore.io/api/linux,macos,python
+
+# Claude Code
+CLAUDE.md
+.claude/
+.claude.json
+.claudeignore
+.mcp.json
