@@ -119,3 +119,63 @@ low-lying thermally-populated excitations.
    solvers, they must give the same self-energy for the same impurity model.
    Cross-checking ``HPhi`` against ``scipy/sparse`` on a small model is a good
    way to confirm that ``exct`` (and other settings) are adequate.
+
+
+Running HPhi in parallel
+------------------------
+
+``DCore`` launches ``HPhi`` through the MPI command defined in the ``[mpi]``
+section, where ``#`` is replaced by the number of processes passed to
+``dcore`` (``dcore --np N``)::
+
+    [mpi]
+    command = mpirun -np #
+
+The HPhi solver runs in two MPI phases:
+
+1. **Eigenvalue step** -- a single ``HPhi`` invocation that uses *all* ``np``
+   processes. ``HPhi`` requires this count to be a power of four; ``DCore``
+   automatically rounds down (with a warning) if it is not.
+
+2. **Green's-function step** -- many independent ``HPhi`` runs (one per
+   excitation). These are distributed by the two-level layout described above:
+   ``n_outer = np / n_procs_per_hphi`` runs execute concurrently, each launched
+   with ``n_procs_per_hphi`` MPI ranks. ``n_procs_per_hphi`` must be a power of
+   four.
+
+.. note::
+
+   With an **MPI-only** build of ``HPhi`` (one that must be started through the
+   MPI launcher), keep ``n_procs_per_hphi`` :math:`\geq` the smallest value your
+   launcher accepts (typically 1 via ``mpirun -np 1`` / ``srun -n 1``), and
+   prefer launching each Green's-function run through the launcher rather than
+   bare. Running many bare MPI executables concurrently can fail due to MPI
+   runtime resource clashes; going through the launcher (``n_procs_per_hphi``
+   selects ``n_inner`` ranks per run) avoids this.
+
+On a SLURM cluster (e.g. ISSP System B "ohtaka", 128 cores/node), set the
+launcher to ``srun`` and choose the split with ``n_procs_per_hphi``. A minimal
+job script that puts each Green's-function run on 4 ranks and runs
+``128 / 4 = 32`` of them concurrently per node looks like::
+
+    #!/bin/sh
+    #SBATCH -p i8cpu          # interactive queue for testing (adjust for production)
+    #SBATCH -N 1
+    #SBATCH -n 128
+    #SBATCH -t 0:30:00
+
+    module load <your HPhi / python environment>
+
+    # in the input file:
+    #   [mpi]
+    #   command = srun -n #
+    #   [impurity_solver]
+    #   name = HPhi
+    #   exec_path{str} = /path/to/mpi/HPhi
+    #   n_procs_per_hphi{int} = 4
+    dcore --np 128 input.ini
+
+Here ``dcore --np 128`` gives ``np = 128`` (a power of four) for the eigenvalue
+step, and the Green's-function step runs ``32`` HPhi instances of ``4`` ranks
+each. Start small (e.g. ``--np 4`` with ``n_procs_per_hphi = 4``) on the
+interactive queue to validate the setup before scaling up.
