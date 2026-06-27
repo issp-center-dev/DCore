@@ -104,7 +104,7 @@ class SumkDFT_opt(SumkDFT):
 
         return gf_upfolded
 
-    def lattice_gf(self, ik, mu=None, iw_or_w="iw", beta=40, broadening=None, mesh=None, with_Sigma=True, with_dc=True):
+    def lattice_gf(self, ik, mu=None, iw_or_w="iw", beta=40, broadening=None, mesh=None, with_Sigma=True, with_dc=True, invert=True):
         r"""
         """
 
@@ -159,18 +159,22 @@ class SumkDFT_opt(SumkDFT):
                 mesh = MeshReFreq(mesh[0], mesh[1], mesh[2])
 
         # Check if G_latt is present
+        # When invert=False (the denominator path used by extract_G_loc), keep a
+        # separate buffer so that self.G_latt_* still means the *inverted* lattice
+        # Green's function after the call.
+        cache_attr = ("G_latt_" if invert else "G_latt_denom_") + iw_or_w
         set_up_G_latt = False                       # Assume not
-        if not hasattr(self, "G_latt_" + iw_or_w):
-            # Need to create G_latt_(i)w
+        if not hasattr(self, cache_attr):
+            # Need to create the (denominator or inverted) lattice GF buffer
             set_up_G_latt = True
         else:                                       # Check that existing GF is consistent
-            G_latt = getattr(self, "G_latt_" + iw_or_w)
+            G_latt = getattr(self, cache_attr)
             GFsize = [gf.data.shape[1] for bname, gf in G_latt]
             unchangedsize = all([self.n_orbitals[ik, ntoi[spn[isp]]] == GFsize[
                                 isp] for isp in range(self.n_spin_blocks[self.SO])])
             if not unchangedsize:
                 set_up_G_latt = True
-            if (iw_or_w == "iw") and (self.G_latt_iw.mesh.beta != beta):
+            if (iw_or_w == "iw") and (G_latt.mesh.beta != beta):
                 set_up_G_latt = True  # additional check for ImFreq
 
         # Set up G_latt
@@ -234,8 +238,14 @@ class SumkDFT_opt(SumkDFT):
                     self.upfold(ik, icrsh, bname, sigma_minus_dc[icrsh][bname], gf, overwrite_gf_inp=True, fac=-1)
         print_time("upfold")
 
-        G_latt.invert()
-        setattr(self, "G_latt_" + iw_or_w, G_latt)
+        # If invert=False, return the lattice-GF denominator (iw + mu - H - Sigma)
+        # without inverting. extract_G_loc() uses this to solve only for the
+        # correlated columns instead of forming the full inverse. The denominator
+        # is cached under its own attribute (cache_attr) so that self.G_latt_*
+        # keeps its meaning as the inverted lattice Green's function.
+        if invert:
+            G_latt.invert()
+        setattr(self, cache_attr, G_latt)
         print_time("invert")
 
         print_time("End lattice_gf")
@@ -279,31 +289,44 @@ class SumkDFT_opt(SumkDFT):
 
         print_time("k-sum start")
 
+        # When the projectors are 0/1 permutation matrices (index_works), G_loc
+        # only needs the correlated blocks of the lattice GF. We then solve the
+        # lattice problem only for those columns instead of forming the full
+        # inverse (cheaper when the correlated dim is smaller than the number of
+        # bands; identical otherwise).
+        use_solve = self.index_works('corr')
+
         ikarray = numpy.array(list(range(self.n_k)))
         for ik in mpi.slice_array(ikarray):
             print_time("in k-loop: k-sum")
             if iw_or_w == 'iw':
                 G_latt = self.lattice_gf(
-                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, beta=beta)
+                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, beta=beta,
+                    invert=not use_solve)
             elif iw_or_w == 'w':
                 mesh_parameters = (G_loc[0].mesh.omega_min,G_loc[0].mesh.omega_max,len(G_loc[0].mesh))
                 G_latt = self.lattice_gf(
-                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening, mesh=mesh_parameters)
+                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening, mesh=mesh_parameters,
+                    invert=not use_solve)
             print_time("in k-loop: lattice_gf")
-            G_latt *= self.bz_weights[ik]
 
-            print_time("in k-loop: *bz_weights")
-            for icrsh in range(self.n_corr_shells):
-                # init temporary storage
-                # tmp = G_loc[icrsh].copy()
-                # for bname, gf in tmp:
-                #     tmp[bname] << self.downfold(
-                #         ik, icrsh, bname, G_latt[bname], gf)
-                # G_loc[icrsh] += tmp
-                # +++MODIFIED
-                # Sum up directly into G_loc (no temporary storage is introduced)
-                for bname, gf in G_loc[icrsh]:
-                    self.downfold(ik, icrsh, bname, G_latt[bname], gf, overwrite_gf_inp=True, fac=+1)
+            if use_solve:
+                # G_latt holds the (un-inverted) denominator here.
+                self._accumulate_Gloc_via_solve(ik, G_latt, G_loc)
+            else:
+                G_latt *= self.bz_weights[ik]
+                print_time("in k-loop: *bz_weights")
+                for icrsh in range(self.n_corr_shells):
+                    # init temporary storage
+                    # tmp = G_loc[icrsh].copy()
+                    # for bname, gf in tmp:
+                    #     tmp[bname] << self.downfold(
+                    #         ik, icrsh, bname, G_latt[bname], gf)
+                    # G_loc[icrsh] += tmp
+                    # +++MODIFIED
+                    # Sum up directly into G_loc (no temporary storage is introduced)
+                    for bname, gf in G_loc[icrsh]:
+                        self.downfold(ik, icrsh, bname, G_latt[bname], gf, overwrite_gf_inp=True, fac=+1)
             print_time("in k-loop: downfold")
         print_time("k-sum end")
 
@@ -344,6 +367,32 @@ class SumkDFT_opt(SumkDFT):
 
         # return only the inequivalent shells:
         return G_loc_inequiv
+
+    def _accumulate_Gloc_via_solve(self, ik, M, G_loc):
+        r"""Add bz_weight * P_s M^{-1} P_s^dagger into each correlated G_loc block.
+
+        M is the (un-inverted) lattice-GF denominator from lattice_gf(invert=False).
+        Instead of forming the full inverse, we solve M Y = P_s^dagger only for the
+        dim_s correlated columns of each shell and pick out the corresponding rows,
+        which gives exactly the same result as downfold(lattice_gf(...)) but avoids
+        computing the (band - correlated) columns of the inverse. Requires the
+        fancy-index projectors (index_works).
+        """
+        w = self.bz_weights[ik]
+        for icrsh in range(self.n_corr_shells):
+            for bname, gf in G_loc[icrsh]:
+                isp = self.spin_names_to_ind[self.SO][bname]
+                dim = self.corr_shells[icrsh]['dim']
+                projindex = self.proj_index[ik, isp, icrsh, 0:dim]
+                Md = M[bname].data                       # (n_iw, n_band, n_band)
+                n_band = Md.shape[1]
+                rhs = numpy.zeros((n_band, dim), dtype=Md.dtype)
+                rhs[projindex, numpy.arange(dim)] = 1.0  # columns of the identity at projindex
+                # broadcast rhs to 3D so solve does a batched matrix solve over n_iw
+                # (a 2D rhs against a 3D matrix would be read as a stack of vectors)
+                rhs = numpy.broadcast_to(rhs, (Md.shape[0], n_band, dim))
+                Y = numpy.linalg.solve(Md, rhs)          # (n_iw, n_band, dim) = M^{-1}[:, projindex]
+                gf.data[...] += w * Y[:, projindex, :]   # M^{-1}[projindex, projindex]
 
     ###############################################################
     # ADDED FUNCTIONS
