@@ -19,27 +19,42 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
 
     check_eta(p_common)
 
+    def composite(site, sigma):
+        return site * n_sigma + sigma
+
     def gen_p():
         for sitei, sigmai in itertools.product(range(n_site), range(n_sigma)):
             for sitej, sigmaj in itertools.product(range(n_site), range(n_sigma)):
-                    for idx, flg in enumerate([True, False]):
-                        for ex_state in range(n_excitation):
-                            yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
+                # Only the upper triangle (a_i <= a_j) is computed; the transposed
+                # element G_ji is reconstructed from the same excitation data.
+                if composite(sitei, sigmai) > composite(sitej, sigmaj):
+                    continue
+                for idx, flg in enumerate([True, False]):
+                    for ex_state in range(n_excitation):
+                        # On the diagonal only the flg=True (idx=0) excitation is used.
+                        if composite(sitei, sigmai) == composite(sitej, sigmaj) and idx == 1:
+                            continue
+                        yield sitei, sigmai, sitej, sigmaj, idx, ex_state, p_common
 
+    tasks = list(gen_p())
+    if not tasks:
+        raise ValueError("No excitation tasks were generated (n_site must be >= 1).")
     from concurrent.futures import ProcessPoolExecutor
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        one_body_g_tmp = np.array(list(executor.map(calc_one_body_green_core, gen_p())))
-    n_omega = one_body_g_tmp.shape[2]
-    one_body_green_core = one_body_g_tmp.reshape((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(T_list), n_omega))
+        results = list(executor.map(calc_one_body_green_core, tasks))
+
+    n_omega = results[0].shape[-1]
+    one_body_green_core = np.zeros(
+        (n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(T_list), n_omega),
+        dtype=np.complex128)
+    for (sitei, sigmai, sitej, sigmaj, idx, ex_state, _), res in zip(tasks, results):
+        one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state] = res
     one_body_green = calc_one_body_green(one_body_green_core)
 
     import shutil
-    for sitei, sigmai in itertools.product(range(n_site), range(n_sigma)):
-        for sitej, sigmaj in itertools.product(range(n_site), range(n_sigma)):
-            for idx in range(n_flg):
-                for ex_state in range(n_excitation):
-                    dir_path = "{}_{}_{}_{}_{}_{}".format(sitei, sigmai, sitej, sigmaj, ex_state, idx)
-                    shutil.rmtree(dir_path)
+    for sitei, sigmai, sitej, sigmaj, idx, ex_state, _ in tasks:
+        dir_path = "{}_{}_{}_{}_{}_{}".format(sitei, sigmai, sitej, sigmaj, ex_state, idx)
+        shutil.rmtree(dir_path)
 
     return one_body_green
 
@@ -70,59 +85,26 @@ def calc_one_body_green(one_body_green_core):
     for sitei, sigmai, ex_state in itertools.product(range(n_site), range(n_sigma), range(n_excitation)):
         one_body_green[sitei][sigmai][sitei][sigmai] += one_body_green_core[sitei][sigmai][sitei][sigmai][0][ex_state]
 
-    # Off diagonal
+    # Off diagonal: only the upper triangle (a_i < a_j) is reconstructed; each
+    # iteration fills both G_ij and the transposed G_ji from the same data.
     for sitei, sigmai, sitej, sigmaj  in itertools.product(range(n_site), range(n_sigma), range(n_site), range(n_sigma)):
+        if sitei * n_sigma + sigmai >= sitej * n_sigma + sigmaj:
+            continue  # diagonal is set above; lower triangle is set via its transpose
         one_body_green_tmp = np.zeros((n_flg, n_T, n_omega), dtype=np.complex128)
         for idx in range(n_flg):
             for ex_state in range(n_excitation):
                 one_body_green_tmp[idx] += one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state]
-            one_body_green_tmp[1] -= one_body_green[sitei][sigmai][sitei][sigmai] + \
-                                     one_body_green[sitej][sigmaj][sitej][sigmaj]
-            one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] + 1J * one_body_green_tmp[
-                1]) / 2.0
-            one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] - 1J * one_body_green_tmp[
-                1]) / 2.0
+        # Subtract the diagonal contribution from both combinations
+        #   B = c_i + c_j   -> tmp[1] - (G_ii + G_jj) = G_ij + G_ji
+        #   A = c_i + i c_j -> tmp[0] - (G_ii + G_jj) = i (G_ji - G_ij)
+        diag = one_body_green[sitei][sigmai][sitei][sigmai] + \
+               one_body_green[sitej][sigmaj][sitej][sigmaj]
+        one_body_green_tmp[0] -= diag
+        one_body_green_tmp[1] -= diag
+        one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[1] + 1J * one_body_green_tmp[0]) / 2.0
+        one_body_green[sitej][sigmaj][sitei][sigmai] = (one_body_green_tmp[1] - 1J * one_body_green_tmp[0]) / 2.0
     return one_body_green
 
-
-class CalcSpectrum:
-    def __init__(self, T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
-        self.T_list = T_list
-        self.exct = exct
-        self.eta = eta
-        self.header = header
-        self.output_dir = output_dir
-        self.path_to_HPhi = os.path.abspath(path_to_HPhi)
-        self.calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output")
-        self.nomega = n_iw
-
-    def get_one_body_green_core(self, n_site, exct_cut):
-        self.calc_spectrum_core.set_energies()
-        n_excitation = 2 # type of excitation operator
-        n_flg = 2
-        n_sigma = 2
-        one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, len(self.T_list), self.nomega), dtype=np.complex128)
-        one_body_green_core = np.zeros((n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(self.T_list), self.nomega), dtype=np.complex128)
-
-        for sitei, sigmai, sitej, sigmaj  in itertools.product(range(n_site), range(n_sigma), range(n_site), range(n_sigma)):
-            for idx, flg in enumerate([True, False]):
-                for ex_state in range(n_excitation):
-                    one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state] = self.calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut)
-
-        #Diagonal
-        for sitei, sigmai, ex_state in itertools.product(range(n_site), range(n_sigma), range(n_excitation)):
-            one_body_green[sitei][sigmai][sitei][sigmai] += one_body_green_core[sitei][sigmai][sitei][sigmai][0][ex_state]
-
-        # Off diagonal
-        for sitei, sigmai, sitej, sigmaj in itertools.product(range(n_site), range(n_sigma),range(n_site), range(n_sigma)):
-            one_body_green_tmp = np.zeros((n_flg, len(self.T_list), self.nomega), dtype=np.complex128)
-            for idx in range(n_flg):
-                for ex_state in range(n_excitation):
-                    one_body_green_tmp[idx] += one_body_green_core[sitei][sigmai][sitej][sigmaj][idx][ex_state]
-                one_body_green_tmp[1] -= one_body_green[sitei][sigmai][sitei][sigmai] + one_body_green[sitej][sigmaj][sitej][sigmaj]
-                one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] + 1J * one_body_green_tmp[1]) / 2.0
-                one_body_green[sitei][sigmai][sitej][sigmaj] = (one_body_green_tmp[0] - 1J * one_body_green_tmp[1]) / 2.0
-        return one_body_green
 
 class CalcSpectrumCore:
     def __init__(self, T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
@@ -338,12 +320,6 @@ def test_main():
     output_dir = dict_toml.get("output_dir", "./output")
     n_site = dict_toml.get("n_site", 2)
     max_workers=4
-
-    #Calculate one body Green's functions directly
-    # calcg = CalcSpectrum(T_list, NOmega, exct, eta, path_to_HPhi, header, output_dir)
-    # one_body_g_direct = calcg.get_one_body_green(n_site, exct)
-    # print(one_body_g_direct)
-    # exit(0)
 
     #Calculate one body Green's functions using parallel
     n_sigma = 2

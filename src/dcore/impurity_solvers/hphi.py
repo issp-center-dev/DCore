@@ -306,10 +306,6 @@ class HPhiSolver(SolverBase):
         p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
         one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=np)
 
-        # calcspectrum = CalcSpectrum(T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
-        # energy_list = calcspectrum.get_energies()
-        # one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
-
         print("\nFinish Gf calc.")
 
         # print(one_body_g.shape)
