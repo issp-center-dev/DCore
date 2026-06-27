@@ -104,7 +104,21 @@ class SumkDFT_opt(SumkDFT):
 
         return gf_upfolded
 
-    def lattice_gf(self, ik, mu=None, iw_or_w="iw", beta=40, broadening=None, mesh=None, with_Sigma=True, with_dc=True):
+    def _compute_sigma_minus_dc(self, iw_or_w, with_dc):
+        r"""Self-energy minus the double-counting potential.
+
+        This quantity depends only on Sigma_imp and the double-counting, not on
+        the k-point or the chemical potential, so callers compute it once and
+        pass it into lattice_gf() to avoid recomputing it for every k (and for
+        every chemical-potential bisection step).
+        """
+        if not hasattr(self, "Sigma_imp_" + iw_or_w):
+            return None
+        if with_dc:
+            return self.add_dc(iw_or_w)
+        return [s.copy() for s in getattr(self, "Sigma_imp_" + iw_or_w)]
+
+    def lattice_gf(self, ik, mu=None, iw_or_w="iw", beta=40, broadening=None, mesh=None, with_Sigma=True, with_dc=True, sigma_minus_dc=None):
         r"""
         """
 
@@ -136,9 +150,14 @@ class SumkDFT_opt(SumkDFT):
         # Are we including Sigma?
         if with_Sigma:
             Sigma_imp = getattr(self, "Sigma_imp_" + iw_or_w)
-            sigma_minus_dc = [s.copy() for s in Sigma_imp]
-            if with_dc:
-                sigma_minus_dc = self.add_dc(iw_or_w)
+            # sigma_minus_dc is k- and mu-independent; recompute it only if the
+            # caller did not already provide a precomputed copy. A caller-supplied
+            # value must already be consistent with iw_or_w and with_dc (see
+            # _compute_sigma_minus_dc).
+            if sigma_minus_dc is None:
+                sigma_minus_dc = [s.copy() for s in Sigma_imp]
+                if with_dc:
+                    sigma_minus_dc = self.add_dc(iw_or_w)
             if iw_or_w == "iw":
                 # override beta if Sigma_iw is present
                 beta = Sigma_imp[0].mesh.beta
@@ -279,16 +298,21 @@ class SumkDFT_opt(SumkDFT):
 
         print_time("k-sum start")
 
+        # sigma_minus_dc is independent of k; compute it once before the k-loop.
+        sigma_minus_dc = self._compute_sigma_minus_dc(iw_or_w, with_dc) if with_Sigma else None
+
         ikarray = numpy.array(list(range(self.n_k)))
         for ik in mpi.slice_array(ikarray):
             print_time("in k-loop: k-sum")
             if iw_or_w == 'iw':
                 G_latt = self.lattice_gf(
-                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, beta=beta)
+                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, beta=beta,
+                    sigma_minus_dc=sigma_minus_dc)
             elif iw_or_w == 'w':
                 mesh_parameters = (G_loc[0].mesh.omega_min,G_loc[0].mesh.omega_max,len(G_loc[0].mesh))
                 G_latt = self.lattice_gf(
-                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening, mesh=mesh_parameters)
+                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening, mesh=mesh_parameters,
+                    sigma_minus_dc=sigma_minus_dc)
             print_time("in k-loop: lattice_gf")
             G_latt *= self.bz_weights[ik]
 
@@ -515,10 +539,16 @@ class SumkDFT_opt(SumkDFT):
         if mu is None:
             mu = self.chemical_potential
         dens = 0.0
+
+        # sigma_minus_dc is independent of k and mu; compute it once. This method
+        # is called repeatedly during the chemical-potential bisection.
+        sigma_minus_dc = self._compute_sigma_minus_dc(iw_or_w, with_dc) if with_Sigma else None
+
         ikarray = numpy.array(list(range(self.n_k)))
         for ik in mpi.slice_array(ikarray):
             G_latt = self.lattice_gf(
-                ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening)
+                ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening,
+                sigma_minus_dc=sigma_minus_dc)
             # dens += self.bz_weights[ik] * G_latt.total_density()
             # +++REPLACED
             dens += self.bz_weights[ik] * calc_total_density(G_latt)
