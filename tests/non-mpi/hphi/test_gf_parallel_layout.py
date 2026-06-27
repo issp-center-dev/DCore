@@ -72,3 +72,47 @@ def test_prefix_uses_last_token_of_command():
     # the launcher template is preserved, only the rank count is replaced.
     _, _, prefix = gf_parallel_layout("mpiexec --bind-to core -n 16", 16, 4)
     assert prefix == "mpiexec --bind-to core -n 4"
+
+
+def test_non_divisible_total_floors_outer():
+    # np_total not divisible by n_inner: n_outer = floor(18/4) = 4 (2 ranks idle).
+    n_inner, n_outer, prefix = gf_parallel_layout(CMD, 18, 4)
+    assert n_inner == 4
+    assert n_outer == 4
+    assert prefix == "mpirun -np 4"
+
+
+def test_mpi_prefix_propagates_into_hphi_command(tmp_path, monkeypatch):
+    """A 9-element p_common must carry mpi_prefix all the way into the HPhi command."""
+    from dcore.impurity_solvers import hphi_spectrum as hs
+
+    calls = []
+    monkeypatch.setattr(hs.subprocess, "call", lambda cmd, shell: calls.append(cmd) or 0)
+
+    _, _, prefix = gf_parallel_layout(CMD, 16, 4)  # "mpirun -np 4"
+    core = hs.CalcSpectrumCore([0.1], 1, 1e-4, path_to_HPhi="HPhi_bin", mpi_prefix=prefix)
+    monkeypatch.setattr(core, "_update_modpara", lambda *a, **k: None)
+    core._run_HPhi(exct_cut=1, ex_state=0, calc_dir=str(tmp_path))
+
+    hphi_cmd = calls[0]  # first call is the HPhi run (second is the mv)
+    assert hphi_cmd.startswith("mpirun -np 4 ")
+    assert "HPhi_bin -e" in hphi_cmd
+
+
+def test_serial_command_has_no_mpirun(tmp_path, monkeypatch):
+    """Default (serial) layout must invoke HPhi directly, with no launcher prefix."""
+    from dcore.impurity_solvers import hphi_spectrum as hs
+
+    calls = []
+    monkeypatch.setattr(hs.subprocess, "call", lambda cmd, shell: calls.append(cmd) or 0)
+
+    core = hs.CalcSpectrumCore([0.1], 1, 1e-4, path_to_HPhi="HPhi_bin", mpi_prefix="")
+    monkeypatch.setattr(core, "_update_modpara", lambda *a, **k: None)
+    core._run_HPhi(exct_cut=1, ex_state=0, calc_dir=str(tmp_path))
+
+    hphi_cmd = calls[0]
+    # no launcher prefix, and no leading whitespace (empty prefix is stripped);
+    # path_to_HPhi is stored as an absolute path, so match the basename + " -e".
+    assert not hphi_cmd.startswith("mpirun")
+    assert hphi_cmd == hphi_cmd.strip()
+    assert "HPhi_bin -e" in hphi_cmd

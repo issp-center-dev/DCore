@@ -78,6 +78,20 @@ def test_no_warning_when_full_space(tmp_path, capsys):
     assert capsys.readouterr().err == ""
 
 
+def test_conservative_warning_for_near_degenerate_then_gap(tmp_path, capsys):
+    # Retained states are near-degenerate at the bottom, with a large gap above.
+    # w_last (~1) is an UPPER BOUND on the omitted weight, so the criterion warns
+    # conservatively even though the true omitted tail (at energy 10) is negligible.
+    # This documents the intended behavior: the warning means "truncation cannot be
+    # ruled out", not "truncation definitely occurred".
+    fn = str(tmp_path / "zvo_energy.dat")
+    _write_energy_file(fn, numpy.array([0.0, 1e-4]))  # exct=2, full space larger
+    warn_if_exct_truncates_thermal_trace(fn, BETA, 2, EXCT_MAX)
+    err = capsys.readouterr().err
+    assert "may be too small" in err
+    assert "upper bound" in err  # message is framed as a conservative bound
+
+
 def test_missing_file_does_not_raise(tmp_path, capsys):
     # A missing energy file must not abort the solver.
     warn_if_exct_truncates_thermal_trace(

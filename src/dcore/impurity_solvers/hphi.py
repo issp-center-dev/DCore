@@ -153,24 +153,32 @@ def warn_if_exct_truncates_thermal_trace(energy_file, beta, exct, exct_max, weig
     e_last = energies.max()
     # eigenenergies are printed to ~1e-9 precision, so a loose tol identifies degeneracy
     degeneracy = int(numpy.count_nonzero(numpy.abs(energies - e0) < 1e-6))
+
+    # All omitted states have energy >= e_last (we kept the lowest exct states),
+    # so w_last = exp(-beta*(e_last - e0)) is an UPPER BOUND on the Boltzmann
+    # weight of each omitted state. If w_last <= threshold the omitted tail is
+    # provably negligible; otherwise truncation cannot be ruled out (we cannot
+    # see whether the next state sits just above e_last or far above it), so we
+    # warn conservatively.
     w_last = math.exp(-beta * (e_last - e0))
 
     if w_last > weight_threshold:
         if degeneracy >= exct:
-            deg_msg = (f"  All {exct} computed states are degenerate with the ground "
-                       f"state, so the ground multiplet itself is not fully covered.\n")
+            deg_msg = (f"  All {exct} computed states are degenerate with the ground state, "
+                       f"so the cutoff falls inside the ground multiplet.\n")
         else:
             deg_msg = f"  The ground state is {degeneracy}-fold degenerate.\n"
         print(
             "\n*** WARNING (HPhi solver): 'exct' may be too small ***\n"
             f"  exct = {exct} eigenstates were computed (full space = {exct_max}).\n"
             + deg_msg +
-            f"  The highest computed state still has Boltzmann weight {w_last:.2e} "
-            f"(> {weight_threshold:.0e}) at T = {1.0 / beta:.4g},\n"
-            "  so thermally-relevant states above the cutoff are missing from the\n"
-            "  finite-T trace. This can break orbital symmetry and yield a wrong\n"
-            "  (e.g. spurious off-diagonal) self-energy.\n"
-            "  => Increase 'exct' until this warning disappears.\n",
+            f"  The highest computed state has Boltzmann weight {w_last:.2e} at "
+            f"T = {1.0 / beta:.4g}; this is an upper bound on the weight of every\n"
+            f"  omitted (higher) state, and it exceeds {weight_threshold:.0e}. A "
+            "thermally-relevant state above the cutoff therefore cannot be ruled\n"
+            "  out: the finite-T trace may be truncated, which can break orbital "
+            "symmetry and yield a wrong (e.g. spurious off-diagonal) self-energy.\n"
+            "  => Increase 'exct'; if the result does not change, it was already converged.\n",
             file=sys.stderr,
         )
 
