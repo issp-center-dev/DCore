@@ -11,8 +11,8 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="The first example: 2D Hubbard model" href="../tutorial/square/square.html" />
@@ -44,12 +44,12 @@
 <h2>Data flow<a class="headerlink" href="#data-flow" title="Link to this heading">¶</a></h2>
 <p><strong>DCore</strong> contains a set of programs which perform dynamical mean-field theory (DMFT) calculations for models and materials.
 The structure of programs and data flow for the DMFT calculation is summarized below.</p>
-<a class="reference internal image-reference" href="../_images/structure.png"><img alt="../_images/structure.png" class="align-center" src="../_images/structure.png" style="width: 700px;" />
+<a class="reference internal image-reference" href="../_images/structure.png"><img alt="../_images/structure.png" class="align-center" src="../_images/structure.png" width="700" />
 </a>
 <p>The DMFT calculation includes two <strong>DCore</strong> programs: (i) <code class="docutils literal notranslate"><span class="pre">dcore_pre</span></code> and (ii) <code class="docutils literal notranslate"><span class="pre">dcore</span></code> as described later.</p>
 <p>After the DMFT loop (<code class="docutils literal notranslate"><span class="pre">dcore</span></code>) is finished, one can compute dynamical physical quantities such as the density of states and the momentum-resolved spectrum functions using the post-processing tool.
 The structure of the post-processing is shown below.</p>
-<a class="reference internal image-reference" href="../_images/structure_post.png"><img alt="../_images/structure_post.png" class="align-center" src="../_images/structure_post.png" style="width: 700px;" />
+<a class="reference internal image-reference" href="../_images/structure_post.png"><img alt="../_images/structure_post.png" class="align-center" src="../_images/structure_post.png" width="700" />
 </a>
 <p>The post-processing tool consists of two <strong>DCore</strong> programs: (iii) <code class="docutils literal notranslate"><span class="pre">dcore_anacont</span></code> and (iv) <code class="docutils literal notranslate"><span class="pre">dcore_spectrum</span></code>.</p>
 </section>
