@@ -203,26 +203,40 @@ def gf_parallel_layout(mpirun_command, np_total, n_procs_per_hphi):
 
     Returns
     -------
-    (n_inner, n_outer, gf_mpi_prefix)
+    (n_inner, n_outer, hphi_mpi_command, gf_mpi_prefix)
         ``n_inner`` is clamped to a power of four not exceeding ``np_total``;
-        ``n_outer = np_total // n_inner`` is the ProcessPool size; ``gf_mpi_prefix``
-        is prepended to each HPhi command (``""`` when running serially).
+        ``n_outer = np_total // n_inner`` is the ProcessPool size.
+        ``hphi_mpi_command`` is the launcher for a *single* HPhi run with
+        ``n_inner`` ranks -- it is used for BOTH the eigenvalue step and each
+        Green's-function run. They must use the same rank count because the
+        eigenvectors are written MPI-distributed (one file per rank) by the
+        eigenvalue step and read back by the Green's-function step.
+        ``gf_mpi_prefix`` is that same launcher prepended to each Gf shell
+        command (``""`` when ``n_inner == 1``, i.e. a bare/serial HPhi run).
     """
     if np_total is None:
-        return 1, None, ""
+        # The rank count is not the launcher's last token, so we cannot rewrite
+        # it to split the Gf step. Preserve correctness instead of speed: drive
+        # BOTH phases with the *same* launcher (so the eigenvector rank counts
+        # match) and do not run Gf runs concurrently (n_outer = 1), since we
+        # cannot tell how many ranks each run would take.
+        print("Note (HPhi solver): could not parse the process count from the MPI "
+              "command; the Gf step is not parallelized (put the rank count as the "
+              "last token of [mpi] command to enable it).", file=sys.stderr)
+        return 1, 1, mpirun_command, mpirun_command
     n_inner = max(1, min(int(n_procs_per_hphi), np_total))
     if not math.log(n_inner, 4).is_integer():  # HPhi requires a power of four
         n_inner = 4 ** int(math.log(n_inner, 4))
         print(f"Warning: n_procs_per_hphi must be a power of four in HPhi. "
-              f"It is set to {n_inner} for the Gf calculation.", file=sys.stderr)
+              f"It is set to {n_inner} (ranks per HPhi run).", file=sys.stderr)
     n_outer = max(1, np_total // n_inner)
-    if n_inner == 1:
-        gf_mpi_prefix = ""  # serial HPhi (no mpirun), as before
-    else:
-        cmds = shlex.split(mpirun_command)
-        cmds[-1] = str(n_inner)
-        gf_mpi_prefix = " ".join(cmds)
-    return n_inner, n_outer, gf_mpi_prefix
+    cmds = shlex.split(mpirun_command)
+    cmds[-1] = str(n_inner)
+    hphi_mpi_command = " ".join(cmds)
+    # The Gf runs may go bare when single-rank, but the eigenvalue step always
+    # uses the launcher so its rank count matches what the Gf step expects.
+    gf_mpi_prefix = "" if n_inner == 1 else hphi_mpi_command
+    return n_inner, n_outer, hphi_mpi_command, gf_mpi_prefix
 
 
 class HPhiSolver(SolverBase):
@@ -256,26 +270,22 @@ class HPhiSolver(SolverBase):
 
         exec_path = expand_path(params_kw['exec_path'])
 
-        # The number of process (np) must be 4^m in HPhi
-        mpirun_command_power4 = mpirun_command
+        # Parse the total number of processes from the launcher's last token.
         commands = shlex.split(mpirun_command)
         try:
             np = int(commands[-1])
         except ValueError:
             np = None
             print("A check of np is skipped.")
-        else:
-            if not math.log(np, 4).is_integer():  # check if np = 4^m
-                np_new = 4**int(math.log(np, 4))
-                print(f"Warning: np must be a power of 4 in HPhi. np is set to {np_new} in eigenenergies calculations. Note that np={np} is used for Gf calculations.", file=sys.stderr)
-                commands[-1] = str(np_new)
-                mpirun_command_power4 = " ".join(commands)
 
-        # Two-level parallelism for the Gf step: run n_outer pairs concurrently,
-        # each HPhi using n_inner MPI ranks, with n_inner * n_outer ~ np.
-        #   n_procs_per_hphi (= n_inner): MPI ranks per HPhi run (1 = serial, the
-        #   default and the previous behavior). Must be a power of four (HPhi).
-        n_inner, n_outer, gf_mpi_prefix = gf_parallel_layout(
+        # Two-level parallelism for the Gf step. CRUCIAL: the eigenvalue step and
+        # every Green's-function run must use the SAME number of MPI ranks
+        # (n_inner), because the eigenvalue step writes the eigenvectors
+        # MPI-distributed (one file per rank) and the Gf step reads them back -- a
+        # rank-count mismatch makes HPhi stop while inputting the eigenvector.
+        #   n_procs_per_hphi (= n_inner): MPI ranks per HPhi run (power of four;
+        #   1 = serial, the default). n_outer = np // n_inner runs run concurrently.
+        n_inner, n_outer, mpirun_command_eigen, gf_mpi_prefix = gf_parallel_layout(
             mpirun_command, np, params_kw.get('n_procs_per_hphi', 1))
 
         # Matsubara frequencies omega_n = (2*n+1)*pi*T
@@ -419,7 +429,7 @@ class HPhiSolver(SolverBase):
         # (2) Run a working horse
         print("\nComputing eigeneneries ...")
         with open('./stdout.log', 'w') as output_f:
-            launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f)
+            launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
 
         # Warn if too few eigenstates were computed to span the thermally relevant
         # multiplet (e.g. a degenerate ground state with the default exct=1).

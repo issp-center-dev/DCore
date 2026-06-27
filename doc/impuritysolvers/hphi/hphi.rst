@@ -131,32 +131,37 @@ section, where ``#`` is replaced by the number of processes passed to
     [mpi]
     command = mpirun -np #
 
-The HPhi solver runs in two MPI phases:
+The HPhi solver runs in two MPI phases, and **both use the same number of ranks
+per HPhi run**, ``n_procs_per_hphi`` (call it ``n_inner``):
 
-1. **Eigenvalue step** -- a single ``HPhi`` invocation that uses *all* ``np``
-   processes. ``HPhi`` requires this count to be a power of four; ``DCore``
-   automatically rounds down (with a warning) if it is not.
+1. **Eigenvalue step** -- a single ``HPhi`` run on ``n_inner`` ranks. It writes
+   the eigenvectors MPI-distributed (one file per rank).
 
 2. **Green's-function step** -- many independent ``HPhi`` runs (one per
-   excitation). These are distributed by the two-level layout described above:
-   ``n_outer = np / n_procs_per_hphi`` runs execute concurrently, each launched
-   with ``n_procs_per_hphi`` MPI ranks. ``n_procs_per_hphi`` must be a power of
-   four.
+   excitation), each on ``n_inner`` ranks, with ``n_outer = np / n_inner`` of
+   them executing concurrently.
 
-.. note::
+.. important::
 
-   With an **MPI-only** build of ``HPhi`` (one that must be started through the
-   MPI launcher), keep ``n_procs_per_hphi`` :math:`\geq` the smallest value your
-   launcher accepts (typically 1 via ``mpirun -np 1`` / ``srun -n 1``), and
-   prefer launching each Green's-function run through the launcher rather than
-   bare. Running many bare MPI executables concurrently can fail due to MPI
-   runtime resource clashes; going through the launcher (``n_procs_per_hphi``
-   selects ``n_inner`` ranks per run) avoids this.
+   The two phases **must** use the same rank count. The Green's-function step
+   reads back the eigenvectors written by the eigenvalue step, and an MPI-
+   distributed eigenvector can only be read by the same number of ranks that
+   wrote it. ``DCore`` therefore drives both phases with ``n_inner`` ranks; do
+   not expect the eigenvalue step to use all ``np``. ``n_inner`` must be a power
+   of four (an HPhi requirement); ``DCore`` rounds it down with a warning if it
+   is not. ``np`` itself need not be a power of four -- the remainder simply
+   sets ``n_outer``.
+
+So ``np = n_inner * n_outer``: choose ``n_inner`` (ranks per HPhi, a power of
+four) for how heavy a single HPhi run is, and let the rest of ``np`` provide
+concurrency across the many Green's-function runs. The default
+``n_procs_per_hphi = 1`` runs single-rank HPhi with ``np`` concurrent
+Green's-function runs (this reproduces the serial behaviour at ``np = 1``).
 
 On a SLURM cluster (e.g. ISSP System B "ohtaka", 128 cores/node), set the
-launcher to ``srun`` and choose the split with ``n_procs_per_hphi``. A minimal
-job script that puts each Green's-function run on 4 ranks and runs
-``128 / 4 = 32`` of them concurrently per node looks like::
+launcher to ``srun`` and pick ``n_inner`` with ``n_procs_per_hphi``. A job
+script that puts each HPhi run on 4 ranks and runs ``128 / 4 = 32`` of them
+concurrently per node looks like::
 
     #!/bin/sh
     #SBATCH -p i8cpu          # interactive queue for testing (adjust for production)
@@ -175,7 +180,7 @@ job script that puts each Green's-function run on 4 ranks and runs
     #   n_procs_per_hphi{int} = 4
     dcore --np 128 input.ini
 
-Here ``dcore --np 128`` gives ``np = 128`` (a power of four) for the eigenvalue
-step, and the Green's-function step runs ``32`` HPhi instances of ``4`` ranks
-each. Start small (e.g. ``--np 4`` with ``n_procs_per_hphi = 4``) on the
-interactive queue to validate the setup before scaling up.
+Here every HPhi run (eigenvalue step and each Green's-function run) uses 4
+ranks, and ``32`` Green's-function runs proceed concurrently. Start small
+(e.g. ``--np 4`` with ``n_procs_per_hphi = 4``) on the interactive queue to
+validate the setup before scaling up.
