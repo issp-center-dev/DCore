@@ -48,6 +48,7 @@ Optional parameters:
     exct{int} = 1          # number of low-lying eigenstates used for the
                            # finite-temperature Green's function
     fit_gtol{float} = 1e-5 # tolerance of the bath-hybridization fitting
+    exct_weight_threshold{float} = 1e-3   # threshold for the "exct too small" warning
 
 Notes
 -----
@@ -60,8 +61,51 @@ Notes
 - ``exct`` sets how many low-lying eigenstates are included in the
   finite-temperature average. It should be large enough that the Boltzmann
   weight of the highest computed state is negligible at the target temperature.
+  See `Choosing exct (degenerate ground states)`_ below.
 
 - ``HPhi`` requires the number of MPI processes to be a power of four for the
   eigenenergy calculation. If the requested number of processes is not a power
   of four, ``DCore`` automatically falls back to the largest power of four for
   that step and prints a warning.
+
+
+Choosing exct (degenerate ground states)
+----------------------------------------
+
+``HPhi`` builds the finite-temperature Green's function from the lowest
+``exct`` eigenstates, weighting eigenstate :math:`n` by the Boltzmann factor
+:math:`e^{-\beta (E_n - E_0)}`.  If ``exct`` is too small, states that are still
+thermally relevant are left out of the trace and the resulting self-energy is
+**wrong**.
+
+.. warning::
+
+   The default ``exct = 1`` is unsafe for multi-orbital models.  Multi-orbital
+   impurities very often have a **degenerate ground state** (for example, one
+   electron in two degenerate orbitals is four-fold degenerate).  With
+   ``exct = 1`` only one member of the multiplet enters the thermal trace, which
+   **breaks the orbital symmetry** and yields a spurious, asymmetric self-energy
+   with non-zero off-diagonal components — even though the exact answer is
+   symmetric and diagonal.
+
+   Set ``exct`` large enough to cover the whole degenerate ground multiplet
+   *and* every excited state with a non-negligible Boltzmann weight at the
+   target temperature.  When in doubt, increase ``exct`` until the result stops
+   changing (for a tiny problem you may simply use the full Hilbert-space
+   dimension :math:`4^{\,\mathrm{n\_orb}+\mathrm{n\_bath}}`).
+
+To help catch this, ``DCore`` inspects the computed eigenenergies after the
+eigenvalue step and prints a warning when the highest computed state still
+carries a Boltzmann weight above ``exct_weight_threshold`` (default ``1e-3``) —
+i.e. when states above the ``exct`` cutoff are likely missing from the thermal
+trace.  The warning reports the ground-state degeneracy and the remaining
+weight; increase ``exct`` until it disappears.  This is a thermal
+**convergence** check, so it also fires for non-degenerate ground states with
+low-lying thermally-populated excitations.
+
+.. tip::
+
+   Because both ``HPhi`` and the ``scipy/sparse`` solver are exact-diagonalization
+   solvers, they must give the same self-energy for the same impurity model.
+   Cross-checking ``HPhi`` against ``scipy/sparse`` on a small model is a good
+   way to confirm that ``exct`` (and other settings) are adequate.

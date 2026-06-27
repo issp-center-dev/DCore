@@ -111,6 +111,70 @@ NInterAll      {0}
 """
 
 
+def read_eigenenergies(energy_file):
+    """Read the eigenenergies (one per computed state) from an HPhi zvo_energy.dat file."""
+    energies = []
+    with open(energy_file) as f:
+        for line in f:
+            tokens = line.split()
+            if len(tokens) >= 2 and tokens[0] == 'Energy':
+                energies.append(float(tokens[1]))
+    return numpy.array(energies)
+
+
+def warn_if_exct_truncates_thermal_trace(energy_file, beta, exct, exct_max, weight_threshold=1e-3):
+    """
+    Warn if too few eigenstates were computed to span the thermally relevant
+    multiplet at temperature T = 1/beta.
+
+    HPhi builds the finite-T Green's function from the lowest ``exct`` eigenstates,
+    weighting state n by the Boltzmann factor exp(-beta*(E_n - E_0)).  If the
+    highest computed state still carries a non-negligible weight, states just
+    above the cutoff are missing from the thermal trace.  This typically happens
+    when the ground state is degenerate (common in multi-orbital models) and the
+    default ``exct = 1`` keeps only one member of the multiplet -- silently
+    breaking orbital symmetry and producing a wrong (e.g. spurious off-diagonal)
+    self-energy.
+
+    A warning is printed (it does not abort the solver).  It never fires when the
+    full Hilbert space is already covered (exct == exct_max).
+    """
+    if exct >= exct_max:
+        return  # full Hilbert space is covered; nothing is truncated
+
+    try:
+        energies = read_eigenenergies(energy_file)
+    except (OSError, ValueError):
+        return  # tolerate a missing/odd energy file rather than aborting the solver
+    if energies.size == 0:
+        return
+
+    e0 = energies.min()
+    e_last = energies.max()
+    # eigenenergies are printed to ~1e-9 precision, so a loose tol identifies degeneracy
+    degeneracy = int(numpy.count_nonzero(numpy.abs(energies - e0) < 1e-6))
+    w_last = math.exp(-beta * (e_last - e0))
+
+    if w_last > weight_threshold:
+        if degeneracy >= exct:
+            deg_msg = (f"  All {exct} computed states are degenerate with the ground "
+                       f"state, so the ground multiplet itself is not fully covered.\n")
+        else:
+            deg_msg = f"  The ground state is {degeneracy}-fold degenerate.\n"
+        print(
+            "\n*** WARNING (HPhi solver): 'exct' may be too small ***\n"
+            f"  exct = {exct} eigenstates were computed (full space = {exct_max}).\n"
+            + deg_msg +
+            f"  The highest computed state still has Boltzmann weight {w_last:.2e} "
+            f"(> {weight_threshold:.0e}) at T = {1.0 / beta:.4g},\n"
+            "  so thermally-relevant states above the cutoff are missing from the\n"
+            "  finite-T trace. This can break orbital symmetry and yield a wrong\n"
+            "  (e.g. spurious off-diagonal) self-energy.\n"
+            "  => Increase 'exct' until this warning disappears.\n",
+            file=sys.stderr,
+        )
+
+
 class HPhiSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
@@ -167,6 +231,8 @@ class HPhiSolver(SolverBase):
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
         exct = params_kw.get('exct', 1)  # number of states to be computed
+        # Boltzmann-weight threshold above which an under-sized exct triggers a warning
+        exct_weight_threshold = params_kw.get('exct_weight_threshold', 1e-3)
 
         fit_params = {}
         for key in ['fit_gtol',]:
@@ -297,6 +363,12 @@ class HPhiSolver(SolverBase):
         print("\nComputing eigeneneries ...")
         with open('./stdout.log', 'w') as output_f:
             launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f)
+
+        # Warn if too few eigenstates were computed to span the thermally relevant
+        # multiplet (e.g. a degenerate ground state with the default exct=1).
+        warn_if_exct_truncates_thermal_trace(
+            os.path.join('output', 'zvo_energy.dat'), self.beta, exct, exct_max,
+            weight_threshold=exct_weight_threshold)
 
         print("\nComputing Gf ...")
         header = "zvo"
