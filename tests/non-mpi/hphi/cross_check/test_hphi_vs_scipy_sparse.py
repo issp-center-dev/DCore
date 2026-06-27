@@ -69,7 +69,7 @@ nelec = 1.0
 t = -1.0
 kanamori = [(4.0, 0.8, 0.0)]
 nk = 8
-
+{extra_model}
 [system]
 T = 0.1
 n_iw = 500
@@ -85,15 +85,20 @@ sigma_mix = 1.0
 """
 
 
-def _run_solver(work_dir, seed, solver_block):
+def _run_solver(work_dir, seed, solver_block, extra_model="", aux_files=None):
     """Run dcore_pre + dcore for one solver and return Sigma_iw as (n_iw, norb, norb)."""
     from dcore.dcore_pre import dcore_pre
     from dcore.dcore import dcore
     import h5py
 
+    for name, content in (aux_files or {}).items():
+        with open(os.path.join(work_dir, name), "w") as f:
+            f.write(content)
+
     ini = os.path.join(work_dir, seed + ".ini")
     with open(ini, "w") as f:
-        f.write(_MODEL_TEMPLATE.format(seed=seed, solver_block=solver_block))
+        f.write(_MODEL_TEMPLATE.format(seed=seed, solver_block=solver_block,
+                                       extra_model=extra_model))
 
     cwd = os.getcwd()
     os.chdir(work_dir)
@@ -159,3 +164,62 @@ def test_hphi_matches_scipy_sparse(sigma_scipy, tmp_path):
     # (3) HPhi diagonal must match the scipy/sparse ED reference.
     diff = numpy.abs(sigma_hphi[low, 0, 0] - sigma_scipy[low, 0, 0]).max()
     assert diff < 5e-3, f"HPhi vs scipy/sparse diagonal mismatch: {diff}"
+
+
+# Hermitian complex off-diagonal crystal field mixing orbitals 0 and 1 (both spins).
+# The imaginary part makes the off-diagonal Green's function genuinely
+# anti-symmetric (G_01 != G_10), which exercises the A = c_i + i c_j excitation
+# of the HPhi reconstruction across the *whole* Matsubara axis.
+_CRYSTAL_FIELD = """\
+# sp o1 o2 re im
+0 0 1 0.3  0.2
+0 1 0 0.3 -0.2
+1 0 1 0.3  0.2
+1 1 0 0.3 -0.2
+"""
+_OFFDIAG_MODEL = "local_potential_matrix = {0: 'cf.in'}\nlocal_potential_factor = 1.0"
+
+
+@pytest.fixture(scope="module")
+def sigma_scipy_offdiag(tmp_path_factory):
+    """scipy/sparse reference for the model with a complex off-diagonal crystal field."""
+    pytest.importorskip("scipy")
+    work_dir = str(tmp_path_factory.mktemp("scipy_sparse_offdiag"))
+    solver_block = "name = scipy/sparse\nn_bath{int} = 0"
+    return _run_solver(work_dir, "scipy_ref_od", solver_block,
+                       extra_model=_OFFDIAG_MODEL, aux_files={"cf.in": _CRYSTAL_FIELD})
+
+
+def test_hphi_matches_scipy_sparse_offdiagonal(sigma_scipy_offdiag, tmp_path):
+    """
+    Regression test for the off-diagonal Green's-function reconstruction.
+
+    With a complex off-diagonal crystal field the self-energy has a genuine,
+    anti-symmetric off-diagonal component.  A wrong conjugation of the
+    ``c_i + i c_j`` excitation used to give the off-diagonal self-energy a
+    spurious term that *diverged linearly* with the Matsubara frequency while
+    staying small at low frequency -- hence the comparison spans the entire
+    Matsubara axis, not just iw_0.
+    """
+    solver_block = (
+        "name = HPhi\n"
+        f"exec_path{{str}} = {HPHI_EXEC}\n"
+        "n_bath{int} = 0\n"
+        "exct{int} = 16\n"
+        "np{int} = 1"
+    )
+    sigma_hphi = _run_solver(tmp_path, "hphi_run_od", solver_block,
+                             extra_model=_OFFDIAG_MODEL, aux_files={"cf.in": _CRYSTAL_FIELD})
+
+    ref = sigma_scipy_offdiag
+    assert sigma_hphi.shape == ref.shape
+
+    # The off-diagonal must be genuinely non-zero and anti-symmetric, otherwise
+    # the test would not exercise the A = c_i + i c_j reconstruction at all.
+    assert numpy.abs(ref[:, 0, 1]).max() > 0.1
+    assert numpy.abs(ref[:, 0, 1] - ref[:, 1, 0]).max() > 0.05
+
+    # HPhi must match scipy/sparse over the WHOLE Matsubara axis and every matrix
+    # element (the spurious tail showed up only at high frequency).
+    diff = numpy.abs(sigma_hphi - ref).max()
+    assert diff < 5e-3, f"HPhi vs scipy/sparse mismatch over full omega_n: {diff}"

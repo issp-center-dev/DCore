@@ -264,8 +264,15 @@ class CalcSpectrumCore:
                 fw.write("{} {} {} 1.0 0.0\n".format(site_i, sigma_i, ex_state))
             else:
                 if flg_complex is True:
+                    # A = c_i + i c_j (annihilation, ex_state=0), whose conjugate
+                    # excitation A^dag = c_i^dag - i c_j^dag (creation, ex_state=1).
+                    # The imaginary coefficient of c_j must be conjugated for the
+                    # creation channel, otherwise the anti-symmetric (imaginary)
+                    # part of the off-diagonal Green's function gets the wrong
+                    # high-frequency tail. (ex_state: 0 = c, 1 = c^dag)
+                    imag_coeff = -1.0 if ex_state == 1 else 1.0
                     fw.write("{} {} {} 1.0 0.0\n".format(site_i, sigma_i, ex_state))
-                    fw.write("{} {} {} 0.0 1.0\n".format(site_j, sigma_j, ex_state))
+                    fw.write("{} {} {} 0.0 {}\n".format(site_j, sigma_j, ex_state, imag_coeff))
                 else:
                     fw.write("{} {} {} 1.0 0.0\n".format(site_i, sigma_i, ex_state))
                     fw.write("{} {} {} 1.0 0.0\n".format(site_j, sigma_j, ex_state))
