@@ -212,7 +212,9 @@ class SumkDFT_opt(SumkDFT):
 
         idmat = [numpy.identity(
             self.n_orbitals[ik, ntoi[sp]], numpy.complex128) for sp in spn]
-        M = copy.deepcopy(idmat)
+        # M[ibl] is fully overwritten in the loop below, so no copy of idmat is
+        # needed (the previous copy.deepcopy was dead work done for every k).
+        M = [None] * len(idmat)
         for ibl in range(self.n_spin_blocks[self.SO]):
             ind = ntoi[spn[ibl]]
             n_orb = self.n_orbitals[ik, ind]
@@ -421,12 +423,15 @@ class SumkDFT_opt(SumkDFT):
         # gf_downfolded.from_L_G_R(
         #     projmat, gf_to_downfold, projmat.conjugate().transpose())
 
-        i_start = projindex[0]
-        i_end = projindex[0] + projindex.shape[0]
-        if numpy.allclose(projindex, list(range(i_start, i_end))):
-            gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, i_start:i_end, i_start:i_end] * fac
-        else:
-            gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, projindex, :][:, :, projindex] * fac
+        if projindex.size > 0:
+            i_start = projindex[0]
+            i_end = projindex[0] + projindex.shape[0]
+            # Exact integer comparison (allclose is tolerance-based and could
+            # misclassify large non-contiguous indices as contiguous).
+            if numpy.array_equal(projindex, numpy.arange(i_start, i_end)):
+                gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, i_start:i_end, i_start:i_end] * fac
+            else:
+                gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, projindex, :][:, :, projindex] * fac
 
         if overwrite_gf_inp:
             return None
@@ -460,8 +465,23 @@ class SumkDFT_opt(SumkDFT):
 
         # gf_upfolded.from_L_G_R(
         #     projmat.conjugate().transpose(), gf_to_upfold, projmat)
-        gf_upfolded.data[numpy.ix_(range(gf_to_upfold.data.shape[0]), projindex, projindex)] \
-            += gf_to_upfold.data * fac
+        if projindex.size > 0:
+            i_start = projindex[0]
+            i_end = projindex[0] + projindex.shape[0]
+            if numpy.array_equal(projindex, numpy.arange(i_start, i_end)):
+                # Contiguous projection: use a plain slice (a view) instead of
+                # the much slower advanced indexing, and avoid the temporary
+                # from `* fac` for the common fac = +-1.
+                target = gf_upfolded.data[:, i_start:i_end, i_start:i_end]
+                if fac == 1.0:
+                    target += gf_to_upfold.data
+                elif fac == -1.0:
+                    target -= gf_to_upfold.data
+                else:
+                    target += gf_to_upfold.data * fac
+            else:
+                gf_upfolded.data[numpy.ix_(range(gf_to_upfold.data.shape[0]), projindex, projindex)] \
+                    += gf_to_upfold.data * fac
 
         if overwrite_gf_inp:
             return None
