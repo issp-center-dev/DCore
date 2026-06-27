@@ -1,5 +1,4 @@
 import numpy
-from numpy.core.numeric import identity
 from scipy.linalg import expm
 from ._dispatcher import BlockGf
 
