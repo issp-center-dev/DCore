@@ -558,6 +558,9 @@ class DMFTCoreSolver(object):
             'mu'            : self._chemical_potential,
             'adjust_mu'     : False,
             'no_tail_fit'   : self._params['system']['no_tail_fit'],
+            # .get for backward compatibility with callers (e.g. dcore_bse) that
+            # prune [system] and do not retain mu_search.
+            'mu_search'     : self._params['system'].get('mu_search', 'brent'),
         }
 
     def calc_G0loc(self):

@@ -104,6 +104,7 @@ def create_parser(target_sections=None):
     parser.add_option("system", "dc_type", str, 'HF_DFT', "Chosen from 'HF_DFT' (default), 'HF_imp', 'FLL'")
     parser.add_option("system", "dc_orbital_average", bool, False, "If true, the DC correction is averaged over orbitals in each shell. Off-diagonal components are dropped.")
     parser.add_option("system", "no_tail_fit", bool, False, "Compute Matsubara summation without fitting high-frequency moments.")
+    parser.add_option("system", "mu_search", str, 'brent', "Method to adjust the chemical potential. Chosen from 'brent' (default; bracketing + Brent) or 'newton' (safeguarded Newton using the analytic dn/dmu; usually fewer density evaluations). 'newton' requires no_tail_fit=True.")
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',
@@ -223,6 +224,16 @@ def parse_parameters(params):
         if params['system']['T'] > 0:
             params['system']['beta'] = 1.0 / params['system']['T']
             params['system']['T'] = -1.0  # To make sure that only beta will be used in computations
+        # .get + write-back so a legacy/pruned [system] without mu_search keeps
+        # the historical Brent behavior instead of raising KeyError.
+        mu_search = params['system'].get('mu_search', 'brent')
+        params['system']['mu_search'] = mu_search
+        if mu_search not in ('brent', 'newton'):
+            sys.exit(f"ERROR: mu_search={mu_search!r} must be 'brent' or 'newton'.")
+        # The 'newton' search adjusts mu using the Matsubara-summed charge, so it
+        # requires no_tail_fit=True for consistency. That constraint is checked
+        # where the search actually runs (SumkDFTWorkerGloc), so frontends that
+        # only parse [system] but never adjust mu are unaffected.
 
     if 'control' in params:
         two_options_incompatible(params, ('control', 'restart'), ('control', 'initial_static_self_energy'))

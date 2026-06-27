@@ -532,6 +532,143 @@ class SumkDFT_opt(SumkDFT):
             mpi.report("Warning: Imaginary part in density will be ignored ({})".format(str(abs(dens.imag))))
         return dens.real
 
+    def total_density_and_derivative(self, mu, iw_or_w="iw", with_Sigma=True, with_dc=True, broadening=None):
+        r"""Total charge n(mu) and its derivative dn/dmu in a single k-loop.
+
+        With G = [i\omega + mu - H - Sigma]^{-1} and the Matsubara summation of
+        total_density_matsubara(),
+
+        .. math::
+            n(mu)   = \sum_k w_k \sum_{block} [ (1/\beta)\sum_{i\omega} Tr G + 0.5 n_{orb} ]
+            dn/dmu  = \sum_k w_k \sum_{block} [ -(1/\beta)\sum_{i\omega} Tr G^2 ]
+
+        because dG/dmu = -G^2 and the 0.5 n_orb tail term is mu-independent. The
+        derivative is (almost) free given G, and drives the Newton search for the
+        chemical potential (see calc_mu_newton). n(mu) is identical to
+        total_density_matsubara(mu).
+
+        This is a Matsubara-only quantity (the 0.5 n_orb tail term and 1/beta
+        prefactor are specific to the imaginary-frequency summation).
+        """
+        if iw_or_w != "iw":
+            raise ValueError("total_density_and_derivative is only implemented for iw_or_w='iw'.")
+        dens = 0.0
+        ddens = 0.0
+        ikarray = numpy.array(list(range(self.n_k)))
+        for ik in mpi.slice_array(ikarray):
+            G_latt = self.lattice_gf(
+                ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening)
+            w = self.bz_weights[ik]
+            for _, g in G_latt:
+                beta = g.mesh.beta
+                n_orb = g.data.shape[1]
+                dens += w * (numpy.sum(numpy.trace(g.data, axis1=1, axis2=2)) / beta + 0.5 * n_orb)
+                # sum_iw Tr[G^2] = sum_iw sum_ij G_ij G_ji
+                ddens += w * (-numpy.einsum('wij,wji->', g.data, g.data) / beta)
+        dens = mpi.all_reduce(mpi.world, dens, lambda x, y: x + y)
+        ddens = mpi.all_reduce(mpi.world, ddens, lambda x, y: x + y)
+        mpi.barrier()
+        if abs(dens.imag) > 1e-12:
+            mpi.report("Warning: Imaginary part in density will be ignored ({})".format(str(abs(dens.imag))))
+        return dens.real, ddens.real
+
+    def calc_mu_newton(self, precision=0.01, iw_or_w='iw', with_dc=True, broadening=None,
+                       max_loops=100, delta=0.5):
+        r"""Search the chemical potential with a safeguarded Newton method (rtsafe).
+
+        n(mu) is smooth and monotonic and its derivative dn/dmu is available almost
+        for free, so a Newton step usually needs fewer of the expensive density
+        evaluations than the bisection/Brent search of calc_mu(). The iteration is
+        the Numerical-Recipes ``rtsafe``: it keeps a bracket [xl (f<0), xh (f>0)]
+        and takes a Newton step only when it stays inside the bracket and reduces
+        the residual fast enough; otherwise it bisects. In particular, when the
+        derivative is tiny -- e.g. inside a charge gap where dn/dmu ~ 0 -- the test
+        ``|2 f| > |dx_old * df|`` forces a bisection step, so the search is never
+        less robust than plain bisection.
+        """
+        target = self.density_required - self.charge_below
+
+        def fdf(mu):
+            n, dn = self.total_density_and_derivative(
+                mu, iw_or_w=iw_or_w, with_Sigma=True, with_dc=with_dc, broadening=broadening)
+            return n - target, dn
+
+        mu = self.chemical_potential
+        f, df = fdf(mu)
+        if abs(f) < precision:
+            self.chemical_potential = mu
+            return mu
+
+        # Bracket the root by stepping from mu (doubling, but starting bounded at
+        # delta so a tiny initial derivative -- flat tail / gap -- does not create
+        # a huge bracket). Try the direction suggested by the Newton step -f/df
+        # first; if that fails (e.g. a small/noisy derivative pointed the wrong
+        # way), try the opposite direction before giving up.
+        def _expand(direction):
+            step = direction * delta
+            xa, fa = mu, f
+            xb = mu + step
+            fb = fdf(xb)[0]
+            k = 0
+            while fa * fb > 0.0 and k < 80:
+                step *= 2.0
+                xa, fa = xb, fb
+                xb = xa + step
+                fb = fdf(xb)[0]
+                k += 1
+            return (xa, fa, xb, fb) if fa * fb <= 0.0 else None
+
+        if df != 0.0:
+            direction = 1.0 if (-f / df) > 0.0 else -1.0
+        else:
+            direction = 1.0 if f < 0.0 else -1.0
+        bracket = _expand(direction) or _expand(-direction)
+        if bracket is None:
+            # could not bracket the root: signal failure as calc_mu() does
+            mpi.report("Error: calc_mu_newton failed to bracket the chemical potential.")
+            self.chemical_potential = None
+            return None
+        x1, f1, x2, f2 = bracket
+        # orient the bracket so that f(xl) < 0 < f(xh)
+        if f1 < 0.0:
+            xl, xh = x1, x2
+        else:
+            xl, xh = x2, x1
+
+        rts = mu if min(xl, xh) < mu < max(xl, xh) else 0.5 * (xl + xh)
+        dx_old = abs(xh - xl)
+        dx = dx_old
+        f, df = fdf(rts)
+        for _ in range(max_loops):
+            if abs(f) < precision:
+                break
+            out_of_range = ((rts - xh) * df - f) * ((rts - xl) * df - f) > 0.0
+            too_slow = abs(2.0 * f) > abs(dx_old * df)
+            if df == 0.0 or out_of_range or too_slow:
+                # bisection
+                dx_old = dx
+                dx = 0.5 * (xh - xl)
+                rts = xl + dx
+            else:
+                # Newton
+                dx_old = dx
+                dx = f / df
+                rts = rts - dx
+            f, df = fdf(rts)
+            if f < 0.0:
+                xl = rts
+            else:
+                xh = rts
+
+        if abs(f) >= precision:
+            # did not converge within max_loops: signal failure as calc_mu() does
+            mpi.report("Error: calc_mu_newton did not converge within max_loops.")
+            self.chemical_potential = None
+            return None
+
+        self.chemical_potential = rts
+        return rts
+
     def density_matrix(self, method='using_gf', beta=40.0):
         """Calculate density matrices in one of two ways.
 
