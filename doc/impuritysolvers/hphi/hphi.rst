@@ -158,29 +158,35 @@ concurrency across the many Green's-function runs. The default
 ``n_procs_per_hphi = 1`` runs single-rank HPhi with ``np`` concurrent
 Green's-function runs (this reproduces the serial behaviour at ``np = 1``).
 
-On a SLURM cluster (e.g. ISSP System B "ohtaka", 128 cores/node), set the
-launcher to ``srun`` and pick ``n_inner`` with ``n_procs_per_hphi``. A job
-script that puts each HPhi run on 4 ranks and runs ``128 / 4 = 32`` of them
-concurrently per node looks like::
+On ISSP System B "ohtaka" (Slurm, AMD EPYC 7702, 128 cores/node) HPhi is
+launched with ``srun``. Because the Green's-function step runs several ``srun``
+steps concurrently inside one job allocation, each must take its cores
+exclusively -- the Slurm "bulk job" pattern. Set the launcher accordingly::
+
+    [mpi]
+    command = srun --exclusive --mem-per-cpu=1840 -n #
+
+``--exclusive`` keeps the concurrent Green's-function runs off each other's
+cores, ``--mem-per-cpu=1840`` (MB) reserves the per-core share of a node's
+memory, and ``-n #`` is the rank count that ``DCore`` rewrites to ``n_inner``
+for every HPhi run. A batch script that puts each HPhi run on 4 ranks and runs
+``128 / 4 = 32`` of them concurrently on one node::
 
     #!/bin/sh
-    #SBATCH -p i8cpu          # interactive queue for testing (adjust for production)
-    #SBATCH -N 1
-    #SBATCH -n 128
+    #SBATCH -p i8cpu          # interactive/debug queue: <=8 nodes, 30 min, 1 running job
+    #SBATCH -N 1              # one node = 128 cores
     #SBATCH -t 0:30:00
 
-    module load <your HPhi / python environment>
+    module load <your HPhi / Python environment>
 
-    # in the input file:
-    #   [mpi]
-    #   command = srun -n #
-    #   [impurity_solver]
+    # [impurity_solver] in input.ini:
     #   name = HPhi
     #   exec_path{str} = /path/to/mpi/HPhi
     #   n_procs_per_hphi{int} = 4
     dcore --np 128 input.ini
 
-Here every HPhi run (eigenvalue step and each Green's-function run) uses 4
-ranks, and ``32`` Green's-function runs proceed concurrently. Start small
-(e.g. ``--np 4`` with ``n_procs_per_hphi = 4``) on the interactive queue to
-validate the setup before scaling up.
+Every HPhi run (eigenvalue step and each Green's-function run) then uses 4
+ranks, with 32 running concurrently. For quick checks grab a node interactively
+(``salloc -N 1 -p i8cpu``, then run ``dcore`` on the compute node). Start small
+(``--np 4`` with ``n_procs_per_hphi = 4``) before scaling up; use a longer queue
+such as ``F4cpu`` for production (``i8cpu`` is capped at 30 minutes).
