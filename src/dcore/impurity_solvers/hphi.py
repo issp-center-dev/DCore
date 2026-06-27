@@ -175,6 +175,48 @@ def warn_if_exct_truncates_thermal_trace(energy_file, beta, exct, exct_max, weig
         )
 
 
+def gf_parallel_layout(mpirun_command, np_total, n_procs_per_hphi):
+    """
+    Decide the two-level parallel layout for the Gf (one-body Green's function) step.
+
+    The Gf step runs one HPhi calculation per (excitation) task; the tasks are
+    independent, so they can be spread over ``n_outer`` concurrent runs, each of
+    which may itself use ``n_inner`` MPI ranks.
+
+    Parameters
+    ----------
+    mpirun_command : str
+        The MPI launcher, e.g. ``"mpirun -np 16"`` (last token = number of ranks).
+    np_total : int or None
+        Total number of processes (``None`` if it could not be parsed).
+    n_procs_per_hphi : int
+        Requested MPI ranks per HPhi run (``n_inner``). ``1`` keeps the previous
+        behaviour (serial HPhi, ``np_total`` concurrent runs).
+
+    Returns
+    -------
+    (n_inner, n_outer, gf_mpi_prefix)
+        ``n_inner`` is clamped to a power of four not exceeding ``np_total``;
+        ``n_outer = np_total // n_inner`` is the ProcessPool size; ``gf_mpi_prefix``
+        is prepended to each HPhi command (``""`` when running serially).
+    """
+    if np_total is None:
+        return 1, None, ""
+    n_inner = max(1, min(int(n_procs_per_hphi), np_total))
+    if not math.log(n_inner, 4).is_integer():  # HPhi requires a power of four
+        n_inner = 4 ** int(math.log(n_inner, 4))
+        print(f"Warning: n_procs_per_hphi must be a power of four in HPhi. "
+              f"It is set to {n_inner} for the Gf calculation.", file=sys.stderr)
+    n_outer = max(1, np_total // n_inner)
+    if n_inner == 1:
+        gf_mpi_prefix = ""  # serial HPhi (no mpirun), as before
+    else:
+        cmds = shlex.split(mpirun_command)
+        cmds[-1] = str(n_inner)
+        gf_mpi_prefix = " ".join(cmds)
+    return n_inner, n_outer, gf_mpi_prefix
+
+
 class HPhiSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
@@ -220,6 +262,13 @@ class HPhiSolver(SolverBase):
                 print(f"Warning: np must be a power of 4 in HPhi. np is set to {np_new} in eigenenergies calculations. Note that np={np} is used for Gf calculations.", file=sys.stderr)
                 commands[-1] = str(np_new)
                 mpirun_command_power4 = " ".join(commands)
+
+        # Two-level parallelism for the Gf step: run n_outer pairs concurrently,
+        # each HPhi using n_inner MPI ranks, with n_inner * n_outer ~ np.
+        #   n_procs_per_hphi (= n_inner): MPI ranks per HPhi run (1 = serial, the
+        #   default and the previous behavior). Must be a power of four (HPhi).
+        n_inner, n_outer, gf_mpi_prefix = gf_parallel_layout(
+            mpirun_command, np, params_kw.get('n_procs_per_hphi', 1))
 
         # Matsubara frequencies omega_n = (2*n+1)*pi*T
         omega_min = numpy.pi / self.beta  # n=0
@@ -371,12 +420,14 @@ class HPhiSolver(SolverBase):
             weight_threshold=exct_weight_threshold)
 
         print("\nComputing Gf ...")
+        if n_inner > 1:
+            print(f"  Gf parallel layout: {n_outer} concurrent HPhi run(s) x {n_inner} MPI rank(s) each")
         header = "zvo"
         T_list = [1./self.beta]
         eta = 1e-4
         output_dir = "./output"
-        p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
-        one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=np)
+        p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct, gf_mpi_prefix)
+        one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=n_outer)
 
         print("\nFinish Gf calc.")
 

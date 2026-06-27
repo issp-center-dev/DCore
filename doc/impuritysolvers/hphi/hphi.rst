@@ -49,6 +49,7 @@ Optional parameters:
                            # finite-temperature Green's function
     fit_gtol{float} = 1e-5 # tolerance of the bath-hybridization fitting
     exct_weight_threshold{float} = 1e-3   # threshold for the "exct too small" warning
+    n_procs_per_hphi{int} = 1             # MPI ranks per HPhi run in the Gf step
 
 Notes
 -----
@@ -67,6 +68,15 @@ Notes
   eigenenergy calculation. If the requested number of processes is not a power
   of four, ``DCore`` automatically falls back to the largest power of four for
   that step and prints a warning.
+
+- The one-body Green's function is computed from many independent HPhi runs
+  (one per excitation). These runs are parallelised in two levels: ``n_outer``
+  runs execute concurrently, each using ``n_procs_per_hphi`` MPI ranks, with
+  ``n_outer = np / n_procs_per_hphi``. The default ``n_procs_per_hphi = 1`` runs
+  each HPhi serially and executes ``np`` runs concurrently (the previous
+  behaviour). Increase ``n_procs_per_hphi`` (a power of four) when a single HPhi
+  run is heavy, e.g. with many bath sites; it trades concurrency for per-run MPI
+  speed. The total ``np`` is shared between the two levels.
 
 
 Choosing exct (degenerate ground states)

@@ -15,7 +15,7 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
     n_sigma = 2
     n_flg = 2
     n_excitation = 2
-    n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut = p_common
+    n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut, *rest = p_common
 
     check_eta(p_common)
 
@@ -61,18 +61,20 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
 def calc_one_body_green_core(p):
     #unpack parameters
     sitei, sigmai, sitej, sigmaj, i_flg, ex_state, p_common = p
-    n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut = p_common
+    n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut, *rest = p_common
+    mpi_prefix = rest[0] if rest else ""
     calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi=path_to_HPhi, header=header,
-                                           output_dir=output_dir)
+                                           output_dir=output_dir, mpi_prefix=mpi_prefix)
 
     calc_spectrum_core.set_energies()
     flg = True if i_flg == 0 else False
     return calc_spectrum_core.get_one_body_green_core(sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut)
 
 def check_eta(p_common):
-    _, T_list, exct, eta, path_to_HPhi, header, output_dir, _ = p_common
+    _, T_list, exct, eta, path_to_HPhi, header, output_dir, _, *rest = p_common
+    mpi_prefix = rest[0] if rest else ""
     calc_spectrum_core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi=path_to_HPhi, header=header,
-                                           output_dir=output_dir)
+                                           output_dir=output_dir, mpi_prefix=mpi_prefix)
     calc_spectrum_core.set_energies(check_eta=True)
 
 def calc_one_body_green(one_body_green_core):
@@ -107,7 +109,7 @@ def calc_one_body_green(one_body_green_core):
 
 
 class CalcSpectrumCore:
-    def __init__(self, T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"):
+    def __init__(self, T_list, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output", mpi_prefix=""):
         self.T_list = T_list
         self.exct = exct
         self.eta = eta
@@ -117,6 +119,9 @@ class CalcSpectrumCore:
         self.parent_dir = os.getcwd()
         # self.path_to_HPhi = os.path.join(self.parent_dir, path_to_HPhi)
         self.path_to_HPhi = os.path.abspath(path_to_HPhi)  # converted to full path in DCore
+        # MPI launcher for each HPhi run of the Gf step (e.g. "mpirun -np 4");
+        # empty string runs HPhi serially (one rank, no mpirun).
+        self.mpi_prefix = mpi_prefix
 
     def Make_Spectrum_Input(self, calc_dir="./", spectrum_type="single"):
 
@@ -283,7 +288,7 @@ class CalcSpectrumCore:
             self._update_modpara(idx, ex_state, calc_dir)
             input_path = os.path.join(calc_dir, "namelist_ex_{}.def".format(idx))
             exec_path = self.path_to_HPhi
-            cmd = "{} -e {} > std_{}.log".format(exec_path, input_path, idx)
+            cmd = "{} {} -e {} > std_{}.log".format(self.mpi_prefix, exec_path, input_path, idx).strip()
             subprocess.call(cmd, shell=True)
             cmd = "mv ./output/{0}_DynamicalGreen.dat ./output/{0}_DynamicalGreen_{1}.dat".format(self.header, idx)
             subprocess.call(cmd, shell=True)
