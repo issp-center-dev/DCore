@@ -122,42 +122,65 @@ class CalcSpectrumCore:
         # MPI launcher for each HPhi run of the Gf step (e.g. "mpirun -np 4");
         # empty string runs HPhi serially (one rank, no mpirun).
         self.mpi_prefix = mpi_prefix
+        # When enabled, HPhi loops over the exct_cut eigenstates internally
+        # (SpectrumLoopExct in modpara): one launch per excitation operator instead
+        # of one per (eigenstate x operator), eliminating the per-state process-startup
+        # overhead. Requires an HPhi build with the SpectrumLoopExct feature. The
+        # per-idx path (default) stays as the validated fallback / reference.
+        self.internal_loop = os.environ.get("DCORE_HPHI_INTERNAL_LOOP", "0") == "1"
 
     def Make_Spectrum_Input(self, calc_dir="./", spectrum_type="single"):
 
         rel_path_org = os.path.relpath(self.parent_dir, calc_dir)
-        for idx in range(self.exct):
+        rel_path = os.path.relpath(os.path.join(self.parent_dir, "output"), calc_dir)
+        spvec_base = os.path.join("../", rel_path, self.header) + "_eigenvec"
+
+        def _write_calcmod():
             with open(os.path.join(self.parent_dir, "calcmod.def")) as f:
                 lines = f.readlines()
             with open(os.path.join(calc_dir, "calcmod_ex.def"), "w") as fex:
                 for line in lines:
-                   words = line.split()
-                   if words[0] == "CalcSpec" or words[0] == "OutputExVec" or words[0] == "OutputEigenVec":
-                    continue
-                   fex.write(line)
+                    words = line.split()
+                    if words[0] in ("CalcSpec", "OutputExVec", "OutputEigenVec"):
+                        continue
+                    fex.write(line)
                 fex.write("CalcSpec    1\n")
+
+        def _write_namelist(fname, spectrum_vec):
             with open(os.path.join(self.parent_dir, "namelist.def")) as f:
                 lines = f.readlines()
-            with open(os.path.join(calc_dir, "namelist_ex_{}.def".format(idx)), "w") as fex:
+            with open(os.path.join(calc_dir, fname), "w") as fex:
                 for line in lines:
                     words = line.split()
                     if len(words) == 0:
                         continue
-                    if words[0] in ["CalcMod", "SpectrumVec", "ModPara"]:
-                        continue
-                    if words[0] == "SingleExcitation":
-                        continue
-                    if words[0] == "PairExcitation":
+                    if words[0] in ["CalcMod", "SpectrumVec", "ModPara",
+                                    "SingleExcitation", "PairExcitation"]:
                         continue
                     fex.write("{} {}\n".format(words[0], os.path.join(rel_path_org, words[1])))
                 fex.write("ModPara modpara_ex.def\n")
                 fex.write("CalcMod calcmod_ex.def\n")
-                rel_path = os.path.relpath(os.path.join(self.parent_dir, "output"), calc_dir)
-                fex.write("SpectrumVec    {}_eigenvec_{}\n".format(os.path.join("../", rel_path, self.header), idx))
+                fex.write("SpectrumVec    {}\n".format(spectrum_vec))
                 if spectrum_type == "single":
                     fex.write("SingleExcitation single_ex.def\n")
                 elif spectrum_type == "pair":
                     fex.write("PairExcitation pair_ex.def\n")
+
+        _write_calcmod()
+        if self.internal_loop:
+            # One launch: HPhi loops eigenstates internally and appends
+            # _<idx>_rank_<r>.dat to this common SpectrumVec base per eigenstate.
+            _write_namelist("namelist_ex.def", spvec_base)
+            # HPhi (loop mode) reads E_idx from <calc_dir>/output/<header>_energy.dat
+            # (childfopenMPI prepends 'output/'); stage it from the eigenvalue run.
+            import shutil
+            os.makedirs(os.path.join(calc_dir, "output"), exist_ok=True)
+            shutil.copy(os.path.join(self.parent_dir, self.output_dir, "{}_energy.dat".format(self.header)),
+                        os.path.join(calc_dir, "output", "{}_energy.dat".format(self.header)))
+        else:
+            for idx in range(self.exct):
+                _write_namelist("namelist_ex_{}.def".format(idx),
+                                "{}_{}".format(spvec_base, idx))
 
         with open(os.path.join(self.parent_dir,"modpara.def"), "r") as fr:
             lines = fr.readlines()
@@ -239,7 +262,12 @@ class CalcSpectrumCore:
             for line in lines[8:]:
                 words = line.split()
                 dict_mod[words[0]] = words[1:]
-            dict_mod["OmegaOrg"] = [self.energy_list[exct], 0]
+            if self.internal_loop:
+                # 'exct' is the loop COUNT (= exct_cut); HPhi reads each E_idx from
+                # the energy file and uses it as the per-state shift internally.
+                dict_mod["SpectrumLoopExct"] = [exct]
+            else:
+                dict_mod["OmegaOrg"] = [self.energy_list[exct], 0]
             if ex_state == 0:
                 omega_max = dict_mod["OmegaMax"]
                 dict_mod["OmegaMax"] = [-1.0*float(omega_max[0]), -1.0*float(omega_max[1])]
@@ -284,14 +312,22 @@ class CalcSpectrumCore:
 
     def _run_HPhi(self, exct_cut, ex_state=0, calc_dir="./"):
         os.chdir(calc_dir)
-        for idx in range(exct_cut):
-            self._update_modpara(idx, ex_state, calc_dir)
-            input_path = os.path.join(calc_dir, "namelist_ex_{}.def".format(idx))
-            exec_path = self.path_to_HPhi
-            cmd = "{} {} -e {} > std_{}.log".format(self.mpi_prefix, exec_path, input_path, idx).strip()
+        exec_path = self.path_to_HPhi
+        if self.internal_loop:
+            # One launch covers all exct_cut eigenstates; HPhi writes
+            # output/<header>_DynamicalGreen_<idx>.dat directly (no per-idx rename).
+            self._update_modpara(exct_cut, ex_state, calc_dir)
+            input_path = os.path.join(calc_dir, "namelist_ex.def")
+            cmd = "{} {} -e {} > std.log".format(self.mpi_prefix, exec_path, input_path).strip()
             subprocess.call(cmd, shell=True)
-            cmd = "mv ./output/{0}_DynamicalGreen.dat ./output/{0}_DynamicalGreen_{1}.dat".format(self.header, idx)
-            subprocess.call(cmd, shell=True)
+        else:
+            for idx in range(exct_cut):
+                self._update_modpara(idx, ex_state, calc_dir)
+                input_path = os.path.join(calc_dir, "namelist_ex_{}.def".format(idx))
+                cmd = "{} {} -e {} > std_{}.log".format(self.mpi_prefix, exec_path, input_path, idx).strip()
+                subprocess.call(cmd, shell=True)
+                cmd = "mv ./output/{0}_DynamicalGreen.dat ./output/{0}_DynamicalGreen_{1}.dat".format(self.header, idx)
+                subprocess.call(cmd, shell=True)
         os.chdir(self.parent_dir)
 
     def get_one_body_green_core(self, sitei, sigmai, sitej, sigmaj, ex_state, flg, exct_cut):
