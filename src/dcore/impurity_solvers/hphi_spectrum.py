@@ -24,6 +24,24 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None, sector_occupan
     n_excitation = 2
     n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut, *rest = p_common
 
+    if n_site < 1:
+        raise ValueError("No excitation tasks were generated (n_site must be >= 1).")
+
+    # Stage-3 direct bra/ket path (opt-in). One ket BiCG solve is projected onto all bras via
+    # HPhi's SpectrumNumBra, so off-diagonal G is read directly instead of reconstructed from the
+    # c_i + i c_j combination trick (BiCG count n_orb^2 -> n_orb). Default off = combination trick.
+    # These guards run before check_eta so the unsupported configurations fail cleanly.
+    if os.environ.get("DCORE_HPHI_BRAKET", "0") == "1":
+        # The bra/ket path is built on the per-(Ne, 2Sz) sector decomposition (the solver enables
+        # the canonical path whenever DCORE_HPHI_BRAKET=1). The grand-canonical route (all spins in
+        # one excited Fock space) is not supported here, so reject it explicitly rather than
+        # silently producing a wrong (zero-norm) Green's function.
+        if sector_occupancy is None:
+            raise RuntimeError("DCORE_HPHI_BRAKET=1 requires the canonical sector path "
+                               "(sector_occupancy); the grand-canonical bra/ket route is unsupported.")
+        check_eta(p_common)
+        return _braket_one_body_green(p_common, max_workers, sector_occupancy)
+
     check_eta(p_common)
 
     def composite(site, sigma):
@@ -176,6 +194,92 @@ def calc_one_body_green_batch(payload):
         "batch {}: got {} results for {} operators".format(batch_id, len(res_list), len(batch))
     return {_task_key(t): r for t, r in zip(batch, res_list)}
 
+def calc_one_body_green_braket_job(payload):
+    """Run one HPhi braket launch (all kets x all bras) for one ex_state sector.
+
+    payload = (job_id, ex_state, ket_ops, bra_ops, p_common); ops are (site, sigma).
+    Returns {(bra_op, ket_op): one_body_green} (the sign for this ex_state is already applied).
+    """
+    job_id, ex_state, ket_ops, bra_ops, p_common = payload
+    n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut, *rest = p_common
+    mpi_prefix = rest[0] if rest else ""
+    core = CalcSpectrumCore(T_list, exct, eta, path_to_HPhi=path_to_HPhi, header=header,
+                            output_dir=output_dir, mpi_prefix=mpi_prefix)
+    core.set_energies()
+    return core.get_one_body_green_braket_batch(ex_state, ket_ops, bra_ops, exct_cut, batch_id=job_id)
+
+
+def _braket_sector_jobs(n_site, sector_occupancy):
+    """Enumerate the (ex_state, ket_ops, bra_ops) launches of the direct bra/ket path.
+
+    One launch per (ex_state, spin): ket_ops = bra_ops = [(0, sigma), .., (n_site-1, sigma)] so the
+    full same-spin G block is obtained from n_site solves. sector_occupancy = (n_up, n_down, n_site)
+    drops (ex_state, spin) sectors whose excited state vanishes (annihilation on an empty spin or
+    creation on a full one); None (grand canonical) keeps every (ex_state, spin). Cross-spin
+    elements are never generated (zero by spin conservation; dropped from the final Gimp anyway).
+    """
+    n_sigma = 2
+    n_excitation = 2
+    jobs = []
+    for ex_state in range(n_excitation):
+        for sigma in range(n_sigma):
+            if sector_occupancy is not None:
+                n_up, n_down, nsite = sector_occupancy
+                n_s = n_up if sigma == 0 else n_down
+                # annihilation needs the spin occupied; creation needs a free slot.
+                valid = (n_s >= 1) if ex_state == 0 else (n_s <= nsite - 1)
+                if not valid:
+                    continue
+            ops = [(site, sigma) for site in range(n_site)]
+            jobs.append((ex_state, ops, ops))
+    return jobs
+
+
+def _braket_one_body_green(p_common, max_workers, sector_occupancy):
+    """Stage-3 direct bra/ket one-body Green's function (DCORE_HPHI_BRAKET=1).
+
+    Replaces the c_i + i c_j combination trick: each ket solve is projected onto every bra,
+    so G_{i,j} is read directly (BiCG count n_orb^2 -> n_orb). Each launch handles ONE
+    (ex_state, spin) sector: kets = bras = {c_{0,sigma}..c_{n_site-1,sigma}} (same spin), so the
+    full same-spin G block comes from n_site solves. Cross-spin (sigma_i != sigma_j) elements are
+    zero by spin conservation and are not computed (the final Gimp keeps only same-spin blocks).
+    Grand canonical runs every (ex_state, spin); canonical skips (ex_state, spin) sectors that are
+    empty/full for that spin (their excited state would vanish).
+    """
+    n_sigma = 2
+    n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut, *rest = p_common
+
+    spec = _braket_sector_jobs(n_site, sector_occupancy)
+    if not spec:
+        raise RuntimeError("No valid braket excitation sector for {}.".format(sector_occupancy))
+    jobs = [(ex_state, ket_ops, bra_ops, p_common) for (ex_state, ket_ops, bra_ops) in spec]
+
+    from concurrent.futures import ProcessPoolExecutor
+    import shutil
+    payloads = [(jid,) + job for jid, job in enumerate(jobs)]
+    cleanup_dirs = ["braket_{}".format(jid) for jid in range(len(jobs))]
+    try:
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            results = list(executor.map(calc_one_body_green_braket_job, payloads))
+        sample = next(iter(results[0].values()))
+        n_T, n_omega = sample.shape
+        # Accumulate over ex_state (annihilation + creation) and, for grand canonical, over the
+        # both-spin job: each (bra_op, ket_op) appears once per ex_state job that contains it.
+        one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, n_T, n_omega), dtype=np.complex128)
+        for res in results:
+            for (bra_op, ket_op), g in res.items():
+                (si, sgi) = bra_op
+                (sj, sgj) = ket_op
+                # g = G_{bra,ket} = <c_bra phi|R|c_ket phi>. The combination-trick path (validated
+                # vs scipy) stores this physical element at one_body_green[ket][bra], so match it.
+                one_body_green[sj][sgj][si][sgi] += g
+    finally:
+        for d in cleanup_dirs:
+            if os.path.isdir(d):
+                shutil.rmtree(d)
+    return one_body_green
+
+
 def check_eta(p_common):
     _, T_list, exct, eta, path_to_HPhi, header, output_dir, _, *rest = p_common
     mpi_prefix = rest[0] if rest else ""
@@ -235,7 +339,7 @@ class CalcSpectrumCore:
         # per-idx path (default) stays as the validated fallback / reference.
         self.internal_loop = os.environ.get("DCORE_HPHI_INTERNAL_LOOP", "0") == "1"
 
-    def Make_Spectrum_Input(self, calc_dir="./", spectrum_type="single"):
+    def Make_Spectrum_Input(self, calc_dir="./", spectrum_type="single", bra=False):
 
         rel_path_org = os.path.relpath(self.parent_dir, calc_dir)
         rel_path = os.path.relpath(os.path.join(self.parent_dir, "output"), calc_dir)
@@ -261,7 +365,8 @@ class CalcSpectrumCore:
                     if len(words) == 0:
                         continue
                     if words[0] in ["CalcMod", "SpectrumVec", "ModPara",
-                                    "SingleExcitation", "PairExcitation"]:
+                                    "SingleExcitation", "PairExcitation",
+                                    "SingleExcitationBra", "PairExcitationBra"]:
                         continue
                     fex.write("{} {}\n".format(words[0], os.path.join(rel_path_org, words[1])))
                 fex.write("ModPara modpara_ex.def\n")
@@ -269,6 +374,10 @@ class CalcSpectrumCore:
                 fex.write("SpectrumVec    {}\n".format(spectrum_vec))
                 if spectrum_type == "single":
                     fex.write("SingleExcitation single_ex.def\n")
+                    if bra:
+                        # Stage-3 bra/ket reuse: bra set 0 is the namelist SingleExcitationBra;
+                        # bra sets 1.. come from single_ex_bra_<b>.def (SpectrumNumBra).
+                        fex.write("SingleExcitationBra single_ex_bra_0.def\n")
                 elif spectrum_type == "pair":
                     fex.write("PairExcitation pair_ex.def\n")
 
@@ -362,7 +471,7 @@ class CalcSpectrumCore:
                 for idx, value in enumerate(spectrum):
                     fw.write("{} {} {} {}\n".format(self.frequencies[idx].real, self.frequencies[idx].imag, value.real, value.imag))
 
-    def _update_modpara(self, exct, ex_state=0, calc_dir="./", num_op=1):
+    def _update_modpara(self, exct, ex_state=0, calc_dir="./", num_op=1, num_bra=1):
         dict_mod={}
         header = []
         with open(os.path.join(self.parent_dir, "modpara.def"), "r") as fr:
@@ -379,6 +488,10 @@ class CalcSpectrumCore:
                     # HPhi evaluates num_op operator sets (op-inner) reading each
                     # eigenvector once; set 0 is single_ex.def, sets 1.. are single_ex_<op>.def.
                     dict_mod["SpectrumNumOp"] = [num_op]
+                if num_bra > 1:
+                    # Stage-3 bra/ket reuse: project each ket solve onto num_bra bras in one
+                    # BiCG run; set 0 is single_ex_bra_0.def, sets 1.. are single_ex_bra_<b>.def.
+                    dict_mod["SpectrumNumBra"] = [num_bra]
             else:
                 dict_mod["OmegaOrg"] = [self.energy_list[exct], 0]
             if ex_state == 0:
@@ -423,13 +536,13 @@ class CalcSpectrumCore:
                     fw.write("{} {} {} 1.0 0.0\n".format(site_i, sigma_i, ex_state))
                     fw.write("{} {} {} 1.0 0.0\n".format(site_j, sigma_j, ex_state))
 
-    def _run_HPhi(self, exct_cut, ex_state=0, calc_dir="./", num_op=1):
+    def _run_HPhi(self, exct_cut, ex_state=0, calc_dir="./", num_op=1, num_bra=1):
         os.chdir(calc_dir)
         exec_path = self.path_to_HPhi
         if self.internal_loop:
-            # One launch covers all exct_cut eigenstates (and all num_op operator sets);
-            # HPhi writes output/<header>_DynamicalGreen_<idx>[_<op>].dat directly.
-            self._update_modpara(exct_cut, ex_state, calc_dir, num_op=num_op)
+            # One launch covers all exct_cut eigenstates (and all num_op x num_bra operator
+            # sets); HPhi writes output/<header>_DynamicalGreen_<idx>[_<op>[_<bra>]].dat directly.
+            self._update_modpara(exct_cut, ex_state, calc_dir, num_op=num_op, num_bra=num_bra)
             input_path = os.path.join(calc_dir, "namelist_ex.def")
             cmd = "{} {} -e {} > std.log".format(self.mpi_prefix, exec_path, input_path).strip()
             ret = subprocess.call(cmd, shell=True)
@@ -527,6 +640,97 @@ class CalcSpectrumCore:
             for idx, T in enumerate(self.T_list):
                 one_body_green[idx] = sign * finite[op][T]
             out.append(one_body_green)
+        return out
+
+    def _finite_T_spectrum_braket(self, calc_dir, num_op, num_bra):
+        """Boltzmann-sum the per-(idx, op, bra) spectra written by a SpectrumNumBra run.
+
+        Returns (frequencies, {(op, bra, T): spectrum}). The file name matches HPhi's naming,
+        which depends on what is active: with num_bra > 1 it is
+        <header>_DynamicalGreen_<idx>_<op>_<bra>.dat (the _<op> field is forced on); with a single
+        operator AND single bra (num_op == num_bra == 1, e.g. a single-orbital impurity) HPhi
+        falls back to the unsuffixed <header>_DynamicalGreen_<idx>.dat.
+        """
+        spec_dir = os.path.join(calc_dir, self.output_dir)
+        use_bra = num_bra > 1
+        use_op = use_bra or num_op > 1
+        frequencies = None
+        raw = {}  # (op, bra, idx) -> complex spectrum
+        for op in range(num_op):
+            for b in range(num_bra):
+                for idx in range(self.exct):
+                    if use_bra:
+                        name = "{}_DynamicalGreen_{}_{}_{}.dat".format(self.header, idx, op, b)
+                    elif use_op:
+                        name = "{}_DynamicalGreen_{}_{}.dat".format(self.header, idx, op)
+                    else:
+                        name = "{}_DynamicalGreen_{}.dat".format(self.header, idx)
+                    d = np.loadtxt(os.path.join(spec_dir, name))
+                    raw[(op, b, idx)] = d[:, 2] + 1J * d[:, 3]
+                    if op == 0 and b == 0 and idx == 0:
+                        frequencies = d[:, 0] + 1J * d[:, 1]
+        finite = {}
+        for T in self.T_list:
+            Z = self._calc_Z(T)
+            weights = [np.exp(-(self.energy_list[idx] - self.ene_min) / T) for idx in range(self.exct)]
+            for op in range(num_op):
+                for b in range(num_bra):
+                    spectrum = np.zeros_like(raw[(op, b, 0)])
+                    for idx in range(self.exct):
+                        spectrum += weights[idx] * raw[(op, b, idx)]
+                    finite[(op, b, T)] = spectrum / Z
+        return frequencies, finite
+
+    def get_one_body_green_braket_batch(self, ex_state, ket_ops, bra_ops, exct_cut, batch_id=0):
+        """Stage-3 bra/ket reuse: ONE HPhi run that solves the resolvent for every ket
+        c_{j,sigma_j} (SpectrumNumOp) and projects each solve onto every bra c_{i,sigma_i}
+        (SpectrumNumBra), giving G_{i,j} = <c_i phi|(z-(H-E))^{-1}|c_j phi> directly -- no
+        c_i + i c_j combination trick. This cuts the BiCG count from n_orb^2 to n_orb.
+
+        ket_ops / bra_ops: lists of (site, sigma). For a canonical (Sz-resolved) sector both
+        lists are the sites of ONE spin; for grand canonical they are all 2*n_site spin-orbitals
+        (kets and bras of both spins share the Ne+-1 excited space). All ket/bra operators must
+        map to the same excited sector, which HPhi verifies (skipped for grand-canonical models).
+
+        Returns {(bra_op, ket_op): one_body_green[(n_T, n_omega)]} keyed by the (site, sigma)
+        tuples, i.e. G_{bra_op, ket_op}.
+        """
+        num_op = len(ket_ops)
+        num_bra = len(bra_ops)
+        calc_dir = os.path.join(self.parent_dir, "braket_{}".format(batch_id))
+        os.makedirs(calc_dir, exist_ok=True)
+        # The bra/ket projection rides on the SpectrumLoopExct internal eigenstate loop.
+        self.internal_loop = True
+        self.Make_Spectrum_Input(calc_dir, bra=True)
+        # kets: op 0 -> single_ex.def (the namelist SingleExcitation), ops 1.. -> single_ex_<k>.def
+        for k, (sj, sgj) in enumerate(ket_ops):
+            fname = "single_ex.def" if k == 0 else "single_ex_{}.def".format(k)
+            self._make_single_excitation(sj, sgj, sj, sgj, file_name=fname,
+                                         ex_state=ex_state, flg_complex=True, calc_dir=calc_dir)
+        # bras: bra b -> single_ex_bra_<b>.def (set 0 is the namelist SingleExcitationBra)
+        for b, (si, sgi) in enumerate(bra_ops):
+            self._make_single_excitation(si, sgi, si, sgi, file_name="single_ex_bra_{}.def".format(b),
+                                         ex_state=ex_state, flg_complex=True, calc_dir=calc_dir)
+        self._run_HPhi(exct_cut, ex_state, calc_dir, num_op=num_op, num_bra=num_bra)
+        frequencies, finite = self._finite_T_spectrum_braket(calc_dir, num_op, num_bra)
+        if ex_state == 1:
+            self.frequencies = frequencies
+        sign = 1.0 if ex_state == 1 else -1.0
+        out = {}
+        for k, ket_op in enumerate(ket_ops):
+            for b, bra_op in enumerate(bra_ops):
+                g = np.zeros((len(self.T_list), self.nomega), dtype=np.complex128)
+                for t_idx, T in enumerate(self.T_list):
+                    g[t_idx] = sign * finite[(k, b, T)]
+                # g = <c_bra phi|R|c_ket phi>. For the annihilation channel (ex_state 0) this is
+                # the physical element G_{bra,ket} that DCore stores at one_body_green[ket][bra]
+                # (see _braket_one_body_green). The creation channel (ex_state 1) builds the bra and
+                # ket from c^dag operators, whose ordering reverses the two indices, so its
+                # off-diagonal element is the transpose; emit it with bra/ket swapped so both
+                # channels accumulate into the same convention. Verified element-wise (to 1e-10)
+                # against the combination-trick path and end-to-end vs scipy/sparse.
+                key = (ket_op, bra_op) if ex_state == 1 else (bra_op, ket_op)
+                out[key] = g
         return out
 
 

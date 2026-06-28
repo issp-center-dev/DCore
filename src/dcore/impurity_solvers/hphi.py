@@ -471,8 +471,15 @@ class HPhiSolver(SolverBase):
         # Sector-resolved (canonical) path is valid only when H conserves both Ne and 2Sz.
         # Ne is always conserved (only c^dag c hopping + density interactions); 2Sz is broken
         # by spin-orbit coupling (spin-mixing one-body terms), so guard on use_spin_orbit.
-        use_canonical = (os.environ.get("DCORE_HPHI_CANONICAL_SECTORS", "0") == "1"
+        # The Stage-3 direct bra/ket Green's function (DCORE_HPHI_BRAKET=1) is built on the
+        # per-(Ne, 2Sz) sector decomposition, so it implies the canonical path. Both require a
+        # 2Sz-conserving (no spin-orbit) Hamiltonian.
+        use_braket = os.environ.get("DCORE_HPHI_BRAKET", "0") == "1"
+        use_canonical = ((os.environ.get("DCORE_HPHI_CANONICAL_SECTORS", "0") == "1" or use_braket)
                          and not self.use_spin_orbit)
+        if use_braket and self.use_spin_orbit:
+            raise RuntimeError("DCORE_HPHI_BRAKET=1 is not supported with spin-orbit coupling "
+                               "(2Sz must be conserved); use the default solver.")
 
         if use_canonical:
             # H is block-diagonal in (Ne, 2Sz), so the grand-canonical finite-T trace equals the
