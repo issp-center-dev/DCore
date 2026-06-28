@@ -183,6 +183,47 @@ def warn_if_exct_truncates_thermal_trace(energy_file, beta, exct, exct_max, weig
         )
 
 
+def enumerate_particle_sectors(n_site):
+    """Enumerate the (Ne, 2Sz) sectors of a system of ``n_site`` sites (2*n_site spin-orbitals).
+
+    A sector is fixed in HPhi by ``Ncond = Ne`` and ``2Sz``; here ``n_up = (Ne + 2Sz)//2`` and
+    ``n_down = (Ne - 2Sz)//2``. The grand-canonical Hilbert space (dimension ``4**n_site``) is
+    the disjoint union of these sectors as a counting fact (every Fock state has a definite
+    (Ne, 2Sz)), which the unit tests check via ``sum(dim) == 4**n_site``.
+
+    **Validity of the (Ne, 2Sz) block decomposition for the spectrum.** Replacing one
+    grand-canonical run with per-sector canonical runs is correct only when the generated HPhi
+    Hamiltonian is block-diagonal in (Ne, 2Sz) -- i.e. it conserves BOTH the total electron
+    number Ne and 2Sz. That holds for density-density interactions plus number-conserving,
+    spin-diagonal one-body terms. It is BROKEN by anomalous/pairing terms (Ne not conserved) or
+    by spin-mixing one-body terms such as spin-orbit coupling (the transfer block can carry
+    ``s1 != s2``), which conserve Ne but not 2Sz. When only Ne is conserved one must sector by
+    Ne alone (no 2Sz constraint); when neither is conserved the canonical-by-sector path does
+    not apply and the grand-canonical run must be used. The caller (per-sector solver loop) is
+    responsible for checking these conservation laws on the actual Trans/InterAll before using
+    this enumeration. When the decomposition is valid, a sector's eigenvalues are exactly the
+    grand-canonical eigenvalues living in it, so the finite-T trace equals the sum of the
+    per-sector contributions (with a single global E_min and partition function Z).
+
+    Returns a list of dicts ``{'Ne', 'two_Sz', 'n_up', 'n_down', 'dim'}`` sorted by Ne then 2Sz.
+    """
+    from math import comb
+    if n_site < 0:
+        raise ValueError("n_site must be non-negative, got {}".format(n_site))
+    sectors = []
+    for n_up in range(n_site + 1):
+        for n_down in range(n_site + 1):
+            sectors.append({
+                'Ne': n_up + n_down,
+                'two_Sz': n_up - n_down,
+                'n_up': n_up,
+                'n_down': n_down,
+                'dim': comb(n_site, n_up) * comb(n_site, n_down),
+            })
+    sectors.sort(key=lambda s: (s['Ne'], s['two_Sz']))
+    return sectors
+
+
 def gf_parallel_layout(mpirun_command, np_total, n_procs_per_hphi):
     """
     Decide the two-level parallel layout for the Gf (one-body Green's function) step.
@@ -427,27 +468,89 @@ class HPhiSolver(SolverBase):
                 print(u.i1, u.s1, u.i2, u.s2, u.i3, u.s3, u.i4, u.s4, u.U.real, u.U.imag, file=f)
 
         # (2) Run a working horse
-        print("\nComputing eigeneneries ...")
-        with open('./stdout.log', 'w') as output_f:
-            launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
+        # Sector-resolved (canonical) path is valid only when H conserves both Ne and 2Sz.
+        # Ne is always conserved (only c^dag c hopping + density interactions); 2Sz is broken
+        # by spin-orbit coupling (spin-mixing one-body terms), so guard on use_spin_orbit.
+        use_canonical = (os.environ.get("DCORE_HPHI_CANONICAL_SECTORS", "0") == "1"
+                         and not self.use_spin_orbit)
 
-        # Warn if too few eigenstates were computed to span the thermally relevant
-        # multiplet (e.g. a degenerate ground state with the default exct=1).
-        warn_if_exct_truncates_thermal_trace(
-            os.path.join('output', 'zvo_energy.dat'), self.beta, exct, exct_max,
-            weight_threshold=exct_weight_threshold)
+        if use_canonical:
+            # H is block-diagonal in (Ne, 2Sz), so the grand-canonical finite-T trace equals the
+            # weighted sum of per-sector canonical contributions. Each sector spans a much smaller
+            # Hilbert space than the full 4**n_site grand-canonical space, which is where the
+            # dominant Green's-function (BiCG) cost shrinks. Each sector run returns its own
+            # finite-T-normalized Gf G_s and we recombine exactly with
+            #   G = sum_s w_s G_s / sum_s w_s,  w_s = Z_s * exp(-beta (Emin_s - Emin_global)),
+            # which reproduces the single global Boltzmann sum.
+            print("\nComputing eigenenergies + Gf per (Ne, 2Sz) sector ...")
+            canonical_calcmod = calcmod_def.replace("CalcModel   3", "CalcModel   0")
+            contributions = []  # list of (G_sector, E_min_sector, Z_sector)
+            T_list = [1. / self.beta]
+            eta = 1e-4
+            for sec in enumerate_particle_sectors(n_site):
+                Ne, two_Sz, dim = sec['Ne'], sec['two_Sz'], sec['dim']
+                exct_sec = min(exct, dim)
+                if exct_sec < 1:
+                    continue
+                sector_modpara = modpara_def.format(n_site, exct_sec, self.n_iw, omega_max, omega_min)
+                # the convergence target cannot exceed the number of states in this sector
+                sector_modpara = sector_modpara.replace("LanczosTarget  2",
+                                                        "LanczosTarget  {}".format(min(2, exct_sec)))
+                sector_modpara += "Ncond          {}\n2Sz            {}\n".format(Ne, two_Sz)
+                with open('./modpara.def', 'w') as f:
+                    f.write(sector_modpara)
+                with open('./calcmod.def', 'w') as f:
+                    f.write(canonical_calcmod)
+                with open('./stdout.log', 'w') as output_f:
+                    launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
+                energies = read_eigenenergies(os.path.join('output', 'zvo_energy.dat'))
+                if energies.size == 0:
+                    continue
+                # Same thermal-truncation guard as the grand-canonical path, per sector: if
+                # exct_sec < dim and the highest retained state still carries weight, this
+                # sector's trace (and Z_sec) is truncated, which would bias the recombined Gf.
+                warn_if_exct_truncates_thermal_trace(
+                    os.path.join('output', 'zvo_energy.dat'), self.beta, exct_sec, dim,
+                    weight_threshold=exct_weight_threshold)
+                E_min_sec = float(energies.min())
+                Z_sec = float(numpy.sum(numpy.exp(-self.beta * (energies - E_min_sec))))
+                p_common = (self.n_orb, T_list, exct_sec, eta, exec_path, "zvo", "./output",
+                            exct_sec, gf_mpi_prefix)
+                G_sec = calc_one_body_green_core_parallel(
+                    p_common, max_workers=n_outer,
+                    sector_occupancy=(sec['n_up'], sec['n_down'], n_site))
+                contributions.append((G_sec, E_min_sec, Z_sec))
+                print("  sector Ne={:2d} 2Sz={:+d} dim={:5d} exct={:3d} E_min={:.6g} Z={:.3g}".format(
+                    Ne, two_Sz, dim, exct_sec, E_min_sec, Z_sec), flush=True)
+            if not contributions:
+                raise RuntimeError("No (Ne, 2Sz) sector produced eigenstates.")
+            E_min_global = min(c[1] for c in contributions)
+            weights = [c[2] * numpy.exp(-self.beta * (c[1] - E_min_global)) for c in contributions]
+            Z_global = sum(weights)
+            one_body_g = sum(w * c[0] for w, c in zip(weights, contributions)) / Z_global
+            print("\nFinish Gf calc ({} sectors).".format(len(contributions)))
+        else:
+            print("\nComputing eigeneneries ...")
+            with open('./stdout.log', 'w') as output_f:
+                launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
 
-        print("\nComputing Gf ...")
-        if n_inner > 1:
-            print(f"  Gf parallel layout: {n_outer} concurrent HPhi run(s) x {n_inner} MPI rank(s) each")
-        header = "zvo"
-        T_list = [1./self.beta]
-        eta = 1e-4
-        output_dir = "./output"
-        p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct, gf_mpi_prefix)
-        one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=n_outer)
+            # Warn if too few eigenstates were computed to span the thermally relevant
+            # multiplet (e.g. a degenerate ground state with the default exct=1).
+            warn_if_exct_truncates_thermal_trace(
+                os.path.join('output', 'zvo_energy.dat'), self.beta, exct, exct_max,
+                weight_threshold=exct_weight_threshold)
 
-        print("\nFinish Gf calc.")
+            print("\nComputing Gf ...")
+            if n_inner > 1:
+                print(f"  Gf parallel layout: {n_outer} concurrent HPhi run(s) x {n_inner} MPI rank(s) each")
+            header = "zvo"
+            T_list = [1./self.beta]
+            eta = 1e-4
+            output_dir = "./output"
+            p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct, gf_mpi_prefix)
+            one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=n_outer)
+
+            print("\nFinish Gf calc.")
 
         # print(one_body_g.shape)
         assert isinstance(one_body_g, numpy.ndarray)

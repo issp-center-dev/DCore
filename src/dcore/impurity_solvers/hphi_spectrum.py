@@ -6,10 +6,17 @@ import sys
 
 # T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"
 
-def calc_one_body_green_core_parallel(p_common, max_workers=None):
+def calc_one_body_green_core_parallel(p_common, max_workers=None, sector_occupancy=None):
     """
     Return:
         np.ndarray(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
+
+    sector_occupancy: optional (n_up, n_down, n_site) for the canonical (sector-resolved)
+        path. When given, operators with an exactly-zero contribution in that (Ne, 2Sz)
+        sector -- cross-spin off-diagonal terms (zero by spin conservation), and
+        annihilation/creation on an already empty/full spin -- are skipped instead of run,
+        which also avoids HPhi excitations into non-existent sectors. Their contribution is
+        filled with zeros. None (default) is the grand-canonical path: every operator runs.
     """
 
     n_sigma = 2
@@ -42,16 +49,25 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
     from concurrent.futures import ProcessPoolExecutor
     import shutil
 
+    # In the canonical path, only operators with a non-zero contribution in this sector are
+    # run; the rest are filled with zeros below. In the grand-canonical path all tasks run.
+    if sector_occupancy is not None:
+        run_tasks = [t for t in tasks if _task_valid_in_sector(t, *sector_occupancy)]
+        if not run_tasks:
+            raise RuntimeError("No valid excitation operator for sector {}.".format(sector_occupancy))
+    else:
+        run_tasks = tasks
+
     internal_loop = os.environ.get("DCORE_HPHI_INTERNAL_LOOP", "0") == "1"
     if internal_loop:
         # Group operators by Hilbert sector so each HPhi run reads every eigenvector
         # once and reuses it across all operators of that sector (op-inner). Each
         # batch is one HPhi launch; the pool parallelizes over batches.
-        batches = _group_tasks_by_sector(tasks)
+        batches = _group_tasks_by_sector(run_tasks)
         cleanup_dirs = ["batch_{}".format(bid) for bid in range(len(batches))]
     else:
         cleanup_dirs = ["{}_{}_{}_{}_{}_{}".format(t[0], t[1], t[2], t[3], t[5], t[4])
-                        for t in tasks]
+                        for t in run_tasks]
 
     try:
         if internal_loop:
@@ -60,14 +76,18 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
             result_map = {}
             for out in batch_outputs:
                 result_map.update(out)
-            assert len(result_map) == len(tasks), \
-                "batched routing covered {} of {} tasks".format(len(result_map), len(tasks))
-            results = [result_map[_task_key(t)] for t in tasks]
         else:
             with ProcessPoolExecutor(max_workers=max_workers) as executor:
-                results = list(executor.map(calc_one_body_green_core, tasks))
+                run_results = list(executor.map(calc_one_body_green_core, run_tasks))
+            result_map = {_task_key(t): r for t, r in zip(run_tasks, run_results)}
 
-        n_omega = results[0].shape[-1]
+        assert len(result_map) == len(run_tasks), \
+            "routing covered {} of {} run tasks".format(len(result_map), len(run_tasks))
+        n_omega = next(iter(result_map.values())).shape[-1]
+        # tasks not run (filtered out as exactly zero in this sector) contribute zeros.
+        zero = np.zeros((len(T_list), n_omega), dtype=np.complex128)
+        results = [result_map.get(_task_key(t), zero) for t in tasks]
+
         one_body_green_core = np.zeros(
             (n_site, n_sigma, n_site, n_sigma, n_flg, n_excitation, len(T_list), n_omega),
             dtype=np.complex128)
@@ -80,6 +100,24 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None):
                 shutil.rmtree(dir_path)
 
     return one_body_green
+
+
+def _task_valid_in_sector(task, n_up, n_down, n_site):
+    """Whether a one-body-Gf operator has a non-zero contribution in a canonical (Ne, 2Sz) sector.
+
+    Cross-spin off-diagonal operators (sigma_i != sigma_j) vanish by spin conservation and would
+    map to two different Sz sectors, so the c_i + i c_j combination is ill-defined canonically.
+    A same-spin operator excites spin sigma: annihilation (ex_state 0) needs that spin occupied
+    (n_sigma >= 1); creation (ex_state 1) needs a free slot (n_sigma <= n_site - 1). Otherwise the
+    excited state is zero (and HPhi would excite into a non-existent sector).
+    """
+    sitei, sigmai, sitej, sigmaj, idx_flg, ex_state = task[:6]
+    if sigmai != sigmaj:
+        return False
+    n_sigma = n_up if sigmai == 0 else n_down
+    if ex_state == 0:  # annihilation c_sigma
+        return n_sigma >= 1
+    return n_sigma <= n_site - 1  # creation c_sigma^dagger
 
 
 def _task_key(task):
@@ -283,8 +321,11 @@ class CalcSpectrumCore:
                 if len(words) != 0 and words[0] == "Energy":
                     energy_list.append(float(words[1]))
         self.energy_list = energy_list
-        self.ene_min = energy_list[0]
-        self.ene_max = energy_list[len(energy_list)-1]
+        # Use min/max (not [0]/[-1]) so the sector-local Boltzmann normalization here matches the
+        # cross-sector recombination in the canonical solver, which uses energies.min(), even if
+        # zvo_energy.dat were ever written out of energy order.
+        self.ene_min = min(energy_list)
+        self.ene_max = max(energy_list)
 
         if check_eta:
             print(f"\n  Check eta:=exp[-beta(ene_max-ene_mix)] < {self.eta:.1e}")

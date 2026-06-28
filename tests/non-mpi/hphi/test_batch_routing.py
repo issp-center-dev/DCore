@@ -29,7 +29,39 @@ import itertools
 
 import numpy as np
 
-from dcore.impurity_solvers.hphi_spectrum import _group_tasks_by_sector, _task_key
+from dcore.impurity_solvers.hphi_spectrum import (
+    _group_tasks_by_sector, _task_key, _task_valid_in_sector)
+
+
+def _task(sitei, sigmai, sitej, sigmaj, ex_state):
+    # idx_flg is irrelevant to _task_valid_in_sector; p_common omitted (task[:6] used)
+    return (sitei, sigmai, sitej, sigmaj, 0, ex_state)
+
+
+def test_task_valid_in_sector_skips_only_exactly_zero_contributions():
+    n_site = 2
+    # sigma: 0 = up, 1 = down. ex_state: 0 = annihilation, 1 = creation.
+    # --- annihilation needs the spin occupied; creation needs a free slot ---
+    # empty up sector (n_up=0): up-annihilation is zero, up-creation is allowed
+    assert not _task_valid_in_sector(_task(0, 0, 0, 0, 0), n_up=0, n_down=1, n_site=n_site)
+    assert _task_valid_in_sector(_task(0, 0, 0, 0, 1), n_up=0, n_down=1, n_site=n_site)
+    # full up sector (n_up=n_site): up-creation is zero, up-annihilation is allowed
+    assert not _task_valid_in_sector(_task(0, 0, 0, 0, 1), n_up=n_site, n_down=1, n_site=n_site)
+    assert _task_valid_in_sector(_task(0, 0, 0, 0, 0), n_up=n_site, n_down=1, n_site=n_site)
+    # same logic for the down spin (sigma=1) uses n_down
+    assert not _task_valid_in_sector(_task(0, 1, 0, 1, 0), n_up=1, n_down=0, n_site=n_site)
+    assert not _task_valid_in_sector(_task(0, 1, 0, 1, 1), n_up=1, n_down=n_site, n_site=n_site)
+    # interior occupancy: both channels valid
+    assert _task_valid_in_sector(_task(0, 0, 1, 0, 0), n_up=1, n_down=1, n_site=n_site)
+    assert _task_valid_in_sector(_task(0, 0, 1, 0, 1), n_up=1, n_down=1, n_site=n_site)
+
+
+def test_task_valid_in_sector_rejects_all_cross_spin():
+    # cross-spin off-diagonal (sigma_i != sigma_j) is zero by spin conservation -> always skipped
+    for ex_state in (0, 1):
+        for n_up, n_down in [(1, 1), (2, 0), (0, 2)]:
+            assert not _task_valid_in_sector(_task(0, 0, 1, 1, ex_state), n_up, n_down, 2)
+            assert not _task_valid_in_sector(_task(0, 1, 1, 0, ex_state), n_up, n_down, 2)
 
 
 def _gen_tasks(n_site):
