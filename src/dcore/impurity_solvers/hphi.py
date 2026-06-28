@@ -484,18 +484,23 @@ class HPhiSolver(SolverBase):
             # which reproduces the single global Boltzmann sum.
             print("\nComputing eigenenergies + Gf per (Ne, 2Sz) sector ...")
             canonical_calcmod = calcmod_def.replace("CalcModel   3", "CalcModel   0")
-            contributions = []  # list of (G_sector, E_min_sector, Z_sector)
             T_list = [1. / self.beta]
             eta = 1e-4
-            for sec in enumerate_particle_sectors(n_site):
-                Ne, two_Sz, dim = sec['Ne'], sec['two_Sz'], sec['dim']
-                exct_sec = min(exct, dim)
-                if exct_sec < 1:
-                    continue
-                sector_modpara = modpara_def.format(n_site, exct_sec, self.n_iw, omega_max, omega_min)
+            # Drop sectors whose (bounded) thermal contribution is below this, relative to the
+            # global ground state: they contribute negligibly to the finite-T trace.
+            # 0 disables the selection (compute every sector -- exact but slower).
+            sector_weight_threshold = params_kw.get('canonical_sector_weight_threshold', 1e-8)
+            if not (0.0 <= sector_weight_threshold < 1.0):
+                raise ValueError("canonical_sector_weight_threshold must be in [0, 1), got {}"
+                                 .format(sector_weight_threshold))
+
+            def run_sector_eigenvalues(Ne, two_Sz, exct_use):
+                """Write the canonical (Ncond, 2Sz) modpara/calcmod and run the eigenvalue step;
+                return the eigenenergies (empty array if the sector produced nothing)."""
+                sector_modpara = modpara_def.format(n_site, exct_use, self.n_iw, omega_max, omega_min)
                 # the convergence target cannot exceed the number of states in this sector
                 sector_modpara = sector_modpara.replace("LanczosTarget  2",
-                                                        "LanczosTarget  {}".format(min(2, exct_sec)))
+                                                        "LanczosTarget  {}".format(min(2, exct_use)))
                 sector_modpara += "Ncond          {}\n2Sz            {}\n".format(Ne, two_Sz)
                 with open('./modpara.def', 'w') as f:
                     f.write(sector_modpara)
@@ -503,7 +508,41 @@ class HPhiSolver(SolverBase):
                     f.write(canonical_calcmod)
                 with open('./stdout.log', 'w') as output_f:
                     launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
-                energies = read_eigenenergies(os.path.join('output', 'zvo_energy.dat'))
+                return read_eigenenergies(os.path.join('output', 'zvo_energy.dat'))
+
+            all_sectors = [s for s in enumerate_particle_sectors(n_site) if min(exct, s['dim']) >= 1]
+
+            # Phase-2 thermal selection: a cheap ground-state-only pre-pass per sector picks the
+            # thermally relevant (Ne, 2Sz) sectors, so the dominant per-sector Gf step runs only
+            # for those. The spectrum reaches the (Ne+-1) excited sectors internally, so only the
+            # thermally OCCUPIED sectors need an eigenvalue/Gf run here.
+            if sector_weight_threshold > 0.0:
+                gs = []
+                for sec in all_sectors:
+                    e = run_sector_eigenvalues(sec['Ne'], sec['two_Sz'], 1)
+                    if e.size > 0:
+                        gs.append((sec, float(e.min())))
+                if not gs:
+                    raise RuntimeError("No (Ne, 2Sz) sector produced eigenstates.")
+                e_gs_global = min(e for _, e in gs)
+                # A sector's contribution to the un-normalized trace is
+                # Z_sec * exp(-beta(Egs_sec - Egs_global)) with Z_sec = sum_i exp(-beta(E_i-Egs_sec))
+                # <= the number of states summed (<= min(exct, dim)). Bounding Z_sec by that count
+                # (rather than filtering on the ground-state weight alone) makes the cut safe even
+                # for sectors whose many low-lying / nearly degenerate states give a large Z_sec.
+                sectors = [sec for sec, e in gs
+                           if min(exct, sec['dim']) * numpy.exp(-self.beta * (e - e_gs_global))
+                           > sector_weight_threshold]
+                print("  thermal selection: {} of {} sectors kept (weight > {:.1e})".format(
+                    len(sectors), len(all_sectors), sector_weight_threshold), flush=True)
+            else:
+                sectors = all_sectors
+
+            contributions = []  # list of (G_sector, E_min_sector, Z_sector)
+            for sec in sectors:
+                Ne, two_Sz, dim = sec['Ne'], sec['two_Sz'], sec['dim']
+                exct_sec = min(exct, dim)
+                energies = run_sector_eigenvalues(Ne, two_Sz, exct_sec)
                 if energies.size == 0:
                     continue
                 # Same thermal-truncation guard as the grand-canonical path, per sector: if
