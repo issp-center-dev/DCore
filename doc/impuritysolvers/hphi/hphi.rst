@@ -142,8 +142,10 @@ other switches need a more recent ``HPhi`` build, in increasing order:
 
 .. note::
 
-   As of this writing the internal-loop / bra-ket / ``HubbardNConserved``
-   ``HPhi`` features are pending release. With an older ``HPhi`` the switches
+   These ``HPhi`` features (the internal eigenstate/operator/bra loop and the
+   ``HubbardNConserved`` off-diagonal support) are merged into the upstream
+   ``HPhi`` development branch and will ship in its next release; build ``HPhi``
+   from a recent source to use them now. With an older ``HPhi`` the switches
    that need them will fail; leave them unset -- or use only
    ``DCORE_HPHI_CANONICAL_SECTORS=1`` -- to stay on baseline functionality (the
    default is the combination-trick, grand-canonical path).
