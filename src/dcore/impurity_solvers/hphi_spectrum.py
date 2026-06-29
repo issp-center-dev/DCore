@@ -6,7 +6,7 @@ import sys
 
 # T_list, n_iw, exct, eta, path_to_HPhi="./HPhi", header="zvo", output_dir="./output"
 
-def calc_one_body_green_core_parallel(p_common, max_workers=None, sector_occupancy=None):
+def calc_one_body_green_core_parallel(p_common, max_workers=None, sector_occupancy=None, ne_only=None):
     """
     Return:
         np.ndarray(n_site, n_sigma, n_site, n_sigma, n_T, n_omega)
@@ -17,6 +17,11 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None, sector_occupan
         annihilation/creation on an already empty/full spin -- are skipped instead of run,
         which also avoids HPhi excitations into non-existent sectors. Their contribution is
         filled with zeros. None (default) is the grand-canonical path: every operator runs.
+
+    ne_only: optional total electron number Ne of a 2Sz-free (HubbardNConserved) sector, for the
+        spin-orbit bra/ket route (DCORE_HPHI_BRAKET=1 with spin-orbit). Both spins share the
+        Ne+-1 excited space, so cross-spin G elements are computed too. Mutually exclusive with
+        sector_occupancy; only meaningful on the braket path.
     """
 
     n_sigma = 2
@@ -32,15 +37,16 @@ def calc_one_body_green_core_parallel(p_common, max_workers=None, sector_occupan
     # c_i + i c_j combination trick (BiCG count n_orb^2 -> n_orb). Default off = combination trick.
     # These guards run before check_eta so the unsupported configurations fail cleanly.
     if os.environ.get("DCORE_HPHI_BRAKET", "0") == "1":
-        # The bra/ket path is built on the per-(Ne, 2Sz) sector decomposition (the solver enables
-        # the canonical path whenever DCORE_HPHI_BRAKET=1). The grand-canonical route (all spins in
-        # one excited Fock space) is not supported here, so reject it explicitly rather than
-        # silently producing a wrong (zero-norm) Green's function.
-        if sector_occupancy is None:
-            raise RuntimeError("DCORE_HPHI_BRAKET=1 requires the canonical sector path "
-                               "(sector_occupancy); the grand-canonical bra/ket route is unsupported.")
+        # The bra/ket path runs on a sector decomposition: per (Ne, 2Sz) for the 2Sz-conserving
+        # case (same-spin only), or per Ne (ne_only) for the spin-orbit / HubbardNConserved case
+        # (both spins, cross-spin G included). The grand-canonical route (all spins in one excited
+        # Fock space without sectoring) is not supported -- reject it rather than silently
+        # producing a wrong (zero-norm) Green's function.
+        if ne_only is None and sector_occupancy is None:
+            raise RuntimeError("DCORE_HPHI_BRAKET=1 requires a sector (sector_occupancy or "
+                               "ne_only); the grand-canonical bra/ket route is unsupported.")
         check_eta(p_common)
-        return _braket_one_body_green(p_common, max_workers, sector_occupancy)
+        return _braket_one_body_green(p_common, max_workers, sector_occupancy, ne_only=ne_only)
 
     check_eta(p_common)
 
@@ -235,23 +241,91 @@ def _braket_sector_jobs(n_site, sector_occupancy):
     return jobs
 
 
-def _braket_one_body_green(p_common, max_workers, sector_occupancy):
+def _braket_ne_sector_jobs(n_site, ne):
+    """Bra/ket launches for ONE Ne-only sector (2Sz-free, HubbardNConserved) -- the spin-orbit
+    capable route. With only Ne fixed, both spins share the Ne+-1 excited space, so each launch's
+    kets = bras = ALL 2*n_site spin-orbitals (both spins); one ket solve then yields the same-spin
+    AND cross-spin G_{i sigma_i, j sigma_j} elements. One launch per ex_state: annihilation (0)
+    needs an electron to remove (Ne >= 1); creation (1) needs a free slot (Ne <= 2*n_site - 1).
+    """
+    n_sigma = 2
+    n_so = n_sigma * n_site
+    if not 0 <= ne <= n_so:
+        raise ValueError("ne must be in [0, 2*n_site] = [0, {}], got {}".format(n_so, ne))
+    jobs = []
+    for ex_state in range(2):
+        valid = (ne >= 1) if ex_state == 0 else (ne <= n_so - 1)
+        if not valid:
+            continue
+        ops = [(site, sigma) for site in range(n_site) for sigma in range(n_sigma)]
+        jobs.append((ex_state, ops, ops))
+    return jobs
+
+
+def _braket_store_op(bra_op, ket_op, ex_state):
+    """Where the bra/ket element g = G_{bra,ket} = <c_bra phi|R|c_ket phi> is stored in
+    one_body_green, as a (row_op, col_op) pair of (site, sigma) tuples.
+
+    The annihilation channel (ex_state 0) stores the physical element at one_body_green[ket][bra]
+    -- the convention the validated combination-trick path uses. The creation channel (ex_state 1)
+    builds bra and ket from c^dag operators, whose ordering reverses the two indices, so it is the
+    transpose, stored at [bra][ket]. (For a diagonal element bra == ket the two coincide.) This is
+    the SAME convention for same-spin and cross-spin elements; it was verified element-wise (to
+    1e-10) against the combination trick / scipy for the same-spin blocks, and the cross-spin
+    blocks (Ne-only route) rely on the identical operator-ordering argument.
+    """
+    return (ket_op, bra_op) if ex_state == 0 else (bra_op, ket_op)
+
+
+def _braket_assemble(results, n_site):
+    """Accumulate the per-launch braket results into the one_body_green tensor.
+
+    ``results`` is a list of dicts ``{(row_op, col_op): g}`` (one per HPhi launch), where row_op /
+    col_op are (site, sigma) storage indices already produced by _braket_store_op (so the
+    creation-channel transpose is baked in). Returns one_body_green of shape
+    (n_site, 2, n_site, 2, n_T, n_omega); a given (row_op, col_op) accumulates across ex_state
+    launches (annihilation + creation) and, in the Ne-only route, across the both-spin job.
+    """
+    n_sigma = 2
+    sample = next(iter(results[0].values()))
+    n_T, n_omega = sample.shape
+    one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, n_T, n_omega), dtype=np.complex128)
+    for res in results:
+        for (row_op, col_op), g in res.items():
+            (ri, rsg) = row_op
+            (ci, csg) = col_op
+            one_body_green[ri][rsg][ci][csg] += g
+    return one_body_green
+
+
+def _braket_one_body_green(p_common, max_workers, sector_occupancy, ne_only=None):
     """Stage-3 direct bra/ket one-body Green's function (DCORE_HPHI_BRAKET=1).
 
     Replaces the c_i + i c_j combination trick: each ket solve is projected onto every bra,
-    so G_{i,j} is read directly (BiCG count n_orb^2 -> n_orb). Each launch handles ONE
-    (ex_state, spin) sector: kets = bras = {c_{0,sigma}..c_{n_site-1,sigma}} (same spin), so the
-    full same-spin G block comes from n_site solves. Cross-spin (sigma_i != sigma_j) elements are
-    zero by spin conservation and are not computed (the final Gimp keeps only same-spin blocks).
-    Grand canonical runs every (ex_state, spin); canonical skips (ex_state, spin) sectors that are
-    empty/full for that spin (their excited state would vanish).
+    so G_{i,j} is read directly (BiCG count n_orb^2 -> n_orb).
+
+    Two sector modes:
+    - (Ne, 2Sz) [default, ``ne_only=None``]: each launch handles one (ex_state, spin) sector,
+      kets = bras = the same-spin sites, so the same-spin G block comes from n_site solves.
+      Cross-spin elements vanish by spin conservation and are not computed.
+    - Ne-only [``ne_only`` = the sector's Ne; for the spin-orbit / HubbardNConserved route]:
+      both spins share the Ne+-1 excited space, so each launch's kets = bras = ALL 2*n_site
+      spin-orbitals and one ket solve yields the same-spin AND cross-spin G elements.
     """
-    n_sigma = 2
     n_site, T_list, exct, eta, path_to_HPhi, header, output_dir, exct_cut, *rest = p_common
 
-    spec = _braket_sector_jobs(n_site, sector_occupancy)
+    if ne_only is not None:
+        # Ne-only mode is mutually exclusive with the (Ne, 2Sz) occupancy: the two describe
+        # different sector schemes, so a caller passing both is a bug, not a silent fallback.
+        if sector_occupancy is not None:
+            raise ValueError("ne_only and sector_occupancy are mutually exclusive "
+                             "(Ne-only vs (Ne, 2Sz) sectoring); got both.")
+        spec = _braket_ne_sector_jobs(n_site, ne_only)
+    else:
+        spec = _braket_sector_jobs(n_site, sector_occupancy)
     if not spec:
-        raise RuntimeError("No valid braket excitation sector for {}.".format(sector_occupancy))
+        raise RuntimeError("No valid braket excitation sector for occupancy={}, ne_only={}."
+                           .format(sector_occupancy, ne_only))
     jobs = [(ex_state, ket_ops, bra_ops, p_common) for (ex_state, ket_ops, bra_ops) in spec]
 
     from concurrent.futures import ProcessPoolExecutor
@@ -261,18 +335,7 @@ def _braket_one_body_green(p_common, max_workers, sector_occupancy):
     try:
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
             results = list(executor.map(calc_one_body_green_braket_job, payloads))
-        sample = next(iter(results[0].values()))
-        n_T, n_omega = sample.shape
-        # Accumulate over ex_state (annihilation + creation) and, for grand canonical, over the
-        # both-spin job: each (bra_op, ket_op) appears once per ex_state job that contains it.
-        one_body_green = np.zeros((n_site, n_sigma, n_site, n_sigma, n_T, n_omega), dtype=np.complex128)
-        for res in results:
-            for (bra_op, ket_op), g in res.items():
-                (si, sgi) = bra_op
-                (sj, sgj) = ket_op
-                # g = G_{bra,ket} = <c_bra phi|R|c_ket phi>. The combination-trick path (validated
-                # vs scipy) stores this physical element at one_body_green[ket][bra], so match it.
-                one_body_green[sj][sgj][si][sgi] += g
+        one_body_green = _braket_assemble(results, n_site)
     finally:
         for d in cleanup_dirs:
             if os.path.isdir(d):
@@ -692,8 +755,9 @@ class CalcSpectrumCore:
         (kets and bras of both spins share the Ne+-1 excited space). All ket/bra operators must
         map to the same excited sector, which HPhi verifies (skipped for grand-canonical models).
 
-        Returns {(bra_op, ket_op): one_body_green[(n_T, n_omega)]} keyed by the (site, sigma)
-        tuples, i.e. G_{bra_op, ket_op}.
+        Returns {(row_op, col_op): one_body_green[(n_T, n_omega)]} where (row_op, col_op) is the
+        storage index of g = G_{bra_op, ket_op} given by _braket_store_op (which encodes the
+        creation-channel transpose); the caller accumulates one_body_green[row_op][col_op] += g.
         """
         num_op = len(ket_ops)
         num_bra = len(bra_ops)
@@ -722,15 +786,8 @@ class CalcSpectrumCore:
                 g = np.zeros((len(self.T_list), self.nomega), dtype=np.complex128)
                 for t_idx, T in enumerate(self.T_list):
                     g[t_idx] = sign * finite[(k, b, T)]
-                # g = <c_bra phi|R|c_ket phi>. For the annihilation channel (ex_state 0) this is
-                # the physical element G_{bra,ket} that DCore stores at one_body_green[ket][bra]
-                # (see _braket_one_body_green). The creation channel (ex_state 1) builds the bra and
-                # ket from c^dag operators, whose ordering reverses the two indices, so its
-                # off-diagonal element is the transpose; emit it with bra/ket swapped so both
-                # channels accumulate into the same convention. Verified element-wise (to 1e-10)
-                # against the combination-trick path and end-to-end vs scipy/sparse.
-                key = (ket_op, bra_op) if ex_state == 1 else (bra_op, ket_op)
-                out[key] = g
+                # Key by the storage index (which encodes the creation-channel transpose).
+                out[_braket_store_op(bra_op, ket_op, ex_state)] = g
         return out
 
 

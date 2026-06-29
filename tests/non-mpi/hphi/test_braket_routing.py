@@ -30,7 +30,8 @@ import numpy as np
 import pytest
 
 from dcore.impurity_solvers.hphi_spectrum import (
-    _braket_sector_jobs, CalcSpectrumCore, calc_one_body_green_core_parallel)
+    _braket_sector_jobs, _braket_ne_sector_jobs, _braket_store_op, _braket_assemble,
+    _braket_one_body_green, CalcSpectrumCore, calc_one_body_green_core_parallel)
 
 
 def test_grand_canonical_runs_every_exstate_and_spin():
@@ -93,6 +94,97 @@ def test_braket_reader_handles_single_site_unsuffixed_files(tmp_path):
     assert len(freqs) == 3
 
 
+def test_ne_sector_jobs_use_both_spins_and_include_cross_spin():
+    """The Ne-only (spin-orbit) route batches BOTH spins per launch, so cross-spin operator
+    pairs are present (unlike the same-spin (Ne, 2Sz) route)."""
+    n_site = 2
+    jobs = _braket_ne_sector_jobs(n_site, ne=2)  # interior Ne: both ex_state valid
+    assert len(jobs) == 2
+    for ex_state, ket_ops, bra_ops in jobs:
+        assert ket_ops == bra_ops
+        # all 2*n_site spin-orbitals present, both spins
+        assert sorted(ket_ops) == [(s, sg) for s in range(n_site) for sg in (0, 1)]
+        assert {sg for (_, sg) in ket_ops} == {0, 1}
+
+
+def test_ne_sector_jobs_drop_empty_and_full():
+    n_site = 2
+    n_so = 2 * n_site
+    # vacuum (Ne=0): only creation (ex_state 1)
+    assert [e for e, _, _ in _braket_ne_sector_jobs(n_site, 0)] == [1]
+    # full (Ne = 2*n_site): only annihilation (ex_state 0)
+    assert [e for e, _, _ in _braket_ne_sector_jobs(n_site, n_so)] == [0]
+    # interior: both
+    assert sorted(e for e, _, _ in _braket_ne_sector_jobs(n_site, 2)) == [0, 1]
+
+
+def test_ne_sector_jobs_reject_out_of_range_ne():
+    with pytest.raises(ValueError, match=r"ne must be in"):
+        _braket_ne_sector_jobs(2, ne=-1)
+    with pytest.raises(ValueError, match=r"ne must be in"):
+        _braket_ne_sector_jobs(2, ne=5)  # 2*n_site = 4
+    # n_site = 0: only the empty (Ne=0) sector; creation valid (Ne <= 2*n_site-1 = -1 is False),
+    # annihilation invalid -> no jobs.
+    assert _braket_ne_sector_jobs(0, ne=0) == []
+
+
+def test_braket_store_op_convention():
+    # g = G_{bra, ket}. Annihilation (ex 0): stored at [ket][bra]. Creation (ex 1): transposed [bra][ket].
+    bra, ket = (0, 0), (1, 0)  # same spin, off-diagonal
+    assert _braket_store_op(bra, ket, 0) == (ket, bra)   # (1,0),(0,0)
+    assert _braket_store_op(bra, ket, 1) == (bra, ket)   # (0,0),(1,0)  -> transpose
+    # diagonal: both channels store at the same place
+    d = (0, 0)
+    assert _braket_store_op(d, d, 0) == _braket_store_op(d, d, 1) == (d, d)
+    # cross-spin uses the identical convention
+    bra_x, ket_x = (0, 0), (0, 1)
+    assert _braket_store_op(bra_x, ket_x, 0) == (ket_x, bra_x)
+    assert _braket_store_op(bra_x, ket_x, 1) == (bra_x, ket_x)
+
+
+def test_braket_assemble_places_same_and_cross_spin(monkeypatch):
+    """Mocked accumulation: feed _braket_assemble per-launch {(row_op,col_op): g} dicts (the
+    storage keys _braket_store_op produces) for both an annihilation and a creation launch over
+    BOTH spins, and check every (i,si,j,sj) slot -- including cross-spin -- lands where expected.
+    g carries a unique tag per (bra, ket, ex_state) so mis-routing would be caught."""
+    n_site = 2
+    ops = [(s, sg) for s in range(n_site) for sg in range(2)]  # all 4 spin-orbitals
+    # tag(bra, ket, ex) -> a distinct (n_T=1, n_omega=1) complex "spectrum"
+    def tag(bra, ket, ex):
+        code = (bra[0] * 2 + bra[1]) * 10 + (ket[0] * 2 + ket[1]) + 100 * ex
+        return np.array([[code + 0j]])
+
+    results = []
+    expected = {}  # (row_op, col_op) -> summed g
+    for ex in (0, 1):
+        res = {}
+        for ket in ops:
+            for bra in ops:
+                g = tag(bra, ket, ex)
+                key = _braket_store_op(bra, ket, ex)  # storage index
+                res[key] = g
+                expected[key] = expected.get(key, np.zeros((1, 1), dtype=complex)) + g
+        results.append(res)
+
+    obg = _braket_assemble(results, n_site)
+    assert obg.shape == (n_site, 2, n_site, 2, 1, 1)
+    # every stored slot matches the summed expectation, incl. cross-spin (si != sj)
+    saw_cross = False
+    for (row_op, col_op), val in expected.items():
+        (ri, rsg), (ci, csg) = row_op, col_op
+        assert obg[ri][rsg][ci][csg][0, 0] == val[0, 0]
+        if rsg != csg:
+            saw_cross = True
+    assert saw_cross, "cross-spin slots must be exercised"
+
+
+def test_braket_one_body_green_rejects_ne_only_with_occupancy():
+    # ne_only and sector_occupancy are mutually exclusive; the guard runs before any HPhi launch.
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        _braket_one_body_green(_p_common(2), max_workers=1,
+                               sector_occupancy=(1, 1, 2), ne_only=2)
+
+
 def _p_common(n_site):
     return (n_site, [1.0], 1, 1e-4, "./HPhi", "zvo", "./output", 1)
 
@@ -100,7 +192,7 @@ def _p_common(n_site):
 def test_braket_rejects_grand_canonical(monkeypatch):
     """DCORE_HPHI_BRAKET=1 with no sector (grand canonical) must fail cleanly, not run."""
     monkeypatch.setenv("DCORE_HPHI_BRAKET", "1")
-    with pytest.raises(RuntimeError, match="canonical sector"):
+    with pytest.raises(RuntimeError, match="grand-canonical bra/ket route is unsupported"):
         calc_one_body_green_core_parallel(_p_common(2), max_workers=1, sector_occupancy=None)
 
 

@@ -224,6 +224,30 @@ def enumerate_particle_sectors(n_site):
     return sectors
 
 
+def enumerate_ne_sectors(n_site):
+    """Enumerate the Ne-only sectors of a system of ``n_site`` sites (2*n_site spin-orbitals).
+
+    This is the coarser decomposition used when 2Sz is NOT conserved (spin-orbit coupling): the
+    Hamiltonian is block-diagonal in the total electron number Ne but mixes 2Sz, so one sectors by
+    Ne alone (all 2Sz merged). A sector is fixed in HPhi by writing ``Ncond = Ne`` and OMITTING
+    ``2Sz`` from the modpara, which makes HPhi select CalcModel = HubbardNConserved (Ne conserved,
+    Sz free). The dimension is ``C(2*n_site, Ne)`` (place Ne electrons among the 2*n_site
+    spin-orbitals, any spin), and ``sum(dim) == 4**n_site`` as a counting fact.
+
+    These sectors are larger than the (Ne, 2Sz) sectors (which they are the union of over 2Sz) but
+    still much smaller than the full grand-canonical 4**n_site space. Within one Ne sector both
+    spins live in the same Ne+-1 excited space, so the direct bra/ket path can obtain cross-spin
+    Green's-function elements -- which is why this is the spin-orbit-capable braket route.
+
+    Returns a list of dicts ``{'Ne', 'dim'}`` sorted by Ne.
+    """
+    from math import comb
+    if n_site < 0:
+        raise ValueError("n_site must be non-negative, got {}".format(n_site))
+    n_so = 2 * n_site  # number of spin-orbitals
+    return [{'Ne': ne, 'dim': comb(n_so, ne)} for ne in range(n_so + 1)]
+
+
 def gf_parallel_layout(mpirun_command, np_total, n_procs_per_hphi):
     """
     Decide the two-level parallel layout for the Gf (one-body Green's function) step.
@@ -475,11 +499,15 @@ class HPhiSolver(SolverBase):
         # per-(Ne, 2Sz) sector decomposition, so it implies the canonical path. Both require a
         # 2Sz-conserving (no spin-orbit) Hamiltonian.
         use_braket = os.environ.get("DCORE_HPHI_BRAKET", "0") == "1"
+        # Spin-orbit (2Sz broken, Ne still conserved): the bra/ket path falls back to the coarser
+        # Ne-only sector decomposition (HubbardNConserved), where both spins share the Ne+-1
+        # excited space so cross-spin G elements are obtained too. DCORE_HPHI_FORCE_NE_SECTORS=1
+        # forces this Ne-only route even without spin-orbit (testing / alternative decomposition):
+        # it must reproduce the (Ne, 2Sz) result for a 2Sz-conserving model.
+        force_ne = os.environ.get("DCORE_HPHI_FORCE_NE_SECTORS", "0") == "1"
+        use_ne_canonical = use_braket and (self.use_spin_orbit or force_ne)
         use_canonical = ((os.environ.get("DCORE_HPHI_CANONICAL_SECTORS", "0") == "1" or use_braket)
-                         and not self.use_spin_orbit)
-        if use_braket and self.use_spin_orbit:
-            raise RuntimeError("DCORE_HPHI_BRAKET=1 is not supported with spin-orbit coupling "
-                               "(2Sz must be conserved); use the default solver.")
+                         and not self.use_spin_orbit and not use_ne_canonical)
 
         if use_canonical:
             # H is block-diagonal in (Ne, 2Sz), so the grand-canonical finite-T trace equals the
@@ -575,6 +603,97 @@ class HPhiSolver(SolverBase):
             Z_global = sum(weights)
             one_body_g = sum(w * c[0] for w, c in zip(weights, contributions)) / Z_global
             print("\nFinish Gf calc ({} sectors).".format(len(contributions)))
+        elif use_ne_canonical:
+            # Spin-orbit: 2Sz is broken but Ne is conserved, so H is block-diagonal in Ne. Sector by
+            # Ne only (HubbardNConserved: Ncond set, 2Sz omitted) and recombine exactly as the
+            # (Ne, 2Sz) path. Each Ne sector's Ne+-1 excited space holds both spins, so the bra/ket
+            # path projects cross-spin elements too.
+            print("\nComputing eigenenergies + Gf per Ne sector (spin-orbit, HubbardNConserved) ...")
+            ne_calcmod = calcmod_def.replace("CalcModel   3", "CalcModel   0")
+            T_list = [1. / self.beta]
+            eta = 1e-4
+            sector_weight_threshold = params_kw.get('canonical_sector_weight_threshold', 1e-8)
+            if not (0.0 <= sector_weight_threshold < 1.0):
+                raise ValueError("canonical_sector_weight_threshold must be in [0, 1), got {}"
+                                 .format(sector_weight_threshold))
+
+            def run_ne_sector_eigenvalues(Ne, exct_use):
+                """Write a HubbardNConserved (Ncond, no 2Sz) modpara/calcmod and run the eigenvalue
+                step; HPhi auto-selects HubbardNConserved when 2Sz is omitted. Returns the energies."""
+                sector_modpara = modpara_def.format(n_site, exct_use, self.n_iw, omega_max, omega_min)
+                sector_modpara = sector_modpara.replace("LanczosTarget  2",
+                                                        "LanczosTarget  {}".format(min(2, exct_use)))
+                sector_modpara += "Ncond          {}\n".format(Ne)  # no 2Sz -> HubbardNConserved
+                with open('./modpara.def', 'w') as f:
+                    f.write(sector_modpara)
+                with open('./calcmod.def', 'w') as f:
+                    f.write(ne_calcmod)
+                with open('./stdout.log', 'w') as output_f:
+                    launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
+                return read_eigenenergies(os.path.join('output', 'zvo_energy.dat'))
+
+            # Boundary-sector limitation of the Ne-only (HubbardNConserved) route: HPhi cannot run
+            # the vacuum sector (Ne = 0; it rejects Ncond = 0) nor, due to a HubbardNConserved
+            # Hilbert-construction (sz()) edge case, the fully occupied sector (Ne = 2*n_site).
+            # Both are single states (dim = 1). Dropping them makes the finite-T trace exact ONLY
+            # when neither boundary state carries appreciable Boltzmann weight -- i.e. the impurity
+            # is not near-empty or near-full. This holds for typical partial fillings but NOT in
+            # extreme chemical-potential / crystal-field regimes, where the result would be biased.
+            # It is therefore dropped EXPLICITLY (loud warning, not silent); an exact treatment of
+            # the two dim-1 edges is a known follow-up.
+            ne_lo, ne_hi = 1, 2 * n_site - 1
+            dropped = sorted({s['Ne'] for s in enumerate_ne_sectors(n_site)
+                              if min(exct, s['dim']) >= 1 and not (ne_lo <= s['Ne'] <= ne_hi)})
+            if dropped:
+                print("Warning: the spin-orbit (HubbardNConserved) bra/ket route cannot run the "
+                      "boundary Ne sectors {}; they are dropped. The finite-T trace is exact only "
+                      "if these near-empty/near-full states are thermally negligible (typical "
+                      "partial filling) -- verify the filling is not extreme.".format(dropped),
+                      file=sys.stderr)
+            all_sectors = [s for s in enumerate_ne_sectors(n_site)
+                           if min(exct, s['dim']) >= 1 and ne_lo <= s['Ne'] <= ne_hi]
+            if sector_weight_threshold > 0.0:
+                gs = []
+                for sec in all_sectors:
+                    e = run_ne_sector_eigenvalues(sec['Ne'], 1)
+                    if e.size > 0:
+                        gs.append((sec, float(e.min())))
+                if not gs:
+                    raise RuntimeError("No Ne sector produced eigenstates.")
+                e_gs_global = min(e for _, e in gs)
+                sectors = [sec for sec, e in gs
+                           if min(exct, sec['dim']) * numpy.exp(-self.beta * (e - e_gs_global))
+                           > sector_weight_threshold]
+                print("  thermal selection: {} of {} Ne sectors kept (weight > {:.1e})".format(
+                    len(sectors), len(all_sectors), sector_weight_threshold), flush=True)
+            else:
+                sectors = all_sectors
+
+            contributions = []
+            for sec in sectors:
+                Ne, dim = sec['Ne'], sec['dim']
+                exct_sec = min(exct, dim)
+                energies = run_ne_sector_eigenvalues(Ne, exct_sec)
+                if energies.size == 0:
+                    continue
+                warn_if_exct_truncates_thermal_trace(
+                    os.path.join('output', 'zvo_energy.dat'), self.beta, exct_sec, dim,
+                    weight_threshold=exct_weight_threshold)
+                E_min_sec = float(energies.min())
+                Z_sec = float(numpy.sum(numpy.exp(-self.beta * (energies - E_min_sec))))
+                p_common = (self.n_orb, T_list, exct_sec, eta, exec_path, "zvo", "./output",
+                            exct_sec, gf_mpi_prefix)
+                G_sec = calc_one_body_green_core_parallel(p_common, max_workers=n_outer, ne_only=Ne)
+                contributions.append((G_sec, E_min_sec, Z_sec))
+                print("  Ne sector Ne={:2d} dim={:5d} exct={:3d} E_min={:.6g} Z={:.3g}".format(
+                    Ne, dim, exct_sec, E_min_sec, Z_sec), flush=True)
+            if not contributions:
+                raise RuntimeError("No Ne sector produced eigenstates.")
+            E_min_global = min(c[1] for c in contributions)
+            weights = [c[2] * numpy.exp(-self.beta * (c[1] - E_min_global)) for c in contributions]
+            Z_global = sum(weights)
+            one_body_g = sum(w * c[0] for w, c in zip(weights, contributions)) / Z_global
+            print("\nFinish Gf calc ({} Ne sectors).".format(len(contributions)))
         else:
             print("\nComputing eigeneneries ...")
             with open('./stdout.log', 'w') as output_f:
@@ -624,9 +743,10 @@ class HPhiSolver(SolverBase):
         # if triqs_major_version == 1:
         #     set_tail(self._Gimp_iw)
 
-        if self.use_spin_orbit:
-            print("Sigma is not implemented for SOC")
-            raise NotImplementedError
+        # Sigma via Dyson Sigma = G0^-1 - Gimp^-1. The block structure below is generic in
+        # self.gf_struct / self.block_names: spin-orbit uses the single combined 'ud' block of
+        # size 2*n_orb (h0 and Gimp share the spin*n_orb+orbital ordering), so the same code path
+        # gives the spin-orbit self-energy.
 
         # Make H0 matrix
         h0_full = numpy.zeros((2, n_site, 2, n_site), dtype=complex)

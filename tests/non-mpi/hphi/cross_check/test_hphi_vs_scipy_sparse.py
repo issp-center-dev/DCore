@@ -85,8 +85,9 @@ sigma_mix = 1.0
 """
 
 
-def _run_solver(work_dir, seed, solver_block, extra_model="", aux_files=None):
-    """Run dcore_pre + dcore for one solver and return Sigma_iw as (n_iw, norb, norb)."""
+def _run_solver(work_dir, seed, solver_block, extra_model="", aux_files=None, block="up"):
+    """Run dcore_pre + dcore for one solver and return the Sigma_iw block (the spin block 'up'
+    by default, or the combined 'ud' block for a spin-orbit model)."""
     from dcore.dcore_pre import dcore_pre
     from dcore.dcore import dcore
     import h5py
@@ -106,7 +107,7 @@ def _run_solver(work_dir, seed, solver_block, extra_model="", aux_files=None):
         dcore_pre(ini)
         dcore(ini)
         with h5py.File(seed + ".out.h5", "r") as h:
-            data = h["dmft_out"]["Sigma_iw"]["ite1"]["sh0"]["up"]["data"][()]
+            data = h["dmft_out"]["Sigma_iw"]["ite1"]["sh0"][block]["data"][()]
     finally:
         os.chdir(cwd)
     return data[..., 0] + 1j * data[..., 1]
@@ -223,3 +224,76 @@ def test_hphi_matches_scipy_sparse_offdiagonal(sigma_scipy_offdiag, tmp_path):
     # element (the spurious tail showed up only at high frequency).
     diff = numpy.abs(sigma_hphi - ref).max()
     assert diff < 5e-3, f"HPhi vs scipy/sparse mismatch over full omega_n: {diff}"
+
+
+def test_hphi_braket_ne_only_matches_scipy_sparse(sigma_scipy_offdiag, tmp_path, monkeypatch):
+    """The spin-orbit-capable Ne-only bra/ket route (HubbardNConserved) must reproduce the same
+    off-diagonal self-energy on a 2Sz-conserving model when forced on via
+    ``DCORE_HPHI_FORCE_NE_SECTORS``. This exercises the whole Ne-only machinery -- the
+    HubbardNConserved single-excitation off-diagonal spectrum, both-spin bra/ket per Ne sector,
+    the dNe-only cross-operator sector check, and the Ne-sector recombination -- end to end against
+    the independent scipy/sparse ED reference (the cross-spin blocks it computes are zero here and
+    are dropped from Gimp, so only the same-spin blocks are compared)."""
+    monkeypatch.setenv("DCORE_HPHI_BRAKET", "1")
+    monkeypatch.setenv("DCORE_HPHI_FORCE_NE_SECTORS", "1")
+    solver_block = (
+        "name = HPhi\n"
+        f"exec_path{{str}} = {HPHI_EXEC}\n"
+        "n_bath{int} = 0\n"
+        "exct{int} = 16\n"
+        "np{int} = 1"
+    )
+    sigma_hphi = _run_solver(tmp_path, "hphi_run_ne", solver_block,
+                             extra_model=_OFFDIAG_MODEL, aux_files={"cf.in": _CRYSTAL_FIELD})
+    ref = sigma_scipy_offdiag
+    assert sigma_hphi.shape == ref.shape
+    diff = numpy.abs(sigma_hphi - ref).max()
+    assert diff < 5e-3, f"Ne-only bra/ket vs scipy/sparse mismatch over full omega_n: {diff}"
+
+
+# --- Generalization A: spin-orbit (2Sz NOT conserved) bra/ket via HubbardNConserved Ne sectors ---
+_SO_CRYSTAL_FIELD = """\
+# block i j re im  (combined spin-orbital basis, 2*norb=4; spin-flip = up<->down off-diagonal)
+0 0 2 0.25  0.15
+0 2 0 0.25 -0.15
+0 1 3 0.10 -0.05
+0 3 1 0.10  0.05
+"""
+_SO_MODEL = ("spin_orbit = True\n"
+             "local_potential_matrix = {0: 'cf_so.in'}\n"
+             "local_potential_factor = 1.0")
+
+
+@pytest.fixture(scope="module")
+def sigma_scipy_so(tmp_path_factory):
+    """scipy/sparse spin-orbit reference (spin-flip crystal field) -- the ground truth."""
+    pytest.importorskip("scipy")
+    work_dir = str(tmp_path_factory.mktemp("scipy_sparse_so"))
+    solver_block = "name = scipy/sparse\nn_bath{int} = 0"
+    return _run_solver(work_dir, "scipy_so", solver_block, extra_model=_SO_MODEL,
+                       aux_files={"cf_so.in": _SO_CRYSTAL_FIELD}, block="ud")
+
+
+def test_hphi_braket_spin_orbit_matches_scipy_sparse(sigma_scipy_so, tmp_path, monkeypatch):
+    """Generalization A, end to end: with spin-orbit coupling (2Sz NOT conserved) the bra/ket route
+    sectors by Ne only (HubbardNConserved) and computes the CROSS-spin self-energy too. The full
+    combined-basis Sigma (2*norb x 2*norb) -- including the genuinely non-zero cross-spin blocks
+    from the spin-flip term -- must match the independent scipy/sparse ED reference over the whole
+    Matsubara axis. Exercises: HubbardNConserved single-excitation off-diagonal spectrum, the sz()
+    boundary-sector fix, both-spin bra/ket per Ne sector, and the spin-orbit Dyson self-energy."""
+    monkeypatch.setenv("DCORE_HPHI_BRAKET", "1")  # spin-orbit -> auto Ne-canonical bra/ket
+    solver_block = (
+        "name = HPhi\n"
+        f"exec_path{{str}} = {HPHI_EXEC}\n"
+        "n_bath{int} = 0\n"
+        "exct{int} = 16\n"
+        "np{int} = 1"
+    )
+    sigma_hphi = _run_solver(tmp_path, "hphi_so", solver_block, extra_model=_SO_MODEL,
+                             aux_files={"cf_so.in": _SO_CRYSTAL_FIELD}, block="ud")
+    ref = sigma_scipy_so
+    assert sigma_hphi.shape == ref.shape
+    # the cross-spin block must be genuinely non-zero (spin-flip), else the test is vacuous
+    assert numpy.abs(ref[:, 0, 2]).max() > 0.1
+    diff = numpy.abs(sigma_hphi - ref).max()
+    assert diff < 5e-3, f"spin-orbit bra/ket vs scipy/sparse mismatch over full omega_n: {diff}"
