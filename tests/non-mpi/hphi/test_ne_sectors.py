@@ -25,7 +25,9 @@ from math import comb
 
 import pytest
 
-from dcore.impurity_solvers.hphi import enumerate_ne_sectors, enumerate_particle_sectors
+from dcore.impurity_solvers.hphi import (
+    enumerate_ne_sectors, enumerate_particle_sectors, ne_initial_sectors)
+from dcore.impurity_solvers.hphi_spectrum import _braket_ne_sector_jobs
 
 
 @pytest.mark.parametrize("n_site", [1, 2, 3, 4])
@@ -50,6 +52,35 @@ def test_ne_sector_is_union_of_2sz_sectors(n_site):
         fine_dim_by_ne[s['Ne']] = fine_dim_by_ne.get(s['Ne'], 0) + s['dim']
     for s in enumerate_ne_sectors(n_site):
         assert s['dim'] == fine_dim_by_ne[s['Ne']]
+
+
+@pytest.mark.parametrize("n_site", [1, 2, 3])
+def test_ne_only_route_drops_exactly_the_two_boundary_initial_sectors(n_site):
+    """The spin-orbit (HubbardNConserved) bra/ket route cannot run Ne=0 (HPhi rejects Ncond=0)
+    nor Ne=2*n_site (an sz() Hilbert-construction edge case) as thermally occupied INITIAL
+    sectors. Lock the documented guarantee by exercising the *production* boundary filter
+    ``ne_initial_sectors`` (not a local restatement): it drops exactly those two and keeps every
+    interior sector."""
+    n_so = 2 * n_site
+    exct = 4 ** n_site  # large enough that the exct/dim gate keeps every non-empty sector
+    kept, dropped = ne_initial_sectors(n_site, exct)
+    assert dropped == [0, n_so]
+    assert [s['Ne'] for s in kept] == list(range(1, n_so))  # every interior sector retained
+
+
+@pytest.mark.parametrize("n_site", [1, 2, 3])
+def test_interior_sectors_still_reach_the_boundary_excited_spaces(n_site):
+    """Although Ne=0 / Ne=2*n_site are not run as initial sectors, the retained interior sectors
+    still reach those boundary EXCITED spaces through their Ne+-1 transitions: Ne=1 annihilates
+    into Ne=0 (ex_state 0), and Ne=2*n_site-1 creates into Ne=2*n_site (ex_state 1). This is why
+    the boundary states are not simply absent from the spectrum."""
+    n_so = 2 * n_site
+    # Ne=1: annihilation (ex_state 0) reaches the Ne=0 boundary excited space
+    ex_lo = [ex for (ex, _ket, _bra) in _braket_ne_sector_jobs(n_site, 1)]
+    assert 0 in ex_lo
+    # Ne=2*n_site-1: creation (ex_state 1) reaches the Ne=2*n_site boundary excited space
+    ex_hi = [ex for (ex, _ket, _bra) in _braket_ne_sector_jobs(n_site, n_so - 1)]
+    assert 1 in ex_hi
 
 
 def test_n_site_zero_is_the_single_vacuum_sector():

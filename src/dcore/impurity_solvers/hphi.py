@@ -248,6 +248,27 @@ def enumerate_ne_sectors(n_site):
     return [{'Ne': ne, 'dim': comb(n_so, ne)} for ne in range(n_so + 1)]
 
 
+def ne_initial_sectors(n_site, exct):
+    """Split the Ne-only sectors into the ones the spin-orbit (HubbardNConserved) bra/ket route
+    can actually run as thermally occupied INITIAL sectors, and the boundary sectors it must drop.
+
+    HPhi cannot run the vacuum sector (Ne = 0; it rejects Ncond = 0) nor, due to a
+    HubbardNConserved Hilbert-construction (sz()) edge case, the fully occupied sector
+    (Ne = 2*n_site). Both are single states and are excluded as INITIAL sectors; interior sectors
+    still reach those boundary EXCITED spaces through their Ne+-1 transitions. Dropping the two
+    boundary initial sectors makes the finite-T trace exact only when neither boundary state
+    carries appreciable Boltzmann weight (i.e. the impurity is not near-empty or near-full).
+
+    Returns ``(kept, dropped)`` where ``kept`` is the list of runnable sector dicts
+    (``{'Ne', 'dim'}``) and ``dropped`` is the sorted list of omitted Ne values.
+    """
+    ne_lo, ne_hi = 1, 2 * n_site - 1
+    runnable = [s for s in enumerate_ne_sectors(n_site) if min(exct, s['dim']) >= 1]
+    kept = [s for s in runnable if ne_lo <= s['Ne'] <= ne_hi]
+    dropped = sorted({s['Ne'] for s in runnable if not (ne_lo <= s['Ne'] <= ne_hi)})
+    return kept, dropped
+
+
 def gf_parallel_layout(mpirun_command, np_total, n_procs_per_hphi):
     """
     Decide the two-level parallel layout for the Gf (one-body Green's function) step.
@@ -641,17 +662,13 @@ class HPhiSolver(SolverBase):
             # extreme chemical-potential / crystal-field regimes, where the result would be biased.
             # It is therefore dropped EXPLICITLY (loud warning, not silent); an exact treatment of
             # the two dim-1 edges is a known follow-up.
-            ne_lo, ne_hi = 1, 2 * n_site - 1
-            dropped = sorted({s['Ne'] for s in enumerate_ne_sectors(n_site)
-                              if min(exct, s['dim']) >= 1 and not (ne_lo <= s['Ne'] <= ne_hi)})
+            all_sectors, dropped = ne_initial_sectors(n_site, exct)
             if dropped:
                 print("Warning: the spin-orbit (HubbardNConserved) bra/ket route cannot run the "
                       "boundary Ne sectors {}; they are dropped. The finite-T trace is exact only "
                       "if these near-empty/near-full states are thermally negligible (typical "
                       "partial filling) -- verify the filling is not extreme.".format(dropped),
                       file=sys.stderr)
-            all_sectors = [s for s in enumerate_ne_sectors(n_site)
-                           if min(exct, s['dim']) >= 1 and ne_lo <= s['Ne'] <= ne_hi]
             if sector_weight_threshold > 0.0:
                 gs = []
                 for sec in all_sectors:

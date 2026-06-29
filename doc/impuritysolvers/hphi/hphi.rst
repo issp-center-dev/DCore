@@ -121,6 +121,95 @@ low-lying thermally-populated excitations.
    way to confirm that ``exct`` (and other settings) are adequate.
 
 
+Experimental: accelerated and spin-orbit Green's functions
+----------------------------------------------------------
+
+The one-body Green's function can optionally be computed by faster code paths,
+and spin-orbit-coupled impurities (spin-mixing one-body terms) are supported.
+These are **opt-in through environment variables** and leave the default
+behaviour unchanged.
+
+``DCORE_HPHI_CANONICAL_SECTORS=1`` uses only baseline ``HPhi`` functionality
+(standard canonical :math:`(N_e, 2S_z)` runs) and works with any ``HPhi``. The
+other switches need a more recent ``HPhi`` build, in increasing order:
+
+- the internal-loop path needs ``HPhi`` with the internal eigenstate loop for
+  the finite-temperature dynamical Green's function (``SpectrumLoopExct``, plus
+  ``SpectrumNumOp`` for the multi-operator batching);
+- the direct bra-ket path additionally needs the bra loop (``SpectrumNumBra``);
+- the spin-orbit (particle-number-only) path additionally needs the
+  ``HubbardNConserved`` single-excitation off-diagonal support.
+
+.. note::
+
+   As of this writing the internal-loop / bra-ket / ``HubbardNConserved``
+   ``HPhi`` features are pending release. With an older ``HPhi`` the switches
+   that need them will fail; leave them unset -- or use only
+   ``DCORE_HPHI_CANONICAL_SECTORS=1`` -- to stay on baseline functionality (the
+   default is the combination-trick, grand-canonical path).
+
+.. list-table::
+   :header-rows: 1
+   :widths: 34 66
+
+   * - Environment variable
+     - Effect
+   * - ``DCORE_HPHI_INTERNAL_LOOP=1``
+     - Within each Hilbert-sector batch, one ``HPhi`` launch sweeps all retained
+       eigenstates and the batched excitation operators, instead of one launch
+       per (eigenstate × operator). Removes the process-spawn and
+       eigenvector-reload overhead.
+   * - ``DCORE_HPHI_BRAKET=1``
+     - Direct bra/ket projection: one shifted-BiCG solve per ket operator is
+       projected onto every bra, so the off-diagonal :math:`G_{ij}` is read
+       directly instead of reconstructed from the :math:`c_i + i c_j`
+       combination. Cuts the BiCG count from :math:`n_\text{orb}^2` to
+       :math:`n_\text{orb}` per spin-conserving block (for the spin-orbit route
+       below, from :math:`(2 n_\text{orb})^2` to :math:`2 n_\text{orb}` over the
+       combined spin-orbitals). Implies the internal loop and the sector
+       restriction below.
+   * - ``DCORE_HPHI_CANONICAL_SECTORS=1``
+     - Restrict each excited-state solve to the relevant particle-number / spin
+       :math:`(N_e, 2S_z)` sector instead of the full grand-canonical Fock
+       space, shrinking the Hilbert space per solve. (Non-spin-orbit models.)
+   * - ``DCORE_HPHI_FORCE_NE_SECTORS=1``
+     - Use particle-number-only (``HubbardNConserved``) sectors, where both
+       spins share each :math:`N_e \pm 1` excited space. Automatically enabled
+       for spin-orbit models (where :math:`2S_z` is not conserved). Requires
+       ``DCORE_HPHI_BRAKET=1``.
+
+**Spin-orbit coupling.** When the calculation uses the combined spin-orbital
+representation -- a single ``ud`` block, i.e. ``spin_orbit = True`` -- ``DCore``
+selects the particle-number-only route (together with ``DCORE_HPHI_BRAKET=1``)
+and computes the full :math:`2\,n_\text{orb} \times 2\,n_\text{orb}` self-energy
+including the non-zero cross-spin blocks. This route is cross-validated against
+the independent ``scipy/sparse`` ED solver; the regression test asserts
+agreement below :math:`5\times10^{-3}` on a spin-flip crystal-field model. For a
+spin-orbit impurity, set ``DCORE_HPHI_BRAKET=1``.
+
+.. warning::
+
+   The particle-number-only route cannot run the empty (:math:`N_e = 0`) and
+   full (:math:`N_e = 2\,n_\text{site}`, where
+   :math:`n_\text{site} = n_\text{orb} + n_\text{bath}`) boundary sectors as
+   thermally occupied initial sectors, so the thermal trace omits the
+   contributions whose initial state lies in those two sectors. (Retained
+   sectors still reach the boundary excited spaces via their :math:`N_e \pm 1`
+   transitions.) The result
+   is therefore exact only when the near-empty and near-full sectors are
+   thermally negligible at the target temperature; ``DCore`` prints a warning
+   when it skips a boundary sector. This is generally safe for a partially
+   filled correlated impurity but can bias very small or nearly-empty/-full
+   models.
+
+.. tip::
+
+   For a large speedup on a recent ``HPhi`` build, set ``DCORE_HPHI_BRAKET=1``
+   alone -- it turns on the internal loop and the sector restriction as well.
+   As always, cross-check against ``scipy/sparse`` on a small model after
+   changing these switches.
+
+
 Running HPhi in parallel
 ------------------------
 
