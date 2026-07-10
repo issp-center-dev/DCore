@@ -16,11 +16,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from dcore.fourier import _fft_fermion_w2t, _fft_fermion_t2w, _matsubara_freq_fermion, bgf_fourier_w2t
+from dcore.fourier import (
+    _fft_fermion_w2t, _fft_fermion_t2w, _matsubara_freq_fermion, bgf_fourier_w2t,
+    _ir_fermion_w2t, _ir_fermion_t2w,
+)
 from dcore.tools import make_block_gf
 from dcore._dispatcher import BlockGf, Gf, GfImFreq, GfImTime
 import numpy
 import os
+import pytest
 from itertools import product
 
 
@@ -96,3 +100,27 @@ def test_fft_bgf_w2t(request):
                 assert numpy.allclose(gf.data[:, i, j], g0_t, atol=1e-4)
             else:
                 assert numpy.allclose(gf.data[:, i, j], numpy.zeros(nt))
+
+
+def test_ir_fermion_w2t(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    g0_t_ir = _ir_fermion_w2t(g0_w, beta, wmax=10.0)
+    assert g0_t_ir.shape == g0_t.shape
+    assert numpy.allclose(g0_t_ir, g0_t, atol=1e-4)
+
+
+def test_ir_fermion_t2w(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    g0_w_ir = _ir_fermion_t2w(g0_t, beta, wmax=10.0)
+    assert g0_w_ir.shape == g0_w.shape
+    assert numpy.allclose(g0_w_ir, g0_w, atol=1e-4)
+
+
+def test_ir_vs_fft_w2t(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    g_fft = _fft_fermion_w2t(g0_w, beta, a=a)
+    g_ir = _ir_fermion_w2t(g0_w, beta, wmax=10.0)
+    assert numpy.allclose(g_ir, g_fft, atol=1e-4)

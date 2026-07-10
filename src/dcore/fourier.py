@@ -21,6 +21,7 @@ from scipy import fft
 from itertools import product
 from dcore._dispatcher import BlockGf, Gf, GfImFreq, GfImTime, MeshImFreq
 from dcore.tools import make_block_gf
+from dcore import ir_basis
 
 
 def _matsubara_freq_fermion(beta, nw):
@@ -111,6 +112,73 @@ def _fft_fermion_t2w(gt, beta):
     gw_fermion += a / iw
 
     return gw_fermion
+
+
+def _ir_default_wmax(beta, nw):
+    """Safe real-frequency cutoff default: largest Matsubara frequency on the grid."""
+    return (2 * nw - 1) * numpy.pi / beta
+
+
+def _ir_fermion_w2t(gw, beta, wmax=None, eps=1e-10):
+    """FFT from G(iw) to G(tau) via the IR (sparse-ir) basis.
+
+    Args:
+        gw (numpy.ndarray(2*nw)): G(iw) including w>0 and w<0 on the dense symmetric grid.
+        beta (float): Inverse temperature.
+        wmax (float, optional): Real-frequency cutoff. Defaults to the largest Matsubara
+            frequency on the grid.
+        eps (float, optional): Basis truncation tolerance. Defaults to 1e-10.
+
+    Returns:
+        numpy.ndarray(nt+1): real G(tau) on linspace(0, beta, nt+1), nt=2*nw.
+    """
+    import sparse_ir
+    assert gw.size % 2 == 0  # even
+    nw = gw.size // 2
+    nt = 2 * nw
+    if wmax is None:
+        wmax = _ir_default_wmax(beta, nw)
+
+    basis = ir_basis.get_basis(beta, wmax, eps, 'F')
+    # Fermionic Matsubara indices 2n+1 for n in [-nw, nw), matching _matsubara_freq_fermion.
+    n_idx = numpy.array([2 * n + 1 for n in range(-nw, nw)])
+    smpl_w = sparse_ir.MatsubaraSampling(basis, sampling_points=n_idx)
+    tau_grid = numpy.linspace(0.0, beta, nt + 1)
+    smpl_t = sparse_ir.TauSampling(basis, sampling_points=tau_grid)
+
+    g_l = smpl_w.fit(gw)
+    gt = smpl_t.evaluate(g_l)
+    return gt.real
+
+
+def _ir_fermion_t2w(gt, beta, wmax=None, eps=1e-10):
+    """FFT from G(tau) to G(iw) via the IR (sparse-ir) basis.
+
+    Args:
+        gt (numpy.ndarray(nt+1)): real G(tau) on linspace(0, beta, nt+1), nt=2*nw.
+        beta (float): Inverse temperature.
+        wmax (float, optional): Real-frequency cutoff. Defaults to the largest Matsubara
+            frequency on the grid.
+        eps (float, optional): Basis truncation tolerance. Defaults to 1e-10.
+
+    Returns:
+        numpy.ndarray(2*nw): complex G(iw) including w>0 and w<0 on the dense symmetric grid.
+    """
+    import sparse_ir
+    assert gt.size % 2 == 1  # odd
+    nt = gt.size - 1
+    nw = nt // 2
+    if wmax is None:
+        wmax = _ir_default_wmax(beta, nw)
+
+    basis = ir_basis.get_basis(beta, wmax, eps, 'F')
+    tau_grid = numpy.linspace(0.0, beta, nt + 1)
+    smpl_t = sparse_ir.TauSampling(basis, sampling_points=tau_grid)
+    n_idx = numpy.array([2 * n + 1 for n in range(-nw, nw)])
+    smpl_w = sparse_ir.MatsubaraSampling(basis, sampling_points=n_idx)
+
+    g_l = smpl_t.fit(gt)
+    return smpl_w.evaluate(g_l)
 
 
 def bgf_fourier_w2t(bgf, tail=None):
