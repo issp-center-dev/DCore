@@ -124,3 +124,37 @@ def test_ir_vs_fft_w2t(request):
     g_fft = _fft_fermion_w2t(g0_w, beta, a=a)
     g_ir = _ir_fermion_w2t(g0_w, beta, wmax=10.0)
     assert numpy.allclose(g_ir, g_fft, atol=1e-4)
+
+
+def test_ir_bgf_w2t(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    nt = g0_t.size
+    nw = g0_w.size // 2
+
+    gf_struct = {'up': [0, 1]}
+    bgf_w = make_block_gf(GfImFreq, gf_struct, beta, nw)
+    for name, gf in bgf_w:
+        _, norb1, norb2 = gf.data.shape
+        for i, j in product(range(norb1), range(norb2)):
+            gf.data[:, i, j] = g0_w[:] if i == j else numpy.zeros(2 * nw)
+
+    bgf_t = bgf_fourier_w2t(bgf_w, method='ir', ir_params={'wmax': 10.0})
+
+    for name, gf in bgf_t:
+        nt_2, norb1, norb2 = gf.data.shape
+        assert nt_2 == nt
+        for i, j in product(range(norb1), range(norb2)):
+            if i == j:
+                assert numpy.allclose(gf.data[:, i, j], g0_t, atol=1e-4)
+            else:
+                assert numpy.allclose(gf.data[:, i, j], numpy.zeros(nt), atol=1e-4)
+
+
+def test_bgf_w2t_unknown_method(request):
+    g0_w, g0_t, beta, a = _make_g0()
+    nw = g0_w.size // 2
+    gf_struct = {'up': [0]}
+    bgf_w = make_block_gf(GfImFreq, gf_struct, beta, nw)
+    with pytest.raises(ValueError):
+        bgf_fourier_w2t(bgf_w, method='nope')

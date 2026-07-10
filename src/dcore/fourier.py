@@ -181,12 +181,15 @@ def _ir_fermion_t2w(gt, beta, wmax=None, eps=1e-10):
     return smpl_w.evaluate(g_l)
 
 
-def bgf_fourier_w2t(bgf, tail=None):
+def bgf_fourier_w2t(bgf, tail=None, method='fft', ir_params=None):
     """Fourier transform BlockGf from w to t
 
     Args:
         bgf (BlockGf(GfImFreq)): Block Green's function in imaginary frequency.
         tail (dict(numpy.ndarray), optional): Coefficient matrix for 1/iw tail. Defaults to None.
+        method (str, optional): 'fft' (dense FFT, default) or 'ir' (sparse-ir basis).
+        ir_params (dict, optional): {'wmax': float|None, 'eps': float} passed to the IR
+            path. Ignored when method='fft'. `tail` is ignored when method='ir'.
 
     Returns:
         BlockGf(GfImTime): Block Green's function in imaginary time.
@@ -195,6 +198,9 @@ def bgf_fourier_w2t(bgf, tail=None):
     assert isinstance(bgf.mesh, MeshImFreq)
     assert bgf.mesh.statistic == 'Fermion'
     assert bgf.mesh.positive_only() is False
+
+    if method not in ('fft', 'ir'):
+        raise ValueError(f"Unknown method '{method}'; expected 'fft' or 'ir'.")
 
     beta = bgf.mesh.beta
 
@@ -227,7 +233,10 @@ def bgf_fourier_w2t(bgf, tail=None):
         assert nw_2 == nw_pm
         assert bgf_t[name].data.shape == (nt, norb1, norb2)
         for i, j in product(range(norb1), range(norb2)):
-            gt = _fft_fermion_w2t(gf.data[:, i, j], beta, a=tail[name][i, j])
+            if method == 'fft':
+                gt = _fft_fermion_w2t(gf.data[:, i, j], beta, a=tail[name][i, j])
+            else:  # method == 'ir'
+                gt = _ir_fermion_w2t(gf.data[:, i, j], beta, **(ir_params or {}))
             assert gt.shape == (nt,)
             bgf_t[name].data[:, i, j] = gt
 
