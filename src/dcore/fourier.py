@@ -126,6 +126,14 @@ def _ir_default_wmax(beta, nw):
     (hence less accurate) than a physically-sized cutoff. Emits a warning so the
     fallback is never silent; callers should pass an explicit wmax covering the
     spectral support whenever it is known.
+
+    NOTE for the future consumer wiring: the physically-correct cutoff is the
+    dispersion spectral half-range max|eps_k - mu|, which this pure G(iw)<->G(tau)
+    transform cannot see (it has no eps(k)/mu). The consumer that owns the lattice
+    (DMFT driver / SumkDFT) must supply wmax = max|eps_k - mu| via [system] ir_wmax
+    -- do NOT re-derive a band/grid heuristic here: the sister project H-wave hit
+    exactly that bug (issp-center-dev/H-wave issue #57), where a naive band measure
+    produced an ill-conditioned basis and wrong results.
     """
     wmax = (2 * nw - 1) * numpy.pi / beta
     warnings.warn(
@@ -167,6 +175,11 @@ def _ir_fermion_w2t(gw, beta, wmax=None, eps=1e-10):
 
     g_l = smpl_w.fit(gw)
     gt = smpl_t.evaluate(g_l)
+    # G(tau) of a fermionic G(iw) is real; mirror the FFT path's loud check
+    # rather than silently discarding an imaginary part (a matrix-valued
+    # off-diagonal block that is genuinely complex must not pass silently).
+    assert numpy.all(numpy.abs(gt.imag) < 1e-8), \
+        "IR w2t produced a non-real G(tau); input may be a complex off-diagonal block"
     return gt.real
 
 
