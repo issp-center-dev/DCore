@@ -318,6 +318,10 @@ class DMFTCoreSolver(object):
 
         self._beta = float(params['system']['beta'])
         self._n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
+        # IR-basis plumbing (consumed by IR-enabled Matsubara handlers; see fourier.py).
+        self._basis = params['system']['basis']
+        self._ir_wmax = float(params['system']['ir_wmax'])
+        self._ir_eps = float(params['system']['ir_eps'])
 
         # MPI commands
         if 'mpi' in params and 'num_processes' in params['mpi']:

@@ -104,6 +104,12 @@ def create_parser(target_sections=None):
     parser.add_option("system", "dc_type", str, 'HF_DFT', "Chosen from 'HF_DFT' (default), 'HF_imp', 'FLL'")
     parser.add_option("system", "dc_orbital_average", bool, False, "If true, the DC correction is averaged over orbitals in each shell. Off-diagonal components are dropped.")
     parser.add_option("system", "no_tail_fit", bool, False, "Compute Matsubara summation without fitting high-frequency moments.")
+    parser.add_option("system", "basis", str, "matsubara",
+                      "Basis for Matsubara-frequency handling: 'matsubara' (dense grid, default) or 'ir' (sparse-ir/IR basis).")
+    parser.add_option("system", "ir_wmax", float, -1.0,
+                      "Real-frequency cutoff wmax for the IR basis (used when basis='ir'). Non-positive => auto (largest sampled Matsubara frequency).")
+    parser.add_option("system", "ir_eps", float, 1e-10,
+                      "Truncation tolerance for the IR basis (used when basis='ir').")
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',

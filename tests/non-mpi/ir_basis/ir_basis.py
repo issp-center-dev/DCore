@@ -37,3 +37,14 @@ def test_get_basis_distinct_keys():
     b1 = get_basis(beta=10.0, wmax=20.0, eps=1e-10, statistics='F')
     b3 = get_basis(beta=10.0, wmax=30.0, eps=1e-10, statistics='F')
     assert b1 is not b3
+
+
+from dcore.program_options import create_parser
+
+
+def test_system_ir_options_defaults():
+    p = create_parser(['system'])
+    d = p.as_dict()
+    assert d['system']['basis'] == 'matsubara'
+    assert d['system']['ir_wmax'] == -1.0
+    assert d['system']['ir_eps'] == 1e-10
