@@ -158,3 +158,29 @@ def test_bgf_w2t_unknown_method(request):
     bgf_w = make_block_gf(GfImFreq, gf_struct, beta, nw)
     with pytest.raises(ValueError):
         bgf_fourier_w2t(bgf_w, method='nope')
+
+
+def test_ir_fermion_w2t_auto_wmax_warns_and_is_accurate(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    # wmax omitted -> grid-edge fallback must warn (never silent) ...
+    with pytest.warns(UserWarning, match="wmax not specified"):
+        g0_t_ir = _ir_fermion_w2t(g0_w, beta)
+    # ... and still stay within the coarse tolerance (regression guard).
+    assert numpy.allclose(g0_t_ir, g0_t, atol=1e-4)
+
+
+def test_ir_default_wmax_basis_size_bounded(request):
+    pytest.importorskip("sparse_ir")
+    import warnings as _warnings
+    from dcore.fourier import _ir_default_wmax
+    from dcore import ir_basis
+    beta = 10.0
+    nw = 1024
+    with _warnings.catch_warnings():
+        _warnings.simplefilter("ignore")
+        wmax = _ir_default_wmax(beta, nw)
+    basis = ir_basis.get_basis(beta, wmax, 1e-10, 'F')
+    # Grid-edge wmax yields a large-but-bounded basis (~69 at these params).
+    # Pin it so a future change that explodes Lambda is caught.
+    assert basis.size < 200

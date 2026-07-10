@@ -16,6 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+import warnings
+
 import numpy
 from scipy import fft
 from itertools import product
@@ -115,8 +117,25 @@ def _fft_fermion_t2w(gt, beta):
 
 
 def _ir_default_wmax(beta, nw):
-    """Safe real-frequency cutoff default: largest Matsubara frequency on the grid."""
-    return (2 * nw - 1) * numpy.pi / beta
+    """Fallback real-frequency cutoff = largest Matsubara frequency on the grid.
+
+    This over-estimate guarantees the basis spans everything the sampling grid
+    resolves, but it scales with the *number* of frequencies (a numerical
+    parameter), not the physical spectral width. For large nw it makes
+    Lambda = beta*wmax large, which is slower to build and more ill-conditioned
+    (hence less accurate) than a physically-sized cutoff. Emits a warning so the
+    fallback is never silent; callers should pass an explicit wmax covering the
+    spectral support whenever it is known.
+    """
+    wmax = (2 * nw - 1) * numpy.pi / beta
+    warnings.warn(
+        f"IR basis wmax not specified; falling back to the Matsubara-grid-edge "
+        f"wmax={wmax:.3g} (Lambda=beta*wmax={beta * wmax:.3g}), which is slower "
+        f"and less accurate than a physically-sized cutoff. Pass an explicit "
+        f"wmax (or [system] ir_wmax) covering the spectral support.",
+        stacklevel=3,
+    )
+    return wmax
 
 
 def _ir_fermion_w2t(gw, beta, wmax=None, eps=1e-10):
