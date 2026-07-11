@@ -318,6 +318,16 @@ class DMFTCoreSolver(object):
 
         self._beta = float(params['system']['beta'])
         self._n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
+        # IR-basis plumbing: parsed and stored, but NOT yet wired to any
+        # computation (fourier.py has no production caller yet). These are dead
+        # today by design; the future consumer increment that routes Matsubara
+        # handlers through the IR path will read them.
+        # TODO(ir-consumer-wiring): consume self._basis/_ir_wmax/_ir_eps; pass
+        # wmax = max|eps_k - mu| to the IR transform (see fourier._ir_default_wmax
+        # and H-wave issue #57 -- do not use a band/grid heuristic).
+        self._basis = params['system']['basis']
+        self._ir_wmax = float(params['system']['ir_wmax'])
+        self._ir_eps = float(params['system']['ir_eps'])
 
         # MPI commands
         if 'mpi' in params and 'num_processes' in params['mpi']:
