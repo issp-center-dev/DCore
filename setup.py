@@ -54,6 +54,7 @@ setup(
 
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer'],
+        'gpu': ['cupy'],
         },
 
 

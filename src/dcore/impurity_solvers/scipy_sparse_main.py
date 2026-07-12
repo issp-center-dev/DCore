@@ -192,36 +192,35 @@ def print_sparse_matrix_info(matrix, prefix=""):
 # Compute
 #   <n| c_i (iw - H + E_n) c_j^+ |n>
 # using the eigenvalues of H (Lehmann representation)
-def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex, pm):
+def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex,
+                    pm, xp=np):
     n_flavors = Cdag.size
-    n_iw = iws.size
     dim_ex = eigvals_ex.size
     assert eigvecs_ex.shape == (dim_ex, dim_ex)
 
-    gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
-
-    # cdag_im[i, m] = <m|c_i^+|n>  for a given n
+    # cdag_im[i, m] = <m|c_i^+|n>  (built on host: sparse matvecs)
     cdag_im = np.empty((n_flavors, dim_ex), dtype=complex)
     for i in range(n_flavors):
         cdag_im[i] = eigvecs_ex.conj().T @ Cdag[i] @ eigvec
 
-    for l, iw in enumerate(iws):
-        if pm == +1:
-            # ene_denom[m] = 1 / (iw - E_m + E_n)
-            ene_denom = 1 / (iw - eigvals_ex + E_n)
-        else:
-            # ene_denom[m] = 1 / (iw + E_m - E_n)
-            ene_denom = 1 / (iw + eigvals_ex - E_n)
-        assert ene_denom.shape == (dim_ex,)
+    # ene_denom[l, m] = 1 / (iw_l -/+ E_m +/- E_n)
+    if pm == +1:
+        ene = 1.0 / (iws[:, None] - eigvals_ex[None, :] + E_n)
+    else:
+        ene = 1.0 / (iws[:, None] + eigvals_ex[None, :] - E_n)
 
-        for i, j in np.ndindex(n_flavors, n_flavors):
-            if spin_conserve:
-                n_orb = n_flavors // 2
-                if i // n_orb != j // n_orb:  # skip different spins
-                    continue
+    ci = xp.asarray(cdag_im)
+    e = xp.asarray(ene)
+    # gf[i, j, l] = sum_m conj(cdag_im[i,m]) * ene[l,m] * cdag_im[j,m]
+    gf = xp.einsum('im,lm,jm->ijl', ci.conj(), e, ci)
+    if xp is not np:
+        gf = xp.asnumpy(gf)
 
-            gf[i, j, l] = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
-
+    if spin_conserve:
+        n_orb = n_flavors // 2
+        blk = np.arange(n_flavors) // n_orb
+        mask = blk[:, None] != blk[None, :]        # cross-spin (i,j)
+        gf[mask, :] = 0.0
     return gf
 
 
@@ -341,6 +340,17 @@ def calc_gf_lanczos(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, ncv):
     return gf
 
 
+def _dense_eigh(hamil_sparse, xp):
+    """Dense Hermitian eigendecomposition of a sparse matrix. Uses cupy.linalg.eigh
+    on the GPU when xp is cupy, else scipy.linalg.eigh; always returns numpy arrays
+    so downstream (numpy/scipy.sparse) code is unaffected."""
+    dense = hamil_sparse.toarray()
+    if xp is np:
+        return scipy.linalg.eigh(dense)
+    w, v = xp.linalg.eigh(xp.asarray(dense))
+    return xp.asnumpy(w), xp.asnumpy(v)
+
+
 def main():
     # ----------------------------------------------------------------
     # Parse input parameters
@@ -373,6 +383,12 @@ def main():
     # gf_rtol = params['gf_rtol']
     check_n_eigen = params['check_n_eigen']
     check_orthonormality = params['check_orthonormality']
+
+    gpu = params.get('gpu', False)
+    from dcore.gpu import get_backend
+    xp, gpu_active = get_backend(gpu)
+    if gpu_active:
+        print("GPU (CuPy) backend active for dense eigh / Lehmann Gf.", flush=True)
 
     if eigen_solver not in eigsolver:
         raise ValueError(f"Invalid eigen_solver: {eigen_solver}")
@@ -583,7 +599,7 @@ def main():
         if full_diagonalization[N]:
             print(" full diagonalization", flush=True)
             # n_eigen = dim[N]
-            eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
+            eigvals[N], eigvecs[N] = _dense_eigh(hamils[N], xp)
         else:
             print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.", flush=True)
             if eigen_solver == 'lanczos':
@@ -735,6 +751,7 @@ def main():
                     params_gf.update(
                         eigvals_ex = eigvals[N_ex],
                         eigvecs_ex = eigvecs[N_ex],
+                        xp = xp,
                     )
                     gf_1 = calc_gf_Lehmann(**params_gf)
 
