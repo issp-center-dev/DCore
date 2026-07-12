@@ -192,36 +192,35 @@ def print_sparse_matrix_info(matrix, prefix=""):
 # Compute
 #   <n| c_i (iw - H + E_n) c_j^+ |n>
 # using the eigenvalues of H (Lehmann representation)
-def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex, pm):
+def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex,
+                    pm, xp=np):
     n_flavors = Cdag.size
-    n_iw = iws.size
     dim_ex = eigvals_ex.size
     assert eigvecs_ex.shape == (dim_ex, dim_ex)
 
-    gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
-
-    # cdag_im[i, m] = <m|c_i^+|n>  for a given n
+    # cdag_im[i, m] = <m|c_i^+|n>  (built on host: sparse matvecs)
     cdag_im = np.empty((n_flavors, dim_ex), dtype=complex)
     for i in range(n_flavors):
         cdag_im[i] = eigvecs_ex.conj().T @ Cdag[i] @ eigvec
 
-    for l, iw in enumerate(iws):
-        if pm == +1:
-            # ene_denom[m] = 1 / (iw - E_m + E_n)
-            ene_denom = 1 / (iw - eigvals_ex + E_n)
-        else:
-            # ene_denom[m] = 1 / (iw + E_m - E_n)
-            ene_denom = 1 / (iw + eigvals_ex - E_n)
-        assert ene_denom.shape == (dim_ex,)
+    # ene_denom[l, m] = 1 / (iw_l -/+ E_m +/- E_n)
+    if pm == +1:
+        ene = 1.0 / (iws[:, None] - eigvals_ex[None, :] + E_n)
+    else:
+        ene = 1.0 / (iws[:, None] + eigvals_ex[None, :] - E_n)
 
-        for i, j in np.ndindex(n_flavors, n_flavors):
-            if spin_conserve:
-                n_orb = n_flavors // 2
-                if i // n_orb != j // n_orb:  # skip different spins
-                    continue
+    ci = xp.asarray(cdag_im)
+    e = xp.asarray(ene)
+    # gf[i, j, l] = sum_m conj(cdag_im[i,m]) * ene[l,m] * cdag_im[j,m]
+    gf = xp.einsum('im,lm,jm->ijl', ci.conj(), e, ci)
+    if xp is not np:
+        gf = xp.asnumpy(gf)
 
-            gf[i, j, l] = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
-
+    if spin_conserve:
+        n_orb = n_flavors // 2
+        blk = np.arange(n_flavors) // n_orb
+        mask = blk[:, None] != blk[None, :]        # cross-spin (i,j)
+        gf[mask, :] = 0.0
     return gf
 
 
