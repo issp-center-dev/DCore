@@ -340,6 +340,17 @@ def calc_gf_lanczos(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, ncv):
     return gf
 
 
+def _dense_eigh(hamil_sparse, xp):
+    """Dense Hermitian eigendecomposition of a sparse matrix. Uses cupy.linalg.eigh
+    on the GPU when xp is cupy, else scipy.linalg.eigh; always returns numpy arrays
+    so downstream (numpy/scipy.sparse) code is unaffected."""
+    dense = hamil_sparse.toarray()
+    if xp is np:
+        return scipy.linalg.eigh(dense)
+    w, v = xp.linalg.eigh(xp.asarray(dense))
+    return xp.asnumpy(w), xp.asnumpy(v)
+
+
 def main():
     # ----------------------------------------------------------------
     # Parse input parameters
@@ -372,6 +383,12 @@ def main():
     # gf_rtol = params['gf_rtol']
     check_n_eigen = params['check_n_eigen']
     check_orthonormality = params['check_orthonormality']
+
+    gpu = params.get('gpu', False)
+    from dcore.gpu import get_backend
+    xp, gpu_active = get_backend(gpu)
+    if gpu_active:
+        print("GPU (CuPy) backend active for dense eigh / Lehmann Gf.", flush=True)
 
     if eigen_solver not in eigsolver:
         raise ValueError(f"Invalid eigen_solver: {eigen_solver}")
@@ -582,7 +599,7 @@ def main():
         if full_diagonalization[N]:
             print(" full diagonalization", flush=True)
             # n_eigen = dim[N]
-            eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
+            eigvals[N], eigvecs[N] = _dense_eigh(hamils[N], xp)
         else:
             print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.", flush=True)
             if eigen_solver == 'lanczos':
@@ -734,6 +751,7 @@ def main():
                     params_gf.update(
                         eigvals_ex = eigvals[N_ex],
                         eigvecs_ex = eigvecs[N_ex],
+                        xp = xp,
                     )
                     gf_1 = calc_gf_Lehmann(**params_gf)
 

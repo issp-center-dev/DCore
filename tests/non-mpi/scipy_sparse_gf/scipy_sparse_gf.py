@@ -60,3 +60,16 @@ def test_lehmann_matches_reference(pm, spin_conserve):
     got = calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, 0.3, evx, vvx, pm)
     assert got.shape == ref.shape
     assert np.allclose(got, ref, atol=1e-12)
+
+
+def test_dense_eigh_cpu_matches_scipy():
+    import scipy.linalg, scipy.sparse as sp
+    from dcore.impurity_solvers.scipy_sparse_main import _dense_eigh
+    rng = np.random.default_rng(0)
+    A = rng.standard_normal((8, 8)) + 1j*rng.standard_normal((8, 8))
+    H = sp.csr_matrix(A + A.conj().T)          # Hermitian
+    w, v = _dense_eigh(H, np)
+    w_ref = scipy.linalg.eigh(H.toarray(), eigvals_only=True)
+    assert np.allclose(np.sort(w), np.sort(w_ref), atol=1e-10)
+    # eigenpairs reconstruct H
+    assert np.allclose((v * w) @ v.conj().T, H.toarray(), atol=1e-9)
