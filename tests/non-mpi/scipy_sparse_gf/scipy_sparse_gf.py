@@ -73,3 +73,43 @@ def test_dense_eigh_cpu_matches_scipy():
     assert np.allclose(np.sort(w), np.sort(w_ref), atol=1e-10)
     # eigenpairs reconstruct H
     assert np.allclose((v * w) @ v.conj().T, H.toarray(), atol=1e-9)
+
+
+class _FakeCupy:
+    # minimal shim: behaves like numpy but is a distinct module identity,
+    # and provides asnumpy, so the xp-is-not-np branches execute.
+    def __getattr__(self, k):
+        import numpy as _np
+        return getattr(_np, k)
+    @staticmethod
+    def asnumpy(a):
+        import numpy as _np
+        return _np.asarray(a)
+
+
+def test_lehmann_xp_branch_executes():
+    iws, Cdag, eigvec, evx, vvx = _rand_case(seed=7)
+    ref = _reference_lehmann(iws, Cdag, False, eigvec, 0.1, evx, vvx, +1)
+    got = calc_gf_Lehmann(iws, Cdag, False, eigvec, 0.1, evx, vvx, +1, xp=_FakeCupy())
+    assert np.allclose(got, ref, atol=1e-12)
+
+
+def test_gpu_matches_cpu_if_available():
+    cupy = pytest.importorskip("cupy")
+    try:
+        if cupy.cuda.runtime.getDeviceCount() < 1:
+            pytest.skip("no CUDA device")
+    except Exception:
+        pytest.skip("no usable CUDA device")
+    from dcore.impurity_solvers.scipy_sparse_main import _dense_eigh
+    import scipy.sparse as sp
+    rng = np.random.default_rng(1)
+    A = rng.standard_normal((32, 32)) + 1j*rng.standard_normal((32, 32))
+    H = sp.csr_matrix(A + A.conj().T)
+    w_cpu, _ = _dense_eigh(H, np)
+    w_gpu, _ = _dense_eigh(H, cupy)
+    assert np.allclose(np.sort(w_cpu), np.sort(w_gpu), rtol=1e-10, atol=1e-10)
+    iws, Cdag, eigvec, evx, vvx = _rand_case(seed=2)
+    g_cpu = calc_gf_Lehmann(iws, Cdag, False, eigvec, 0.2, evx, vvx, +1, xp=np)
+    g_gpu = calc_gf_Lehmann(iws, Cdag, False, eigvec, 0.2, evx, vvx, +1, xp=cupy)
+    assert np.allclose(g_cpu, g_gpu, rtol=1e-10, atol=1e-12)
