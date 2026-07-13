@@ -1,0 +1,299 @@
+#
+# DCore -- Integrated DMFT software for correlated electrons
+# Copyright (C) 2017 The University of Tokyo
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+"""
+Cross-validation of the HPhi impurity solver against the scipy/sparse solver.
+
+Both are exact-diagonalization (ED) solvers, so for the same impurity model
+they must yield the same self-energy.  This test catches a class of bugs that
+single-solver unit tests cannot, e.g. a wrong off-diagonal Green's-function
+reconstruction *or* an insufficient number of computed eigenstates (``exct``).
+
+Physics being checked (2-orbital Kanamori atom, Hubbard-I / ``n_bath = 0``):
+  * the two orbitals are degenerate, so Sigma must be orbital-symmetric
+    (Sigma[0,0] == Sigma[1,1]) with vanishing off-diagonal (Sigma[0,1] == 0);
+  * the 1-electron ground state is 4-fold degenerate, so HPhi needs
+    ``exct`` large enough to cover the whole low-energy multiplet at finite T
+    (here the full 16-dimensional space) -- otherwise the thermal trace is
+    incomplete and the orbital symmetry is spuriously broken.
+
+The HPhi part runs only when an HPhi executable is available; set the path via
+the ``DCORE_HPHI_EXEC`` environment variable (or have ``HPhi`` on ``PATH``).
+Without it the whole module is skipped, so this is safe in CI.
+"""
+
+import os
+import shutil
+
+import numpy
+import pytest
+
+
+def _hphi_exec():
+    """Resolve an HPhi executable from the environment, else None."""
+    path = os.environ.get("DCORE_HPHI_EXEC")
+    if path and os.path.isfile(path) and os.access(path, os.X_OK):
+        return path
+    return shutil.which("HPhi")
+
+
+HPHI_EXEC = _hphi_exec()
+
+pytestmark = pytest.mark.skipif(
+    HPHI_EXEC is None,
+    reason="HPhi executable not found; set DCORE_HPHI_EXEC to enable the cross-check",
+)
+
+
+# Shared 2-orbital model.  Only the [impurity_solver] block differs between runs.
+_MODEL_TEMPLATE = """\
+[model]
+seedname = {seed}
+lattice = square
+norb = 2
+nelec = 1.0
+t = -1.0
+kanamori = [(4.0, 0.8, 0.0)]
+nk = 8
+{extra_model}
+[system]
+T = 0.1
+n_iw = 500
+fix_mu = True
+mu = 0.5
+
+[impurity_solver]
+{solver_block}
+
+[control]
+max_step = 1
+sigma_mix = 1.0
+"""
+
+
+def _run_solver(work_dir, seed, solver_block, extra_model="", aux_files=None, block="up"):
+    """Run dcore_pre + dcore for one solver and return the Sigma_iw block (the spin block 'up'
+    by default, or the combined 'ud' block for a spin-orbit model)."""
+    from dcore.dcore_pre import dcore_pre
+    from dcore.dcore import dcore
+    import h5py
+
+    for name, content in (aux_files or {}).items():
+        with open(os.path.join(work_dir, name), "w") as f:
+            f.write(content)
+
+    ini = os.path.join(work_dir, seed + ".ini")
+    with open(ini, "w") as f:
+        f.write(_MODEL_TEMPLATE.format(seed=seed, solver_block=solver_block,
+                                       extra_model=extra_model))
+
+    cwd = os.getcwd()
+    os.chdir(work_dir)
+    try:
+        dcore_pre(ini)
+        dcore(ini)
+        with h5py.File(seed + ".out.h5", "r") as h:
+            data = h["dmft_out"]["Sigma_iw"]["ite1"]["sh0"][block]["data"][()]
+    finally:
+        os.chdir(cwd)
+    return data[..., 0] + 1j * data[..., 1]
+
+
+@pytest.fixture(scope="module")
+def sigma_scipy(tmp_path_factory):
+    """Self-energy from the scipy/sparse ED solver -- the ground-truth reference."""
+    pytest.importorskip("scipy")
+    work_dir = str(tmp_path_factory.mktemp("scipy_sparse"))
+    solver_block = "name = scipy/sparse\nn_bath{int} = 0"
+    return _run_solver(work_dir, "scipy_ref", solver_block)
+
+
+def test_scipy_sparse_is_orbital_symmetric(sigma_scipy):
+    """Sanity check on the ED reference: degenerate orbitals -> symmetric, diagonal Sigma."""
+    n2 = sigma_scipy.shape[0] // 2
+    low = slice(n2 - 50, n2 + 50)
+    diag_asym = numpy.abs(sigma_scipy[low, 0, 0] - sigma_scipy[low, 1, 1]).max()
+    offdiag = numpy.abs(sigma_scipy[:, 0, 1]).max()
+    assert diag_asym < 1e-4, f"reference diagonal not symmetric: {diag_asym}"
+    assert offdiag < 1e-4, f"reference off-diagonal not zero: {offdiag}"
+
+
+def test_hphi_matches_scipy_sparse(sigma_scipy, tmp_path):
+    """
+    HPhi with enough eigenstates must reproduce the scipy/sparse ED self-energy.
+
+    exct = 16 spans the full Hilbert space of the 2-site (2-orbital, n_bath=0)
+    problem, so the finite-T thermal trace is complete and the 4-fold degenerate
+    ground multiplet is fully included.
+    """
+    solver_block = (
+        "name = HPhi\n"
+        f"exec_path{{str}} = {HPHI_EXEC}\n"
+        "n_bath{int} = 0\n"
+        "exct{int} = 16\n"
+        "np{int} = 1"
+    )
+    sigma_hphi = _run_solver(str(tmp_path), "hphi_run", solver_block)
+
+    assert sigma_hphi.shape == sigma_scipy.shape
+
+    n2 = sigma_hphi.shape[0] // 2
+    low = slice(n2 - 50, n2 + 50)
+
+    # (1) HPhi must keep the orbital symmetry it should have (broken when exct=1).
+    diag_asym = numpy.abs(sigma_hphi[low, 0, 0] - sigma_hphi[low, 1, 1]).max()
+    assert diag_asym < 5e-3, f"HPhi diagonal not orbital-symmetric: {diag_asym}"
+
+    # (2) HPhi off-diagonal must vanish for this model.
+    offdiag = numpy.abs(sigma_hphi[:, 0, 1]).max()
+    assert offdiag < 5e-3, f"HPhi spurious off-diagonal: {offdiag}"
+
+    # (3) HPhi diagonal must match the scipy/sparse ED reference.
+    diff = numpy.abs(sigma_hphi[low, 0, 0] - sigma_scipy[low, 0, 0]).max()
+    assert diff < 5e-3, f"HPhi vs scipy/sparse diagonal mismatch: {diff}"
+
+
+# Hermitian complex off-diagonal crystal field mixing orbitals 0 and 1 (both spins).
+# The imaginary part makes the off-diagonal Green's function genuinely
+# anti-symmetric (G_01 != G_10), which exercises the A = c_i + i c_j excitation
+# of the HPhi reconstruction across the *whole* Matsubara axis.
+_CRYSTAL_FIELD = """\
+# sp o1 o2 re im
+0 0 1 0.3  0.2
+0 1 0 0.3 -0.2
+1 0 1 0.3  0.2
+1 1 0 0.3 -0.2
+"""
+_OFFDIAG_MODEL = "local_potential_matrix = {0: 'cf.in'}\nlocal_potential_factor = 1.0"
+
+
+@pytest.fixture(scope="module")
+def sigma_scipy_offdiag(tmp_path_factory):
+    """scipy/sparse reference for the model with a complex off-diagonal crystal field."""
+    pytest.importorskip("scipy")
+    work_dir = str(tmp_path_factory.mktemp("scipy_sparse_offdiag"))
+    solver_block = "name = scipy/sparse\nn_bath{int} = 0"
+    return _run_solver(work_dir, "scipy_ref_od", solver_block,
+                       extra_model=_OFFDIAG_MODEL, aux_files={"cf.in": _CRYSTAL_FIELD})
+
+
+def test_hphi_matches_scipy_sparse_offdiagonal(sigma_scipy_offdiag, tmp_path):
+    """
+    Regression test for the off-diagonal Green's-function reconstruction.
+
+    With a complex off-diagonal crystal field the self-energy has a genuine,
+    anti-symmetric off-diagonal component.  A wrong conjugation of the
+    ``c_i + i c_j`` excitation used to give the off-diagonal self-energy a
+    spurious term that *diverged linearly* with the Matsubara frequency while
+    staying small at low frequency -- hence the comparison spans the entire
+    Matsubara axis, not just iw_0.
+    """
+    solver_block = (
+        "name = HPhi\n"
+        f"exec_path{{str}} = {HPHI_EXEC}\n"
+        "n_bath{int} = 0\n"
+        "exct{int} = 16\n"
+        "np{int} = 1"
+    )
+    sigma_hphi = _run_solver(tmp_path, "hphi_run_od", solver_block,
+                             extra_model=_OFFDIAG_MODEL, aux_files={"cf.in": _CRYSTAL_FIELD})
+
+    ref = sigma_scipy_offdiag
+    assert sigma_hphi.shape == ref.shape
+
+    # The off-diagonal must be genuinely non-zero and anti-symmetric, otherwise
+    # the test would not exercise the A = c_i + i c_j reconstruction at all.
+    assert numpy.abs(ref[:, 0, 1]).max() > 0.1
+    assert numpy.abs(ref[:, 0, 1] - ref[:, 1, 0]).max() > 0.05
+
+    # HPhi must match scipy/sparse over the WHOLE Matsubara axis and every matrix
+    # element (the spurious tail showed up only at high frequency).
+    diff = numpy.abs(sigma_hphi - ref).max()
+    assert diff < 5e-3, f"HPhi vs scipy/sparse mismatch over full omega_n: {diff}"
+
+
+def test_hphi_braket_ne_only_matches_scipy_sparse(sigma_scipy_offdiag, tmp_path, monkeypatch):
+    """The spin-orbit-capable Ne-only bra/ket route (HubbardNConserved) must reproduce the same
+    off-diagonal self-energy on a 2Sz-conserving model when forced on via
+    ``DCORE_HPHI_FORCE_NE_SECTORS``. This exercises the whole Ne-only machinery -- the
+    HubbardNConserved single-excitation off-diagonal spectrum, both-spin bra/ket per Ne sector,
+    the dNe-only cross-operator sector check, and the Ne-sector recombination -- end to end against
+    the independent scipy/sparse ED reference (the cross-spin blocks it computes are zero here and
+    are dropped from Gimp, so only the same-spin blocks are compared)."""
+    monkeypatch.setenv("DCORE_HPHI_BRAKET", "1")
+    monkeypatch.setenv("DCORE_HPHI_FORCE_NE_SECTORS", "1")
+    solver_block = (
+        "name = HPhi\n"
+        f"exec_path{{str}} = {HPHI_EXEC}\n"
+        "n_bath{int} = 0\n"
+        "exct{int} = 16\n"
+        "np{int} = 1"
+    )
+    sigma_hphi = _run_solver(tmp_path, "hphi_run_ne", solver_block,
+                             extra_model=_OFFDIAG_MODEL, aux_files={"cf.in": _CRYSTAL_FIELD})
+    ref = sigma_scipy_offdiag
+    assert sigma_hphi.shape == ref.shape
+    diff = numpy.abs(sigma_hphi - ref).max()
+    assert diff < 5e-3, f"Ne-only bra/ket vs scipy/sparse mismatch over full omega_n: {diff}"
+
+
+# --- Generalization A: spin-orbit (2Sz NOT conserved) bra/ket via HubbardNConserved Ne sectors ---
+_SO_CRYSTAL_FIELD = """\
+# block i j re im  (combined spin-orbital basis, 2*norb=4; spin-flip = up<->down off-diagonal)
+0 0 2 0.25  0.15
+0 2 0 0.25 -0.15
+0 1 3 0.10 -0.05
+0 3 1 0.10  0.05
+"""
+_SO_MODEL = ("spin_orbit = True\n"
+             "local_potential_matrix = {0: 'cf_so.in'}\n"
+             "local_potential_factor = 1.0")
+
+
+@pytest.fixture(scope="module")
+def sigma_scipy_so(tmp_path_factory):
+    """scipy/sparse spin-orbit reference (spin-flip crystal field) -- the ground truth."""
+    pytest.importorskip("scipy")
+    work_dir = str(tmp_path_factory.mktemp("scipy_sparse_so"))
+    solver_block = "name = scipy/sparse\nn_bath{int} = 0"
+    return _run_solver(work_dir, "scipy_so", solver_block, extra_model=_SO_MODEL,
+                       aux_files={"cf_so.in": _SO_CRYSTAL_FIELD}, block="ud")
+
+
+def test_hphi_braket_spin_orbit_matches_scipy_sparse(sigma_scipy_so, tmp_path, monkeypatch):
+    """Generalization A, end to end: with spin-orbit coupling (2Sz NOT conserved) the bra/ket route
+    sectors by Ne only (HubbardNConserved) and computes the CROSS-spin self-energy too. The full
+    combined-basis Sigma (2*norb x 2*norb) -- including the genuinely non-zero cross-spin blocks
+    from the spin-flip term -- must match the independent scipy/sparse ED reference over the whole
+    Matsubara axis. Exercises: HubbardNConserved single-excitation off-diagonal spectrum, the sz()
+    boundary-sector fix, both-spin bra/ket per Ne sector, and the spin-orbit Dyson self-energy."""
+    monkeypatch.setenv("DCORE_HPHI_BRAKET", "1")  # spin-orbit -> auto Ne-canonical bra/ket
+    solver_block = (
+        "name = HPhi\n"
+        f"exec_path{{str}} = {HPHI_EXEC}\n"
+        "n_bath{int} = 0\n"
+        "exct{int} = 16\n"
+        "np{int} = 1"
+    )
+    sigma_hphi = _run_solver(tmp_path, "hphi_so", solver_block, extra_model=_SO_MODEL,
+                             aux_files={"cf_so.in": _SO_CRYSTAL_FIELD}, block="ud")
+    ref = sigma_scipy_so
+    assert sigma_hphi.shape == ref.shape
+    # the cross-spin block must be genuinely non-zero (spin-flip), else the test is vacuous
+    assert numpy.abs(ref[:, 0, 2]).max() > 0.1
+    diff = numpy.abs(sigma_hphi - ref).max()
+    assert diff < 5e-3, f"spin-orbit bra/ket vs scipy/sparse mismatch over full omega_n: {diff}"
