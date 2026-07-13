@@ -152,6 +152,15 @@ we have to increase <code class="docutils literal notranslate"><span class="pre"
 </section>
 <section id="high-frequency-tail-fit">
 <h2>High-frequency tail fit<a class="headerlink" href="#high-frequency-tail-fit" title="Link to this heading">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">perform_tail_fit</span></code>, <code class="docutils literal notranslate"><span class="pre">fit_max_moment</span></code>, <code class="docutils literal notranslate"><span class="pre">fit_min_w</span></code> and <code class="docutils literal notranslate"><span class="pre">fit_max_w</span></code>
+parameters used below are no longer available in the current version of
+DCore, and the <code class="docutils literal notranslate"><span class="pre">[system]</span></code> block rejects them. The high-frequency treatment
+is now controlled by the single boolean <code class="docutils literal notranslate"><span class="pre">no_tail_fit</span></code> in the <code class="docutils literal notranslate"><span class="pre">[system]</span></code>
+block: tail fitting is performed by default, and <code class="docutils literal notranslate"><span class="pre">no_tail_fit</span> <span class="pre">=</span> <span class="pre">True</span></code>
+disables it. This section is kept for reference and will be revised.</p>
+</div>
 <p>The self energy computed with QMC becomes noisy at the high frequency region.
 This high-frequency tail can be fitted by using the following function:</p>
 <div class="math notranslate nohighlight">
@@ -234,6 +243,12 @@ For example, in the case of figure (a) above, we can find that <code class="docu
 </section>
 <section id="legendre-filter">
 <h2>Legendre filter<a class="headerlink" href="#legendre-filter" title="Link to this heading">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">n_l</span></code> parameter used below is no longer read from the <code class="docutils literal notranslate"><span class="pre">[system]</span></code>
+block in the current version of DCore, and the <code class="docutils literal notranslate"><span class="pre">[system]</span></code> block rejects it.
+This section is kept for reference and will be revised.</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Do not use it together with the tail-fit.</p>
