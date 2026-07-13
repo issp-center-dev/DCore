@@ -414,6 +414,11 @@
 <td><p>False</p></td>
 <td><p>Compute Matsubara summation without fitting high-frequency moments.</p></td>
 </tr>
+<tr class="row-even"><td><p>mu_search</p></td>
+<td><p>String</p></td>
+<td><p>brent</p></td>
+<td><p>Method to adjust the chemical potential. Chosen from ‘brent’ (default; bracketing + Brent) or ‘newton’ (safeguarded Newton using the analytic dn/dmu; usually fewer density evaluations). ‘newton’ requires no_tail_fit=True.</p></td>
+</tr>
 </tbody>
 </table>
 <p>If the parameter <code class="docutils literal notranslate"><span class="pre">with_dc</span></code> is specified to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
