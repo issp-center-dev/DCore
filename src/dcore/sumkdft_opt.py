@@ -409,11 +409,15 @@ class SumkDFT_opt(SumkDFT):
                     n_orb = self.n_orbitals[ik, ind]
                     projmat = self.proj_mat[ik, ind, icrsh, 0:dim, 0:n_orb]
                     for i in range(dim):
-                        index = numpy.where(projmat[i] == 1)
-                        if len(index) != 1:
+                        # Require exactly one matching orbital (a one-hot row);
+                        # otherwise proj_mat is not a clean 0/1 permutation and the
+                        # fancy-index path does not apply, so fall back by returning
+                        # None. Using matches[0] also avoids the numpy>=2 error from
+                        # assigning a length-1 array to a scalar element.
+                        matches = numpy.where(projmat[i] == 1)[0]
+                        if len(matches) != 1:
                             return None
-                        else:
-                            proj_index[ik, ind, icrsh, i] = index[0]
+                        proj_index[ik, ind, icrsh, i] = matches[0]
 
         return proj_index
 

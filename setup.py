@@ -41,11 +41,15 @@ setup(
 
     python_requires='>=3.8, <4',
     install_requires=[
-        'numpy<2',
-        'scipy>=1.4',
+        # NumPy 2 requires Python >= 3.9, so keep the old pins for Python 3.8.
+        'numpy<2; python_version<"3.9"',
+        'numpy<3; python_version>="3.9"',  # NumPy 2 validated; cap the major version
+        'scipy>=1.4; python_version<"3.9"',
+        'scipy>=1.13; python_version>="3.9"',  # scipy>=1.13 supports NumPy 2
         # h5py 2.10.0 has a bug.
         # Import h5py imports mpi4py automatically.
-        'h5py!=2.10.0',
+        'h5py!=2.10.0; python_version<"3.9"',
+        'h5py>=3.11; python_version>="3.9"',  # h5py>=3.11 supports NumPy 2
         'toml>=0.10',
         'dcorelib>=0.9.7',
         'sympy',
