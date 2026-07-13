@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Exact diagonalization solver: HPhi &#8212; DCore  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Exact diagonalization solver: scipy/sparse" href="../scipy/scipy.html" />
+    <link rel="prev" title="Exact diagonalization solver: pomerol" href="../pomerol/pomerol.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../scipy/scipy.html" title="Exact diagonalization solver: scipy/sparse"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../pomerol/pomerol.html" title="Exact diagonalization solver: pomerol"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../impuritysolvers.html" accesskey="U">Impurity solvers</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">HPhi</span></code></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="exact-diagonalization-solver-hphi">
+<h1>Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">HPhi</span></code><a class="headerlink" href="#exact-diagonalization-solver-hphi" title="Link to this heading">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">HPhi</span></code> is a numerical exact-diagonalization / Lanczos program for quantum
+lattice models.
+<code class="docutils literal notranslate"><span class="pre">DCore</span></code> provides an interface to <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> to solve the effective impurity
+problem of DMFT with a discretized hybridization function (a finite number of
+bath sites).</p>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Arbitrary temperature (the one-body Green’s function is evaluated on the
+Matsubara axis).</p></li>
+<li><p>All interactions available in <code class="docutils literal notranslate"><span class="pre">DCore</span></code> are supported (the full
+<span class="math notranslate nohighlight">\(U_{ijkl}\)</span> tensor is passed to <code class="docutils literal notranslate"><span class="pre">HPhi</span></code>).</p></li>
+<li><p>With <code class="docutils literal notranslate"><span class="pre">n_bath</span> <span class="pre">=</span> <span class="pre">0</span></code> the solver reduces to the Hubbard-I approximation.</p></li>
+</ul>
+</section>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading">¶</a></h2>
+<p>The following program needs to be installed:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/issp-center-dev/HPhi">HPhi</a></p></li>
+</ul>
+<p>Make sure that the <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> executable is available, and pass its path through
+the <code class="docutils literal notranslate"><span class="pre">exec_path</span></code> parameter below.</p>
+</section>
+<section id="how-to-use">
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Link to this heading">¶</a></h2>
+<p>Mandatory parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">HPhi</span>
+<span class="n">exec_path</span><span class="p">{</span><span class="nb">str</span><span class="p">}</span> <span class="o">=</span> <span class="o">/</span><span class="n">install_directory</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">HPhi</span>
+</pre></div>
+</div>
+<p>Optional parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
+<span class="n">n_bath</span><span class="p">{</span><span class="nb">int</span><span class="p">}</span> <span class="o">=</span> <span class="mi">0</span>        <span class="c1"># number of bath sites per spin-orbital (0 = Hubbard-I)</span>
+<span class="n">exct</span><span class="p">{</span><span class="nb">int</span><span class="p">}</span> <span class="o">=</span> <span class="mi">1</span>          <span class="c1"># number of low-lying eigenstates used for the</span>
+                       <span class="c1"># finite-temperature Green&#39;s function</span>
+<span class="n">fit_gtol</span><span class="p">{</span><span class="nb">float</span><span class="p">}</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="c1"># tolerance of the bath-hybridization fitting</span>
+<span class="n">exct_weight_threshold</span><span class="p">{</span><span class="nb">float</span><span class="p">}</span> <span class="o">=</span> <span class="mf">1e-3</span>   <span class="c1"># threshold for the &quot;exct too small&quot; warning</span>
+<span class="n">n_procs_per_hphi</span><span class="p">{</span><span class="nb">int</span><span class="p">}</span> <span class="o">=</span> <span class="mi">1</span>             <span class="c1"># MPI ranks per HPhi run in the Gf step</span>
+</pre></div>
+</div>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">n_bath</span></code> controls the number of discretized bath sites that approximate the
+hybridization function. Larger <code class="docutils literal notranslate"><span class="pre">n_bath</span></code> improves the approximation but
+enlarges the many-body Hilbert space, whose dimension grows exponentially
+with the total number of sites <code class="docutils literal notranslate"><span class="pre">n_orb</span> <span class="pre">+</span> <span class="pre">n_bath</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exct</span></code> sets how many low-lying eigenstates are included in the
+finite-temperature average. It should be large enough that the Boltzmann
+weight of the highest computed state is negligible at the target temperature.
+See <a class="reference internal" href="#choosing-exct-degenerate-ground-states">Choosing exct (degenerate ground states)</a> below.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HPhi</span></code> requires the number of MPI processes to be a power of four for the
+eigenenergy calculation. If the requested number of processes is not a power
+of four, <code class="docutils literal notranslate"><span class="pre">DCore</span></code> automatically falls back to the largest power of four for
+that step and prints a warning.</p></li>
+<li><p>The one-body Green’s function is computed from many independent HPhi runs
+(one per excitation). These runs are parallelised in two levels: <code class="docutils literal notranslate"><span class="pre">n_outer</span></code>
+runs execute concurrently, each using <code class="docutils literal notranslate"><span class="pre">n_procs_per_hphi</span></code> MPI ranks, with
+<code class="docutils literal notranslate"><span class="pre">n_outer</span> <span class="pre">=</span> <span class="pre">np</span> <span class="pre">/</span> <span class="pre">n_procs_per_hphi</span></code>. The default <code class="docutils literal notranslate"><span class="pre">n_procs_per_hphi</span> <span class="pre">=</span> <span class="pre">1</span></code> runs
+each HPhi serially and executes <code class="docutils literal notranslate"><span class="pre">np</span></code> runs concurrently (the previous
+behaviour). Increase <code class="docutils literal notranslate"><span class="pre">n_procs_per_hphi</span></code> (a power of four) when a single HPhi
+run is heavy, e.g. with many bath sites; it trades concurrency for per-run MPI
+speed. The total <code class="docutils literal notranslate"><span class="pre">np</span></code> is shared between the two levels.</p></li>
+</ul>
+</section>
+<section id="choosing-exct-degenerate-ground-states">
+<h2>Choosing exct (degenerate ground states)<a class="headerlink" href="#choosing-exct-degenerate-ground-states" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">HPhi</span></code> builds the finite-temperature Green’s function from the lowest
+<code class="docutils literal notranslate"><span class="pre">exct</span></code> eigenstates, weighting eigenstate <span class="math notranslate nohighlight">\(n\)</span> by the Boltzmann factor
+<span class="math notranslate nohighlight">\(e^{-\beta (E_n - E_0)}\)</span>.  If <code class="docutils literal notranslate"><span class="pre">exct</span></code> is too small, states that are still
+thermally relevant are left out of the trace and the resulting self-energy is
+<strong>wrong</strong>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The default <code class="docutils literal notranslate"><span class="pre">exct</span> <span class="pre">=</span> <span class="pre">1</span></code> is unsafe for multi-orbital models.  Multi-orbital
+impurities very often have a <strong>degenerate ground state</strong> (for example, one
+electron in two degenerate orbitals is four-fold degenerate).  With
+<code class="docutils literal notranslate"><span class="pre">exct</span> <span class="pre">=</span> <span class="pre">1</span></code> only one member of the multiplet enters the thermal trace, which
+<strong>breaks the orbital symmetry</strong> and yields a spurious, asymmetric self-energy
+with non-zero off-diagonal components — even though the exact answer is
+symmetric and diagonal.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">exct</span></code> large enough to cover the whole degenerate ground multiplet
+<em>and</em> every excited state with a non-negligible Boltzmann weight at the
+target temperature.  When in doubt, increase <code class="docutils literal notranslate"><span class="pre">exct</span></code> until the result stops
+changing (for a tiny problem you may simply use the full Hilbert-space
+dimension <span class="math notranslate nohighlight">\(4^{\,\mathrm{n\_orb}+\mathrm{n\_bath}}\)</span>).</p>
+</div>
+<p>To help catch this, <code class="docutils literal notranslate"><span class="pre">DCore</span></code> inspects the computed eigenenergies after the
+eigenvalue step and prints a warning when the highest computed state still
+carries a Boltzmann weight above <code class="docutils literal notranslate"><span class="pre">exct_weight_threshold</span></code> (default <code class="docutils literal notranslate"><span class="pre">1e-3</span></code>) —
+i.e. when states above the <code class="docutils literal notranslate"><span class="pre">exct</span></code> cutoff are likely missing from the thermal
+trace.  The warning reports the ground-state degeneracy and the remaining
+weight; increase <code class="docutils literal notranslate"><span class="pre">exct</span></code> until it disappears.  This is a thermal
+<strong>convergence</strong> check, so it also fires for non-degenerate ground states with
+low-lying thermally-populated excitations.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Because both <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> and the <code class="docutils literal notranslate"><span class="pre">scipy/sparse</span></code> solver are exact-diagonalization
+solvers, they must give the same self-energy for the same impurity model.
+Cross-checking <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> against <code class="docutils literal notranslate"><span class="pre">scipy/sparse</span></code> on a small model is a good
+way to confirm that <code class="docutils literal notranslate"><span class="pre">exct</span></code> (and other settings) are adequate.</p>
+</div>
+</section>
+<section id="experimental-accelerated-and-spin-orbit-green-s-functions">
+<h2>Experimental: accelerated and spin-orbit Green’s functions<a class="headerlink" href="#experimental-accelerated-and-spin-orbit-green-s-functions" title="Link to this heading">¶</a></h2>
+<p>The one-body Green’s function can optionally be computed by faster code paths,
+and spin-orbit-coupled impurities (spin-mixing one-body terms) are supported.
+These are <strong>opt-in through environment variables</strong> and leave the default
+behaviour unchanged.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_CANONICAL_SECTORS=1</span></code> uses only baseline <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> functionality
+(standard canonical <span class="math notranslate nohighlight">\((N_e, 2S_z)\)</span> runs) and works with any <code class="docutils literal notranslate"><span class="pre">HPhi</span></code>. The
+other switches need a more recent <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> build, in increasing order:</p>
+<ul class="simple">
+<li><p>the internal-loop path needs <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> with the internal eigenstate loop for
+the finite-temperature dynamical Green’s function (<code class="docutils literal notranslate"><span class="pre">SpectrumLoopExct</span></code>, plus
+<code class="docutils literal notranslate"><span class="pre">SpectrumNumOp</span></code> for the multi-operator batching);</p></li>
+<li><p>the direct bra-ket path additionally needs the bra loop (<code class="docutils literal notranslate"><span class="pre">SpectrumNumBra</span></code>);</p></li>
+<li><p>the spin-orbit (particle-number-only) path additionally needs the
+<code class="docutils literal notranslate"><span class="pre">HubbardNConserved</span></code> single-excitation off-diagonal support.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> features (the internal eigenstate/operator/bra loop and the
+<code class="docutils literal notranslate"><span class="pre">HubbardNConserved</span></code> off-diagonal support) are merged into the upstream
+<code class="docutils literal notranslate"><span class="pre">HPhi</span></code> development branch and will ship in its next release; build <code class="docutils literal notranslate"><span class="pre">HPhi</span></code>
+from a recent source to use them now. With an older <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> the switches
+that need them will fail; leave them unset – or use only
+<code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_CANONICAL_SECTORS=1</span></code> – to stay on baseline functionality (the
+default is the combination-trick, grand-canonical path).</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 34.0%" />
+<col style="width: 66.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Environment variable</p></th>
+<th class="head"><p>Effect</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_INTERNAL_LOOP=1</span></code></p></td>
+<td><p>Within each Hilbert-sector batch, one <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> launch sweeps all retained
+eigenstates and the batched excitation operators, instead of one launch
+per (eigenstate × operator). Removes the process-spawn and
+eigenvector-reload overhead.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_BRAKET=1</span></code></p></td>
+<td><p>Direct bra/ket projection: one shifted-BiCG solve per ket operator is
+projected onto every bra, so the off-diagonal <span class="math notranslate nohighlight">\(G_{ij}\)</span> is read
+directly instead of reconstructed from the <span class="math notranslate nohighlight">\(c_i + i c_j\)</span>
+combination. Cuts the BiCG count from <span class="math notranslate nohighlight">\(n_\text{orb}^2\)</span> to
+<span class="math notranslate nohighlight">\(n_\text{orb}\)</span> per spin-conserving block (for the spin-orbit route
+below, from <span class="math notranslate nohighlight">\((2 n_\text{orb})^2\)</span> to <span class="math notranslate nohighlight">\(2 n_\text{orb}\)</span> over the
+combined spin-orbitals). Implies the internal loop and the sector
+restriction below.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_CANONICAL_SECTORS=1</span></code></p></td>
+<td><p>Restrict each excited-state solve to the relevant particle-number / spin
+<span class="math notranslate nohighlight">\((N_e, 2S_z)\)</span> sector instead of the full grand-canonical Fock
+space, shrinking the Hilbert space per solve. (Non-spin-orbit models.)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_FORCE_NE_SECTORS=1</span></code></p></td>
+<td><p>Use particle-number-only (<code class="docutils literal notranslate"><span class="pre">HubbardNConserved</span></code>) sectors, where both
+spins share each <span class="math notranslate nohighlight">\(N_e \pm 1\)</span> excited space. Automatically enabled
+for spin-orbit models (where <span class="math notranslate nohighlight">\(2S_z\)</span> is not conserved). Requires
+<code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_BRAKET=1</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Spin-orbit coupling.</strong> When the calculation uses the combined spin-orbital
+representation – a single <code class="docutils literal notranslate"><span class="pre">ud</span></code> block, i.e. <code class="docutils literal notranslate"><span class="pre">spin_orbit</span> <span class="pre">=</span> <span class="pre">True</span></code> – <code class="docutils literal notranslate"><span class="pre">DCore</span></code>
+selects the particle-number-only route (together with <code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_BRAKET=1</span></code>)
+and computes the full <span class="math notranslate nohighlight">\(2\,n_\text{orb} \times 2\,n_\text{orb}\)</span> self-energy
+including the non-zero cross-spin blocks. This route is cross-validated against
+the independent <code class="docutils literal notranslate"><span class="pre">scipy/sparse</span></code> ED solver; the regression test asserts
+agreement below <span class="math notranslate nohighlight">\(5\times10^{-3}\)</span> on a spin-flip crystal-field model. For a
+spin-orbit impurity, set <code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_BRAKET=1</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The particle-number-only route cannot run the empty (<span class="math notranslate nohighlight">\(N_e = 0\)</span>) and
+full (<span class="math notranslate nohighlight">\(N_e = 2\,n_\text{site}\)</span>, where
+<span class="math notranslate nohighlight">\(n_\text{site} = n_\text{orb} + n_\text{bath}\)</span>) boundary sectors as
+thermally occupied initial sectors, so the thermal trace omits the
+contributions whose initial state lies in those two sectors. (Retained
+sectors still reach the boundary excited spaces via their <span class="math notranslate nohighlight">\(N_e \pm 1\)</span>
+transitions.) The result
+is therefore exact only when the near-empty and near-full sectors are
+thermally negligible at the target temperature; <code class="docutils literal notranslate"><span class="pre">DCore</span></code> prints a warning
+when it skips a boundary sector. This is generally safe for a partially
+filled correlated impurity but can bias very small or nearly-empty/-full
+models.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>For a large speedup on a recent <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> build, set <code class="docutils literal notranslate"><span class="pre">DCORE_HPHI_BRAKET=1</span></code>
+alone – it turns on the internal loop and the sector restriction as well.
+As always, cross-check against <code class="docutils literal notranslate"><span class="pre">scipy/sparse</span></code> on a small model after
+changing these switches.</p>
+</div>
+</section>
+<section id="running-hphi-in-parallel">
+<h2>Running HPhi in parallel<a class="headerlink" href="#running-hphi-in-parallel" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">DCore</span></code> launches <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> through the MPI command defined in the <code class="docutils literal notranslate"><span class="pre">[mpi]</span></code>
+section, where <code class="docutils literal notranslate"><span class="pre">#</span></code> is replaced by the number of processes passed to
+<code class="docutils literal notranslate"><span class="pre">dcore</span></code> (<code class="docutils literal notranslate"><span class="pre">dcore</span> <span class="pre">--np</span> <span class="pre">N</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">mpi</span><span class="p">]</span>
+<span class="n">command</span> <span class="o">=</span> <span class="n">mpirun</span> <span class="o">-</span><span class="n">np</span> <span class="c1">#</span>
+</pre></div>
+</div>
+<p>The HPhi solver runs in two MPI phases, and <strong>both use the same number of ranks
+per HPhi run</strong>, <code class="docutils literal notranslate"><span class="pre">n_procs_per_hphi</span></code> (call it <code class="docutils literal notranslate"><span class="pre">n_inner</span></code>):</p>
+<ol class="arabic simple">
+<li><p><strong>Eigenvalue step</strong> – a single <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> run on <code class="docutils literal notranslate"><span class="pre">n_inner</span></code> ranks. It writes
+the eigenvectors MPI-distributed (one file per rank).</p></li>
+<li><p><strong>Green’s-function step</strong> – many independent <code class="docutils literal notranslate"><span class="pre">HPhi</span></code> runs (one per
+excitation), each on <code class="docutils literal notranslate"><span class="pre">n_inner</span></code> ranks, with <code class="docutils literal notranslate"><span class="pre">n_outer</span> <span class="pre">=</span> <span class="pre">np</span> <span class="pre">/</span> <span class="pre">n_inner</span></code> of
+them executing concurrently.</p></li>
+</ol>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The two phases <strong>must</strong> use the same rank count. The Green’s-function step
+reads back the eigenvectors written by the eigenvalue step, and an MPI-
+distributed eigenvector can only be read by the same number of ranks that
+wrote it. <code class="docutils literal notranslate"><span class="pre">DCore</span></code> therefore drives both phases with <code class="docutils literal notranslate"><span class="pre">n_inner</span></code> ranks; do
+not expect the eigenvalue step to use all <code class="docutils literal notranslate"><span class="pre">np</span></code>. <code class="docutils literal notranslate"><span class="pre">n_inner</span></code> must be a power
+of four (an HPhi requirement); <code class="docutils literal notranslate"><span class="pre">DCore</span></code> rounds it down with a warning if it
+is not. <code class="docutils literal notranslate"><span class="pre">np</span></code> itself need not be a power of four – the remainder simply
+sets <code class="docutils literal notranslate"><span class="pre">n_outer</span></code>.</p>
+</div>
+<p>So <code class="docutils literal notranslate"><span class="pre">np</span> <span class="pre">=</span> <span class="pre">n_inner</span> <span class="pre">*</span> <span class="pre">n_outer</span></code>: choose <code class="docutils literal notranslate"><span class="pre">n_inner</span></code> (ranks per HPhi, a power of
+four) for how heavy a single HPhi run is, and let the rest of <code class="docutils literal notranslate"><span class="pre">np</span></code> provide
+concurrency across the many Green’s-function runs. The default
+<code class="docutils literal notranslate"><span class="pre">n_procs_per_hphi</span> <span class="pre">=</span> <span class="pre">1</span></code> runs single-rank HPhi with <code class="docutils literal notranslate"><span class="pre">np</span></code> concurrent
+Green’s-function runs (this reproduces the serial behaviour at <code class="docutils literal notranslate"><span class="pre">np</span> <span class="pre">=</span> <span class="pre">1</span></code>).</p>
+<p>On ISSP System B “ohtaka” (Slurm, AMD EPYC 7702, 128 cores/node) HPhi is
+launched with <code class="docutils literal notranslate"><span class="pre">srun</span></code>. Because the Green’s-function step runs several <code class="docutils literal notranslate"><span class="pre">srun</span></code>
+steps concurrently inside one job allocation, each must take its cores
+exclusively – the Slurm “bulk job” pattern. Set the launcher accordingly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">mpi</span><span class="p">]</span>
+<span class="n">command</span> <span class="o">=</span> <span class="n">srun</span> <span class="o">--</span><span class="n">exclusive</span> <span class="o">--</span><span class="n">mem</span><span class="o">-</span><span class="n">per</span><span class="o">-</span><span class="n">cpu</span><span class="o">=</span><span class="mi">1840</span> <span class="o">-</span><span class="n">n</span> <span class="c1">#</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--exclusive</span></code> keeps the concurrent Green’s-function runs off each other’s
+cores, <code class="docutils literal notranslate"><span class="pre">--mem-per-cpu=1840</span></code> (MB) reserves the per-core share of a node’s
+memory, and <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">#</span></code> is the rank count that <code class="docutils literal notranslate"><span class="pre">DCore</span></code> rewrites to <code class="docutils literal notranslate"><span class="pre">n_inner</span></code>
+for every HPhi run. A batch script that puts each HPhi run on 4 ranks and runs
+<code class="docutils literal notranslate"><span class="pre">128</span> <span class="pre">/</span> <span class="pre">4</span> <span class="pre">=</span> <span class="pre">32</span></code> of them concurrently on one node:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/sh</span>
+<span class="c1">#SBATCH -p i8cpu          # interactive/debug queue: &lt;=8 nodes, 30 min, 1 running job</span>
+<span class="c1">#SBATCH -N 1              # one node = 128 cores</span>
+<span class="c1">#SBATCH -t 0:30:00</span>
+
+<span class="n">module</span> <span class="n">load</span> <span class="o">&lt;</span><span class="n">your</span> <span class="n">HPhi</span> <span class="o">/</span> <span class="n">Python</span> <span class="n">environment</span><span class="o">&gt;</span>
+
+<span class="c1"># [impurity_solver] in input.ini:</span>
+<span class="c1">#   name = HPhi</span>
+<span class="c1">#   exec_path{str} = /path/to/mpi/HPhi</span>
+<span class="c1">#   n_procs_per_hphi{int} = 4</span>
+<span class="n">dcore</span> <span class="o">--</span><span class="n">np</span> <span class="mi">128</span> <span class="nb">input</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
+<p>Every HPhi run (eigenvalue step and each Green’s-function run) then uses 4
+ranks, with 32 running concurrently. For quick checks grab a node interactively
+(<code class="docutils literal notranslate"><span class="pre">salloc</span> <span class="pre">-N</span> <span class="pre">1</span> <span class="pre">-p</span> <span class="pre">i8cpu</span></code>, then run <code class="docutils literal notranslate"><span class="pre">dcore</span></code> on the compute node). Start small
+(<code class="docutils literal notranslate"><span class="pre">--np</span> <span class="pre">4</span></code> with <code class="docutils literal notranslate"><span class="pre">n_procs_per_hphi</span> <span class="pre">=</span> <span class="pre">4</span></code>) before scaling up; use a longer queue
+such as <code class="docutils literal notranslate"><span class="pre">F4cpu</span></code> for production (<code class="docutils literal notranslate"><span class="pre">i8cpu</span></code> is capped at 30 minutes).</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About DCore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../reference/programs.html">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/input.html">Input-file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/output.html">Output-file format</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../impuritysolvers.html">Impurity solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../analytic_continuation.html">Analytic continuation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../support.html">Support</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../pomerol/pomerol.html"
+                          title="previous chapter">Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">pomerol</span></code></a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../scipy/scipy.html"
+                          title="next chapter">Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">scipy/sparse</span></code></a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../scipy/scipy.html" title="Exact diagonalization solver: scipy/sparse"
+             >next</a></li>
+        <li class="right" >
+          <a href="../pomerol/pomerol.html" title="Exact diagonalization solver: pomerol"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DCore  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../reference.html" >Reference Manual</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../impuritysolvers.html" >Impurity solvers</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Exact diagonalization solver: <code class="docutils literal notranslate"><span class="pre">HPhi</span></code></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, The University of Tokyo.
+    </div>
+  </body>
+</html>
