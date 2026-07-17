@@ -51,7 +51,9 @@ setup(
         'h5py!=2.10.0; python_version<"3.9"',
         'h5py>=3.11; python_version>="3.9"',  # h5py>=3.11 supports NumPy 2
         'toml>=0.10',
-        'dcorelib>=0.9.7',
+        # dcorelib 1.0.0 dropped `__version__` and reorganized the API that
+        # dcore._dispatcher imports, so it is not yet compatible. Pin to 0.9.x.
+        'dcorelib>=0.9.7,<1',
         'sympy',
         'cvxpy'
         ],
@@ -69,7 +71,6 @@ setup(
             "dcore = dcore.dcore:run",
             "dcore_check = dcore.dcore_check:run",
             "dcore_bse = dcore.dcore_bse:run",
-            "dcore_gk = dcore.dcore_gk:run",
             "dcore_mpicheck = dcore.dcore_mpicheck:run",
             "dcore_anacont = dcore.dcore_anacont:run",
             "dcore_spectrum = dcore.dcore_spectrum:run",
