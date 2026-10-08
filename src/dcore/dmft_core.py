@@ -31,6 +31,7 @@ from typing import List
 
 from ._dispatcher import dyson, make_zero_tail
 from .program_options import *
+from .typed_parser import cast
 from .sumkdft_workers.launcher import run_sumkdft
 
 from .sumkdft_compat import SumkDFTCompat
@@ -101,7 +102,8 @@ def create_solver_params(ini_dict):
             param_type = __gettype(param_type_str)
         except RuntimeError:
             raise RuntimeError("Unknown type or unrecognized format : " + k)
-        solver_params[param_name] = param_type(v)
+        # bool("False") is True; use the same literal conversion as typed options.
+        solver_params[param_name] = cast(param_type, v)
 
     return solver_params
 

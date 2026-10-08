@@ -18,7 +18,27 @@
 import numpy as np
 import scipy.sparse as sp
 import pytest
-from dcore.impurity_solvers.scipy_sparse_main import calc_gf_Lehmann
+# Load the standalone solver without importing the backend-dependent solver registry.
+import importlib.util
+from pathlib import Path
+import sys
+from unittest.mock import patch
+
+_solver_dir = Path(__file__).resolve().parents[3] / 'src/dcore/impurity_solvers'
+
+
+def _load_module(name, filename):
+    spec = importlib.util.spec_from_file_location(name, _solver_dir / filename)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_lanczos = _load_module('lanczos', 'lanczos.py')
+with patch.dict(sys.modules, {'dcore.impurity_solvers.lanczos': _lanczos}):
+    _solver = _load_module('scipy_sparse_main', 'scipy_sparse_main.py')
+calc_gf_Lehmann = _solver.calc_gf_Lehmann
+_dense_eigh = _solver._dense_eigh
 
 
 def _reference_lehmann(iws, Cdag, spin_conserve, eigvec, E_n, evx, vvx, pm):
@@ -64,7 +84,6 @@ def test_lehmann_matches_reference(pm, spin_conserve):
 
 def test_dense_eigh_cpu_matches_scipy():
     import scipy.linalg, scipy.sparse as sp
-    from dcore.impurity_solvers.scipy_sparse_main import _dense_eigh
     rng = np.random.default_rng(0)
     A = rng.standard_normal((8, 8)) + 1j*rng.standard_normal((8, 8))
     H = sp.csr_matrix(A + A.conj().T)          # Hermitian
@@ -101,7 +120,6 @@ def test_gpu_matches_cpu_if_available():
             pytest.skip("no CUDA device")
     except Exception:
         pytest.skip("no usable CUDA device")
-    from dcore.impurity_solvers.scipy_sparse_main import _dense_eigh
     import scipy.sparse as sp
     rng = np.random.default_rng(1)
     A = rng.standard_normal((32, 32)) + 1j*rng.standard_normal((32, 32))
@@ -113,3 +131,58 @@ def test_gpu_matches_cpu_if_available():
     g_cpu = calc_gf_Lehmann(iws, Cdag, False, eigvec, 0.2, evx, vvx, +1, xp=np)
     g_gpu = calc_gf_Lehmann(iws, Cdag, False, eigvec, 0.2, evx, vvx, +1, xp=cupy)
     assert np.allclose(g_cpu, g_gpu, rtol=1e-10, atol=1e-12)
+
+
+@pytest.mark.parametrize("pm", [+1, -1])
+@pytest.mark.parametrize("spin_conserve", [True, False])
+@pytest.mark.parametrize("device", [False, True])
+def test_lehmann_bounds_frequency_workspace(monkeypatch, pm, spin_conserve, device):
+    iws, Cdag, eigvec, evx, vvx = _rand_case(seed=19, niw=13)
+    monkeypatch.setattr(_solver, '_LEHMANN_CHUNK_BYTES', 5 * evx.size * 16, raising=False)
+    shapes = []
+    original = np.einsum
+
+    def einsum(expression, ci, ene, cj):
+        shapes.append(ene.shape)
+        return original(expression, ci, ene, cj)
+
+    ref = _reference_lehmann(iws, Cdag, spin_conserve, eigvec, 0.3, evx, vvx, pm)
+    monkeypatch.setattr(np, 'einsum', einsum)
+    got = calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, 0.3, evx, vvx, pm,
+                         xp=_FakeCupy() if device else np)
+    np.testing.assert_allclose(got, ref, atol=1e-12)
+    assert shapes == [(5, 6), (5, 6), (3, 6)]
+
+
+@pytest.mark.parametrize('device', [False, True])
+def test_atomic_green_function(tmp_path, monkeypatch, device):
+    import json
+    from dcore import gpu
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, 'argv', ['scipy_sparse_main.py', 'input.json'])
+    requested = []
+
+    def backend(use_gpu):
+        requested.append(use_gpu)
+        return (_FakeCupy(), True) if use_gpu else (np, False)
+
+    monkeypatch.setattr(gpu, 'get_backend', backend)
+    np.save('h0.npy', -np.eye(2))
+    umat = np.zeros((2, 2, 2, 2))
+    umat[0, 1, 0, 1] = umat[1, 0, 1, 0] = 2.0
+    np.save('umat.npy', umat)
+    params = dict(n_flavors=2, n_sites=1, beta=5.0, n_eigen=4, n_iw=13,
+                  flag_spin_conserve=1, dim_full_diag=10, particle_numbers='all',
+                  weight_threshold=0.0, ncv=None, eigen_solver='eigsh',
+                  gf_solver='bicgstab', check_n_eigen=True, check_orthonormality=True,
+                  file_h0='h0.npy', file_umat='umat.npy', gpu=device)
+    Path('input.json').write_text(json.dumps(params))
+    _solver.main()
+    iw = 1j * (2 * np.arange(13) + 1) * np.pi / params['beta']
+    expected = 0.5 / (iw - 1) + 0.5 / (iw + 1)
+    gf = np.load('gf.npy')
+    np.testing.assert_allclose(gf[0, 0], expected, atol=1e-12)
+    np.testing.assert_allclose(gf[1, 1], expected, atol=1e-12)
+    np.testing.assert_allclose(gf[0, 1], 0, atol=1e-12)
+    np.testing.assert_allclose(gf[1, 0], 0, atol=1e-12)
+    assert requested == [device]

@@ -192,6 +192,9 @@ def print_sparse_matrix_info(matrix, prefix=""):
 # Compute
 #   <n| c_i (iw - H + E_n) c_j^+ |n>
 # using the eigenvalues of H (Lehmann representation)
+_LEHMANN_CHUNK_BYTES = 16 * 1024**2
+
+
 def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex,
                     pm, xp=np):
     n_flavors = Cdag.size
@@ -203,18 +206,21 @@ def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_e
     for i in range(n_flavors):
         cdag_im[i] = eigvecs_ex.conj().T @ Cdag[i] @ eigvec
 
-    # ene_denom[l, m] = 1 / (iw_l -/+ E_m +/- E_n)
-    if pm == +1:
-        ene = 1.0 / (iws[:, None] - eigvals_ex[None, :] + E_n)
-    else:
-        ene = 1.0 / (iws[:, None] + eigvals_ex[None, :] - E_n)
-
+    # Bound the denominator workspace independently of the Matsubara grid size.
+    # Building all frequencies at once can require gigabytes even on the CPU.
+    gf = np.empty((n_flavors, n_flavors, iws.size), dtype=complex)
+    chunk_size = max(1, _LEHMANN_CHUNK_BYTES // max(1, dim_ex * np.dtype(complex).itemsize))
     ci = xp.asarray(cdag_im)
-    e = xp.asarray(ene)
-    # gf[i, j, l] = sum_m conj(cdag_im[i,m]) * ene[l,m] * cdag_im[j,m]
-    gf = xp.einsum('im,lm,jm->ijl', ci.conj(), e, ci)
-    if xp is not np:
-        gf = xp.asnumpy(gf)
+    energies = xp.asarray(eigvals_ex)
+    for start in range(0, iws.size, chunk_size):
+        stop = min(start + chunk_size, iws.size)
+        frequencies = xp.asarray(iws[start:stop])
+        if pm == +1:
+            ene = 1.0 / (frequencies[:, None] - energies[None, :] + E_n)
+        else:
+            ene = 1.0 / (frequencies[:, None] + energies[None, :] - E_n)
+        block = xp.einsum('im,lm,jm->ijl', ci.conj(), ene, ci)
+        gf[:, :, start:stop] = block if xp is np else xp.asnumpy(block)
 
     if spin_conserve:
         n_orb = n_flavors // 2

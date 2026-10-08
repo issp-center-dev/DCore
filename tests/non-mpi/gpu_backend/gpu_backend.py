@@ -40,3 +40,20 @@ def test_get_backend_gpu_missing_falls_back(monkeypatch):
 def test_to_host_identity_for_numpy():
     a = np.arange(3)
     assert gpu.to_host(a) is a
+
+
+
+def test_unusable_cuda_context_falls_back(monkeypatch):
+    import types
+    import pytest
+
+    def allocate(*args):
+        raise RuntimeError("CUDA context unavailable")
+
+    cupy = types.SimpleNamespace(
+        cuda=types.SimpleNamespace(runtime=types.SimpleNamespace(getDeviceCount=lambda: 1)),
+        zeros=allocate)
+    monkeypatch.setattr(gpu, '_import_cupy', lambda: cupy)
+    with pytest.warns(UserWarning, match="CUDA context unavailable"):
+        xp, active = gpu.get_backend(True)
+    assert xp is np and active is False
