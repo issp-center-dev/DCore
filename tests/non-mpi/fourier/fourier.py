@@ -20,8 +20,6 @@ from dcore.fourier import (
     _fft_fermion_w2t, _fft_fermion_t2w, _matsubara_freq_fermion, bgf_fourier_w2t,
     _ir_fermion_w2t, _ir_fermion_t2w,
 )
-from dcore.tools import make_block_gf
-from dcore._dispatcher import BlockGf, Gf, GfImFreq, GfImTime
 import numpy
 import os
 import pytest
@@ -66,6 +64,8 @@ def test_fft_fermion_w2t(request):
 
 # test for w2t
 def test_fft_bgf_w2t(request):
+    GfImFreq = pytest.importorskip("dcore._dispatcher").GfImFreq
+    from dcore.tools import make_block_gf
     org_dir = os.getcwd()
     os.chdir(request.fspath.dirname)
 
@@ -127,6 +127,8 @@ def test_ir_vs_fft_w2t(request):
 
 
 def test_ir_bgf_w2t(request):
+    GfImFreq = pytest.importorskip("dcore._dispatcher").GfImFreq
+    from dcore.tools import make_block_gf
     pytest.importorskip("sparse_ir")
     g0_w, g0_t, beta, a = _make_g0()
     nt = g0_t.size
@@ -152,6 +154,8 @@ def test_ir_bgf_w2t(request):
 
 
 def test_bgf_w2t_unknown_method(request):
+    GfImFreq = pytest.importorskip("dcore._dispatcher").GfImFreq
+    from dcore.tools import make_block_gf
     g0_w, g0_t, beta, a = _make_g0()
     nw = g0_w.size // 2
     gf_struct = {'up': [0]}
@@ -184,3 +188,24 @@ def test_ir_default_wmax_basis_size_bounded(request):
     # Grid-edge wmax yields a large-but-bounded basis (~69 at these params).
     # Pin it so a future change that explodes Lambda is caught.
     assert basis.size < 200
+
+
+@pytest.mark.parametrize("transform,data", [
+    (_ir_fermion_w2t, numpy.zeros(4, complex)),
+    (_ir_fermion_t2w, numpy.zeros(5)),
+])
+def test_ir_rejects_underdetermined_grid(transform, data):
+    pytest.importorskip("sparse_ir")
+    with pytest.raises(ValueError, match="fewer samples"):
+        transform(data, beta=10.0, wmax=10.0)
+
+
+@pytest.mark.parametrize("transform,data", [
+    (_ir_fermion_w2t, numpy.zeros(4, complex)),
+    (_ir_fermion_t2w, numpy.zeros(5)),
+])
+def test_ir_missing_dependency_has_install_hint(monkeypatch, transform, data):
+    import sys
+    monkeypatch.setitem(sys.modules, 'sparse_ir', None)
+    with pytest.raises(ImportError, match=r"pip install dcore\[ir\]"):
+        transform(data, beta=10.0, wmax=10.0)

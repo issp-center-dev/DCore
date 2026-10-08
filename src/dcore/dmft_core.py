@@ -322,9 +322,8 @@ class DMFTCoreSolver(object):
         # computation (fourier.py has no production caller yet). These are dead
         # today by design; the future consumer increment that routes Matsubara
         # handlers through the IR path will read them.
-        # TODO(ir-consumer-wiring): consume self._basis/_ir_wmax/_ir_eps; pass
-        # wmax = max|eps_k - mu| to the IR transform (see fourier._ir_default_wmax
-        # and H-wave issue #57 -- do not use a band/grid heuristic).
+        # TODO(ir-consumer-wiring): consume self._basis/_ir_wmax/_ir_eps;
+        # the cutoff must cover the interacting spectrum, including Hubbard bands.
         self._basis = params['system']['basis']
         self._ir_wmax = float(params['system']['ir_wmax'])
         self._ir_eps = float(params['system']['ir_eps'])

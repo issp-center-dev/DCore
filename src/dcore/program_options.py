@@ -107,7 +107,7 @@ def create_parser(target_sections=None):
     parser.add_option("system", "basis", str, "matsubara",
                       "Basis for Matsubara-frequency handling: 'matsubara' (dense grid, default) or 'ir' (sparse-ir/IR basis). RESERVED: parsed but not yet wired to any computation.")
     parser.add_option("system", "ir_wmax", float, -1.0,
-                      "Real-frequency cutoff wmax for the IR basis (used when basis='ir'). Set to the spectral half-range max|eps_k - mu|. Non-positive => auto (grid-edge fallback; over-estimates, warns). RESERVED: not yet wired.")
+                      "Real-frequency cutoff wmax for the IR basis (used when basis='ir'). Must cover the full interacting spectral support, including Hubbard bands. Non-positive => auto (grid-edge fallback; warns). RESERVED: not yet wired.")
     parser.add_option("system", "ir_eps", float, 1e-10,
                       "Truncation tolerance for the IR basis (used when basis='ir'). RESERVED: not yet wired.")
 

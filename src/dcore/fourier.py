@@ -21,8 +21,6 @@ import warnings
 import numpy
 from scipy import fft
 from itertools import product
-from dcore._dispatcher import BlockGf, Gf, GfImFreq, GfImTime, MeshImFreq
-from dcore.tools import make_block_gf
 from dcore import ir_basis
 
 
@@ -119,28 +117,17 @@ def _fft_fermion_t2w(gt, beta):
 def _ir_default_wmax(beta, nw):
     """Fallback real-frequency cutoff = largest Matsubara frequency on the grid.
 
-    This over-estimate guarantees the basis spans everything the sampling grid
-    resolves, but it scales with the *number* of frequencies (a numerical
-    parameter), not the physical spectral width. For large nw it makes
-    Lambda = beta*wmax large, which is slower to build and more ill-conditioned
-    (hence less accurate) than a physically-sized cutoff. Emits a warning so the
-    fallback is never silent; callers should pass an explicit wmax covering the
-    spectral support whenever it is known.
-
-    NOTE for the future consumer wiring: the physically-correct cutoff is the
-    dispersion spectral half-range max|eps_k - mu|, which this pure G(iw)<->G(tau)
-    transform cannot see (it has no eps(k)/mu). The consumer that owns the lattice
-    (DMFT driver / SumkDFT) must supply wmax = max|eps_k - mu| via [system] ir_wmax
-    -- do NOT re-derive a band/grid heuristic here: the sister project H-wave hit
-    exactly that bug (issp-center-dev/H-wave issue #57), where a naive band measure
-    produced an ill-conditioned basis and wrong results.
+    This grid-based fallback does not guarantee coverage of the real-frequency
+    spectral support. In particular, interacting spectra can have Hubbard bands
+    beyond the bare dispersion. Callers should supply a cutoff covering the full
+    spectral support. A larger grid also increases the basis construction cost.
     """
     wmax = (2 * nw - 1) * numpy.pi / beta
     warnings.warn(
         f"IR basis wmax not specified; falling back to the Matsubara-grid-edge "
         f"wmax={wmax:.3g} (Lambda=beta*wmax={beta * wmax:.3g}), which is slower "
         f"and less accurate than a physically-sized cutoff. Pass an explicit "
-        f"wmax (or [system] ir_wmax) covering the spectral support.",
+        f"wmax covering the full spectral support.",
         stacklevel=3,
     )
     return wmax
@@ -159,7 +146,7 @@ def _ir_fermion_w2t(gw, beta, wmax=None, eps=1e-10):
     Returns:
         numpy.ndarray(nt+1): real G(tau) on linspace(0, beta, nt+1), nt=2*nw.
     """
-    import sparse_ir
+    sparse_ir = ir_basis._import_sparse_ir()
     assert gw.size % 2 == 0  # even
     nw = gw.size // 2
     nt = 2 * nw
@@ -167,6 +154,8 @@ def _ir_fermion_w2t(gw, beta, wmax=None, eps=1e-10):
         wmax = _ir_default_wmax(beta, nw)
 
     basis = ir_basis.get_basis(beta, wmax, eps, 'F')
+    if gw.size < basis.size:
+        raise ValueError("Matsubara grid has fewer samples than IR basis functions; increase nw.")
     # Fermionic Matsubara indices 2n+1 for n in [-nw, nw), matching _matsubara_freq_fermion.
     n_idx = numpy.array([2 * n + 1 for n in range(-nw, nw)])
     smpl_w = sparse_ir.MatsubaraSampling(basis, sampling_points=n_idx)
@@ -196,7 +185,7 @@ def _ir_fermion_t2w(gt, beta, wmax=None, eps=1e-10):
     Returns:
         numpy.ndarray(2*nw): complex G(iw) including w>0 and w<0 on the dense symmetric grid.
     """
-    import sparse_ir
+    sparse_ir = ir_basis._import_sparse_ir()
     assert gt.size % 2 == 1  # odd
     nt = gt.size - 1
     nw = nt // 2
@@ -204,6 +193,8 @@ def _ir_fermion_t2w(gt, beta, wmax=None, eps=1e-10):
         wmax = _ir_default_wmax(beta, nw)
 
     basis = ir_basis.get_basis(beta, wmax, eps, 'F')
+    if gt.size < basis.size:
+        raise ValueError("Time grid has fewer samples than IR basis functions; increase nt.")
     tau_grid = numpy.linspace(0.0, beta, nt + 1)
     smpl_t = sparse_ir.TauSampling(basis, sampling_points=tau_grid)
     n_idx = numpy.array([2 * n + 1 for n in range(-nw, nw)])
@@ -226,6 +217,9 @@ def bgf_fourier_w2t(bgf, tail=None, method='fft', ir_params=None):
     Returns:
         BlockGf(GfImTime): Block Green's function in imaginary time.
     """
+    from dcore._dispatcher import BlockGf, GfImTime, MeshImFreq
+    from dcore.tools import make_block_gf
+
     assert isinstance(bgf, BlockGf)
     assert isinstance(bgf.mesh, MeshImFreq)
     assert bgf.mesh.statistic == 'Fermion'
