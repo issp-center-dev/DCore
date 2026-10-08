@@ -91,3 +91,77 @@ def test_accumulate_Gloc_via_solve_matches_full_inverse():
         ref = bz_w * Ginv[:, p, :][:, :, p]
         got = G_loc[i][bname].data
         assert np.allclose(got, ref, atol=1e-12), "shell %d mismatch" % i
+
+
+def test_overlapping_shells_share_one_solve(monkeypatch):
+    rng = np.random.RandomState(12)
+    md = rng.randn(4, 6, 6) + 1j * rng.randn(4, 6, 6) + 6 * np.eye(6)
+    indices = [[3, 1], [1, 4], [4, 3]]
+    s = types.SimpleNamespace(
+        SO=0, spin_names_to_ind={0: {'up': 0}}, n_corr_shells=3,
+        corr_shells=[{'dim': 2}] * 3, bz_weights=[0.7],
+        proj_index=np.array(indices)[None, None, :, :])
+    gloc = [_FakeBlockGf({'up': _FakeGf(np.ones((4, 2, 2), complex))})
+            for _ in indices]
+    original = np.linalg.solve
+    calls = []
+
+    def solve(a, b):
+        calls.append(b.shape)
+        return original(a, b)
+
+    monkeypatch.setattr(np.linalg, 'solve', solve)
+    SumkDFT_opt._accumulate_Gloc_via_solve(
+        s, 0, _FakeBlockGf({'up': _FakeGf(md)}), gloc)
+    inv = np.linalg.inv(md)
+    for g, p in zip(gloc, indices):
+        np.testing.assert_allclose(g['up'].data, 1 + 0.7 * inv[:, p, :][:, :, p])
+    assert calls == [(4, 6, 3)]
+
+
+def test_lattice_denominator_has_independent_frequency_cache(monkeypatch):
+    # Exercise the real lattice_gf control flow with small NumPy-backed blocks.
+    # A denominator at another k point must not resize the inverse's cache.
+    globals_ = SumkDFT_opt.lattice_gf.__globals__
+
+    class Gf(_FakeGf):
+        def __init__(self, indices, mesh):
+            super().__init__(np.zeros((2, len(indices), len(indices)), complex))
+            self.mesh = mesh
+
+    class Block(_FakeBlockGf):
+        def __init__(self, name_list, block_list, make_copies):
+            super().__init__(dict(zip(name_list, block_list)))
+            self.mesh = block_list[0].mesh
+
+        def zero(self):
+            for _, gf in self:
+                gf.data[...] = 0
+
+        def __lshift__(self, value):
+            for name, gf in self:
+                gf.data[...] = (value[name].data if isinstance(value, Block)
+                                else value * np.eye(gf.data.shape[1]))
+            return self
+
+        def __isub__(self, matrices):
+            for (_, gf), matrix in zip(self, matrices):
+                gf.data[...] -= matrix
+            return self
+
+        def invert(self):
+            for _, gf in self:
+                gf.data[...] = np.linalg.inv(gf.data)
+
+    monkeypatch.setitem(globals_, 'MeshImFreq', lambda **kw: types.SimpleNamespace(beta=kw['beta']))
+    monkeypatch.setitem(globals_, 'GfImFreq', Gf)
+    monkeypatch.setitem(globals_, 'BlockGf', Block)
+    monkeypatch.setitem(globals_, 'iOmega_n', 1j)
+    s = types.SimpleNamespace(
+        SO=0, spin_names_to_ind={0: {'up': 0}}, spin_block_names={0: ['up']},
+        n_spin_blocks={0: 1}, n_orbitals=np.array([[2], [3]]), h_field=0,
+        hopping_part=[np.zeros((1, 2, 2)), np.zeros((1, 3, 3))])
+    first = SumkDFT_opt.lattice_gf(s, 0, mu=0, with_Sigma=False)._b['up'].data.copy()
+    SumkDFT_opt.lattice_gf(s, 1, mu=0, with_Sigma=False, invert=False)
+    again = SumkDFT_opt.lattice_gf(s, 0, mu=0, with_Sigma=False)
+    np.testing.assert_allclose(again['up'].data, first)

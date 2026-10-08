@@ -163,6 +163,7 @@ class SumkDFT_opt(SumkDFT):
         # separate buffer so that self.G_latt_* still means the *inverted* lattice
         # Green's function after the call.
         cache_attr = ("G_latt_" if invert else "G_latt_denom_") + iw_or_w
+        omega_attr = "cache_omega_" + cache_attr
         set_up_G_latt = False                       # Assume not
         if not hasattr(self, cache_attr):
             # Need to create the (denominator or inverted) lattice GF buffer
@@ -196,13 +197,14 @@ class SumkDFT_opt(SumkDFT):
 
             # +++ADDED
             # Store iOmega_n or Omega to avoid re-computation
-            self.cache_omega = BlockGf(name_list=block_ind_list,
+            cache_omega = BlockGf(name_list=block_ind_list,
                              block_list=glist(), make_copies=False)
-            self.cache_omega.zero()
+            cache_omega.zero()
             if iw_or_w == "iw":
-                self.cache_omega << iOmega_n
+                cache_omega << iOmega_n
             elif iw_or_w == "w":
-                self.cache_omega << Omega + 1j * broadening
+                cache_omega << Omega + 1j * broadening
+            setattr(self, omega_attr, cache_omega)
         print_time("Set up G_latt")
 
         # if iw_or_w == "iw":
@@ -211,7 +213,7 @@ class SumkDFT_opt(SumkDFT):
         #     G_latt << Omega + 1j * broadening
         # +++MODIFIED
         # just copy from cache
-        G_latt << self.cache_omega
+        G_latt << getattr(self, omega_attr)
         print_time("G_latt << iOmega_n")
 
         idmat = [numpy.identity(
@@ -379,20 +381,26 @@ class SumkDFT_opt(SumkDFT):
         fancy-index projectors (index_works).
         """
         w = self.bz_weights[ik]
-        for icrsh in range(self.n_corr_shells):
-            for bname, gf in G_loc[icrsh]:
-                isp = self.spin_names_to_ind[self.SO][bname]
-                dim = self.corr_shells[icrsh]['dim']
-                projindex = self.proj_index[ik, isp, icrsh, 0:dim]
-                Md = M[bname].data                       # (n_iw, n_band, n_band)
-                n_band = Md.shape[1]
-                rhs = numpy.zeros((n_band, dim), dtype=Md.dtype)
-                rhs[projindex, numpy.arange(dim)] = 1.0  # columns of the identity at projindex
-                # broadcast rhs to 3D so solve does a batched matrix solve over n_iw
-                # (a 2D rhs against a 3D matrix would be read as a stack of vectors)
-                rhs = numpy.broadcast_to(rhs, (Md.shape[0], n_band, dim))
-                Y = numpy.linalg.solve(Md, rhs)          # (n_iw, n_band, dim) = M^{-1}[:, projindex]
-                gf.data[...] += w * Y[:, projindex, :]   # M^{-1}[projindex, projindex]
+        for bname, block in M:
+            isp = self.spin_names_to_ind[self.SO][bname]
+            indices = [self.proj_index[ik, isp, ish, :shell['dim']]
+                       for ish, shell in enumerate(self.corr_shells)]
+            if not indices:
+                continue
+            columns = numpy.unique(numpy.concatenate(indices))
+            if columns.size == 0:
+                continue
+            Md = block.data
+            n_band = Md.shape[1]
+            rhs = numpy.zeros((n_band, columns.size), dtype=Md.dtype)
+            rhs[columns, numpy.arange(columns.size)] = 1.0
+            rhs = numpy.broadcast_to(rhs, (Md.shape[0], n_band, columns.size))
+            # Solve once per spin block, so multiple shells share the expensive
+            # factorization, including when their projected columns overlap.
+            Y = numpy.linalg.solve(Md, rhs)
+            for ish, projindex in enumerate(indices):
+                positions = numpy.searchsorted(columns, projindex)
+                G_loc[ish][bname].data[...] += w * Y[:, projindex, :][:, :, positions]
 
     ###############################################################
     # ADDED FUNCTIONS
