@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Wanniernization using Quantum ESPRESSO &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="../../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/dcore.css?v=1e19043f" />
@@ -35,10 +35,10 @@
 <h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Link to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../../_downloads/fbf4aa10c0a8f5d138fa99ae99efb2de/scf_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
- <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
-      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">'scf'</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">'./'</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">'./'</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">'srvo3'</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">SYSTEM</span>
        <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">1</span>
@@ -47,7 +47,7 @@
          <span class="n">nat</span> <span class="o">=</span> <span class="mi">5</span>
      <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">50.0</span>
      <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">400.0</span>
- <span class="n">occupations</span> <span class="o">=</span> <span class="s2">&quot;tetrahedra_opt&quot;</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s2">"tetrahedra_opt"</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">ELECTRONS</span>
 <span class="o">/</span>
@@ -81,10 +81,10 @@
 in the wannierization.</p>
 <p><a class="reference download internal" download="" href="../../../_downloads/c99daac10cc60faf3570eb2a87cab34d/nscf_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
- <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span>
-      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">'bands'</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">'./'</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">'./'</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">'srvo3'</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">SYSTEM</span>
        <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">1</span>
@@ -93,7 +93,7 @@ in the wannierization.</p>
          <span class="n">nat</span> <span class="o">=</span> <span class="mi">5</span>
      <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">50.0</span>
      <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">400.0</span>
- <span class="n">occupations</span> <span class="o">=</span> <span class="s2">&quot;tetrahedra_opt&quot;</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s2">"tetrahedra_opt"</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">ELECTRONS</span>
 <span class="o">/</span>
@@ -316,15 +316,15 @@ end kpoints
 <h3>QE to wannier90 interface<a class="headerlink" href="#qe-to-wannier90-interface" title="Link to this heading">¶</a></h3>
 <p><a class="reference download internal" download="" href="../../../_downloads/e7ce6a1c83ef95fcbe392f6296abd452/pw2wan_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">pw2wan_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">inputpp</span> 
-   <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-   <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
-   <span class="n">seedname</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
-   <span class="n">spin_component</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+   <span class="n">outdir</span> <span class="o">=</span> <span class="s1">'./'</span>
+   <span class="n">prefix</span> <span class="o">=</span> <span class="s1">'srvo3'</span>
+   <span class="n">seedname</span> <span class="o">=</span> <span class="s1">'srvo3'</span>
+   <span class="n">spin_component</span> <span class="o">=</span> <span class="s1">'none'</span>
    <span class="n">write_mmn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
    <span class="n">write_amn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
    <span class="n">write_unk</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
    <span class="n">write_dmn</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
-   <span class="n">wan_mode</span> <span class="o">=</span> <span class="s1">&#39;standalone&#39;</span>
+   <span class="n">wan_mode</span> <span class="o">=</span> <span class="s1">'standalone'</span>
 <span class="o">/</span>
 </pre></div>
 </div>
@@ -347,10 +347,10 @@ you can plot the original and the wannier-interpolated band structure simultaneo
 <p>First, compute the band structure with the following input file:</p>
 <p><a class="reference download internal" download="" href="../../../_downloads/5e92a93a71dfd35b9b3efa61d603f5fd/band_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">band_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
- <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span>
-      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">'bands'</span>
+      <span class="n">outdir</span> <span class="o">=</span> <span class="s1">'./'</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">'./'</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">'srvo3'</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">SYSTEM</span>
        <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">1</span>
@@ -359,7 +359,7 @@ you can plot the original and the wannier-interpolated band structure simultaneo
          <span class="n">nat</span> <span class="o">=</span> <span class="mi">5</span>
      <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">50.0</span>
      <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">400.0</span>
- <span class="n">occupations</span> <span class="o">=</span> <span class="s2">&quot;tetrahedra_opt&quot;</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s2">"tetrahedra_opt"</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">ELECTRONS</span>
 <span class="o">/</span>
@@ -432,9 +432,9 @@ you can plot the original and the wannier-interpolated band structure simultaneo
 </div>
 <p><a class="reference download internal" download="" href="../../../_downloads/b7c0a744734ec13b6f191c706fe2ff2d/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&amp;BANDS
-prefix = &quot;srvo3&quot;,
-outdir = &quot;./&quot;,
-!filband = &quot;band.dat&quot;
+prefix = "srvo3",
+outdir = "./",
+!filband = "band.dat"
 !lsym = .true.
 /
 </pre></div>
@@ -442,7 +442,7 @@ outdir = &quot;./&quot;,
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>bands.x<span class="w"> </span>-in<span class="w"> </span>bands_srvo3.in
 </pre></div>
 </div>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;srvo3_band.dat&quot; u ($1*0.6146):2 tit &quot;Wannier&quot; w l
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] "bands.out.gnu" u 1:2 w p tit "Orig", 12.3116 tit "E_F", "srvo3_band.dat" u ($1*0.6146):2 tit "Wannier" w l
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../../_images/band_srvo3.png"><img alt="../../../_images/band_srvo3.png" class="align-center" src="../../../_images/band_srvo3.png" width="500" />

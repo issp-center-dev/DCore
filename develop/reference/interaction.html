@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>interaction parameter &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
@@ -69,7 +69,7 @@ U_{\alpha \alpha \beta \beta} &amp;= J \qquad (\alpha \neq \beta),
 \end{align}\end{split}\]</div>
 <p>where <span class="math notranslate nohighlight">\(U, U', J\)</span> at each correlated shell are specified by the parameter <code class="docutils literal notranslate"><span class="pre">kanamori</span></code> as</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">kanamori</span>
-<span class="n">kanamori</span> <span class="o">=</span> <span class="p">[(</span><span class="n">U_1</span><span class="p">,</span> <span class="sa">U</span><span class="s1">&#39;_1, J_1), (U_2, U&#39;</span><span class="n">_2</span><span class="p">,</span> <span class="n">J_2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
+<span class="n">kanamori</span> <span class="o">=</span> <span class="p">[(</span><span class="n">U_1</span><span class="p">,</span> <span class="sa">U</span><span class="s1">'_1, J_1), (U_2, U'</span><span class="n">_2</span><span class="p">,</span> <span class="n">J_2</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
 </pre></div>
 </div>
 <p>For example, if there are two correlated shells that have
@@ -147,7 +147,7 @@ are specified by the parameter <code class="docutils literal notranslate"><span 
 <p>One can set the U tensor <span class="math notranslate nohighlight">\(U^{i}_{\alpha \beta \gamma \delta}\)</span> from an external file.
 The input parameters for this are</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interaction</span> <span class="o">=</span> <span class="n">file</span>
-<span class="n">interaction_file</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;file1.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;file2.npy&#39;</span><span class="p">,]</span>
+<span class="n">interaction_file</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'file1.npy'</span><span class="p">,</span> <span class="s1">'file2.npy'</span><span class="p">,]</span>
 </pre></div>
 </div>
 <p>The filenames for all inequivalent shells are listed in <code class="docutils literal notranslate"><span class="pre">interaction_file</span></code> parameter.

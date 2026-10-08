@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Exact diagonalization solver: HPhi &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
@@ -78,9 +78,9 @@ the <code class="docutils literal notranslate"><span class="pre">exec_path</span
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">impurity_solver</span><span class="p">]</span>
 <span class="n">n_bath</span><span class="p">{</span><span class="nb">int</span><span class="p">}</span> <span class="o">=</span> <span class="mi">0</span>        <span class="c1"># number of bath sites per spin-orbital (0 = Hubbard-I)</span>
 <span class="n">exct</span><span class="p">{</span><span class="nb">int</span><span class="p">}</span> <span class="o">=</span> <span class="mi">1</span>          <span class="c1"># number of low-lying eigenstates used for the</span>
-                       <span class="c1"># finite-temperature Green&#39;s function</span>
+                       <span class="c1"># finite-temperature Green's function</span>
 <span class="n">fit_gtol</span><span class="p">{</span><span class="nb">float</span><span class="p">}</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="c1"># tolerance of the bath-hybridization fitting</span>
-<span class="n">exct_weight_threshold</span><span class="p">{</span><span class="nb">float</span><span class="p">}</span> <span class="o">=</span> <span class="mf">1e-3</span>   <span class="c1"># threshold for the &quot;exct too small&quot; warning</span>
+<span class="n">exct_weight_threshold</span><span class="p">{</span><span class="nb">float</span><span class="p">}</span> <span class="o">=</span> <span class="mf">1e-3</span>   <span class="c1"># threshold for the "exct too small" warning</span>
 <span class="n">n_procs_per_hphi</span><span class="p">{</span><span class="nb">int</span><span class="p">}</span> <span class="o">=</span> <span class="mi">1</span>             <span class="c1"># MPI ranks per HPhi run in the Gf step</span>
 </pre></div>
 </div>

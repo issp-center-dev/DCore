@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Exact diagonalization solver: scipy/sparse &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
@@ -219,8 +219,8 @@ Time: 0m0.216s
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Total eigenvalues computed:  672
 
 Save eigenvalues and eigenvectors in
- &#39;eigenvalues.dat&#39;
- &#39;eigenvectors.dat&#39;
+ 'eigenvalues.dat'
+ 'eigenvectors.dat'
 
 Number of initial states: 32
   N=4: 0 / 210
@@ -230,7 +230,7 @@ Number of initial states: 32
 </div>
 <p>The first line shows the total number of eigenvalues computed. The last block shows the number of initial states that have the Boltzmann weight larger than <cite>weight_threshold</cite>. As expected from the prescreening, only N=5 contains initial states.</p>
 <p>Then proceed to the calculation of the impurity Green’s function.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Calculating impurity Green&#39;s function...
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Calculating impurity Green's function...
 
 Initial state 1/32  (N = 5)
 
@@ -250,7 +250,7 @@ Initial state 2/32  (N = 5)
 </pre></div>
 </div>
 <p>Lehmann representation is used when the dimension of <span class="math notranslate nohighlight">\(N \pm 1\)</span>-particle states is smaller than <code class="docutils literal notranslate"><span class="pre">dim_full_diag</span></code>. Otherwise, linear equations are solved by the sparse solver specified by <code class="docutils literal notranslate"><span class="pre">gf_solver</span></code>. The output in this case is as follows:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Calculating impurity Green&#39;s function...
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Calculating impurity Green's function...
 
 Initial state 1/32  (N = 5)
 
@@ -296,7 +296,7 @@ Initial state 2/32  (N = 5)
 <li><p><strong>eigenvectors.dat</strong></p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span># The i-th digit from the left of the 10-dimensional Fock state
 # indicates whether (spin, site) state is occupied (1) or empty (0).
-# &#39;site&#39; includes bath sites (b) after Wannier orbitals (w).
+# 'site' includes bath sites (b) after Wannier orbitals (w).
 #
 #   w1+ w2+ ... b1+ b2+ ... w1- w2- ... b1- b2- ...
 #

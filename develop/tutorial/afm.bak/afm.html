@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Antiferromagnetic state in 3D Hubbard model &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
@@ -56,7 +56,7 @@ The complete input file is shown below.</p>
 <span class="na">nk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">16</span>
 
 <span class="k">[mpi]</span>
-<span class="na">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;$MPIRUN -np #&#39;</span>
+<span class="na">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">'$MPIRUN -np #'</span>
 
 <span class="k">[system]</span>
 <span class="na">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5.0</span>
@@ -71,7 +71,7 @@ The complete input file is shown below.</p>
 
 <span class="k">[control]</span>
 <span class="na">max_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">30</span>
-<span class="na">initial_static_self_energy = {0</span><span class="o">:</span><span class="w"> </span><span class="s">&#39;init_se_up.txt&#39;</span><span class="na">, 1</span><span class="o">:</span><span class="w"> </span><span class="s">&#39;init_se_down.txt&#39;</span><span class="na">}</span>
+<span class="na">initial_static_self_energy = {0</span><span class="o">:</span><span class="w"> </span><span class="s">'init_se_up.txt'</span><span class="na">, 1</span><span class="o">:</span><span class="w"> </span><span class="s">'init_se_down.txt'</span><span class="na">}</span>
 
 <span class="k">[tool]</span>
 <span class="na">broadening</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
@@ -104,7 +104,7 @@ Running <a class="reference download internal" download="" href="../../_download
 <section id="self-consistent-calculations">
 <h2>Self-consistent calculations<a class="headerlink" href="#self-consistent-calculations" title="Link to this heading">¶</a></h2>
 <p>Now, DMFT calculations can be done as usual.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">MPIRUN</span><span class="o">=</span><span class="s2">"mpirun"</span>
 dcore_pre<span class="w"> </span>cubic.ini<span class="w"> </span>&gt;<span class="w"> </span>output-pre
 dcore<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span><span class="w"> </span>&gt;<span class="w"> </span>output
 dcore_post<span class="w"> </span>cubic.ini<span class="w"> </span>--np<span class="w"> </span><span class="m">48</span><span class="w"> </span>&gt;<span class="w"> </span>output-post

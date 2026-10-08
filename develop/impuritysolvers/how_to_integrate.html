@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>How to integrate your own solver &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/dcore.css?v=1e19043f" />
@@ -65,7 +65,7 @@ The null solver serves as a template of wrapper code.</p>
 </li>
 <li><p>Set the solver name</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="k">return</span> <span class="s2">&quot;null&quot;</span>
+    <span class="k">return</span> <span class="s2">"null"</span>
 </pre></div>
 </div>
 </li>
@@ -92,7 +92,7 @@ The null solver serves as a template of wrapper code.</p>
 <span class="c1"># (1b) If Delta(iw) and/or Delta(tau) are necessary:</span>
 <span class="c1"># Compute the hybridization function from G0:</span>
 <span class="c1">#     Delta(iwn_n) = iw_n - H0 - G0^{-1}(iw_n)</span>
-<span class="c1"># H0 is extracted from the tail of the Green&#39;s function.</span>
+<span class="c1"># H0 is extracted from the tail of the Green's function.</span>
 <span class="bp">self</span><span class="o">.</span><span class="n">_Delta_iw</span> <span class="o">=</span> <span class="n">delta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_G0_iw</span><span class="p">)</span>
 <span class="n">Delta_tau</span> <span class="o">=</span> <span class="n">make_block_gf</span><span class="p">(</span><span class="n">GfImTime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gf_struct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tau</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Delta_iw</span><span class="p">:</span>
@@ -107,8 +107,8 @@ The null solver serves as a template of wrapper code.</p>
 </li>
 <li><p>Run the solver</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># (2) Run a working horse</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_f</span><span class="p">:</span>
-    <span class="n">launch_mpi_subprocesses</span><span class="p">(</span><span class="n">mpirun_command</span><span class="p">,</span> <span class="p">[</span><span class="n">exec_path</span><span class="p">,</span> <span class="s1">&#39;input.ini&#39;</span><span class="p">],</span> <span class="n">output_f</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'./output'</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_f</span><span class="p">:</span>
+    <span class="n">launch_mpi_subprocesses</span><span class="p">(</span><span class="n">mpirun_command</span><span class="p">,</span> <span class="p">[</span><span class="n">exec_path</span><span class="p">,</span> <span class="s1">'input.ini'</span><span class="p">],</span> <span class="n">output_f</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The second argument to the function <code class="docutils literal notranslate"><span class="pre">launch_mpi_subprocesses</span></code> is the actual command and arguments used for invoking MPI processes from <strong>DCore</strong>.
@@ -137,7 +137,7 @@ to import your class</p>
 <p>and add it to the dictionary variable <code class="docutils literal notranslate"><span class="pre">solver_classes</span></code> as</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">solver_classes</span> <span class="o">=</span> <span class="p">{</span>
     <span class="o">...</span>
-    <span class="s1">&#39;your_solver&#39;</span><span class="p">:</span> <span class="n">YourSolver</span><span class="p">,</span>
+    <span class="s1">'your_solver'</span><span class="p">:</span> <span class="n">YourSolver</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>

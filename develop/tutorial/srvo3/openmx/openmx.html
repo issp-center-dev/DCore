@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Wanniernization using OpenMX &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="../../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/dcore.css?v=1e19043f" />
@@ -213,7 +213,7 @@ If we want to compute by using 32 MPI processes at the same accuracy,
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_anacont<span class="w"> </span>srvo3.ini
 $<span class="w"> </span>dcore_spectrum<span class="w"> </span>srvo3.ini
 $<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>post
-$<span class="w"> </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;s/every 10/every 1/g&quot;</span><span class="w"> </span>akw.gp
+$<span class="w"> </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/every 10/every 1/g"</span><span class="w"> </span>akw.gp
 $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
 </pre></div>
 </div>

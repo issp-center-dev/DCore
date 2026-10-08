@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Installation &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/dcore.css?v=1e19043f" />
@@ -120,7 +120,7 @@ $<span class="w"> </span>pytest<span class="w"> </span>tests/non-mpi/*/*.py
 If your system MPI command is not “mpirun”, please provide the name of the correct one to DCore at runtime in an input file.
 The default value is “mpirun -np #” (# is replaced by the number of processors).
 For instance, if the MPI command of your system is “mpijob”, please set the environment variable “DCORE_MPIRUN_COMMAND” as folows.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">DCORE_MPIRUN_COMMAND</span><span class="o">=</span><span class="s2">&quot;mpijob -np #&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">DCORE_MPIRUN_COMMAND</span><span class="o">=</span><span class="s2">"mpijob -np #"</span>
 </pre></div>
 </div>
 <p>Note that it is not allowed to run MPI programs interactively on some system.

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Downfolding with RESPACK (SrVO3) &#8212; DCore  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=0fc419ee" />
     <link rel="stylesheet" type="text/css" href="../../_static/wild.css?v=755527b2" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/dcore.css?v=1e19043f" />
@@ -48,9 +48,9 @@ If you encounter some problem, see the release note of ver.2.0 and check the dif
 <h2>SCF calculation of Quantum ESPRESSO<a class="headerlink" href="#scf-calculation-of-quantum-espresso" title="Link to this heading">¶</a></h2>
 <p><a class="reference download internal" download="" href="../../_downloads/123b09c7e170e0d3df9d62846503fdcb/scf_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">scf_srvo3_r.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
- <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;scf&#39;</span>
-  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">'scf'</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">'./'</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">'srvo3'</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">SYSTEM</span>
        <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
@@ -58,7 +58,7 @@ If you encounter some problem, see the release note of ver.2.0 and check the dif
         <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">3</span>
      <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">120.000000</span>
      <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">480.000000</span>
- <span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s1">'tetrahedra_opt'</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">ELECTRONS</span>
  <span class="n">mixing_beta</span> <span class="o">=</span> <span class="mf">0.3</span>
@@ -100,10 +100,10 @@ the ultrasoft pseudopotentials or PAW.</p>
 in the wannierization.</p>
 <p><a class="reference download internal" download="" href="../../_downloads/14d3cce84048e472e1adf185c76a2cb7/nscf_respack.in"><code class="xref download docutils literal notranslate"><span class="pre">nscf_respack.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
- <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;nscf&#39;</span>
-  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">'nscf'</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">'./'</span>
   <span class="n">wf_collect</span> <span class="o">=</span> <span class="o">.</span><span class="n">true</span><span class="o">.</span>
-      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">'srvo3'</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">SYSTEM</span>
        <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
@@ -111,7 +111,7 @@ in the wannierization.</p>
         <span class="n">ntyp</span> <span class="o">=</span> <span class="mi">3</span>
      <span class="n">ecutwfc</span> <span class="o">=</span> <span class="mf">120.000000</span>
      <span class="n">ecutrho</span> <span class="o">=</span> <span class="mf">480.000000</span>
- <span class="n">occupations</span> <span class="o">=</span> <span class="s1">&#39;tetrahedra_opt&#39;</span>
+ <span class="n">occupations</span> <span class="o">=</span> <span class="s1">'tetrahedra_opt'</span>
         <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">ELECTRONS</span>
@@ -198,9 +198,9 @@ you can plot the original and the wannier-interpolated band structure simultaneo
 <p>First, compute the band structure with the following input file:</p>
 <p><a class="reference download internal" download="" href="../../_downloads/5eb1c33ccd25b7707d38c97d89a3f4e0/band_srvo3_r.in"><code class="xref download docutils literal notranslate"><span class="pre">band_srvo3_r.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CONTROL</span>
- <span class="n">calculation</span> <span class="o">=</span> <span class="s1">&#39;bands&#39;</span>
-  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
-      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;srvo3&#39;</span>
+ <span class="n">calculation</span> <span class="o">=</span> <span class="s1">'bands'</span>
+  <span class="n">pseudo_dir</span> <span class="o">=</span> <span class="s1">'./'</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="s1">'srvo3'</span>
 <span class="o">/</span>
 <span class="o">&amp;</span><span class="n">SYSTEM</span>
        <span class="n">ibrav</span> <span class="o">=</span> <span class="mi">0</span>
@@ -285,9 +285,9 @@ you can plot the original and the wannier-interpolated band structure simultaneo
 </div>
 <p><a class="reference download internal" download="" href="../../_downloads/b7c0a744734ec13b6f191c706fe2ff2d/bands_srvo3.in"><code class="xref download docutils literal notranslate"><span class="pre">bands_srvo3.in</span></code></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&amp;BANDS
-prefix = &quot;srvo3&quot;,
-outdir = &quot;./&quot;,
-!filband = &quot;band.dat&quot;
+prefix = "srvo3",
+outdir = "./",
+!filband = "band.dat"
 !lsym = .true.
 /
 </pre></div>
@@ -295,7 +295,7 @@ outdir = &quot;./&quot;,
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mpiexec<span class="w"> </span>-np<span class="w"> </span><span class="m">4</span><span class="w"> </span>bands.x<span class="w"> </span>-in<span class="w"> </span>bands_srvo3.in
 </pre></div>
 </div>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] &quot;bands.out.gnu&quot; u 1:2 w p tit &quot;Orig&quot;, 12.3116 tit &quot;E_F&quot;, &quot;dir-wan/dat.iband&quot; u ($1*2.5731):2 tit &quot;Wannier&quot; w l
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plot [][11:18] "bands.out.gnu" u 1:2 w p tit "Orig", 12.3116 tit "E_F", "dir-wan/dat.iband" u ($1*2.5731):2 tit "Wannier" w l
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/band_srvo3.png"><img alt="../../_images/band_srvo3.png" class="align-center" src="../../_images/band_srvo3.png" width="500" />
@@ -399,7 +399,7 @@ If we want to compute by using 32 MPI processes at the same accuracy,
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>dcore_anacont<span class="w"> </span>srvo3_respack.ini
 $<span class="w"> </span>dcore_spectrum<span class="w"> </span>srvo3_respack.ini
 $<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>post
-$<span class="w"> </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;s/every 10/every 3/g&quot;</span><span class="w"> </span>akw.gp
+$<span class="w"> </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/every 10/every 3/g"</span><span class="w"> </span>akw.gp
 $<span class="w"> </span>gnuplot<span class="w"> </span>akw.gp
 </pre></div>
 </div>
