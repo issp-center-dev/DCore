@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 import scipy.linalg
 import argparse
+import inspect
 import json
 import sys
 import time
@@ -357,6 +358,10 @@ def _dense_eigh(hamil_sparse, xp, driver='evr'):
     (numpy/scipy.sparse) code is unaffected."""
     dense = hamil_sparse.toarray()
     if xp is np:
+        if driver == 'evr':
+            # scipy.linalg.eigh has no driver argument before SciPy 1.5, where
+            # the full eigendecomposition uses evr anyway
+            return scipy.linalg.eigh(dense)
         return scipy.linalg.eigh(dense, driver=driver)
     w, v = xp.linalg.eigh(xp.asarray(dense))
     return xp.asnumpy(w), xp.asnumpy(v)
@@ -400,6 +405,8 @@ def main():
     eigh_driver = params.get('eigh_driver', 'evr')
     if eigh_driver not in EIGH_DRIVERS:
         raise ValueError(f"Invalid eigh_driver: {eigh_driver} (choose from {EIGH_DRIVERS})")
+    if eigh_driver != 'evr' and 'driver' not in inspect.signature(scipy.linalg.eigh).parameters:
+        raise ValueError(f"eigh_driver={eigh_driver} requires SciPy >= 1.5")
 
     gpu = params.get('gpu', False)
     from dcore.gpu import get_backend

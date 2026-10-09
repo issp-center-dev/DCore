@@ -123,6 +123,32 @@ def test_invalid_eigh_driver_rejected(tmp_path, monkeypatch):
         _solver.main()
 
 
+def test_dense_eigh_default_driver_without_driver_argument(monkeypatch):
+    # SciPy < 1.5: scipy.linalg.eigh has no driver argument
+    import scipy.linalg, scipy.sparse as sp
+    orig = scipy.linalg.eigh
+    monkeypatch.setattr(scipy.linalg, 'eigh', lambda a: orig(a))
+    H = sp.csr_matrix(np.diag([3.0, 1.0, 2.0]))
+    w, _ = _dense_eigh(H, np)
+    np.testing.assert_allclose(w, [1.0, 2.0, 3.0])
+
+
+def test_eigh_driver_rejected_without_driver_argument(tmp_path, monkeypatch):
+    import json, scipy.linalg
+    orig = scipy.linalg.eigh
+    monkeypatch.setattr(scipy.linalg, 'eigh', lambda a: orig(a))
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, 'argv', ['scipy_sparse_main.py', 'input.json'])
+    Path('input.json').write_text(json.dumps(dict(
+        n_flavors=2, n_sites=1, beta=5.0, n_eigen=4, n_iw=13, flag_spin_conserve=1,
+        dim_full_diag=10, particle_numbers='all', weight_threshold=0.0, ncv=None,
+        eigen_solver='eigsh', gf_solver='bicgstab', check_n_eigen=True,
+        check_orthonormality=True, file_h0='h0.npy', file_umat='umat.npy',
+        eigh_driver='evd')))
+    with pytest.raises(ValueError, match="SciPy >= 1.5"):
+        _solver.main()
+
+
 class _FakeCupy:
     # minimal shim: behaves like numpy but is a distinct module identity,
     # and provides asnumpy, so the xp-is-not-np branches execute.
