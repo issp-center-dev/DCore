@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 import scipy.linalg
 import argparse
+import inspect
 import json
 import sys
 import time
@@ -192,36 +193,41 @@ def print_sparse_matrix_info(matrix, prefix=""):
 # Compute
 #   <n| c_i (iw - H + E_n) c_j^+ |n>
 # using the eigenvalues of H (Lehmann representation)
-def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex, pm):
+_LEHMANN_CHUNK_BYTES = 16 * 1024**2
+
+
+def calc_gf_Lehmann(iws, Cdag, spin_conserve, eigvec, E_n, eigvals_ex, eigvecs_ex,
+                    pm, xp=np):
     n_flavors = Cdag.size
-    n_iw = iws.size
     dim_ex = eigvals_ex.size
     assert eigvecs_ex.shape == (dim_ex, dim_ex)
 
-    gf = np.zeros((n_flavors, n_flavors, n_iw), dtype=complex)
-
-    # cdag_im[i, m] = <m|c_i^+|n>  for a given n
+    # cdag_im[i, m] = <m|c_i^+|n>  (built on host: sparse matvecs)
     cdag_im = np.empty((n_flavors, dim_ex), dtype=complex)
     for i in range(n_flavors):
         cdag_im[i] = eigvecs_ex.conj().T @ Cdag[i] @ eigvec
 
-    for l, iw in enumerate(iws):
+    # Bound the denominator workspace independently of the Matsubara grid size.
+    # Building all frequencies at once can require gigabytes even on the CPU.
+    gf = np.empty((n_flavors, n_flavors, iws.size), dtype=complex)
+    chunk_size = max(1, _LEHMANN_CHUNK_BYTES // max(1, dim_ex * np.dtype(complex).itemsize))
+    ci = xp.asarray(cdag_im)
+    energies = xp.asarray(eigvals_ex)
+    for start in range(0, iws.size, chunk_size):
+        stop = min(start + chunk_size, iws.size)
+        frequencies = xp.asarray(iws[start:stop])
         if pm == +1:
-            # ene_denom[m] = 1 / (iw - E_m + E_n)
-            ene_denom = 1 / (iw - eigvals_ex + E_n)
+            ene = 1.0 / (frequencies[:, None] - energies[None, :] + E_n)
         else:
-            # ene_denom[m] = 1 / (iw + E_m - E_n)
-            ene_denom = 1 / (iw + eigvals_ex - E_n)
-        assert ene_denom.shape == (dim_ex,)
+            ene = 1.0 / (frequencies[:, None] + energies[None, :] - E_n)
+        block = xp.einsum('im,lm,jm->ijl', ci.conj(), ene, ci)
+        gf[:, :, start:stop] = block if xp is np else xp.asnumpy(block)
 
-        for i, j in np.ndindex(n_flavors, n_flavors):
-            if spin_conserve:
-                n_orb = n_flavors // 2
-                if i // n_orb != j // n_orb:  # skip different spins
-                    continue
-
-            gf[i, j, l] = np.einsum("m, m, m", cdag_im[i].conj().T, ene_denom, cdag_im[j])
-
+    if spin_conserve:
+        n_orb = n_flavors // 2
+        blk = np.arange(n_flavors) // n_orb
+        mask = blk[:, None] != blk[None, :]        # cross-spin (i,j)
+        gf[mask, :] = 0.0
     return gf
 
 
@@ -341,6 +347,26 @@ def calc_gf_lanczos(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, ncv):
     return gf
 
 
+# LAPACK drivers accepted by scipy.linalg.eigh for a standard eigenproblem
+EIGH_DRIVERS = ('ev', 'evd', 'evr', 'evx')
+
+
+def _dense_eigh(hamil_sparse, xp, driver='evr'):
+    """Dense Hermitian eigendecomposition of a sparse matrix. Uses cupy.linalg.eigh
+    on the GPU when xp is cupy, else scipy.linalg.eigh with the given LAPACK driver
+    (ignored on the GPU); always returns numpy arrays so downstream
+    (numpy/scipy.sparse) code is unaffected."""
+    dense = hamil_sparse.toarray()
+    if xp is np:
+        if driver == 'evr':
+            # scipy.linalg.eigh has no driver argument before SciPy 1.5, where
+            # the full eigendecomposition uses evr anyway
+            return scipy.linalg.eigh(dense)
+        return scipy.linalg.eigh(dense, driver=driver)
+    w, v = xp.linalg.eigh(xp.asarray(dense))
+    return xp.asnumpy(w), xp.asnumpy(v)
+
+
 def main():
     # ----------------------------------------------------------------
     # Parse input parameters
@@ -373,6 +399,20 @@ def main():
     # gf_rtol = params['gf_rtol']
     check_n_eigen = params['check_n_eigen']
     check_orthonormality = params['check_orthonormality']
+
+    # 'evd' can be much faster than the default 'evr' (MRRR) for large blocks
+    # with many degenerate eigenvalues, e.g. particle-hole symmetric models.
+    eigh_driver = params.get('eigh_driver', 'evr')
+    if eigh_driver not in EIGH_DRIVERS:
+        raise ValueError(f"Invalid eigh_driver: {eigh_driver} (choose from {EIGH_DRIVERS})")
+    if eigh_driver != 'evr' and 'driver' not in inspect.signature(scipy.linalg.eigh).parameters:
+        raise ValueError(f"eigh_driver={eigh_driver} requires SciPy >= 1.5")
+
+    gpu = params.get('gpu', False)
+    from dcore.gpu import get_backend
+    xp, gpu_active = get_backend(gpu)
+    if gpu_active:
+        print("GPU (CuPy) backend active for dense eigh / Lehmann Gf.", flush=True)
 
     if eigen_solver not in eigsolver:
         raise ValueError(f"Invalid eigen_solver: {eigen_solver}")
@@ -583,7 +623,7 @@ def main():
         if full_diagonalization[N]:
             print(" full diagonalization", flush=True)
             # n_eigen = dim[N]
-            eigvals[N], eigvecs[N] = scipy.linalg.eigh(hamils[N].toarray())
+            eigvals[N], eigvecs[N] = _dense_eigh(hamils[N], xp, driver=eigh_driver)
         else:
             print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.", flush=True)
             if eigen_solver == 'lanczos':
@@ -735,6 +775,7 @@ def main():
                     params_gf.update(
                         eigvals_ex = eigvals[N_ex],
                         eigvecs_ex = eigvecs[N_ex],
+                        xp = xp,
                     )
                     gf_1 = calc_gf_Lehmann(**params_gf)
 

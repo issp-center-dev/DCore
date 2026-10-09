@@ -12,12 +12,16 @@ Features
 
 - Support thread parallelization by OpenMP (via NumPy and SciPy).
 
+- Optional GPU acceleration of the full diagonalization by CuPy.
+
 Install
 -------
 
 The following Python library needs to be installed:
 
 - SciPy
+
+To use the GPU (``gpu{bool} = True``), CuPy matching the installed CUDA version is additionally required, e.g., ``pip install cupy-cuda12x``. See the `CuPy installation guide <https://docs.cupy.dev/en/stable/install.html>`_ for details. CuPy loads the CUDA libraries (cuSOLVER and cuBLAS) at run time, so they must be found by the dynamic linker (for example, by loading the CUDA module on a cluster).
 
 Input parameters
 ----------------
@@ -38,6 +42,7 @@ Parameters for this solver are as follows:
     # gf_solver{str} = bicgstab
     # check_n_eigen{bool} = False
     # check_orthonormality{bool} = False
+    # gpu{bool} = False
 
 The first two parameters are mandatory. The remaining parameters, which are commented out, are optional.
 
@@ -56,6 +61,7 @@ The table below shows the detailed description of the parameters.
     "gf_solver", "str", "bicgstab", "Name of the linear equation solver to be used for Green's function calculation. Available options are 'spsolve', 'bicg', 'bicgstab', 'cg', 'cgs', 'gmres', 'lgmres', 'minres', 'qmr', 'gcrotmk', 'tfqmr'. See `SciPy official document <https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems>`_ for details."
     "check_n_eigen", "bool", "True", "If True (default), calculation stops if ``n_eigen`` is not sufficient. Note that, even if this check is passed, ``n_eigen`` may be insufficient. One should check the convergence of the Green's function by increasing ``n_eigen``."
     "check_orthonormality", "bool", "True", "If True (default), orthonormality of the eigenvectors is checked. If the check fails, calculation stops."
+    "gpu", "bool", "False", "If True, the full diagonalization (blocks of dimension up to ``dim_full_diag``) and the Green's function evaluation from their eigenstates run on a CUDA GPU via CuPy. Blocks treated by the sparse solvers stay on the CPU. If CuPy or a usable GPU is not available, a warning is issued and the calculation continues on the CPU. Results agree with the CPU calculation within numerical precision."
 
 Standard output
 ----------------
