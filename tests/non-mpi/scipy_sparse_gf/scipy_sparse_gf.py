@@ -82,16 +82,45 @@ def test_lehmann_matches_reference(pm, spin_conserve):
     assert np.allclose(got, ref, atol=1e-12)
 
 
-def test_dense_eigh_cpu_matches_scipy():
+@pytest.mark.parametrize("driver", ["evr", "evd", "ev", "evx"])
+def test_dense_eigh_cpu_matches_scipy(driver):
     import scipy.linalg, scipy.sparse as sp
     rng = np.random.default_rng(0)
     A = rng.standard_normal((8, 8)) + 1j*rng.standard_normal((8, 8))
     H = sp.csr_matrix(A + A.conj().T)          # Hermitian
-    w, v = _dense_eigh(H, np)
+    w, v = _dense_eigh(H, np, driver=driver)
     w_ref = scipy.linalg.eigh(H.toarray(), eigvals_only=True)
     assert np.allclose(np.sort(w), np.sort(w_ref), atol=1e-10)
     # eigenpairs reconstruct H
     assert np.allclose((v * w) @ v.conj().T, H.toarray(), atol=1e-9)
+
+
+@pytest.mark.parametrize("driver", ["evr", "evd"])
+def test_dense_eigh_degenerate_spectrum(driver):
+    # Highly degenerate spectrum, as in particle-hole symmetric ED blocks
+    import scipy.sparse as sp
+    rng = np.random.default_rng(3)
+    Q, _ = np.linalg.qr(rng.standard_normal((40, 40)))
+    w_ref = np.repeat([-1.0, 0.0, 2.0, 5.0], 10)
+    H = sp.csr_matrix((Q * w_ref) @ Q.T)
+    w, v = _dense_eigh(H, np, driver=driver)
+    np.testing.assert_allclose(w, w_ref, atol=1e-10)
+    np.testing.assert_allclose(v.T @ v, np.eye(40), atol=1e-10)
+    np.testing.assert_allclose((v * w) @ v.T, H.toarray(), atol=1e-10)
+
+
+def test_invalid_eigh_driver_rejected(tmp_path, monkeypatch):
+    import json
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, 'argv', ['scipy_sparse_main.py', 'input.json'])
+    Path('input.json').write_text(json.dumps(dict(
+        n_flavors=2, n_sites=1, beta=5.0, n_eigen=4, n_iw=13, flag_spin_conserve=1,
+        dim_full_diag=10, particle_numbers='all', weight_threshold=0.0, ncv=None,
+        eigen_solver='eigsh', gf_solver='bicgstab', check_n_eigen=True,
+        check_orthonormality=True, file_h0='h0.npy', file_umat='umat.npy',
+        eigh_driver='gvd')))
+    with pytest.raises(ValueError, match="eigh_driver"):
+        _solver.main()
 
 
 class _FakeCupy:

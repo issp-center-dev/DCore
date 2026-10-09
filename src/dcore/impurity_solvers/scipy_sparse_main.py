@@ -346,13 +346,18 @@ def calc_gf_lanczos(iws, Cdag, spin_conserve, eigvec, E_n, hamil_ex, pm, ncv):
     return gf
 
 
-def _dense_eigh(hamil_sparse, xp):
+# LAPACK drivers accepted by scipy.linalg.eigh for a standard eigenproblem
+EIGH_DRIVERS = ('ev', 'evd', 'evr', 'evx')
+
+
+def _dense_eigh(hamil_sparse, xp, driver='evr'):
     """Dense Hermitian eigendecomposition of a sparse matrix. Uses cupy.linalg.eigh
-    on the GPU when xp is cupy, else scipy.linalg.eigh; always returns numpy arrays
-    so downstream (numpy/scipy.sparse) code is unaffected."""
+    on the GPU when xp is cupy, else scipy.linalg.eigh with the given LAPACK driver
+    (ignored on the GPU); always returns numpy arrays so downstream
+    (numpy/scipy.sparse) code is unaffected."""
     dense = hamil_sparse.toarray()
     if xp is np:
-        return scipy.linalg.eigh(dense)
+        return scipy.linalg.eigh(dense, driver=driver)
     w, v = xp.linalg.eigh(xp.asarray(dense))
     return xp.asnumpy(w), xp.asnumpy(v)
 
@@ -389,6 +394,12 @@ def main():
     # gf_rtol = params['gf_rtol']
     check_n_eigen = params['check_n_eigen']
     check_orthonormality = params['check_orthonormality']
+
+    # 'evd' can be much faster than the default 'evr' (MRRR) for large blocks
+    # with many degenerate eigenvalues, e.g. particle-hole symmetric models.
+    eigh_driver = params.get('eigh_driver', 'evr')
+    if eigh_driver not in EIGH_DRIVERS:
+        raise ValueError(f"Invalid eigh_driver: {eigh_driver} (choose from {EIGH_DRIVERS})")
 
     gpu = params.get('gpu', False)
     from dcore.gpu import get_backend
@@ -605,7 +616,7 @@ def main():
         if full_diagonalization[N]:
             print(" full diagonalization", flush=True)
             # n_eigen = dim[N]
-            eigvals[N], eigvecs[N] = _dense_eigh(hamils[N], xp)
+            eigvals[N], eigvecs[N] = _dense_eigh(hamils[N], xp, driver=eigh_driver)
         else:
             print(f" Iterative solver: n_eigen={n_eigen} eigenvalues are computed.", flush=True)
             if eigen_solver == 'lanczos':
