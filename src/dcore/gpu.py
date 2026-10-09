@@ -47,8 +47,10 @@ def get_backend(use_gpu):
     try:
         if cupy.cuda.runtime.getDeviceCount() < 1:
             raise RuntimeError("no CUDA device")
-        # Device enumeration alone does not establish that a context can be used.
+        # Device enumeration alone does not establish that a context can be used,
+        # and cuSOLVER (needed by cupy.linalg.eigh) is loaded only on first use.
         cupy.zeros(1)
+        cupy.linalg.eigh(cupy.eye(2))
         cupy.cuda.get_current_stream().synchronize()
     except Exception as exc:
         warnings.warn("gpu=true requested but no usable CUDA device was found "

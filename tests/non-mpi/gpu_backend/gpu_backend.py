@@ -57,3 +57,19 @@ def test_unusable_cuda_context_falls_back(monkeypatch):
     with pytest.warns(UserWarning, match="CUDA context unavailable"):
         xp, active = gpu.get_backend(True)
     assert xp is np and active is False
+
+
+def test_missing_cusolver_falls_back(monkeypatch):
+    import types
+    import pytest
+
+    def eigh(*args):
+        raise ImportError("libcusolver.so.11: cannot open shared object file")
+
+    cupy = types.SimpleNamespace(
+        cuda=types.SimpleNamespace(runtime=types.SimpleNamespace(getDeviceCount=lambda: 1)),
+        zeros=np.zeros, eye=np.eye, linalg=types.SimpleNamespace(eigh=eigh))
+    monkeypatch.setattr(gpu, '_import_cupy', lambda: cupy)
+    with pytest.warns(UserWarning, match="libcusolver"):
+        xp, active = gpu.get_backend(True)
+    assert xp is np and active is False
