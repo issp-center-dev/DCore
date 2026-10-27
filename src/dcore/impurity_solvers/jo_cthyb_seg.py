@@ -377,6 +377,12 @@ class JOCTHYBSEGSolver(SolverBase):
 
         self.solve(rot, mpirun_command, params_kw)
 
+        # index conversion from solver to DCore
+        #   solver (orb, spin): i = 2*orb + spin
+        #   DCore (spin, orb): d = spin*n_orb + orb
+        s2d = np.arange(2*self.n_orb).reshape(2, -1).T.reshape(-1)
+        # s2d = [(i % 2) * self.n_orb + i // 2 for i in range(2*self.n_orb)]
+
         # Get G2
         if only_chiloc:
             g2_dict = None
@@ -444,9 +450,6 @@ class JOCTHYBSEGSolver(SolverBase):
             for wf in range(2*num_wf):
                 g2_tr[:, :, :, wf, wf] += x0_tr[:, :, :, wf]
 
-            # Flavor index of the solver is (orb, spin): f = 2*orb + spin.
-            # DCore (subtract_disconnected, SaveBSE, rotate_basis) expects (spin, orb): spin*n_orb + orb.
-            s2d = [(f % 2) * self.n_orb + f // 2 for f in range(2*self.n_orb)]
             g2_dict = {}
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 d1, d2 = s2d[i1], s2d[i2]
@@ -466,7 +469,6 @@ class JOCTHYBSEGSolver(SolverBase):
             chi_loc = chi_loc.transpose([1, 2, 0])
             assert chi_loc.shape == (2*self.n_orb, 2*self.n_orb, num_wb)
 
-            s2d = [(f % 2) * self.n_orb + f // 2 for f in range(2*self.n_orb)]
             chi_dict = {}
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
                 d1, d2 = s2d[i1], s2d[i2]
