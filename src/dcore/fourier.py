@@ -16,11 +16,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+import warnings
+
 import numpy
 from scipy import fft
 from itertools import product
-from dcore._dispatcher import BlockGf, Gf, GfImFreq, GfImTime, MeshImFreq
-from dcore.tools import make_block_gf
+from dcore import ir_basis
 
 
 def _matsubara_freq_fermion(beta, nw):
@@ -113,20 +114,119 @@ def _fft_fermion_t2w(gt, beta):
     return gw_fermion
 
 
-def bgf_fourier_w2t(bgf, tail=None):
+def _ir_default_wmax(beta, nw):
+    """Fallback real-frequency cutoff = largest Matsubara frequency on the grid.
+
+    This grid-based fallback does not guarantee coverage of the real-frequency
+    spectral support. In particular, interacting spectra can have Hubbard bands
+    beyond the bare dispersion. Callers should supply a cutoff covering the full
+    spectral support. A larger grid also increases the basis construction cost.
+    """
+    wmax = (2 * nw - 1) * numpy.pi / beta
+    warnings.warn(
+        f"IR basis wmax not specified; falling back to the Matsubara-grid-edge "
+        f"wmax={wmax:.3g} (Lambda=beta*wmax={beta * wmax:.3g}), which is slower "
+        f"and less accurate than a physically-sized cutoff. Pass an explicit "
+        f"wmax covering the full spectral support.",
+        stacklevel=3,
+    )
+    return wmax
+
+
+def _ir_fermion_w2t(gw, beta, wmax=None, eps=1e-10):
+    """FFT from G(iw) to G(tau) via the IR (sparse-ir) basis.
+
+    Args:
+        gw (numpy.ndarray(2*nw)): G(iw) including w>0 and w<0 on the dense symmetric grid.
+        beta (float): Inverse temperature.
+        wmax (float, optional): Real-frequency cutoff. Defaults to the largest Matsubara
+            frequency on the grid.
+        eps (float, optional): Basis truncation tolerance. Defaults to 1e-10.
+
+    Returns:
+        numpy.ndarray(nt+1): real G(tau) on linspace(0, beta, nt+1), nt=2*nw.
+    """
+    sparse_ir = ir_basis._import_sparse_ir()
+    assert gw.size % 2 == 0  # even
+    nw = gw.size // 2
+    nt = 2 * nw
+    if wmax is None:
+        wmax = _ir_default_wmax(beta, nw)
+
+    basis = ir_basis.get_basis(beta, wmax, eps, 'F')
+    if gw.size < basis.size:
+        raise ValueError("Matsubara grid has fewer samples than IR basis functions; increase nw.")
+    # Fermionic Matsubara indices 2n+1 for n in [-nw, nw), matching _matsubara_freq_fermion.
+    n_idx = numpy.array([2 * n + 1 for n in range(-nw, nw)])
+    smpl_w = sparse_ir.MatsubaraSampling(basis, sampling_points=n_idx)
+    tau_grid = numpy.linspace(0.0, beta, nt + 1)
+    smpl_t = sparse_ir.TauSampling(basis, sampling_points=tau_grid)
+
+    g_l = smpl_w.fit(gw)
+    gt = smpl_t.evaluate(g_l)
+    # G(tau) of a fermionic G(iw) is real; mirror the FFT path's loud check
+    # rather than silently discarding an imaginary part (a matrix-valued
+    # off-diagonal block that is genuinely complex must not pass silently).
+    assert numpy.all(numpy.abs(gt.imag) < 1e-8), \
+        "IR w2t produced a non-real G(tau); input may be a complex off-diagonal block"
+    return gt.real
+
+
+def _ir_fermion_t2w(gt, beta, wmax=None, eps=1e-10):
+    """FFT from G(tau) to G(iw) via the IR (sparse-ir) basis.
+
+    Args:
+        gt (numpy.ndarray(nt+1)): real G(tau) on linspace(0, beta, nt+1), nt=2*nw.
+        beta (float): Inverse temperature.
+        wmax (float, optional): Real-frequency cutoff. Defaults to the largest Matsubara
+            frequency on the grid.
+        eps (float, optional): Basis truncation tolerance. Defaults to 1e-10.
+
+    Returns:
+        numpy.ndarray(2*nw): complex G(iw) including w>0 and w<0 on the dense symmetric grid.
+    """
+    sparse_ir = ir_basis._import_sparse_ir()
+    assert gt.size % 2 == 1  # odd
+    nt = gt.size - 1
+    nw = nt // 2
+    if wmax is None:
+        wmax = _ir_default_wmax(beta, nw)
+
+    basis = ir_basis.get_basis(beta, wmax, eps, 'F')
+    if gt.size < basis.size:
+        raise ValueError("Time grid has fewer samples than IR basis functions; increase nt.")
+    tau_grid = numpy.linspace(0.0, beta, nt + 1)
+    smpl_t = sparse_ir.TauSampling(basis, sampling_points=tau_grid)
+    n_idx = numpy.array([2 * n + 1 for n in range(-nw, nw)])
+    smpl_w = sparse_ir.MatsubaraSampling(basis, sampling_points=n_idx)
+
+    g_l = smpl_t.fit(gt)
+    return smpl_w.evaluate(g_l)
+
+
+def bgf_fourier_w2t(bgf, tail=None, method='fft', ir_params=None):
     """Fourier transform BlockGf from w to t
 
     Args:
         bgf (BlockGf(GfImFreq)): Block Green's function in imaginary frequency.
         tail (dict(numpy.ndarray), optional): Coefficient matrix for 1/iw tail. Defaults to None.
+        method (str, optional): 'fft' (dense FFT, default) or 'ir' (sparse-ir basis).
+        ir_params (dict, optional): {'wmax': float|None, 'eps': float} passed to the IR
+            path. Ignored when method='fft'. `tail` is ignored when method='ir'.
 
     Returns:
         BlockGf(GfImTime): Block Green's function in imaginary time.
     """
+    from dcore._dispatcher import BlockGf, GfImTime, MeshImFreq
+    from dcore.tools import make_block_gf
+
     assert isinstance(bgf, BlockGf)
     assert isinstance(bgf.mesh, MeshImFreq)
     assert bgf.mesh.statistic == 'Fermion'
     assert bgf.mesh.positive_only() is False
+
+    if method not in ('fft', 'ir'):
+        raise ValueError(f"Unknown method '{method}'; expected 'fft' or 'ir'.")
 
     beta = bgf.mesh.beta
 
@@ -159,7 +259,10 @@ def bgf_fourier_w2t(bgf, tail=None):
         assert nw_2 == nw_pm
         assert bgf_t[name].data.shape == (nt, norb1, norb2)
         for i, j in product(range(norb1), range(norb2)):
-            gt = _fft_fermion_w2t(gf.data[:, i, j], beta, a=tail[name][i, j])
+            if method == 'fft':
+                gt = _fft_fermion_w2t(gf.data[:, i, j], beta, a=tail[name][i, j])
+            else:  # method == 'ir'
+                gt = _ir_fermion_w2t(gf.data[:, i, j], beta, **(ir_params or {}))
             assert gt.shape == (nt,)
             bgf_t[name].data[:, i, j] = gt
 

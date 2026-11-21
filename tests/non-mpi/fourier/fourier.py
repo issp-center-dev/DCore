@@ -16,11 +16,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from dcore.fourier import _fft_fermion_w2t, _fft_fermion_t2w, _matsubara_freq_fermion, bgf_fourier_w2t
-from dcore.tools import make_block_gf
-from dcore._dispatcher import BlockGf, Gf, GfImFreq, GfImTime
+from dcore.fourier import (
+    _fft_fermion_w2t, _fft_fermion_t2w, _matsubara_freq_fermion, bgf_fourier_w2t,
+    _ir_fermion_w2t, _ir_fermion_t2w,
+)
 import numpy
 import os
+import pytest
 from itertools import product
 
 
@@ -62,6 +64,8 @@ def test_fft_fermion_w2t(request):
 
 # test for w2t
 def test_fft_bgf_w2t(request):
+    GfImFreq = pytest.importorskip("dcore._dispatcher").GfImFreq
+    from dcore.tools import make_block_gf
     org_dir = os.getcwd()
     os.chdir(request.fspath.dirname)
 
@@ -96,3 +100,112 @@ def test_fft_bgf_w2t(request):
                 assert numpy.allclose(gf.data[:, i, j], g0_t, atol=1e-4)
             else:
                 assert numpy.allclose(gf.data[:, i, j], numpy.zeros(nt))
+
+
+def test_ir_fermion_w2t(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    g0_t_ir = _ir_fermion_w2t(g0_w, beta, wmax=10.0)
+    assert g0_t_ir.shape == g0_t.shape
+    assert numpy.allclose(g0_t_ir, g0_t, atol=1e-4)
+
+
+def test_ir_fermion_t2w(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    g0_w_ir = _ir_fermion_t2w(g0_t, beta, wmax=10.0)
+    assert g0_w_ir.shape == g0_w.shape
+    assert numpy.allclose(g0_w_ir, g0_w, atol=1e-4)
+
+
+def test_ir_vs_fft_w2t(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    g_fft = _fft_fermion_w2t(g0_w, beta, a=a)
+    g_ir = _ir_fermion_w2t(g0_w, beta, wmax=10.0)
+    assert numpy.allclose(g_ir, g_fft, atol=1e-4)
+
+
+def test_ir_bgf_w2t(request):
+    GfImFreq = pytest.importorskip("dcore._dispatcher").GfImFreq
+    from dcore.tools import make_block_gf
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    nt = g0_t.size
+    nw = g0_w.size // 2
+
+    gf_struct = {'up': [0, 1]}
+    bgf_w = make_block_gf(GfImFreq, gf_struct, beta, nw)
+    for name, gf in bgf_w:
+        _, norb1, norb2 = gf.data.shape
+        for i, j in product(range(norb1), range(norb2)):
+            gf.data[:, i, j] = g0_w[:] if i == j else numpy.zeros(2 * nw)
+
+    bgf_t = bgf_fourier_w2t(bgf_w, method='ir', ir_params={'wmax': 10.0})
+
+    for name, gf in bgf_t:
+        nt_2, norb1, norb2 = gf.data.shape
+        assert nt_2 == nt
+        for i, j in product(range(norb1), range(norb2)):
+            if i == j:
+                assert numpy.allclose(gf.data[:, i, j], g0_t, atol=1e-4)
+            else:
+                assert numpy.allclose(gf.data[:, i, j], numpy.zeros(nt), atol=1e-4)
+
+
+def test_bgf_w2t_unknown_method(request):
+    GfImFreq = pytest.importorskip("dcore._dispatcher").GfImFreq
+    from dcore.tools import make_block_gf
+    g0_w, g0_t, beta, a = _make_g0()
+    nw = g0_w.size // 2
+    gf_struct = {'up': [0]}
+    bgf_w = make_block_gf(GfImFreq, gf_struct, beta, nw)
+    with pytest.raises(ValueError):
+        bgf_fourier_w2t(bgf_w, method='nope')
+
+
+def test_ir_fermion_w2t_auto_wmax_warns_and_is_accurate(request):
+    pytest.importorskip("sparse_ir")
+    g0_w, g0_t, beta, a = _make_g0()
+    # wmax omitted -> grid-edge fallback must warn (never silent) ...
+    with pytest.warns(UserWarning, match="wmax not specified"):
+        g0_t_ir = _ir_fermion_w2t(g0_w, beta)
+    # ... and still stay within the coarse tolerance (regression guard).
+    assert numpy.allclose(g0_t_ir, g0_t, atol=1e-4)
+
+
+def test_ir_default_wmax_basis_size_bounded(request):
+    pytest.importorskip("sparse_ir")
+    import warnings as _warnings
+    from dcore.fourier import _ir_default_wmax
+    from dcore import ir_basis
+    beta = 10.0
+    nw = 1024
+    with _warnings.catch_warnings():
+        _warnings.simplefilter("ignore")
+        wmax = _ir_default_wmax(beta, nw)
+    basis = ir_basis.get_basis(beta, wmax, 1e-10, 'F')
+    # Grid-edge wmax yields a large-but-bounded basis (~69 at these params).
+    # Pin it so a future change that explodes Lambda is caught.
+    assert basis.size < 200
+
+
+@pytest.mark.parametrize("transform,data", [
+    (_ir_fermion_w2t, numpy.zeros(4, complex)),
+    (_ir_fermion_t2w, numpy.zeros(5)),
+])
+def test_ir_rejects_underdetermined_grid(transform, data):
+    pytest.importorskip("sparse_ir")
+    with pytest.raises(ValueError, match="fewer samples"):
+        transform(data, beta=10.0, wmax=10.0)
+
+
+@pytest.mark.parametrize("transform,data", [
+    (_ir_fermion_w2t, numpy.zeros(4, complex)),
+    (_ir_fermion_t2w, numpy.zeros(5)),
+])
+def test_ir_missing_dependency_has_install_hint(monkeypatch, transform, data):
+    import sys
+    monkeypatch.setitem(sys.modules, 'sparse_ir', None)
+    with pytest.raises(ImportError, match=r"pip install dcore\[ir\]"):
+        transform(data, beta=10.0, wmax=10.0)
