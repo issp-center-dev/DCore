@@ -419,6 +419,21 @@
 <td><p>brent</p></td>
 <td><p>Method to adjust the chemical potential. Chosen from ‘brent’ (default; bracketing + Brent) or ‘newton’ (safeguarded Newton using the analytic dn/dmu; usually fewer density evaluations). ‘newton’ requires no_tail_fit=True.</p></td>
 </tr>
+<tr class="row-odd"><td><p>basis</p></td>
+<td><p>String</p></td>
+<td><p>matsubara</p></td>
+<td><p>Basis for Matsubara-frequency handling: ‘matsubara’ (dense grid, default) or ‘ir’ (sparse-ir/IR basis). RESERVED: parsed but not yet wired to any computation.</p></td>
+</tr>
+<tr class="row-even"><td><p>ir_wmax</p></td>
+<td><p>Float</p></td>
+<td><p>-1.0</p></td>
+<td><p>Real-frequency cutoff wmax for the IR basis (used when basis=’ir’). Must cover the full interacting spectral support, including Hubbard bands. Non-positive =&gt; auto (grid-edge fallback; warns). RESERVED: not yet wired.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ir_eps</p></td>
+<td><p>Float</p></td>
+<td><p>1e-10</p></td>
+<td><p>Truncation tolerance for the IR basis (used when basis=’ir’). RESERVED: not yet wired.</p></td>
+</tr>
 </tbody>
 </table>
 <p>If the parameter <code class="docutils literal notranslate"><span class="pre">with_dc</span></code> is specified to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
