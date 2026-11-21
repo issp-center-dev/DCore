@@ -104,7 +104,21 @@ class SumkDFT_opt(SumkDFT):
 
         return gf_upfolded
 
-    def lattice_gf(self, ik, mu=None, iw_or_w="iw", beta=40, broadening=None, mesh=None, with_Sigma=True, with_dc=True):
+    def _compute_sigma_minus_dc(self, iw_or_w, with_dc):
+        r"""Self-energy minus the double-counting potential.
+
+        This quantity depends only on Sigma_imp and the double-counting, not on
+        the k-point or the chemical potential, so callers compute it once and
+        pass it into lattice_gf() to avoid recomputing it for every k (and for
+        every chemical-potential bisection step).
+        """
+        if not hasattr(self, "Sigma_imp_" + iw_or_w):
+            return None
+        if with_dc:
+            return self.add_dc(iw_or_w)
+        return [s.copy() for s in getattr(self, "Sigma_imp_" + iw_or_w)]
+
+    def lattice_gf(self, ik, mu=None, iw_or_w="iw", beta=40, broadening=None, mesh=None, with_Sigma=True, with_dc=True, invert=True, sigma_minus_dc=None):
         r"""
         """
 
@@ -136,9 +150,14 @@ class SumkDFT_opt(SumkDFT):
         # Are we including Sigma?
         if with_Sigma:
             Sigma_imp = getattr(self, "Sigma_imp_" + iw_or_w)
-            sigma_minus_dc = [s.copy() for s in Sigma_imp]
-            if with_dc:
-                sigma_minus_dc = self.add_dc(iw_or_w)
+            # sigma_minus_dc is k- and mu-independent; recompute it only if the
+            # caller did not already provide a precomputed copy. A caller-supplied
+            # value must already be consistent with iw_or_w and with_dc (see
+            # _compute_sigma_minus_dc).
+            if sigma_minus_dc is None:
+                sigma_minus_dc = [s.copy() for s in Sigma_imp]
+                if with_dc:
+                    sigma_minus_dc = self.add_dc(iw_or_w)
             if iw_or_w == "iw":
                 # override beta if Sigma_iw is present
                 beta = Sigma_imp[0].mesh.beta
@@ -159,18 +178,23 @@ class SumkDFT_opt(SumkDFT):
                 mesh = MeshReFreq(mesh[0], mesh[1], mesh[2])
 
         # Check if G_latt is present
+        # When invert=False (the denominator path used by extract_G_loc), keep a
+        # separate buffer so that self.G_latt_* still means the *inverted* lattice
+        # Green's function after the call.
+        cache_attr = ("G_latt_" if invert else "G_latt_denom_") + iw_or_w
+        omega_attr = "cache_omega_" + cache_attr
         set_up_G_latt = False                       # Assume not
-        if not hasattr(self, "G_latt_" + iw_or_w):
-            # Need to create G_latt_(i)w
+        if not hasattr(self, cache_attr):
+            # Need to create the (denominator or inverted) lattice GF buffer
             set_up_G_latt = True
         else:                                       # Check that existing GF is consistent
-            G_latt = getattr(self, "G_latt_" + iw_or_w)
+            G_latt = getattr(self, cache_attr)
             GFsize = [gf.data.shape[1] for bname, gf in G_latt]
             unchangedsize = all([self.n_orbitals[ik, ntoi[spn[isp]]] == GFsize[
                                 isp] for isp in range(self.n_spin_blocks[self.SO])])
             if not unchangedsize:
                 set_up_G_latt = True
-            if (iw_or_w == "iw") and (self.G_latt_iw.mesh.beta != beta):
+            if (iw_or_w == "iw") and (G_latt.mesh.beta != beta):
                 set_up_G_latt = True  # additional check for ImFreq
 
         # Set up G_latt
@@ -192,13 +216,14 @@ class SumkDFT_opt(SumkDFT):
 
             # +++ADDED
             # Store iOmega_n or Omega to avoid re-computation
-            self.cache_omega = BlockGf(name_list=block_ind_list,
+            cache_omega = BlockGf(name_list=block_ind_list,
                              block_list=glist(), make_copies=False)
-            self.cache_omega.zero()
+            cache_omega.zero()
             if iw_or_w == "iw":
-                self.cache_omega << iOmega_n
+                cache_omega << iOmega_n
             elif iw_or_w == "w":
-                self.cache_omega << Omega + 1j * broadening
+                cache_omega << Omega + 1j * broadening
+            setattr(self, omega_attr, cache_omega)
         print_time("Set up G_latt")
 
         # if iw_or_w == "iw":
@@ -207,12 +232,14 @@ class SumkDFT_opt(SumkDFT):
         #     G_latt << Omega + 1j * broadening
         # +++MODIFIED
         # just copy from cache
-        G_latt << self.cache_omega
+        G_latt << getattr(self, omega_attr)
         print_time("G_latt << iOmega_n")
 
         idmat = [numpy.identity(
             self.n_orbitals[ik, ntoi[sp]], numpy.complex128) for sp in spn]
-        M = copy.deepcopy(idmat)
+        # M[ibl] is fully overwritten in the loop below, so no copy of idmat is
+        # needed (the previous copy.deepcopy was dead work done for every k).
+        M = [None] * len(idmat)
         for ibl in range(self.n_spin_blocks[self.SO]):
             ind = ntoi[spn[ibl]]
             n_orb = self.n_orbitals[ik, ind]
@@ -234,8 +261,14 @@ class SumkDFT_opt(SumkDFT):
                     self.upfold(ik, icrsh, bname, sigma_minus_dc[icrsh][bname], gf, overwrite_gf_inp=True, fac=-1)
         print_time("upfold")
 
-        G_latt.invert()
-        setattr(self, "G_latt_" + iw_or_w, G_latt)
+        # If invert=False, return the lattice-GF denominator (iw + mu - H - Sigma)
+        # without inverting. extract_G_loc() uses this to solve only for the
+        # correlated columns instead of forming the full inverse. The denominator
+        # is cached under its own attribute (cache_attr) so that self.G_latt_*
+        # keeps its meaning as the inverted lattice Green's function.
+        if invert:
+            G_latt.invert()
+        setattr(self, cache_attr, G_latt)
         print_time("invert")
 
         print_time("End lattice_gf")
@@ -279,31 +312,46 @@ class SumkDFT_opt(SumkDFT):
 
         print_time("k-sum start")
 
+        # When the projectors are 0/1 permutation matrices (index_works), G_loc
+        # only needs the correlated blocks of the lattice GF. We then solve the
+        # lattice problem only for those columns instead of forming the full
+        # inverse (cheaper when the correlated dim is smaller than the number of
+        # bands; identical otherwise).
+        use_solve = self.index_works('corr')
+        # sigma_minus_dc is independent of k; compute it once before the k-loop.
+        sigma_minus_dc = self._compute_sigma_minus_dc(iw_or_w, with_dc) if with_Sigma else None
+
         ikarray = numpy.array(list(range(self.n_k)))
         for ik in mpi.slice_array(ikarray):
             print_time("in k-loop: k-sum")
             if iw_or_w == 'iw':
                 G_latt = self.lattice_gf(
-                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, beta=beta)
+                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, beta=beta,
+                    invert=not use_solve, sigma_minus_dc=sigma_minus_dc)
             elif iw_or_w == 'w':
                 mesh_parameters = (G_loc[0].mesh.omega_min,G_loc[0].mesh.omega_max,len(G_loc[0].mesh))
                 G_latt = self.lattice_gf(
-                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening, mesh=mesh_parameters)
+                    ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening, mesh=mesh_parameters,
+                    invert=not use_solve, sigma_minus_dc=sigma_minus_dc)
             print_time("in k-loop: lattice_gf")
-            G_latt *= self.bz_weights[ik]
 
-            print_time("in k-loop: *bz_weights")
-            for icrsh in range(self.n_corr_shells):
-                # init temporary storage
-                # tmp = G_loc[icrsh].copy()
-                # for bname, gf in tmp:
-                #     tmp[bname] << self.downfold(
-                #         ik, icrsh, bname, G_latt[bname], gf)
-                # G_loc[icrsh] += tmp
-                # +++MODIFIED
-                # Sum up directly into G_loc (no temporary storage is introduced)
-                for bname, gf in G_loc[icrsh]:
-                    self.downfold(ik, icrsh, bname, G_latt[bname], gf, overwrite_gf_inp=True, fac=+1)
+            if use_solve:
+                # G_latt holds the (un-inverted) denominator here.
+                self._accumulate_Gloc_via_solve(ik, G_latt, G_loc)
+            else:
+                G_latt *= self.bz_weights[ik]
+                print_time("in k-loop: *bz_weights")
+                for icrsh in range(self.n_corr_shells):
+                    # init temporary storage
+                    # tmp = G_loc[icrsh].copy()
+                    # for bname, gf in tmp:
+                    #     tmp[bname] << self.downfold(
+                    #         ik, icrsh, bname, G_latt[bname], gf)
+                    # G_loc[icrsh] += tmp
+                    # +++MODIFIED
+                    # Sum up directly into G_loc (no temporary storage is introduced)
+                    for bname, gf in G_loc[icrsh]:
+                        self.downfold(ik, icrsh, bname, G_latt[bname], gf, overwrite_gf_inp=True, fac=+1)
             print_time("in k-loop: downfold")
         print_time("k-sum end")
 
@@ -345,6 +393,38 @@ class SumkDFT_opt(SumkDFT):
         # return only the inequivalent shells:
         return G_loc_inequiv
 
+    def _accumulate_Gloc_via_solve(self, ik, M, G_loc):
+        r"""Add bz_weight * P_s M^{-1} P_s^dagger into each correlated G_loc block.
+
+        M is the (un-inverted) lattice-GF denominator from lattice_gf(invert=False).
+        Instead of forming the full inverse, we solve M Y = P_s^dagger only for the
+        dim_s correlated columns of each shell and pick out the corresponding rows,
+        which gives exactly the same result as downfold(lattice_gf(...)) but avoids
+        computing the (band - correlated) columns of the inverse. Requires the
+        fancy-index projectors (index_works).
+        """
+        w = self.bz_weights[ik]
+        for bname, block in M:
+            isp = self.spin_names_to_ind[self.SO][bname]
+            indices = [self.proj_index[ik, isp, ish, :shell['dim']]
+                       for ish, shell in enumerate(self.corr_shells)]
+            if not indices:
+                continue
+            columns = numpy.unique(numpy.concatenate(indices))
+            if columns.size == 0:
+                continue
+            Md = block.data
+            n_band = Md.shape[1]
+            rhs = numpy.zeros((n_band, columns.size), dtype=Md.dtype)
+            rhs[columns, numpy.arange(columns.size)] = 1.0
+            rhs = numpy.broadcast_to(rhs, (Md.shape[0], n_band, columns.size))
+            # Solve once per spin block, so multiple shells share the expensive
+            # factorization, including when their projected columns overlap.
+            Y = numpy.linalg.solve(Md, rhs)
+            for ish, projindex in enumerate(indices):
+                positions = numpy.searchsorted(columns, projindex)
+                G_loc[ish][bname].data[...] += w * Y[:, projindex, :][:, :, positions]
+
     ###############################################################
     # ADDED FUNCTIONS
     ###############################################################
@@ -385,11 +465,15 @@ class SumkDFT_opt(SumkDFT):
                     n_orb = self.n_orbitals[ik, ind]
                     projmat = self.proj_mat[ik, ind, icrsh, 0:dim, 0:n_orb]
                     for i in range(dim):
-                        index = numpy.where(projmat[i] == 1)
-                        if len(index) != 1:
+                        # Require exactly one matching orbital (a one-hot row);
+                        # otherwise proj_mat is not a clean 0/1 permutation and the
+                        # fancy-index path does not apply, so fall back by returning
+                        # None. Using matches[0] also avoids the numpy>=2 error from
+                        # assigning a length-1 array to a scalar element.
+                        matches = numpy.where(projmat[i] == 1)[0]
+                        if len(matches) != 1:
                             return None
-                        else:
-                            proj_index[ik, ind, icrsh, i] = index[0]
+                        proj_index[ik, ind, icrsh, i] = matches[0]
 
         return proj_index
 
@@ -421,12 +505,15 @@ class SumkDFT_opt(SumkDFT):
         # gf_downfolded.from_L_G_R(
         #     projmat, gf_to_downfold, projmat.conjugate().transpose())
 
-        i_start = projindex[0]
-        i_end = projindex[0] + projindex.shape[0]
-        if numpy.allclose(projindex, list(range(i_start, i_end))):
-            gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, i_start:i_end, i_start:i_end] * fac
-        else:
-            gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, projindex, :][:, :, projindex] * fac
+        if projindex.size > 0:
+            i_start = projindex[0]
+            i_end = projindex[0] + projindex.shape[0]
+            # Exact integer comparison (allclose is tolerance-based and could
+            # misclassify large non-contiguous indices as contiguous).
+            if numpy.array_equal(projindex, numpy.arange(i_start, i_end)):
+                gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, i_start:i_end, i_start:i_end] * fac
+            else:
+                gf_downfolded.data[:, :, :] += gf_to_downfold.data[:, projindex, :][:, :, projindex] * fac
 
         if overwrite_gf_inp:
             return None
@@ -460,8 +547,23 @@ class SumkDFT_opt(SumkDFT):
 
         # gf_upfolded.from_L_G_R(
         #     projmat.conjugate().transpose(), gf_to_upfold, projmat)
-        gf_upfolded.data[numpy.ix_(range(gf_to_upfold.data.shape[0]), projindex, projindex)] \
-            += gf_to_upfold.data * fac
+        if projindex.size > 0:
+            i_start = projindex[0]
+            i_end = projindex[0] + projindex.shape[0]
+            if numpy.array_equal(projindex, numpy.arange(i_start, i_end)):
+                # Contiguous projection: use a plain slice (a view) instead of
+                # the much slower advanced indexing, and avoid the temporary
+                # from `* fac` for the common fac = +-1.
+                target = gf_upfolded.data[:, i_start:i_end, i_start:i_end]
+                if fac == 1.0:
+                    target += gf_to_upfold.data
+                elif fac == -1.0:
+                    target -= gf_to_upfold.data
+                else:
+                    target += gf_to_upfold.data * fac
+            else:
+                gf_upfolded.data[numpy.ix_(range(gf_to_upfold.data.shape[0]), projindex, projindex)] \
+                    += gf_to_upfold.data * fac
 
         if overwrite_gf_inp:
             return None
@@ -515,10 +617,16 @@ class SumkDFT_opt(SumkDFT):
         if mu is None:
             mu = self.chemical_potential
         dens = 0.0
+
+        # sigma_minus_dc is independent of k and mu; compute it once. This method
+        # is called repeatedly during the chemical-potential bisection.
+        sigma_minus_dc = self._compute_sigma_minus_dc(iw_or_w, with_dc) if with_Sigma else None
+
         ikarray = numpy.array(list(range(self.n_k)))
         for ik in mpi.slice_array(ikarray):
             G_latt = self.lattice_gf(
-                ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening)
+                ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening,
+                sigma_minus_dc=sigma_minus_dc)
             # dens += self.bz_weights[ik] * G_latt.total_density()
             # +++REPLACED
             dens += self.bz_weights[ik] * calc_total_density(G_latt)
@@ -531,6 +639,143 @@ class SumkDFT_opt(SumkDFT):
         if abs(dens.imag) > 1e-12:
             mpi.report("Warning: Imaginary part in density will be ignored ({})".format(str(abs(dens.imag))))
         return dens.real
+
+    def total_density_and_derivative(self, mu, iw_or_w="iw", with_Sigma=True, with_dc=True, broadening=None):
+        r"""Total charge n(mu) and its derivative dn/dmu in a single k-loop.
+
+        With G = [i\omega + mu - H - Sigma]^{-1} and the Matsubara summation of
+        total_density_matsubara(),
+
+        .. math::
+            n(mu)   = \sum_k w_k \sum_{block} [ (1/\beta)\sum_{i\omega} Tr G + 0.5 n_{orb} ]
+            dn/dmu  = \sum_k w_k \sum_{block} [ -(1/\beta)\sum_{i\omega} Tr G^2 ]
+
+        because dG/dmu = -G^2 and the 0.5 n_orb tail term is mu-independent. The
+        derivative is (almost) free given G, and drives the Newton search for the
+        chemical potential (see calc_mu_newton). n(mu) is identical to
+        total_density_matsubara(mu).
+
+        This is a Matsubara-only quantity (the 0.5 n_orb tail term and 1/beta
+        prefactor are specific to the imaginary-frequency summation).
+        """
+        if iw_or_w != "iw":
+            raise ValueError("total_density_and_derivative is only implemented for iw_or_w='iw'.")
+        dens = 0.0
+        ddens = 0.0
+        ikarray = numpy.array(list(range(self.n_k)))
+        for ik in mpi.slice_array(ikarray):
+            G_latt = self.lattice_gf(
+                ik=ik, mu=mu, iw_or_w=iw_or_w, with_Sigma=with_Sigma, with_dc=with_dc, broadening=broadening)
+            w = self.bz_weights[ik]
+            for _, g in G_latt:
+                beta = g.mesh.beta
+                n_orb = g.data.shape[1]
+                dens += w * (numpy.sum(numpy.trace(g.data, axis1=1, axis2=2)) / beta + 0.5 * n_orb)
+                # sum_iw Tr[G^2] = sum_iw sum_ij G_ij G_ji
+                ddens += w * (-numpy.einsum('wij,wji->', g.data, g.data) / beta)
+        dens = mpi.all_reduce(mpi.world, dens, lambda x, y: x + y)
+        ddens = mpi.all_reduce(mpi.world, ddens, lambda x, y: x + y)
+        mpi.barrier()
+        if abs(dens.imag) > 1e-12:
+            mpi.report("Warning: Imaginary part in density will be ignored ({})".format(str(abs(dens.imag))))
+        return dens.real, ddens.real
+
+    def calc_mu_newton(self, precision=0.01, iw_or_w='iw', with_dc=True, broadening=None,
+                       max_loops=100, delta=0.5):
+        r"""Search the chemical potential with a safeguarded Newton method (rtsafe).
+
+        n(mu) is smooth and monotonic and its derivative dn/dmu is available almost
+        for free, so a Newton step usually needs fewer of the expensive density
+        evaluations than the bisection/Brent search of calc_mu(). The iteration is
+        the Numerical-Recipes ``rtsafe``: it keeps a bracket [xl (f<0), xh (f>0)]
+        and takes a Newton step only when it stays inside the bracket and reduces
+        the residual fast enough; otherwise it bisects. In particular, when the
+        derivative is tiny -- e.g. inside a charge gap where dn/dmu ~ 0 -- the test
+        ``|2 f| > |dx_old * df|`` forces a bisection step, so the search is never
+        less robust than plain bisection.
+        """
+        target = self.density_required - self.charge_below
+
+        def fdf(mu):
+            n, dn = self.total_density_and_derivative(
+                mu, iw_or_w=iw_or_w, with_Sigma=True, with_dc=with_dc, broadening=broadening)
+            return n - target, dn
+
+        mu = self.chemical_potential
+        f, df = fdf(mu)
+        if abs(f) < precision:
+            self.chemical_potential = mu
+            return mu
+
+        # Bracket the root by stepping from mu (doubling, but starting bounded at
+        # delta so a tiny initial derivative -- flat tail / gap -- does not create
+        # a huge bracket). Try the direction suggested by the Newton step -f/df
+        # first; if that fails (e.g. a small/noisy derivative pointed the wrong
+        # way), try the opposite direction before giving up.
+        def _expand(direction):
+            step = direction * delta
+            xa, fa = mu, f
+            xb = mu + step
+            fb = fdf(xb)[0]
+            k = 0
+            while fa * fb > 0.0 and k < 80:
+                step *= 2.0
+                xa, fa = xb, fb
+                xb = xa + step
+                fb = fdf(xb)[0]
+                k += 1
+            return (xa, fa, xb, fb) if fa * fb <= 0.0 else None
+
+        if df != 0.0:
+            direction = 1.0 if (-f / df) > 0.0 else -1.0
+        else:
+            direction = 1.0 if f < 0.0 else -1.0
+        bracket = _expand(direction) or _expand(-direction)
+        if bracket is None:
+            # could not bracket the root: signal failure as calc_mu() does
+            mpi.report("Error: calc_mu_newton failed to bracket the chemical potential.")
+            self.chemical_potential = None
+            return None
+        x1, f1, x2, f2 = bracket
+        # orient the bracket so that f(xl) < 0 < f(xh)
+        if f1 < 0.0:
+            xl, xh = x1, x2
+        else:
+            xl, xh = x2, x1
+
+        rts = mu if min(xl, xh) < mu < max(xl, xh) else 0.5 * (xl + xh)
+        dx_old = abs(xh - xl)
+        dx = dx_old
+        f, df = fdf(rts)
+        for _ in range(max_loops):
+            if abs(f) < precision:
+                break
+            out_of_range = ((rts - xh) * df - f) * ((rts - xl) * df - f) > 0.0
+            too_slow = abs(2.0 * f) > abs(dx_old * df)
+            if df == 0.0 or out_of_range or too_slow:
+                # bisection
+                dx_old = dx
+                dx = 0.5 * (xh - xl)
+                rts = xl + dx
+            else:
+                # Newton
+                dx_old = dx
+                dx = f / df
+                rts = rts - dx
+            f, df = fdf(rts)
+            if f < 0.0:
+                xl = rts
+            else:
+                xh = rts
+
+        if abs(f) >= precision:
+            # did not converge within max_loops: signal failure as calc_mu() does
+            mpi.report("Error: calc_mu_newton did not converge within max_loops.")
+            self.chemical_potential = None
+            return None
+
+        self.chemical_potential = rts
+        return rts
 
     def density_matrix(self, method='using_gf', beta=40.0):
         """Calculate density matrices in one of two ways.

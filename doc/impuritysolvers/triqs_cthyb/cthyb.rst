@@ -127,6 +127,15 @@ we have to increase ``n_cycles`` or ``length_cycle`` or both of them
 High-frequency tail fit
 -----------------------
 
+.. warning::
+
+   The ``perform_tail_fit``, ``fit_max_moment``, ``fit_min_w`` and ``fit_max_w``
+   parameters used below are no longer available in the current version of
+   DCore, and the ``[system]`` block rejects them. The high-frequency treatment
+   is now controlled by the single boolean ``no_tail_fit`` in the ``[system]``
+   block: tail fitting is performed by default, and ``no_tail_fit = True``
+   disables it. This section is kept for reference and will be revised.
+
 The self energy computed with QMC becomes noisy at the high frequency region.
 This high-frequency tail can be fitted by using the following function:
 
@@ -228,6 +237,12 @@ For example, in the case of figure (a) above, we can find that ``iomega_max=4.0`
 
 Legendre filter
 ---------------
+
+.. warning::
+
+   The ``n_l`` parameter used below is no longer read from the ``[system]``
+   block in the current version of DCore, and the ``[system]`` block rejects it.
+   This section is kept for reference and will be revised.
 
 .. warning::
 
