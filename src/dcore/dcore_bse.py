@@ -720,7 +720,7 @@ def dcore_bse(filename, np=1):
     # Delete unnecessary parameters
     delete_parameters(params, block='model', delete=['interaction', 'density_density', 'kanamori', 'slater_f', 'slater_uj', 'slater_basis', 'interaction_file', 'local_potential_matrix', 'local_potential_factor'])
     delete_parameters(params, block='model', delete=['bvec'])
-    delete_parameters(params, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'prec_mu', 'with_dc', 'no_tail_fit'])
+    delete_parameters(params, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'prec_mu', 'with_dc', 'no_tail_fit', 'mu_search'])
 
     # Summary of input parameters
     print_parameters(params)

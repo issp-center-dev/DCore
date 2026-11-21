@@ -310,7 +310,8 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict):
 
         # X_{1234}(iW, iw, iw') = < c_1^+(iw) c_2(iw+iW) c_4^+(iw'+iW) c_3(iw') >
         array = numpy.einsum("ijklxyz,im,jn,ko,lp -> mnopxyz", array,
-                    rot_spin_full, numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full)
+                    rot_spin_full, numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full,
+                    optimize=True)
 
         X_dict.clear()
         _set_to_dict(X_dict, array)
@@ -323,14 +324,16 @@ def _rotate_basis(rot, u_matrix, use_spin_orbit, Gfs, X_dict, chi_dict):
 
         # chi_{1234}(iW) = < c_1^+ c_2 c_4^+ c_3 >(iW)
         array = numpy.einsum("ijklx,im,jn,ko,lp -> mnopx", array,
-                    rot_spin_full, numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full)
+                    rot_spin_full, numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full,
+                    optimize=True)
 
         chi_dict.clear()
         _set_to_dict(chi_dict, array)
 
     if not u_matrix is None:
         return numpy.einsum("ijkl,im,jn,ko,lp", u_matrix,
-                                    numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full, rot_spin_full)
+                                    numpy.conj(rot_spin_full), numpy.conj(rot_spin_full), rot_spin_full, rot_spin_full,
+                                    optimize=True)
 
 
 def _set_from_dict(x_dict, x_array):

@@ -153,3 +153,6 @@ CLAUDE.md
 .claude.json
 .claudeignore
 .mcp.json
+
+# direnv (per-project CLAUDE_CONFIG_DIR)
+.envrc

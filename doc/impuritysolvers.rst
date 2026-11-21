@@ -10,6 +10,7 @@ Impurity solvers
    impuritysolvers/jo_cthyb/jo_cthyb
    impuritysolvers/triqs_hubbard_one/hubbard_one
    impuritysolvers/pomerol/pomerol
+   impuritysolvers/hphi/hphi
    impuritysolvers/scipy/scipy
    impuritysolvers/null
    impuritysolvers/how_to_integrate

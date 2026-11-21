@@ -23,7 +23,15 @@ class SumkDFTWorkerGloc(SumkDFTWorkerBase):
 
         if self.params['adjust_mu']:
             # find the chemical potential for given density
-            sk.calc_mu(self.params['prec_mu'])
+            if self.params.get('mu_search', 'brent') == 'newton':
+                # calc_mu_newton determines mu from the Matsubara-summed charge,
+                # which is only consistent with the density here when no_tail_fit
+                # is on. Enforce it at the point the search actually runs.
+                if not self.params['no_tail_fit']:
+                    sys.exit("ERROR: mu_search='newton' requires no_tail_fit=True.")
+                sk.calc_mu_newton(self.params['prec_mu'])
+            else:
+                sk.calc_mu(self.params['prec_mu'])
             # calc_mu returns None when it failed in adjusting chemical potential
             if sk.chemical_potential is None:
                 # TODO: sys.exit is not MPI safe. replace with MPI.COMM_WORLD.Abort(1)?
