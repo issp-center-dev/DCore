@@ -111,6 +111,220 @@ NInterAll      {0}
 """
 
 
+def read_eigenenergies(energy_file):
+    """Read the eigenenergies (one per computed state) from an HPhi zvo_energy.dat file."""
+    energies = []
+    with open(energy_file) as f:
+        for line in f:
+            tokens = line.split()
+            if len(tokens) >= 2 and tokens[0] == 'Energy':
+                energies.append(float(tokens[1]))
+    return numpy.array(energies)
+
+
+def warn_if_exct_truncates_thermal_trace(energy_file, beta, exct, exct_max, weight_threshold=1e-3):
+    """
+    Warn if too few eigenstates were computed to span the thermally relevant
+    multiplet at temperature T = 1/beta.
+
+    HPhi builds the finite-T Green's function from the lowest ``exct`` eigenstates,
+    weighting state n by the Boltzmann factor exp(-beta*(E_n - E_0)).  If the
+    highest computed state still carries a non-negligible weight, states just
+    above the cutoff are missing from the thermal trace.  This typically happens
+    when the ground state is degenerate (common in multi-orbital models) and the
+    default ``exct = 1`` keeps only one member of the multiplet -- silently
+    breaking orbital symmetry and producing a wrong (e.g. spurious off-diagonal)
+    self-energy.
+
+    A warning is printed (it does not abort the solver).  It never fires when the
+    full Hilbert space is already covered (exct == exct_max).
+    """
+    if exct >= exct_max:
+        return  # full Hilbert space is covered; nothing is truncated
+
+    try:
+        energies = read_eigenenergies(energy_file)
+    except (OSError, ValueError):
+        return  # tolerate a missing/odd energy file rather than aborting the solver
+    if energies.size == 0:
+        return
+
+    e0 = energies.min()
+    e_last = energies.max()
+    # eigenenergies are printed to ~1e-9 precision, so a loose tol identifies degeneracy
+    degeneracy = int(numpy.count_nonzero(numpy.abs(energies - e0) < 1e-6))
+
+    # All omitted states have energy >= e_last (we kept the lowest exct states),
+    # so w_last = exp(-beta*(e_last - e0)) is an UPPER BOUND on the Boltzmann
+    # weight of each omitted state. If w_last <= threshold the omitted tail is
+    # provably negligible; otherwise truncation cannot be ruled out (we cannot
+    # see whether the next state sits just above e_last or far above it), so we
+    # warn conservatively.
+    w_last = math.exp(-beta * (e_last - e0))
+
+    if w_last > weight_threshold:
+        if degeneracy >= exct:
+            deg_msg = (f"  All {exct} computed states are degenerate with the ground state, "
+                       f"so the cutoff falls inside the ground multiplet.\n")
+        else:
+            deg_msg = f"  The ground state is {degeneracy}-fold degenerate.\n"
+        print(
+            "\n*** WARNING (HPhi solver): 'exct' may be too small ***\n"
+            f"  exct = {exct} eigenstates were computed (full space = {exct_max}).\n"
+            + deg_msg +
+            f"  The highest computed state has Boltzmann weight {w_last:.2e} at "
+            f"T = {1.0 / beta:.4g}; this is an upper bound on the weight of every\n"
+            f"  omitted (higher) state, and it exceeds {weight_threshold:.0e}. A "
+            "thermally-relevant state above the cutoff therefore cannot be ruled\n"
+            "  out: the finite-T trace may be truncated, which can break orbital "
+            "symmetry and yield a wrong (e.g. spurious off-diagonal) self-energy.\n"
+            "  => Increase 'exct'; if the result does not change, it was already converged.\n",
+            file=sys.stderr,
+        )
+
+
+def enumerate_particle_sectors(n_site):
+    """Enumerate the (Ne, 2Sz) sectors of a system of ``n_site`` sites (2*n_site spin-orbitals).
+
+    A sector is fixed in HPhi by ``Ncond = Ne`` and ``2Sz``; here ``n_up = (Ne + 2Sz)//2`` and
+    ``n_down = (Ne - 2Sz)//2``. The grand-canonical Hilbert space (dimension ``4**n_site``) is
+    the disjoint union of these sectors as a counting fact (every Fock state has a definite
+    (Ne, 2Sz)), which the unit tests check via ``sum(dim) == 4**n_site``.
+
+    **Validity of the (Ne, 2Sz) block decomposition for the spectrum.** Replacing one
+    grand-canonical run with per-sector canonical runs is correct only when the generated HPhi
+    Hamiltonian is block-diagonal in (Ne, 2Sz) -- i.e. it conserves BOTH the total electron
+    number Ne and 2Sz. That holds for density-density interactions plus number-conserving,
+    spin-diagonal one-body terms. It is BROKEN by anomalous/pairing terms (Ne not conserved) or
+    by spin-mixing one-body terms such as spin-orbit coupling (the transfer block can carry
+    ``s1 != s2``), which conserve Ne but not 2Sz. When only Ne is conserved one must sector by
+    Ne alone (no 2Sz constraint); when neither is conserved the canonical-by-sector path does
+    not apply and the grand-canonical run must be used. The caller (per-sector solver loop) is
+    responsible for checking these conservation laws on the actual Trans/InterAll before using
+    this enumeration. When the decomposition is valid, a sector's eigenvalues are exactly the
+    grand-canonical eigenvalues living in it, so the finite-T trace equals the sum of the
+    per-sector contributions (with a single global E_min and partition function Z).
+
+    Returns a list of dicts ``{'Ne', 'two_Sz', 'n_up', 'n_down', 'dim'}`` sorted by Ne then 2Sz.
+    """
+    from math import comb
+    if n_site < 0:
+        raise ValueError("n_site must be non-negative, got {}".format(n_site))
+    sectors = []
+    for n_up in range(n_site + 1):
+        for n_down in range(n_site + 1):
+            sectors.append({
+                'Ne': n_up + n_down,
+                'two_Sz': n_up - n_down,
+                'n_up': n_up,
+                'n_down': n_down,
+                'dim': comb(n_site, n_up) * comb(n_site, n_down),
+            })
+    sectors.sort(key=lambda s: (s['Ne'], s['two_Sz']))
+    return sectors
+
+
+def enumerate_ne_sectors(n_site):
+    """Enumerate the Ne-only sectors of a system of ``n_site`` sites (2*n_site spin-orbitals).
+
+    This is the coarser decomposition used when 2Sz is NOT conserved (spin-orbit coupling): the
+    Hamiltonian is block-diagonal in the total electron number Ne but mixes 2Sz, so one sectors by
+    Ne alone (all 2Sz merged). A sector is fixed in HPhi by writing ``Ncond = Ne`` and OMITTING
+    ``2Sz`` from the modpara, which makes HPhi select CalcModel = HubbardNConserved (Ne conserved,
+    Sz free). The dimension is ``C(2*n_site, Ne)`` (place Ne electrons among the 2*n_site
+    spin-orbitals, any spin), and ``sum(dim) == 4**n_site`` as a counting fact.
+
+    These sectors are larger than the (Ne, 2Sz) sectors (which they are the union of over 2Sz) but
+    still much smaller than the full grand-canonical 4**n_site space. Within one Ne sector both
+    spins live in the same Ne+-1 excited space, so the direct bra/ket path can obtain cross-spin
+    Green's-function elements -- which is why this is the spin-orbit-capable braket route.
+
+    Returns a list of dicts ``{'Ne', 'dim'}`` sorted by Ne.
+    """
+    from math import comb
+    if n_site < 0:
+        raise ValueError("n_site must be non-negative, got {}".format(n_site))
+    n_so = 2 * n_site  # number of spin-orbitals
+    return [{'Ne': ne, 'dim': comb(n_so, ne)} for ne in range(n_so + 1)]
+
+
+def ne_initial_sectors(n_site, exct):
+    """Split the Ne-only sectors into the ones the spin-orbit (HubbardNConserved) bra/ket route
+    can actually run as thermally occupied INITIAL sectors, and the boundary sectors it must drop.
+
+    HPhi cannot run the vacuum sector (Ne = 0; it rejects Ncond = 0) nor, due to a
+    HubbardNConserved Hilbert-construction (sz()) edge case, the fully occupied sector
+    (Ne = 2*n_site). Both are single states and are excluded as INITIAL sectors; interior sectors
+    still reach those boundary EXCITED spaces through their Ne+-1 transitions. Dropping the two
+    boundary initial sectors makes the finite-T trace exact only when neither boundary state
+    carries appreciable Boltzmann weight (i.e. the impurity is not near-empty or near-full).
+
+    Returns ``(kept, dropped)`` where ``kept`` is the list of runnable sector dicts
+    (``{'Ne', 'dim'}``) and ``dropped`` is the sorted list of omitted Ne values.
+    """
+    ne_lo, ne_hi = 1, 2 * n_site - 1
+    runnable = [s for s in enumerate_ne_sectors(n_site) if min(exct, s['dim']) >= 1]
+    kept = [s for s in runnable if ne_lo <= s['Ne'] <= ne_hi]
+    dropped = sorted({s['Ne'] for s in runnable if not (ne_lo <= s['Ne'] <= ne_hi)})
+    return kept, dropped
+
+
+def gf_parallel_layout(mpirun_command, np_total, n_procs_per_hphi):
+    """
+    Decide the two-level parallel layout for the Gf (one-body Green's function) step.
+
+    The Gf step runs one HPhi calculation per (excitation) task; the tasks are
+    independent, so they can be spread over ``n_outer`` concurrent runs, each of
+    which may itself use ``n_inner`` MPI ranks.
+
+    Parameters
+    ----------
+    mpirun_command : str
+        The MPI launcher, e.g. ``"mpirun -np 16"`` (last token = number of ranks).
+    np_total : int or None
+        Total number of processes (``None`` if it could not be parsed).
+    n_procs_per_hphi : int
+        Requested MPI ranks per HPhi run (``n_inner``). ``1`` keeps the previous
+        behaviour (serial HPhi, ``np_total`` concurrent runs).
+
+    Returns
+    -------
+    (n_inner, n_outer, hphi_mpi_command, gf_mpi_prefix)
+        ``n_inner`` is clamped to a power of four not exceeding ``np_total``;
+        ``n_outer = np_total // n_inner`` is the ProcessPool size.
+        ``hphi_mpi_command`` is the launcher for a *single* HPhi run with
+        ``n_inner`` ranks -- it is used for BOTH the eigenvalue step and each
+        Green's-function run. They must use the same rank count because the
+        eigenvectors are written MPI-distributed (one file per rank) by the
+        eigenvalue step and read back by the Green's-function step.
+        ``gf_mpi_prefix`` is that same launcher prepended to each Gf shell
+        command (``""`` when ``n_inner == 1``, i.e. a bare/serial HPhi run).
+    """
+    if np_total is None:
+        # The rank count is not the launcher's last token, so we cannot rewrite
+        # it to split the Gf step. Preserve correctness instead of speed: drive
+        # BOTH phases with the *same* launcher (so the eigenvector rank counts
+        # match) and do not run Gf runs concurrently (n_outer = 1), since we
+        # cannot tell how many ranks each run would take.
+        print("Note (HPhi solver): could not parse the process count from the MPI "
+              "command; the Gf step is not parallelized (put the rank count as the "
+              "last token of [mpi] command to enable it).", file=sys.stderr)
+        return 1, 1, mpirun_command, mpirun_command
+    n_inner = max(1, min(int(n_procs_per_hphi), np_total))
+    if not math.log(n_inner, 4).is_integer():  # HPhi requires a power of four
+        n_inner = 4 ** int(math.log(n_inner, 4))
+        print(f"Warning: n_procs_per_hphi must be a power of four in HPhi. "
+              f"It is set to {n_inner} (ranks per HPhi run).", file=sys.stderr)
+    n_outer = max(1, np_total // n_inner)
+    cmds = shlex.split(mpirun_command)
+    cmds[-1] = str(n_inner)
+    hphi_mpi_command = " ".join(cmds)
+    # The Gf runs may go bare when single-rank, but the eigenvalue step always
+    # uses the launcher so its rank count matches what the Gf step expects.
+    gf_mpi_prefix = "" if n_inner == 1 else hphi_mpi_command
+    return n_inner, n_outer, hphi_mpi_command, gf_mpi_prefix
+
+
 class HPhiSolver(SolverBase):
 
     def __init__(self, beta, gf_struct, u_mat, n_iw=1025):
@@ -142,20 +356,23 @@ class HPhiSolver(SolverBase):
 
         exec_path = expand_path(params_kw['exec_path'])
 
-        # The number of process (np) must be 4^m in HPhi
-        mpirun_command_power4 = mpirun_command
+        # Parse the total number of processes from the launcher's last token.
         commands = shlex.split(mpirun_command)
         try:
             np = int(commands[-1])
         except ValueError:
             np = None
             print("A check of np is skipped.")
-        else:
-            if not math.log(np, 4).is_integer():  # check if np = 4^m
-                np_new = 4**int(math.log(np, 4))
-                print(f"Warning: np must be a power of 4 in HPhi. np is set to {np_new} in eigenenergies calculations. Note that np={np} is used for Gf calculations.", file=sys.stderr)
-                commands[-1] = str(np_new)
-                mpirun_command_power4 = " ".join(commands)
+
+        # Two-level parallelism for the Gf step. CRUCIAL: the eigenvalue step and
+        # every Green's-function run must use the SAME number of MPI ranks
+        # (n_inner), because the eigenvalue step writes the eigenvectors
+        # MPI-distributed (one file per rank) and the Gf step reads them back -- a
+        # rank-count mismatch makes HPhi stop while inputting the eigenvector.
+        #   n_procs_per_hphi (= n_inner): MPI ranks per HPhi run (power of four;
+        #   1 = serial, the default). n_outer = np // n_inner runs run concurrently.
+        n_inner, n_outer, mpirun_command_eigen, gf_mpi_prefix = gf_parallel_layout(
+            mpirun_command, np, params_kw.get('n_procs_per_hphi', 1))
 
         # Matsubara frequencies omega_n = (2*n+1)*pi*T
         omega_min = numpy.pi / self.beta  # n=0
@@ -167,6 +384,8 @@ class HPhiSolver(SolverBase):
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
         exct = params_kw.get('exct', 1)  # number of states to be computed
+        # Boltzmann-weight threshold above which an under-sized exct triggers a warning
+        exct_weight_threshold = params_kw.get('exct_weight_threshold', 1e-3)
 
         fit_params = {}
         for key in ['fit_gtol',]:
@@ -294,23 +513,226 @@ class HPhiSolver(SolverBase):
                 print(u.i1, u.s1, u.i2, u.s2, u.i3, u.s3, u.i4, u.s4, u.U.real, u.U.imag, file=f)
 
         # (2) Run a working horse
-        print("\nComputing eigeneneries ...")
-        with open('./stdout.log', 'w') as output_f:
-            launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f)
+        # Sector-resolved (canonical) path is valid only when H conserves both Ne and 2Sz.
+        # Ne is always conserved (only c^dag c hopping + density interactions); 2Sz is broken
+        # by spin-orbit coupling (spin-mixing one-body terms), so guard on use_spin_orbit.
+        # The Stage-3 direct bra/ket Green's function (DCORE_HPHI_BRAKET=1) is built on the
+        # per-(Ne, 2Sz) sector decomposition, so it implies the canonical path. Both require a
+        # 2Sz-conserving (no spin-orbit) Hamiltonian.
+        use_braket = os.environ.get("DCORE_HPHI_BRAKET", "0") == "1"
+        # Spin-orbit (2Sz broken, Ne still conserved): the bra/ket path falls back to the coarser
+        # Ne-only sector decomposition (HubbardNConserved), where both spins share the Ne+-1
+        # excited space so cross-spin G elements are obtained too. DCORE_HPHI_FORCE_NE_SECTORS=1
+        # forces this Ne-only route even without spin-orbit (testing / alternative decomposition):
+        # it must reproduce the (Ne, 2Sz) result for a 2Sz-conserving model.
+        force_ne = os.environ.get("DCORE_HPHI_FORCE_NE_SECTORS", "0") == "1"
+        use_ne_canonical = use_braket and (self.use_spin_orbit or force_ne)
+        use_canonical = ((os.environ.get("DCORE_HPHI_CANONICAL_SECTORS", "0") == "1" or use_braket)
+                         and not self.use_spin_orbit and not use_ne_canonical)
 
-        print("\nComputing Gf ...")
-        header = "zvo"
-        T_list = [1./self.beta]
-        eta = 1e-4
-        output_dir = "./output"
-        p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
-        one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=np)
+        if use_canonical:
+            # H is block-diagonal in (Ne, 2Sz), so the grand-canonical finite-T trace equals the
+            # weighted sum of per-sector canonical contributions. Each sector spans a much smaller
+            # Hilbert space than the full 4**n_site grand-canonical space, which is where the
+            # dominant Green's-function (BiCG) cost shrinks. Each sector run returns its own
+            # finite-T-normalized Gf G_s and we recombine exactly with
+            #   G = sum_s w_s G_s / sum_s w_s,  w_s = Z_s * exp(-beta (Emin_s - Emin_global)),
+            # which reproduces the single global Boltzmann sum.
+            print("\nComputing eigenenergies + Gf per (Ne, 2Sz) sector ...")
+            canonical_calcmod = calcmod_def.replace("CalcModel   3", "CalcModel   0")
+            T_list = [1. / self.beta]
+            eta = 1e-4
+            # Drop sectors whose (bounded) thermal contribution is below this, relative to the
+            # global ground state: they contribute negligibly to the finite-T trace.
+            # 0 disables the selection (compute every sector -- exact but slower).
+            sector_weight_threshold = params_kw.get('canonical_sector_weight_threshold', 1e-8)
+            if not (0.0 <= sector_weight_threshold < 1.0):
+                raise ValueError("canonical_sector_weight_threshold must be in [0, 1), got {}"
+                                 .format(sector_weight_threshold))
 
-        # calcspectrum = CalcSpectrum(T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
-        # energy_list = calcspectrum.get_energies()
-        # one_body_g = calcspectrum.get_one_body_green(n_site=self.n_orb, exct_cut=exct)
+            def run_sector_eigenvalues(Ne, two_Sz, exct_use):
+                """Write the canonical (Ncond, 2Sz) modpara/calcmod and run the eigenvalue step;
+                return the eigenenergies (empty array if the sector produced nothing)."""
+                sector_modpara = modpara_def.format(n_site, exct_use, self.n_iw, omega_max, omega_min)
+                # the convergence target cannot exceed the number of states in this sector
+                sector_modpara = sector_modpara.replace("LanczosTarget  2",
+                                                        "LanczosTarget  {}".format(min(2, exct_use)))
+                sector_modpara += "Ncond          {}\n2Sz            {}\n".format(Ne, two_Sz)
+                with open('./modpara.def', 'w') as f:
+                    f.write(sector_modpara)
+                with open('./calcmod.def', 'w') as f:
+                    f.write(canonical_calcmod)
+                with open('./stdout.log', 'w') as output_f:
+                    launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
+                return read_eigenenergies(os.path.join('output', 'zvo_energy.dat'))
 
-        print("\nFinish Gf calc.")
+            all_sectors = [s for s in enumerate_particle_sectors(n_site) if min(exct, s['dim']) >= 1]
+
+            # Phase-2 thermal selection: a cheap ground-state-only pre-pass per sector picks the
+            # thermally relevant (Ne, 2Sz) sectors, so the dominant per-sector Gf step runs only
+            # for those. The spectrum reaches the (Ne+-1) excited sectors internally, so only the
+            # thermally OCCUPIED sectors need an eigenvalue/Gf run here.
+            if sector_weight_threshold > 0.0:
+                gs = []
+                for sec in all_sectors:
+                    e = run_sector_eigenvalues(sec['Ne'], sec['two_Sz'], 1)
+                    if e.size > 0:
+                        gs.append((sec, float(e.min())))
+                if not gs:
+                    raise RuntimeError("No (Ne, 2Sz) sector produced eigenstates.")
+                e_gs_global = min(e for _, e in gs)
+                # A sector's contribution to the un-normalized trace is
+                # Z_sec * exp(-beta(Egs_sec - Egs_global)) with Z_sec = sum_i exp(-beta(E_i-Egs_sec))
+                # <= the number of states summed (<= min(exct, dim)). Bounding Z_sec by that count
+                # (rather than filtering on the ground-state weight alone) makes the cut safe even
+                # for sectors whose many low-lying / nearly degenerate states give a large Z_sec.
+                sectors = [sec for sec, e in gs
+                           if min(exct, sec['dim']) * numpy.exp(-self.beta * (e - e_gs_global))
+                           > sector_weight_threshold]
+                print("  thermal selection: {} of {} sectors kept (weight > {:.1e})".format(
+                    len(sectors), len(all_sectors), sector_weight_threshold), flush=True)
+            else:
+                sectors = all_sectors
+
+            contributions = []  # list of (G_sector, E_min_sector, Z_sector)
+            for sec in sectors:
+                Ne, two_Sz, dim = sec['Ne'], sec['two_Sz'], sec['dim']
+                exct_sec = min(exct, dim)
+                energies = run_sector_eigenvalues(Ne, two_Sz, exct_sec)
+                if energies.size == 0:
+                    continue
+                # Same thermal-truncation guard as the grand-canonical path, per sector: if
+                # exct_sec < dim and the highest retained state still carries weight, this
+                # sector's trace (and Z_sec) is truncated, which would bias the recombined Gf.
+                warn_if_exct_truncates_thermal_trace(
+                    os.path.join('output', 'zvo_energy.dat'), self.beta, exct_sec, dim,
+                    weight_threshold=exct_weight_threshold)
+                E_min_sec = float(energies.min())
+                Z_sec = float(numpy.sum(numpy.exp(-self.beta * (energies - E_min_sec))))
+                p_common = (self.n_orb, T_list, exct_sec, eta, exec_path, "zvo", "./output",
+                            exct_sec, gf_mpi_prefix)
+                G_sec = calc_one_body_green_core_parallel(
+                    p_common, max_workers=n_outer,
+                    sector_occupancy=(sec['n_up'], sec['n_down'], n_site))
+                contributions.append((G_sec, E_min_sec, Z_sec))
+                print("  sector Ne={:2d} 2Sz={:+d} dim={:5d} exct={:3d} E_min={:.6g} Z={:.3g}".format(
+                    Ne, two_Sz, dim, exct_sec, E_min_sec, Z_sec), flush=True)
+            if not contributions:
+                raise RuntimeError("No (Ne, 2Sz) sector produced eigenstates.")
+            E_min_global = min(c[1] for c in contributions)
+            weights = [c[2] * numpy.exp(-self.beta * (c[1] - E_min_global)) for c in contributions]
+            Z_global = sum(weights)
+            one_body_g = sum(w * c[0] for w, c in zip(weights, contributions)) / Z_global
+            print("\nFinish Gf calc ({} sectors).".format(len(contributions)))
+        elif use_ne_canonical:
+            # Spin-orbit: 2Sz is broken but Ne is conserved, so H is block-diagonal in Ne. Sector by
+            # Ne only (HubbardNConserved: Ncond set, 2Sz omitted) and recombine exactly as the
+            # (Ne, 2Sz) path. Each Ne sector's Ne+-1 excited space holds both spins, so the bra/ket
+            # path projects cross-spin elements too.
+            print("\nComputing eigenenergies + Gf per Ne sector (spin-orbit, HubbardNConserved) ...")
+            ne_calcmod = calcmod_def.replace("CalcModel   3", "CalcModel   0")
+            T_list = [1. / self.beta]
+            eta = 1e-4
+            sector_weight_threshold = params_kw.get('canonical_sector_weight_threshold', 1e-8)
+            if not (0.0 <= sector_weight_threshold < 1.0):
+                raise ValueError("canonical_sector_weight_threshold must be in [0, 1), got {}"
+                                 .format(sector_weight_threshold))
+
+            def run_ne_sector_eigenvalues(Ne, exct_use):
+                """Write a HubbardNConserved (Ncond, no 2Sz) modpara/calcmod and run the eigenvalue
+                step; HPhi auto-selects HubbardNConserved when 2Sz is omitted. Returns the energies."""
+                sector_modpara = modpara_def.format(n_site, exct_use, self.n_iw, omega_max, omega_min)
+                sector_modpara = sector_modpara.replace("LanczosTarget  2",
+                                                        "LanczosTarget  {}".format(min(2, exct_use)))
+                sector_modpara += "Ncond          {}\n".format(Ne)  # no 2Sz -> HubbardNConserved
+                with open('./modpara.def', 'w') as f:
+                    f.write(sector_modpara)
+                with open('./calcmod.def', 'w') as f:
+                    f.write(ne_calcmod)
+                with open('./stdout.log', 'w') as output_f:
+                    launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
+                return read_eigenenergies(os.path.join('output', 'zvo_energy.dat'))
+
+            # Boundary-sector limitation of the Ne-only (HubbardNConserved) route: HPhi cannot run
+            # the vacuum sector (Ne = 0; it rejects Ncond = 0) nor, due to a HubbardNConserved
+            # Hilbert-construction (sz()) edge case, the fully occupied sector (Ne = 2*n_site).
+            # Both are single states (dim = 1). Dropping them makes the finite-T trace exact ONLY
+            # when neither boundary state carries appreciable Boltzmann weight -- i.e. the impurity
+            # is not near-empty or near-full. This holds for typical partial fillings but NOT in
+            # extreme chemical-potential / crystal-field regimes, where the result would be biased.
+            # It is therefore dropped EXPLICITLY (loud warning, not silent); an exact treatment of
+            # the two dim-1 edges is a known follow-up.
+            all_sectors, dropped = ne_initial_sectors(n_site, exct)
+            if dropped:
+                print("Warning: the spin-orbit (HubbardNConserved) bra/ket route cannot run the "
+                      "boundary Ne sectors {}; they are dropped. The finite-T trace is exact only "
+                      "if these near-empty/near-full states are thermally negligible (typical "
+                      "partial filling) -- verify the filling is not extreme.".format(dropped),
+                      file=sys.stderr)
+            if sector_weight_threshold > 0.0:
+                gs = []
+                for sec in all_sectors:
+                    e = run_ne_sector_eigenvalues(sec['Ne'], 1)
+                    if e.size > 0:
+                        gs.append((sec, float(e.min())))
+                if not gs:
+                    raise RuntimeError("No Ne sector produced eigenstates.")
+                e_gs_global = min(e for _, e in gs)
+                sectors = [sec for sec, e in gs
+                           if min(exct, sec['dim']) * numpy.exp(-self.beta * (e - e_gs_global))
+                           > sector_weight_threshold]
+                print("  thermal selection: {} of {} Ne sectors kept (weight > {:.1e})".format(
+                    len(sectors), len(all_sectors), sector_weight_threshold), flush=True)
+            else:
+                sectors = all_sectors
+
+            contributions = []
+            for sec in sectors:
+                Ne, dim = sec['Ne'], sec['dim']
+                exct_sec = min(exct, dim)
+                energies = run_ne_sector_eigenvalues(Ne, exct_sec)
+                if energies.size == 0:
+                    continue
+                warn_if_exct_truncates_thermal_trace(
+                    os.path.join('output', 'zvo_energy.dat'), self.beta, exct_sec, dim,
+                    weight_threshold=exct_weight_threshold)
+                E_min_sec = float(energies.min())
+                Z_sec = float(numpy.sum(numpy.exp(-self.beta * (energies - E_min_sec))))
+                p_common = (self.n_orb, T_list, exct_sec, eta, exec_path, "zvo", "./output",
+                            exct_sec, gf_mpi_prefix)
+                G_sec = calc_one_body_green_core_parallel(p_common, max_workers=n_outer, ne_only=Ne)
+                contributions.append((G_sec, E_min_sec, Z_sec))
+                print("  Ne sector Ne={:2d} dim={:5d} exct={:3d} E_min={:.6g} Z={:.3g}".format(
+                    Ne, dim, exct_sec, E_min_sec, Z_sec), flush=True)
+            if not contributions:
+                raise RuntimeError("No Ne sector produced eigenstates.")
+            E_min_global = min(c[1] for c in contributions)
+            weights = [c[2] * numpy.exp(-self.beta * (c[1] - E_min_global)) for c in contributions]
+            Z_global = sum(weights)
+            one_body_g = sum(w * c[0] for w, c in zip(weights, contributions)) / Z_global
+            print("\nFinish Gf calc ({} Ne sectors).".format(len(contributions)))
+        else:
+            print("\nComputing eigeneneries ...")
+            with open('./stdout.log', 'w') as output_f:
+                launch_mpi_subprocesses(mpirun_command_eigen, [exec_path, '-e', 'namelist.def'], output_f)
+
+            # Warn if too few eigenstates were computed to span the thermally relevant
+            # multiplet (e.g. a degenerate ground state with the default exct=1).
+            warn_if_exct_truncates_thermal_trace(
+                os.path.join('output', 'zvo_energy.dat'), self.beta, exct, exct_max,
+                weight_threshold=exct_weight_threshold)
+
+            print("\nComputing Gf ...")
+            if n_inner > 1:
+                print(f"  Gf parallel layout: {n_outer} concurrent HPhi run(s) x {n_inner} MPI rank(s) each")
+            header = "zvo"
+            T_list = [1./self.beta]
+            eta = 1e-4
+            output_dir = "./output"
+            p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct, gf_mpi_prefix)
+            one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=n_outer)
+
+            print("\nFinish Gf calc.")
 
         # print(one_body_g.shape)
         assert isinstance(one_body_g, numpy.ndarray)
@@ -338,9 +760,10 @@ class HPhiSolver(SolverBase):
         # if triqs_major_version == 1:
         #     set_tail(self._Gimp_iw)
 
-        if self.use_spin_orbit:
-            print("Sigma is not implemented for SOC")
-            raise NotImplementedError
+        # Sigma via Dyson Sigma = G0^-1 - Gimp^-1. The block structure below is generic in
+        # self.gf_struct / self.block_names: spin-orbit uses the single combined 'ud' block of
+        # size 2*n_orb (h0 and Gimp share the spin*n_orb+orbital ordering), so the same code path
+        # gives the spin-orbit self-energy.
 
         # Make H0 matrix
         h0_full = numpy.zeros((2, n_site, 2, n_site), dtype=complex)

@@ -164,7 +164,8 @@ def _from_ls_to_j(umat_ls: numpy.ndarray, l: int, order=None):
     assert basis_ls.shape == (dim, 2)
 
     # Transform basis of U-matrix
-    umat_j = numpy.einsum('mi,nj,ijkl,ko,lp', tmat.T.conj(), tmat.T.conj(), umat_ls, tmat, tmat)
+    umat_j = numpy.einsum('mi,nj,ijkl,ko,lp', tmat.T.conj(), tmat.T.conj(), umat_ls, tmat, tmat,
+                          optimize=True)
 
     assert umat_j.shape == (dim, dim, dim, dim)
 

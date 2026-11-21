@@ -48,7 +48,7 @@ def create_parser(target_sections=None):
         parser = TypedParser(['mpi', 'model', 'pre', 'system', 'impurity_solver', 'control', 'post', 'post.anacont', 'post.anacont.pade', 'post.anacont.spm', 'post.anacont.spm.solver', 'post.spectrum', 'post.check', 'bse', 'vertex', 'sparse_bse'])
     else:
         parser = TypedParser(target_sections)
-    
+
     # tool is removed but read for warning
     parser.allow_undefined_options("tool")
     parser.allow_undefined_options("post.anacont.spm.solver")
@@ -104,10 +104,17 @@ def create_parser(target_sections=None):
     parser.add_option("system", "dc_type", str, 'HF_DFT', "Chosen from 'HF_DFT' (default), 'HF_imp', 'FLL'")
     parser.add_option("system", "dc_orbital_average", bool, False, "If true, the DC correction is averaged over orbitals in each shell. Off-diagonal components are dropped.")
     parser.add_option("system", "no_tail_fit", bool, False, "Compute Matsubara summation without fitting high-frequency moments.")
+    parser.add_option("system", "mu_search", str, 'brent', "Method to adjust the chemical potential. Chosen from 'brent' (default; bracketing + Brent) or 'newton' (safeguarded Newton using the analytic dn/dmu; usually fewer density evaluations). 'newton' requires no_tail_fit=True.")
+    parser.add_option("system", "basis", str, "matsubara",
+                      "Basis for Matsubara-frequency handling: 'matsubara' (dense grid, default) or 'ir' (sparse-ir/IR basis). RESERVED: parsed but not yet wired to any computation.")
+    parser.add_option("system", "ir_wmax", float, -1.0,
+                      "Real-frequency cutoff wmax for the IR basis (used when basis='ir'). Must cover the full interacting spectral support, including Hubbard bands. Non-positive => auto (grid-edge fallback; warns). RESERVED: not yet wired.")
+    parser.add_option("system", "ir_eps", float, 1e-10,
+                      "Truncation tolerance for the IR basis (used when basis='ir'). RESERVED: not yet wired.")
 
     # [impurity_solver]
     parser.add_option("impurity_solver", "name", str, 'null',
-                    "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg, pomerol.")
+                    "Name of impurity solver. Available options are null, TRIQS/cthyb, TRIQS/hubbard-I, ALPS/cthyb, ALPS/cthyb-seg, pomerol, HPhi, JO/cthyb-seg, scipy/sparse.")
     parser.add_option("impurity_solver", "basis_rotation", str, 'None', "You can specify either 'Hloc', 'None', or the location of a file.")
     parser.allow_undefined_options("impurity_solver")
 
@@ -180,9 +187,11 @@ def create_parser(target_sections=None):
     parser.add_option("bse", "skip_X0q_if_exists", bool, False, "[NOT USED] Skip X_0(q) calc if file already exists", OptionStatus.RETIRED)
     parser.add_option("bse", "skip_X0q", bool, False, "Skip X_0(q) calc")
     parser.add_option("bse", "skip_Xloc", bool, False, "Skip X_loc calc (for RPA)")
+    parser.add_option("bse", "save_chiloc", str, 'default', "Chosen from 'default', 'True', or 'False'. If True, chi_loc is saved to get better convergence against num_wf in ChiQ. But False is recommended for CTHYB segment algorithm. For 'default', True is set for pomerol solver, while False is set for JO/cthyb-seg and ALPS/cthyb-seg solvers.")
     parser.add_option("bse", "calc_only_chiloc", bool, False, "Calculate only chi_loc but no X_loc (for SCL, rRPA). Do not activate skip_Xloc when using this option.")
     parser.add_option("bse", "use_temp_file", bool, False, "Whether or not temporary file is used in computing X0_q. This option will reduce the memory footprints.")
     parser.add_option("bse", "X0q_qpoints_saved", str, 'quadrant', "Specifies for which q points X0q are saved in a HDF file. quadrant or path to a q_path.dat file.")
+    parser.add_option("bse", "choice_X0loc", str, 'qsum', "How to compute X0_loc. 'qsum': by taking q-sum of X_0(q); 'imp': from G_imp. These are not equivalent if G_loc and G_imp are not equal.")
 
     return parser
 
@@ -203,6 +212,12 @@ def two_options_incompatible(params, option1, option2):
         sys.exit(f"ERROR: [{block1}]{param1} and [{block2}]{param2} cannot be True at the same time.")
 
 
+def check_option_choices(params, option, choices):
+    block, param = option
+    if params[block][param] not in choices:
+        sys.exit(f"ERROR: [{block}]{param} must be chosen from {choices}. {repr(params[block][param])} was given.")
+
+
 def parse_parameters(params):
     """
     Parse some parameters in a parameter
@@ -215,6 +230,16 @@ def parse_parameters(params):
         if params['system']['T'] > 0:
             params['system']['beta'] = 1.0 / params['system']['T']
             params['system']['T'] = -1.0  # To make sure that only beta will be used in computations
+        # .get + write-back so a legacy/pruned [system] without mu_search keeps
+        # the historical Brent behavior instead of raising KeyError.
+        mu_search = params['system'].get('mu_search', 'brent')
+        params['system']['mu_search'] = mu_search
+        if mu_search not in ('brent', 'newton'):
+            sys.exit(f"ERROR: mu_search={mu_search!r} must be 'brent' or 'newton'.")
+        # The 'newton' search adjusts mu using the Matsubara-summed charge, so it
+        # requires no_tail_fit=True for consistency. That constraint is checked
+        # where the search actually runs (SumkDFTWorkerGloc), so frontends that
+        # only parse [system] but never adjust mu are unaffected.
 
     if 'control' in params:
         two_options_incompatible(params, ('control', 'restart'), ('control', 'initial_static_self_energy'))
@@ -329,6 +354,9 @@ def parse_parameters(params):
     if 'bse' in params:
         two_options_incompatible(params, ('bse', 'skip_Xloc'), ('bse', 'calc_only_chiloc'))
 
+        check_option_choices(params, ('bse', 'save_chiloc'), ['default', 'True', 'False'])
+        check_option_choices(params, ('bse', 'choice_X0loc'), ['qsum', 'imp'])
+
 
 def parse_knode(knode_string):
     """
@@ -387,6 +415,15 @@ def parse_bvec(bvec_string):
         print(e)
         sys.exit(f"ERROR: Unable to parse bvec={bvec_string}. bvec must be a double list of shape (3, 3).")
     return bvec
+
+
+def parse_save_chiloc(save_chiloc_in, default : bool):
+    assert save_chiloc_in in ('default', 'True', 'False')
+    if save_chiloc_in == 'default':
+        save_chiloc = default
+    else:
+        save_chiloc = save_chiloc_in == 'True'  # convert str to bool
+    return save_chiloc
 
 
 def delete_parameters(p, block, delete=None, retain=None):

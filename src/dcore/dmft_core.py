@@ -320,6 +320,15 @@ class DMFTCoreSolver(object):
 
         self._beta = float(params['system']['beta'])
         self._n_iw = int(params['system']['n_iw'])  # Number of Matsubara frequencies
+        # IR-basis plumbing: parsed and stored, but NOT yet wired to any
+        # computation (fourier.py has no production caller yet). These are dead
+        # today by design; the future consumer increment that routes Matsubara
+        # handlers through the IR path will read them.
+        # TODO(ir-consumer-wiring): consume self._basis/_ir_wmax/_ir_eps;
+        # the cutoff must cover the interacting spectrum, including Hubbard bands.
+        self._basis = params['system']['basis']
+        self._ir_wmax = float(params['system']['ir_wmax'])
+        self._ir_eps = float(params['system']['ir_eps'])
 
         # MPI commands
         if 'mpi' in params and 'num_processes' in params['mpi']:
@@ -560,6 +569,9 @@ class DMFTCoreSolver(object):
             'mu'            : self._chemical_potential,
             'adjust_mu'     : False,
             'no_tail_fit'   : self._params['system']['no_tail_fit'],
+            # .get for backward compatibility with callers (e.g. dcore_bse) that
+            # prune [system] and do not retain mu_search.
+            'mu_search'     : self._params['system'].get('mu_search', 'brent'),
         }
 
     def calc_G0loc(self):
