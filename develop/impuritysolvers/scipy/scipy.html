@@ -49,6 +49,7 @@
 <li><p>Arbitrary temperature</p></li>
 <li><p>All interactions available in <code class="docutils literal notranslate"><span class="pre">DCore</span></code> are supported.</p></li>
 <li><p>Support thread parallelization by OpenMP (via NumPy and SciPy).</p></li>
+<li><p>Optional GPU acceleration of the full diagonalization by CuPy.</p></li>
 </ul>
 </section>
 <section id="install">
@@ -57,6 +58,7 @@
 <ul class="simple">
 <li><p>SciPy</p></li>
 </ul>
+<p>To use the GPU (<code class="docutils literal notranslate"><span class="pre">gpu{bool}</span> <span class="pre">=</span> <span class="pre">True</span></code>), CuPy matching the installed CUDA version is additionally required, e.g., <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">cupy-cuda12x</span></code>. See the <a class="reference external" href="https://docs.cupy.dev/en/stable/install.html">CuPy installation guide</a> for details. CuPy loads the CUDA libraries (cuSOLVER and cuBLAS) at run time, so they must be found by the dynamic linker (for example, by loading the CUDA module on a cluster).</p>
 </section>
 <section id="input-parameters">
 <h2>Input parameters<a class="headerlink" href="#input-parameters" title="Link to this heading">¶</a></h2>
@@ -73,6 +75,7 @@
 <span class="c1"># gf_solver{str} = bicgstab</span>
 <span class="c1"># check_n_eigen{bool} = False</span>
 <span class="c1"># check_orthonormality{bool} = False</span>
+<span class="c1"># gpu{bool} = False</span>
 </pre></div>
 </div>
 <p>The first two parameters are mandatory. The remaining parameters, which are commented out, are optional.</p>
@@ -135,6 +138,11 @@
 <td><p>bool</p></td>
 <td><p>True</p></td>
 <td><p>If True (default), orthonormality of the eigenvectors is checked. If the check fails, calculation stops.</p></td>
+</tr>
+<tr class="row-even"><td><p>gpu</p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>If True, the full diagonalization (blocks of dimension up to <code class="docutils literal notranslate"><span class="pre">dim_full_diag</span></code>) and the Green’s function evaluation from their eigenstates run on a CUDA GPU via CuPy. Blocks treated by the sparse solvers stay on the CPU. If CuPy or a usable GPU is not available, a warning is issued and the calculation continues on the CPU. Results agree with the CPU calculation within numerical precision.</p></td>
 </tr>
 </tbody>
 </table>
