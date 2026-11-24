@@ -87,6 +87,9 @@ class ScipySolver(SolverBase):
         # gf_atol = params_kw.get('gf_atol', 0.0)
         check_n_eigen = params_kw.get('check_n_eigen', True)
         check_orthonormality = params_kw.get('check_orthonormality', True)
+        gpu = params_kw.get('gpu', False)
+        # Hidden option: LAPACK driver for the CPU full diagonalization (scipy.linalg.eigh).
+        eigh_driver = params_kw.get('eigh_driver', 'evr')
 
         # convert particle_numbers to a list
         particle_numbers_in = params_kw.get('particle_numbers', 'auto')
@@ -130,6 +133,8 @@ class ScipySolver(SolverBase):
             # 'gf_atol': gf_atol,
             'check_n_eigen' : check_n_eigen,
             'check_orthonormality' : check_orthonormality,
+            'gpu': bool(gpu),
+            'eigh_driver': eigh_driver,
         }
         # (*) TypeError: Object of type int64 is not JSON serializable
 

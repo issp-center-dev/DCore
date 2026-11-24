@@ -61,6 +61,7 @@ setup(
     extras_require={
         'dev': ['pytest', 'sphinx', 'matplotlib', 'wild_sphinx_theme', 'versioneer', 'sparse-ir'],
         'ir': ['sparse-ir'],
+        'gpu': ['cupy'],
         },
 
 
