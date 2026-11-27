@@ -51,7 +51,7 @@ class DMFTCoreCheck(object):
 
         # Delete unnecessary parameters
         delete_parameters(self.p, block='model', retain=['seedname'])
-        delete_parameters(self.p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu'])
+        delete_parameters(self.p, block='system', retain=['beta', 'n_iw', 'mu', 'fix_mu', 'basis', 'ir_wmax', 'ir_eps'])
 
         # Summary of input parameters
         print_parameters(self.p)
