@@ -377,6 +377,12 @@ class JOCTHYBSEGSolver(SolverBase):
 
         self.solve(rot, mpirun_command, params_kw)
 
+        # index conversion from solver to DCore
+        #   solver (orb, spin): i = 2*orb + spin
+        #   DCore (spin, orb): d = spin*n_orb + orb
+        s2d = np.arange(2*self.n_orb).reshape(2, -1).T.reshape(-1)
+        # s2d = [(i % 2) * self.n_orb + i // 2 for i in range(2*self.n_orb)]
+
         # Get G2
         if only_chiloc:
             g2_dict = None
@@ -446,9 +452,10 @@ class JOCTHYBSEGSolver(SolverBase):
 
             g2_dict = {}
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
-                g2_dict[(i1, i1, i2, i2)] = g2_lo[i1, i2]
+                d1, d2 = s2d[i1], s2d[i2]
+                g2_dict[(d1, d1, d2, d2)] = g2_lo[i1, i2]
                 if i1 != i2:
-                    g2_dict[(i1, i2, i1, i2)] = g2_tr[i1, i2]
+                    g2_dict[(d1, d2, d1, d2)] = g2_tr[i1, i2]
 
         # Get chi
         chi_dict = None
@@ -464,7 +471,8 @@ class JOCTHYBSEGSolver(SolverBase):
 
             chi_dict = {}
             for i1, i2 in product(range(2*self.n_orb), repeat=2):
-                chi_dict[(i1, i1, i2, i2)] = chi_loc[i1, i2]
+                d1, d2 = s2d[i1], s2d[i2]
+                chi_dict[(d1, d1, d2, d2)] = chi_loc[i1, i2]
 
         # Rotate g2_dict and chi_dict back to the original basis
         if rot is not None:
