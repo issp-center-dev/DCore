@@ -29,6 +29,9 @@ def test_hphi(request):
 
     input_ini = "hphi.ini"
 
+    # The initial guess of the bath fitting is drawn from numpy.random.
+    numpy.random.seed(0)
+
     dcore_pre(input_ini)
     dcore(input_ini)
 
@@ -39,4 +42,7 @@ def test_hphi(request):
     dcore_check(input_ini, 'check/', 'png', 100)  # generate sigma.dat
     sigma = numpy.loadtxt("check/sigma.dat")
     sigma_ref = numpy.loadtxt("sigma.dat.ref")
-    numpy.allclose(sigma, sigma_ref, atol=1e-5)
+    # With this input, sigma agrees with sigma.dat.ref within 4e-5 (HPhi 3.7.2).
+    # The scipy/sparse solver with the same bath parameters differs by up to 6e-4,
+    # mostly at high frequencies, because exct=10 truncates states of total Boltzmann weight 5e-5.
+    assert numpy.allclose(sigma, sigma_ref, atol=1e-4)
