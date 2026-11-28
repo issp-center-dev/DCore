@@ -326,9 +326,12 @@ class DMFTCoreSolver(object):
         # handlers through the IR path will read them.
         # TODO(ir-consumer-wiring): consume self._basis/_ir_wmax/_ir_eps;
         # the cutoff must cover the interacting spectrum, including Hubbard bands.
-        self._basis = params['system']['basis']
-        self._ir_wmax = float(params['system']['ir_wmax'])
-        self._ir_eps = float(params['system']['ir_eps'])
+        # Use .get() with the program_options defaults: external callers
+        # (e.g. ChiQ's dcore_chiq) trim [system] via delete_parameters and
+        # may not retain these keys.
+        self._basis = params['system'].get('basis', 'matsubara')
+        self._ir_wmax = float(params['system'].get('ir_wmax', -1.0))
+        self._ir_eps = float(params['system'].get('ir_eps', 1e-10))
 
         # MPI commands
         if 'mpi' in params and 'num_processes' in params['mpi']:
