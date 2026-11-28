@@ -27,7 +27,7 @@ from dcore._dispatcher import *
 
 from ..tools import make_block_gf, launch_mpi_subprocesses, extract_H0, extract_bath_params, expand_path
 from .base import SolverBase
-from .hphi_spectrum import calc_one_body_green_core_parallel
+from .hphi_spectrum import calc_one_body_green_core_parallel, omp_env
 from .pomerol import assign_from_numpy_array
 
 
@@ -167,6 +167,7 @@ class HPhiSolver(SolverBase):
         # bath fitting
         n_bath = params_kw.get('n_bath', 0)  # 0 for Hubbard-I approximation
         exct = params_kw.get('exct', 1)  # number of states to be computed
+        omp_num_threads = params_kw.get('omp_num_threads', None)  # OpenMP threads per HPhi process
 
         fit_params = {}
         for key in ['fit_gtol',]:
@@ -296,7 +297,10 @@ class HPhiSolver(SolverBase):
         # (2) Run a working horse
         print("\nComputing eigeneneries ...")
         with open('./stdout.log', 'w') as output_f:
-            launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f)
+            # limit the OpenMP threads of each MPI process (see omp_env)
+            n_proc_eigen = int(shlex.split(mpirun_command_power4)[-1]) if np is not None else 1
+            launch_mpi_subprocesses(mpirun_command_power4, [exec_path, '-e', 'namelist.def'], output_f,
+                                    env=omp_env(n_proc_eigen, omp_num_threads))
 
         print("\nComputing Gf ...")
         header = "zvo"
@@ -304,7 +308,7 @@ class HPhiSolver(SolverBase):
         eta = 1e-4
         output_dir = "./output"
         p_common = (self.n_orb, T_list, exct, eta, exec_path, header, output_dir, exct)
-        one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=np)
+        one_body_g = calc_one_body_green_core_parallel(p_common, max_workers=np, omp_num_threads=omp_num_threads)
 
         # calcspectrum = CalcSpectrum(T_list, exct=exct, eta=eta, path_to_HPhi=exec_path, header=header)
         # energy_list = calcspectrum.get_energies()

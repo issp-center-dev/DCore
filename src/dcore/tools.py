@@ -182,19 +182,21 @@ def symmetrize_spin(G):
     G[bnames[0]] = G_ave.copy()
     G[bnames[1]] = G_ave.copy()
 
-def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file):
+def launch_mpi_subprocesses(mpirun_command, rest_commands, output_file, env=None):
     """
 
     :param mpirun_command:  str
         e.g. "mpirun -np 8"
     :param rest_commands: list
         rest part of command
+    :param env: dict or None
+        environment of the subprocess (None: inherit the current environment)
 
     """
     commands = shlex.split(mpirun_command)
     commands.extend(rest_commands)
     raise_if_mpi_imported()
-    return_code = subprocess.call(commands, stdout=output_file, stderr=output_file)
+    return_code = subprocess.call(commands, stdout=output_file, stderr=output_file, env=env)
     output_file.flush()
     if return_code:
         print("Error occurred while executing MPI program!")
